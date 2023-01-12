@@ -7,88 +7,327 @@
 		exports["Component"] = factory();
 	else
 		root["Component"] = factory();
-})(window, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+})(self, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ 257:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, "__esModule", ({
+	value: true
+}));
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _utils = __webpack_require__(610);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Component without code splitting support
+ */
+
+var Component = function () {
+	function Component(element, options) {
+		_classCallCheck(this, Component);
+
+		this.element = element;
+		this.element["__gia_component__"] = this;
+		this._ref = {};
+		this._options = options || {};
+		this._state = {};
+	}
+
+	_createClass(Component, [{
+		key: "_load",
+		value: function _load() {
+			this.mount();
+		}
+	}, {
+		key: "mount",
+		value: function mount() {
+			console.warn("Component " + this._name + " does not have \"mount\" method.");
+		}
+	}, {
+		key: "unmount",
+		value: function unmount() {
+			// this is here only to be rewritten
+		}
+	}, {
+		key: "getRef",
+		value: function getRef(ref) {
+			var prefixed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+			return "[data-ref=\"" + (prefixed ? this._name + ":" : "") + ref + "\"]";
+		}
+	}, {
+		key: "setState",
+		value: function setState(changes) {
+			var _this = this;
+
+			var stateChanges = {};
+
+			Object.keys(changes).forEach(function (key) {
+				if (Array.isArray(changes[key])) {
+					if (_this._state[key] != null && Array.isArray(_this._state[key])) {
+						if (_this._state[key].length === changes[key].length) {
+							changes[key].some(function (item, index) {
+								if (_this._state[key][index] !== item) {
+									stateChanges[key] = changes[key];
+									_this._state[key] = stateChanges[key];
+									return true;
+								}
+								return false;
+							});
+						} else {
+							stateChanges[key] = changes[key];
+							_this._state[key] = stateChanges[key];
+						}
+					} else {
+						stateChanges[key] = changes[key];
+						_this._state[key] = stateChanges[key];
+					}
+				} else if (_typeof(changes[key]) === "object") {
+					if (_this._state[key] != null && _typeof(_this._state[key]) === "object") {
+						stateChanges[key] = {};
+						Object.keys(changes[key]).forEach(function (subkey) {
+							if (_this._state[key][subkey] !== changes[key][subkey]) {
+								stateChanges[key][subkey] = changes[key][subkey];
+							}
+						});
+					} else {
+						stateChanges[key] = changes[key];
+					}
+
+					_this._state[key] = _extends({}, _this._state[key], stateChanges[key]);
+				} else {
+					if (_this._state[key] !== changes[key]) {
+						stateChanges[key] = changes[key];
+
+						_this._state[key] = changes[key];
+					}
+				}
+			});
+
+			Object.keys(stateChanges).forEach(function (key) {
+				if (Array.isArray(changes[key])) {
+					if (stateChanges[key].length === 0) {
+						delete stateChanges[key];
+					}
+				} else if (_typeof(changes[key]) === "object") {
+					if (Object.keys(stateChanges[key]).length === 0) {
+						delete stateChanges[key];
+					}
+				}
+			});
+
+			this.stateChange(stateChanges);
+		}
+	}, {
+		key: "stateChange",
+		value: function stateChange(stateChanges) {
+			// this is here only to be rewritten
+		}
+	}, {
+		key: "ref",
+		get: function get() {
+			return this._ref;
+		},
+		set: function set(items) {
+			var _this2 = this;
+
+			var allRefs = (0, _utils.queryAll)("[data-ref]", this.element);
+
+			if (Object.keys(items).length === 0) {
+				allRefs.forEach(function (element) {
+					var refName = element.getAttribute("data-ref");
+					if (refName.indexOf(":") !== -1) {
+						var refNameArray = refName.split(":");
+						if (refNameArray[0] == _this2._name) {
+							if (!_this2._ref[refNameArray[1]]) {
+								_this2._ref[refNameArray[1]] = allRefs.filter(function (item) {
+									return item.getAttribute("data-ref") === refName;
+								});
+							}
+						} else {
+							return;
+						}
+					} else {
+						if (!_this2._ref[refName]) {
+							_this2._ref[refName] = allRefs.filter(function (item) {
+								return item.getAttribute("data-ref") === refName;
+							});
+						}
+					}
+				});
+			} else {
+				this._ref = Object.keys(items).map(function (key) {
+					var isArray = Array.isArray(items[key]);
+
+					// non-empty refs
+					if (items[key] !== null && isArray && items[key].length > 0) {
+						return {
+							name: key,
+							value: items[key]
+						};
+					}
+
+					var name = key;
+					var prefixedName = _this2._name + ":" + name;
+
+					var refs = allRefs.filter(function (element) {
+						return element.getAttribute("data-ref") === prefixedName;
+					});
+
+					if (refs.length === 0) {
+						refs = allRefs.filter(function (element) {
+							return element.getAttribute("data-ref") === name;
+						});
+					}
+
+					if (!isArray) {
+						refs = refs.length ? refs[0] : null;
+					}
+
+					return {
+						name: key,
+						value: refs
+					};
+				}).reduce(function (acc, ref) {
+					acc[ref.name] = ref.value;
+					return acc;
+				}, {});
+			}
+
+			return this._ref;
+		}
+	}, {
+		key: "options",
+		get: function get() {
+			return this._options;
+		},
+		set: function set(defaults) {
+			var options = {};
+			var optionsFromAttribute = this.element.getAttribute("g-options");
+			if (optionsFromAttribute) {
+				options = JSON.parse(optionsFromAttribute);
+			}
+
+			this._options = _extends({}, this._options, defaults, options);
+
+			return this._options;
+		}
+	}, {
+		key: "state",
+		get: function get() {
+			return this._state;
+		},
+		set: function set(state) {
+			console.warn("You should not change state manually. Use setState instead.");
+			this._state = state;
+		}
+	}]);
+
+	return Component;
+}();
+
+exports["default"] = Component;
+
+/***/ }),
+
+/***/ 433:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
     value: true
-});
+}));
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+__webpack_require__(564);
+
+var _BaseComponent2 = __webpack_require__(257);
+
+var _BaseComponent3 = _interopRequireDefault(_BaseComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Component with code splitting support
+ */
+
+var Component = function (_BaseComponent) {
+    _inherits(Component, _BaseComponent);
+
+    function Component() {
+        _classCallCheck(this, Component);
+
+        return _possibleConstructorReturn(this, (Component.__proto__ || Object.getPrototypeOf(Component)).apply(this, arguments));
+    }
+
+    _createClass(Component, [{
+        key: 'require',
+        value: function () {
+            var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _callee, this);
+            }));
+
+            function require() {
+                return _ref.apply(this, arguments);
+            }
+
+            return require;
+        }()
+    }, {
+        key: '_load',
+        value: function _load() {
+            this.require().then(this.mount.bind(this));
+        }
+    }]);
+
+    return Component;
+}(_BaseComponent3.default);
+
+exports["default"] = Component;
+
+/***/ }),
+
+/***/ 610:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 exports.query = query;
 exports.queryAll = queryAll;
 exports.toggleClass = toggleClass;
@@ -171,488 +410,25 @@ function triggerEvent(element, eventType) {
 }
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+
+/***/ 641:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
+var _Component = __webpack_require__(433);
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _Component2 = _interopRequireDefault(_Component);
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _utils = __webpack_require__(0);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Component without code splitting support
- */
-
-var Component = function () {
-    function Component(element, options) {
-        _classCallCheck(this, Component);
-
-        this.element = element;
-        this.element['__gia_component__'] = this;
-        this._ref = {};
-        this._options = options || {};
-        this._state = {};
-    }
-
-    _createClass(Component, [{
-        key: '_load',
-        value: function _load() {
-            this.mount();
-        }
-    }, {
-        key: 'mount',
-        value: function mount() {
-            console.warn('Component ' + this._name + ' does not have "mount" method.');
-        }
-    }, {
-        key: 'unmount',
-        value: function unmount() {
-            // this is here only to be rewritten
-        }
-    }, {
-        key: 'getRef',
-        value: function getRef(ref) {
-            var prefixed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-            return '[g-ref="' + (prefixed ? this._name + ':' : '') + ref + '"]';
-        }
-    }, {
-        key: 'setState',
-        value: function setState(changes) {
-            var _this = this;
-
-            var stateChanges = {};
-
-            Object.keys(changes).forEach(function (key) {
-                if (Array.isArray(changes[key])) {
-                    if (_this._state[key] != null && Array.isArray(_this._state[key])) {
-                        if (_this._state[key].length === changes[key].length) {
-                            changes[key].some(function (item, index) {
-                                if (_this._state[key][index] !== item) {
-                                    stateChanges[key] = changes[key];
-                                    _this._state[key] = stateChanges[key];
-                                    return true;
-                                }
-                                return false;
-                            });
-                        } else {
-                            stateChanges[key] = changes[key];
-                            _this._state[key] = stateChanges[key];
-                        }
-                    } else {
-                        stateChanges[key] = changes[key];
-                        _this._state[key] = stateChanges[key];
-                    }
-                } else if (_typeof(changes[key]) === 'object') {
-                    if (_this._state[key] != null && _typeof(_this._state[key]) === 'object') {
-                        stateChanges[key] = {};
-                        Object.keys(changes[key]).forEach(function (subkey) {
-                            if (_this._state[key][subkey] !== changes[key][subkey]) {
-                                stateChanges[key][subkey] = changes[key][subkey];
-                            }
-                        });
-                    } else {
-                        stateChanges[key] = changes[key];
-                    }
-
-                    _this._state[key] = _extends({}, _this._state[key], stateChanges[key]);
-                } else {
-                    if (_this._state[key] !== changes[key]) {
-                        stateChanges[key] = changes[key];
-
-                        _this._state[key] = changes[key];
-                    }
-                }
-            });
-
-            Object.keys(stateChanges).forEach(function (key) {
-                if (Array.isArray(changes[key])) {
-                    if (stateChanges[key].length === 0) {
-                        delete stateChanges[key];
-                    }
-                } else if (_typeof(changes[key]) === 'object') {
-                    if (Object.keys(stateChanges[key]).length === 0) {
-                        delete stateChanges[key];
-                    }
-                }
-            });
-
-            this.stateChange(stateChanges);
-        }
-    }, {
-        key: 'stateChange',
-        value: function stateChange(stateChanges) {
-            // this is here only to be rewritten
-        }
-    }, {
-        key: 'ref',
-        get: function get() {
-            return this._ref;
-        },
-        set: function set(items) {
-            var _this2 = this;
-
-            var allRefs = (0, _utils.queryAll)('[g-ref]', this.element);
-
-            if (Object.keys(items).length === 0) {
-                allRefs.forEach(function (element) {
-                    var refName = element.getAttribute('g-ref');
-                    if (refName.indexOf(':') !== -1) {
-                        var refNameArray = refName.split(':');
-                        if (refNameArray[0] == _this2._name) {
-                            if (!_this2._ref[refNameArray[1]]) {
-                                _this2._ref[refNameArray[1]] = allRefs.filter(function (item) {
-                                    return item.getAttribute('g-ref') === refName;
-                                });
-                            }
-                        } else {
-                            return;
-                        }
-                    } else {
-                        if (!_this2._ref[refName]) {
-                            _this2._ref[refName] = allRefs.filter(function (item) {
-                                return item.getAttribute('g-ref') === refName;
-                            });
-                        }
-                    }
-                });
-            } else {
-                this._ref = Object.keys(items).map(function (key) {
-                    var isArray = Array.isArray(items[key]);
-
-                    // non-empty refs
-                    if (items[key] !== null && isArray && items[key].length > 0) {
-                        return {
-                            name: key,
-                            value: items[key]
-                        };
-                    }
-
-                    var name = key;
-                    var prefixedName = _this2._name + ':' + name;
-
-                    var refs = allRefs.filter(function (element) {
-                        return element.getAttribute('g-ref') === prefixedName;
-                    });
-
-                    if (refs.length === 0) {
-                        refs = allRefs.filter(function (element) {
-                            return element.getAttribute('g-ref') === name;
-                        });
-                    }
-
-                    if (!isArray) {
-                        refs = refs.length ? refs[0] : null;
-                    }
-
-                    return {
-                        name: key,
-                        value: refs
-                    };
-                }).reduce(function (acc, ref) {
-                    acc[ref.name] = ref.value;
-                    return acc;
-                }, {});
-            }
-
-            return this._ref;
-        }
-    }, {
-        key: 'options',
-        get: function get() {
-            return this._options;
-        },
-        set: function set(defaults) {
-            var options = {};
-            var optionsFromAttribute = this.element.getAttribute('g-options');
-            if (optionsFromAttribute) {
-                options = JSON.parse(optionsFromAttribute);
-            }
-
-            this._options = _extends({}, this._options, defaults, options);
-
-            return this._options;
-        }
-    }, {
-        key: 'state',
-        get: function get() {
-            return this._state;
-        },
-        set: function set(state) {
-            console.warn('You should not change state manually. Use setState instead.');
-            this._state = state;
-        }
-    }]);
-
-    return Component;
-}();
-
-exports.default = Component;
+module.exports = _Component2.default; // this is here for webpack to expose Component as window.Component
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports) {
 
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = function(module) {
-	if (!module.webpackPolyfill) {
-		module.deprecate = function() {};
-		module.paths = [];
-		// module.parent = undefined by default
-		if (!module.children) module.children = [];
-		Object.defineProperty(module, "loaded", {
-			enumerable: true,
-			get: function() {
-				return module.l;
-			}
-		});
-		Object.defineProperty(module, "id", {
-			enumerable: true,
-			get: function() {
-				return module.i;
-			}
-		});
-		module.webpackPolyfill = 1;
-	}
-	return module;
-};
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global, module, process) {
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+/***/ 564:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 /**
  * Copyright (c) 2014, Facebook, Inc.
@@ -664,14 +440,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  * the same directory.
  */
 
-!function (global) {
+!(function(global) {
   "use strict";
 
   var hasOwn = Object.prototype.hasOwnProperty;
   var undefined; // More compressible than void 0.
-  var iteratorSymbol = typeof Symbol === "function" && Symbol.iterator || "@@iterator";
+  var iteratorSymbol =
+    typeof Symbol === "function" && Symbol.iterator || "@@iterator";
 
-  var inModule = ( false ? undefined : _typeof(module)) === "object";
+  var inModule = "object" === "object";
   var runtime = global.regeneratorRuntime;
   if (runtime) {
     if (inModule) {
@@ -744,22 +521,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   // Helper for defining the .next, .throw, and .return methods of the
   // Iterator interface in terms of a single ._invoke method.
   function defineIteratorMethods(prototype) {
-    ["next", "throw", "return"].forEach(function (method) {
-      prototype[method] = function (arg) {
+    ["next", "throw", "return"].forEach(function(method) {
+      prototype[method] = function(arg) {
         return this._invoke(method, arg);
       };
     });
   }
 
-  runtime.isGeneratorFunction = function (genFun) {
+  runtime.isGeneratorFunction = function(genFun) {
     var ctor = typeof genFun === "function" && genFun.constructor;
-    return ctor ? ctor === GeneratorFunction ||
-    // For the native GeneratorFunction constructor, the best we can
-    // do is to check its .name property.
-    (ctor.displayName || ctor.name) === "GeneratorFunction" : false;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
   };
 
-  runtime.mark = function (genFun) {
+  runtime.mark = function(genFun) {
     if (Object.setPrototypeOf) {
       Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
     } else {
@@ -774,7 +553,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   // `value instanceof AwaitArgument` to determine if the yielded value is
   // meant to be awaited. Some may consider the name of this method too
   // cutesy, but they are curmudgeons.
-  runtime.awrap = function (arg) {
+  runtime.awrap = function(arg) {
     return new AwaitArgument(arg);
   };
 
@@ -788,28 +567,30 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     function invoke(method, arg) {
       var result = generator[method](arg);
       var value = result.value;
-      return value instanceof AwaitArgument ? Promise.resolve(value.arg).then(invokeNext, invokeThrow) : Promise.resolve(value).then(function (unwrapped) {
-        // When a yielded Promise is resolved, its final value becomes
-        // the .value of the Promise<{value,done}> result for the
-        // current iteration. If the Promise is rejected, however, the
-        // result for this iteration will be rejected with the same
-        // reason. Note that rejections of yielded Promises are not
-        // thrown back into the generator function, as is the case
-        // when an awaited Promise is rejected. This difference in
-        // behavior between yield and await is important, because it
-        // allows the consumer to decide what to do with the yielded
-        // rejection (swallow it and continue, manually .throw it back
-        // into the generator, abandon iteration, whatever). With
-        // await, by contrast, there is no opportunity to examine the
-        // rejection reason outside the generator function, so the
-        // only option is to throw it from the await expression, and
-        // let the generator function handle the exception.
-        result.value = unwrapped;
-        return result;
-      });
+      return value instanceof AwaitArgument
+        ? Promise.resolve(value.arg).then(invokeNext, invokeThrow)
+        : Promise.resolve(value).then(function(unwrapped) {
+            // When a yielded Promise is resolved, its final value becomes
+            // the .value of the Promise<{value,done}> result for the
+            // current iteration. If the Promise is rejected, however, the
+            // result for this iteration will be rejected with the same
+            // reason. Note that rejections of yielded Promises are not
+            // thrown back into the generator function, as is the case
+            // when an awaited Promise is rejected. This difference in
+            // behavior between yield and await is important, because it
+            // allows the consumer to decide what to do with the yielded
+            // rejection (swallow it and continue, manually .throw it back
+            // into the generator, abandon iteration, whatever). With
+            // await, by contrast, there is no opportunity to examine the
+            // rejection reason outside the generator function, so the
+            // only option is to throw it from the await expression, and
+            // let the generator function handle the exception.
+            result.value = unwrapped;
+            return result;
+          });
     }
 
-    if ((typeof process === "undefined" ? "undefined" : _typeof(process)) === "object" && process.domain) {
+    if (typeof process === "object" && process.domain) {
       invoke = process.domain.bind(invoke);
     }
 
@@ -824,24 +605,26 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       return previousPromise =
-      // If enqueue has been called before, then we want to wait until
-      // all previous Promises have been resolved before calling invoke,
-      // so that results are always delivered in the correct order. If
-      // enqueue has not been called before, then it is important to
-      // call invoke immediately, without waiting on a callback to fire,
-      // so that the async generator function has the opportunity to do
-      // any necessary setup in a predictable way. This predictability
-      // is why the Promise constructor synchronously invokes its
-      // executor callback, and why async functions synchronously
-      // execute code before the first await. Since we implement simple
-      // async functions in terms of async generators, it is especially
-      // important to get this right, even though it requires care.
-      previousPromise ? previousPromise.then(callInvokeWithMethodAndArg,
-      // Avoid propagating failures to Promises returned by later
-      // invocations of the iterator.
-      callInvokeWithMethodAndArg) : new Promise(function (resolve) {
-        resolve(callInvokeWithMethodAndArg());
-      });
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : new Promise(function (resolve) {
+          resolve(callInvokeWithMethodAndArg());
+        });
     }
 
     // Define the unified helper method that is used to implement .next,
@@ -854,13 +637,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   // Note that simple async functions are implemented on top of
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
-  runtime.async = function (innerFn, outerFn, self, tryLocsList) {
-    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList));
+  runtime.async = function(innerFn, outerFn, self, tryLocsList) {
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList)
+    );
 
-    return runtime.isGeneratorFunction(outerFn) ? iter // If outerFn is a generator, return the full iterator.
-    : iter.next().then(function (result) {
-      return result.done ? result.value : iter.next();
-    });
+    return runtime.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
   };
 
   function makeInvokeMethod(innerFn, self, context) {
@@ -884,7 +670,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       while (true) {
         var delegate = context.delegate;
         if (delegate) {
-          if (method === "return" || method === "throw" && delegate.iterator[method] === undefined) {
+          if (method === "return" ||
+              (method === "throw" && delegate.iterator[method] === undefined)) {
             // A return or throw (when the delegate iterator has no throw
             // method) always terminates the yield* loop.
             context.delegate = null;
@@ -910,7 +697,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             }
           }
 
-          var record = tryCatch(delegate.iterator[method], delegate.iterator, arg);
+          var record = tryCatch(
+            delegate.iterator[method],
+            delegate.iterator,
+            arg
+          );
 
           if (record.type === "throw") {
             context.delegate = null;
@@ -960,6 +751,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             method = "next";
             arg = undefined;
           }
+
         } else if (method === "return") {
           context.abrupt("return", arg);
         }
@@ -970,7 +762,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         if (record.type === "normal") {
           // If an exception is thrown from innerFn, we leave state ===
           // GenStateExecuting and loop back for another invocation.
-          state = context.done ? GenStateCompleted : GenStateSuspendedYield;
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
 
           var info = {
             value: record.arg,
@@ -986,6 +780,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           } else {
             return info;
           }
+
         } else if (record.type === "throw") {
           state = GenStateCompleted;
           // Dispatch the exception by looping back around to the
@@ -1001,11 +796,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   // unified ._invoke helper method.
   defineIteratorMethods(Gp);
 
-  Gp[iteratorSymbol] = function () {
+  Gp[iteratorSymbol] = function() {
     return this;
   };
 
-  Gp.toString = function () {
+  Gp.toString = function() {
     return "[object Generator]";
   };
 
@@ -1040,7 +835,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     this.reset(true);
   }
 
-  runtime.keys = function (object) {
+  runtime.keys = function(object) {
     var keys = [];
     for (var key in object) {
       keys.push(key);
@@ -1079,8 +874,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       if (!isNaN(iterable.length)) {
-        var i = -1,
-            next = function next() {
+        var i = -1, next = function next() {
           while (++i < iterable.length) {
             if (hasOwn.call(iterable, i)) {
               next.value = iterable[i];
@@ -1111,7 +905,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   Context.prototype = {
     constructor: Context,
 
-    reset: function reset(skipTempReset) {
+    reset: function(skipTempReset) {
       this.prev = 0;
       this.next = 0;
       this.sent = undefined;
@@ -1123,14 +917,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       if (!skipTempReset) {
         for (var name in this) {
           // Not sure about the optimal order of these conditions:
-          if (name.charAt(0) === "t" && hasOwn.call(this, name) && !isNaN(+name.slice(1))) {
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
             this[name] = undefined;
           }
         }
       }
     },
 
-    stop: function stop() {
+    stop: function() {
       this.done = true;
 
       var rootEntry = this.tryEntries[0];
@@ -1142,7 +938,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return this.rval;
     },
 
-    dispatchException: function dispatchException(exception) {
+    dispatchException: function(exception) {
       if (this.done) {
         throw exception;
       }
@@ -1176,14 +972,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             } else if (this.prev < entry.finallyLoc) {
               return handle(entry.finallyLoc);
             }
+
           } else if (hasCatch) {
             if (this.prev < entry.catchLoc) {
               return handle(entry.catchLoc, true);
             }
+
           } else if (hasFinally) {
             if (this.prev < entry.finallyLoc) {
               return handle(entry.finallyLoc);
             }
+
           } else {
             throw new Error("try statement without catch or finally");
           }
@@ -1191,16 +990,22 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
     },
 
-    abrupt: function abrupt(type, arg) {
+    abrupt: function(type, arg) {
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i];
-        if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
           var finallyEntry = entry;
           break;
         }
       }
 
-      if (finallyEntry && (type === "break" || type === "continue") && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc) {
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
         // Ignore the finally entry if control is not jumping to a
         // location outside the try/catch block.
         finallyEntry = null;
@@ -1219,12 +1024,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return ContinueSentinel;
     },
 
-    complete: function complete(record, afterLoc) {
+    complete: function(record, afterLoc) {
       if (record.type === "throw") {
         throw record.arg;
       }
 
-      if (record.type === "break" || record.type === "continue") {
+      if (record.type === "break" ||
+          record.type === "continue") {
         this.next = record.arg;
       } else if (record.type === "return") {
         this.rval = record.arg;
@@ -1234,7 +1040,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
     },
 
-    finish: function finish(finallyLoc) {
+    finish: function(finallyLoc) {
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i];
         if (entry.finallyLoc === finallyLoc) {
@@ -1245,7 +1051,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
     },
 
-    "catch": function _catch(tryLoc) {
+    "catch": function(tryLoc) {
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i];
         if (entry.tryLoc === tryLoc) {
@@ -1263,7 +1069,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       throw new Error("illegal catch attempt");
     },
 
-    delegateYield: function delegateYield(iterable, resultName, nextLoc) {
+    delegateYield: function(iterable, resultName, nextLoc) {
       this.delegate = {
         iterator: values(iterable),
         resultName: resultName,
@@ -1273,103 +1079,65 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return ContinueSentinel;
     }
   };
-}(
-// Among the various tricks for obtaining a reference to the global
-// object, this seems to be the most reliable technique that does not
-// use indirect eval (which violates Content Security Policy).
-(typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" ? global : (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" ? window : (typeof self === "undefined" ? "undefined" : _typeof(self)) === "object" ? self : undefined);
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4), __webpack_require__(3)(module), __webpack_require__(2)))
+})(
+  // Among the various tricks for obtaining a reference to the global
+  // object, this seems to be the most reliable technique that does not
+  // use indirect eval (which violates Content Security Policy).
+  typeof __webpack_require__.g === "object" ? __webpack_require__.g :
+  typeof window === "object" ? window :
+  typeof self === "object" ? self : this
+);
 
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-__webpack_require__(5);
-
-var _BaseComponent2 = __webpack_require__(1);
-
-var _BaseComponent3 = _interopRequireDefault(_BaseComponent2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * Component with code splitting support
- */
-
-var Component = function (_BaseComponent) {
-    _inherits(Component, _BaseComponent);
-
-    function Component() {
-        _classCallCheck(this, Component);
-
-        return _possibleConstructorReturn(this, (Component.__proto__ || Object.getPrototypeOf(Component)).apply(this, arguments));
-    }
-
-    _createClass(Component, [{
-        key: 'require',
-        value: function () {
-            var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-                return regeneratorRuntime.wrap(function _callee$(_context) {
-                    while (1) {
-                        switch (_context.prev = _context.next) {
-                            case 0:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function require() {
-                return _ref.apply(this, arguments);
-            }
-
-            return require;
-        }()
-    }, {
-        key: '_load',
-        value: function _load() {
-            this.require().then(this.mount.bind(this));
-        }
-    }]);
-
-    return Component;
-}(_BaseComponent3.default);
-
-exports.default = Component;
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _Component = __webpack_require__(6);
-
-var _Component2 = _interopRequireDefault(_Component);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = _Component2.default; // this is here for webpack to expose Component as window.Component
 
 /***/ })
-/******/ ]);
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__(641);
+/******/ 	
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
 });

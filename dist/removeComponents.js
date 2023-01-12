@@ -7,88 +7,19 @@
 		exports["removeComponents"] = factory();
 	else
 		root["removeComponents"] = factory();
-})(window, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+})(self, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
 
-"use strict";
+/***/ 686:
+/***/ ((__unused_webpack_module, exports) => {
 
 
-Object.defineProperty(exports, "__esModule", {
+
+Object.defineProperty(exports, "__esModule", ({
     value: true
-});
+}));
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -122,54 +53,25 @@ var Config = function () {
     return Config;
 }();
 
-exports.default = new Config();
+exports["default"] = new Config();
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+/***/ 497:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
-Object.defineProperty(exports, "__esModule", {
+
+Object.defineProperty(exports, "__esModule", ({
     value: true
-});
-exports.default = getComponentFromElement;
-/**
- * Return instance from element
- * @param element: DOM element or ID of element
- * @returns component instance
- */
+}));
+exports["default"] = destroyInstance;
 
-function getComponentFromElement(element) {
-    if (typeof element === 'string') {
-        element = document.getElementById(element);
-
-        if (!element) {
-            return null;
-        }
-    }
-
-    return element['__gia_component__'];
-}
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.default = destroyInstance;
-
-var _getComponentFromElement = __webpack_require__(1);
+var _getComponentFromElement = __webpack_require__(199);
 
 var _getComponentFromElement2 = _interopRequireDefault(_getComponentFromElement);
 
-var _config = __webpack_require__(0);
+var _config = __webpack_require__(686);
 
 var _config2 = _interopRequireDefault(_config);
 
@@ -193,15 +95,77 @@ function destroyInstance(element) {
 }
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+/***/ 199:
+/***/ ((__unused_webpack_module, exports) => {
 
 
-Object.defineProperty(exports, "__esModule", {
+
+Object.defineProperty(exports, "__esModule", ({
     value: true
-});
+}));
+exports["default"] = getComponentFromElement;
+/**
+ * Return instance from element
+ * @param element: DOM element or ID of element
+ * @returns component instance
+ */
+
+function getComponentFromElement(element) {
+    if (typeof element === 'string') {
+        element = document.getElementById(element);
+
+        if (!element) {
+            return null;
+        }
+    }
+
+    return element['__gia_component__'];
+}
+
+/***/ }),
+
+/***/ 402:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = removeComponents;
+
+var _utils = __webpack_require__(610);
+
+var _destroyInstance = __webpack_require__(497);
+
+var _destroyInstance2 = _interopRequireDefault(_destroyInstance);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Removes instances of components on elements within the context
+ * @param context: DOM element
+ */
+
+function removeComponents() {
+  var context = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.documentElement;
+
+  (0, _utils.queryAll)("[data-component]", context).forEach(function (element) {
+    (0, _destroyInstance2.default)(element);
+  });
+}
+
+/***/ }),
+
+/***/ 610:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 exports.query = query;
 exports.queryAll = queryAll;
 exports.toggleClass = toggleClass;
@@ -284,46 +248,13 @@ function triggerEvent(element, eventType) {
 }
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.default = removeComponents;
-
-var _utils = __webpack_require__(3);
-
-var _destroyInstance = __webpack_require__(2);
-
-var _destroyInstance2 = _interopRequireDefault(_destroyInstance);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Removes instances of components on elements within the context
- * @param context: DOM element
- */
-
-function removeComponents() {
-    var context = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.documentElement;
-
-    (0, _utils.queryAll)('[g-component]', context).forEach(function (element) {
-        (0, _destroyInstance2.default)(element);
-    });
-}
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
+/***/ 723:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
-var _removeComponents = __webpack_require__(4);
+
+var _removeComponents = __webpack_require__(402);
 
 var _removeComponents2 = _interopRequireDefault(_removeComponents);
 
@@ -332,5 +263,41 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 module.exports = _removeComponents2.default; // this is here for webpack to expose removeComponents as window.removeComponents
 
 /***/ })
-/******/ ]);
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__(723);
+/******/ 	
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
 });
