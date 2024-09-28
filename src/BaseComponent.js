@@ -1,4 +1,5 @@
 import { queryAll } from "./utils";
+import config from "./config";
 
 /**
  * Component without code splitting support
@@ -18,17 +19,17 @@ export default class Component {
 	}
 
 	set ref(items) {
-		const allRefs = queryAll("[data-ref]", this.element);
+		const allRefs = queryAll("[" + config.get("attrPrefix") + "-ref]", this.element);
 
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
-				let refName = element.getAttribute("data-ref");
+				let refName = element.getAttribute(config.get("attrPrefix") + "-ref");
 				if (refName.indexOf(":") !== -1) {
 					let refNameArray = refName.split(":");
 					if (refNameArray[0] == this._name) {
 						if (!this._ref[refNameArray[1]]) {
 							this._ref[refNameArray[1]] = allRefs.filter((item) => {
-								return item.getAttribute("data-ref") === refName;
+								return item.getAttribute(config.get("attrPrefix") + "-ref") === refName;
 							});
 						}
 					} else {
@@ -37,7 +38,7 @@ export default class Component {
 				} else {
 					if (!this._ref[refName]) {
 						this._ref[refName] = allRefs.filter((item) => {
-							return item.getAttribute("data-ref") === refName;
+							return item.getAttribute(config.get("attrPrefix") + "-ref") === refName;
 						});
 					}
 				}
@@ -58,10 +59,10 @@ export default class Component {
 					const name = key;
 					const prefixedName = `${this._name}:${name}`;
 
-					let refs = allRefs.filter((element) => element.getAttribute("data-ref") === prefixedName);
+					let refs = allRefs.filter((element) => element.getAttribute(config.get("attrPrefix") + "-ref") === prefixedName);
 
 					if (refs.length === 0) {
-						refs = allRefs.filter((element) => element.getAttribute("data-ref") === name);
+						refs = allRefs.filter((element) => element.getAttribute(config.get("attrPrefix") + "-ref") === name);
 					}
 
 					if (!isArray) {
@@ -88,7 +89,7 @@ export default class Component {
 
 	set options(defaults) {
 		let options = {};
-		let optionsFromAttribute = this.element.getAttribute("g-options");
+		let optionsFromAttribute = this.element.getAttribute(config.get("attrPrefix") + "-options");
 		if (optionsFromAttribute) {
 			options = JSON.parse(optionsFromAttribute);
 		}
@@ -124,7 +125,7 @@ export default class Component {
 	}
 
 	getRef(ref, prefixed = false) {
-		return `[data-ref="${prefixed ? `${this._name}:` : ""}${ref}"]`;
+		return `[${config.get("attrPrefix")}-ref="${prefixed ? `${this._name}:` : ""}${ref}"]`;
 	}
 
 	setState(changes) {

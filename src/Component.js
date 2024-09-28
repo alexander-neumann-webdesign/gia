@@ -1,16 +1,14 @@
-import 'babel-regenerator-runtime';
-import BaseComponent from './BaseComponent';
+// import 'babel-regenerator-runtime';
+import BaseComponent from "./BaseComponent";
 
 /**
  * Component with code splitting support
  */
 
 export default class Component extends BaseComponent {
+	async require() {}
 
-    async require() {}
-
-    _load() {
-        this.require().then(::this.mount)
-    }
-
+	_load() {
+		this.require().then(this.mount.bind(this));
+	}
 }

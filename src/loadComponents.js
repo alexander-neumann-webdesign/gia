@@ -1,6 +1,7 @@
 import { queryAll } from "./utils";
 import getComponentFromElement from "./getComponentFromElement";
 import createInstance from "./createInstance";
+import config from "./config";
 
 /**
  * Creates instances of components without creating duplicates on elements within the context
@@ -16,7 +17,7 @@ export default function loadComponents(components = {}, context = document.docum
 
 	let initialisedComponents = [];
 
-	queryAll("[data-component]", context).forEach((element) => {
+	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach((element) => {
 		const instance = getComponentFromElement(element);
 
 		if (instance) {
@@ -24,7 +25,7 @@ export default function loadComponents(components = {}, context = document.docum
 			return true; // continue
 		}
 
-		let componentName = element.getAttribute("data-component");
+		let componentName = element.getAttribute(config.get("attrPrefix") + "-component");
 
 		if (typeof components[componentName] === "function") {
 			initialisedComponents.push(createInstance(element, componentName, components[componentName]));

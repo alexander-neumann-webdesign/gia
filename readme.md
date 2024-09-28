@@ -41,7 +41,7 @@ Following sizes are for modules included separately (bundled separately). Module
 Include Gia with scripts tag
 
 ```html
-<script src="./dist/gia.min.js"></script>
+<script src="./dist/gia.umd.js"></script>
 <!-- exposes all modules under global gia object -->
 
 <!-- also possible to include only parts -->
@@ -76,9 +76,7 @@ class SampleComponent extends Component {
 Define the element where the component needs to be attached:
 
 ```html
-<div data-component="SampleComponent">
-	...
-</div>
+<div data-component="SampleComponent">...</div>
 ```
 
 And let the magic begin.
@@ -175,10 +173,10 @@ The `refElement` will only be selected and stored by `SampleComponent`, and no o
 
 #### options
 
-Variable holding options of the component. Default options can be set in constructor of the component. Options get automatically rewritten from the `g-options` attribute.
+Variable holding options of the component. Default options can be set in constructor of the component. Options get automatically rewritten from the `data-options` attribute.
 
 ```html
-<div data-component="SampleComponent" g-options='{"someOption": "customValue"}'></div>
+<div data-component="SampleComponent" data-options='{"someOption": "customValue"}'></div>
 ```
 
 ```javascript
@@ -356,6 +354,7 @@ Config is used as a store for options used in Gia and also as an interface to ch
 import config from "gia/config";
 
 config.set("log", false); // disables unnecessary console.log calls
+config.set("attrPrefix", "data"); // changes g-component to data-component
 ```
 
 ### eventbus

@@ -1,47 +1,27 @@
 {
-  "name": "gia",
-  "version": "1.0.1",
-  "description": "Minimalistic JavaScript framework for server rendered websites.",
-  "main": "dist/gia.js",
-  "private": false,
-  "scripts": {
-    "compile-component": "babel --presets es2015,stage-0 src/Component.js --out-file Component.js",
-    "compile-base-component": "babel --presets es2015,stage-0 src/BaseComponent.js --out-file BaseComponent.js",
-    "compile-get-component-from-element": "babel --presets es2015,stage-0 src/getComponentFromElement.js --out-file getComponentFromElement.js",
-    "compile-load-components": "babel --presets es2015,stage-0 src/loadComponents.js --out-file loadComponents.js",
-    "compile-create-instance": "babel --presets es2015,stage-0 src/createInstance.js --out-file createInstance.js",
-    "compile-remove-components": "babel --presets es2015,stage-0 src/removeComponents.js --out-file removeComponents.js",
-    "compile-destroy-instance": "babel --presets es2015,stage-0 src/destroyInstance.js --out-file destroyInstance.js",
-    "compile-utils": "babel --presets es2015,stage-0 src/utils.js --out-file utils.js",
-    "compile-eventbus": "babel --presets es2015,stage-0 src/eventbus.js --out-file eventbus.js",
-    "compile-config": "babel --presets es2015,stage-0 src/config.js --out-file config.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "npm run compile-component && npm run compile-base-component && npm run compile-get-component-from-element && npm run compile-load-components && npm run compile-create-instance && npm run compile-remove-components && npm run compile-destroy-instance && npm run compile-utils && npm run compile-eventbus && npm run compile-config",
-    "build": "webpack-cli",
-    "prepublish": "npm run compile && npm run build"
-  },
-  "author": "Georgy Marchuk",
-  "contributors": [
-    "Daniel Cirmaciu",
-    "Georgy Marchuk"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/giantcz/gia"
-  },
-  "keywords": [],
-  "dependencies": {
-    "babel-regenerator-runtime": "^6.5.0"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-loader": "^7.1.5",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "uglifyjs-webpack-plugin": "^1.3.0",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
-  }
+	"name": "gia",
+	"version": "1.0.0",
+	"description": "",
+	"files": [
+		"dist"
+	],
+	"main": "./dist/gia.umd.cjs",
+	"module": "./dist/gia.js",
+	"exports": {
+		".": {
+			"import": "./dist/gia.js",
+			"require": "./dist/gia.umd.cjs"
+		}
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"vite": "^5.4.8"
+	}
 }
