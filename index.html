@@ -5,24 +5,26 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-
 </head>
 
 <body>
-	<div data-component="HelloWorld">This is a g-component</div>
+	<div data-component="HelloWorld"></div>
 	<script src="dist/gia.umd.js"></script>
 	<script>
 		class HelloWorld extends gia.Component {
 			mount() {
 				console.log("Hello world!");
+				this.element.innerHTML = "Hello world!";
 			}
 		}
-		const components = {
-			"HelloWorld": HelloWorld
-		}
+	</script>
+	<script>
 		gia.config.set('log', true);
 		gia.config.set('attrPrefix', 'data');
-		gia.loadComponents(components);
+
+		gia.loadComponents({
+			"HelloWorld": HelloWorld
+		});
 	</script>
 </body>
 
