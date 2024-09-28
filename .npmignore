@@ -1,6 +1,7 @@
 src/
-entry.js
+lib/
 webpack.config.js
 webpackEntries
+vite.config.js
 /index.html
 .idea

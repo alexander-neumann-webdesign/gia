@@ -13,16 +13,4 @@ wiki-wishlist
 *.sublime-workspace
 .editorconfig
 .idea
-lib
-/plugins
-/BaseComponent.js
-/Component.js
-/getComponentFromElement.js
-/loadComponents.js
-/createInstance.js
-/removeComponents.js
-/destroyInstance.js
-/eventbus.js
-/config.js
-/utils.js
-/index.html
+.vscode

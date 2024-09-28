@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+</head>
+
+<body>
+	<div data-component="HelloWorld">This is a g-component</div>
+	<script src="dist/gia.umd.js"></script>
+	<script>
+		class HelloWorld extends gia.Component {
+			mount() {
+				console.log("Hello world!");
+			}
+		}
+		const components = {
+			"HelloWorld": HelloWorld
+		}
+		gia.config.set('log', true);
+		gia.config.set('attrPrefix', 'data');
+		gia.loadComponents(components);
+	</script>
+</body>
+
+</html>
