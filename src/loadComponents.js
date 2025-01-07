@@ -21,7 +21,7 @@ export default function loadComponents(components = {}, context = document.docum
 		const instance = getComponentFromElement(element);
 
 		if (instance) {
-			console.warn("Error: instance exists: \n", instance);
+			console.warn("Error: instance exists: ", instance);
 			return true; // continue
 		}
 

@@ -37,8 +37,7 @@ function C(i = {}, t = document.documentElement) {
   u("[" + r.get("attrPrefix") + "-component]", t).forEach((e) => {
     const n = c(e);
     if (n)
-      return console.warn(`Error: instance exists: 
-`, n), !0;
+      return console.warn("Error: instance exists: ", n), !0;
     let o = e.getAttribute(r.get("attrPrefix") + "-component");
     typeof i[o] == "function" ? s.push(g(e, o, i[o])) : console.warn(`Constructor for component "${o}" not found.`);
   }), s.forEach((e) => {
