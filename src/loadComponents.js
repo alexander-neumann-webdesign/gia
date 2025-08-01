@@ -9,30 +9,39 @@ import config from "./config";
  * @param context: DOM element
  */
 
-export default function loadComponents(components = {}, context = document.documentElement) {
+export default function loadComponents(
+	components = {},
+	context = document.documentElement,
+) {
 	if (!components || Object.keys(components).length === 0) {
 		console.warn("App has no components");
 		return;
 	}
 
-	let initialisedComponents = [];
+	const initialisedComponents = [];
 
-	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach((element) => {
-		const instance = getComponentFromElement(element);
+	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach(
+		(element) => {
+			const instance = getComponentFromElement(element);
 
-		if (instance) {
-			console.warn("Error: instance exists: ", instance);
-			return true; // continue
-		}
+			if (instance) {
+				console.warn("Error: instance exists: ", instance);
+				return true; // continue
+			}
 
-		let componentName = element.getAttribute(config.get("attrPrefix") + "-component");
+			const componentName = element.getAttribute(
+				config.get("attrPrefix") + "-component",
+			);
 
-		if (typeof components[componentName] === "function") {
-			initialisedComponents.push(createInstance(element, componentName, components[componentName]));
-		} else {
-			console.warn(`Constructor for component "${componentName}" not found.`);
-		}
-	});
+			if (typeof components[componentName] === "function") {
+				initialisedComponents.push(
+					createInstance(element, componentName, components[componentName]),
+				);
+			} else {
+				console.warn(`Constructor for component "${componentName}" not found.`);
+			}
+		},
+	);
 
 	// call _load/require/mount
 	initialisedComponents.forEach((component) => {

@@ -19,7 +19,10 @@ export default class Component {
 	}
 
 	set ref(items) {
-		const allRefs = queryAll("[" + config.get("attrPrefix") + "-ref]", this.element);
+		const allRefs = queryAll(
+			"[" + config.get("attrPrefix") + "-ref]",
+			this.element,
+		);
 
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
@@ -29,7 +32,10 @@ export default class Component {
 					if (refNameArray[0] == this._name) {
 						if (!this._ref[refNameArray[1]]) {
 							this._ref[refNameArray[1]] = allRefs.filter((item) => {
-								return item.getAttribute(config.get("attrPrefix") + "-ref") === refName;
+								return (
+									item.getAttribute(config.get("attrPrefix") + "-ref") ===
+									refName
+								);
 							});
 						}
 					} else {
@@ -38,7 +44,9 @@ export default class Component {
 				} else {
 					if (!this._ref[refName]) {
 						this._ref[refName] = allRefs.filter((item) => {
-							return item.getAttribute(config.get("attrPrefix") + "-ref") === refName;
+							return (
+								item.getAttribute(config.get("attrPrefix") + "-ref") === refName
+							);
 						});
 					}
 				}
@@ -59,10 +67,18 @@ export default class Component {
 					const name = key;
 					const prefixedName = `${this._name}:${name}`;
 
-					let refs = allRefs.filter((element) => element.getAttribute(config.get("attrPrefix") + "-ref") === prefixedName);
+					let refs = allRefs.filter(
+						(element) =>
+							element.getAttribute(config.get("attrPrefix") + "-ref") ===
+							prefixedName,
+					);
 
 					if (refs.length === 0) {
-						refs = allRefs.filter((element) => element.getAttribute(config.get("attrPrefix") + "-ref") === name);
+						refs = allRefs.filter(
+							(element) =>
+								element.getAttribute(config.get("attrPrefix") + "-ref") ===
+								name,
+						);
 					}
 
 					if (!isArray) {
@@ -88,11 +104,12 @@ export default class Component {
 	}
 
 	set options(defaults) {
-		let options = {};
-		let optionsFromAttribute = this.element.getAttribute(config.get("attrPrefix") + "-options");
-		if (optionsFromAttribute) {
-			options = JSON.parse(optionsFromAttribute);
-		}
+		const optionsFromAttribute = this.element.getAttribute(
+			config.get("attrPrefix") + "-options",
+		);
+		const options = optionsFromAttribute
+			? JSON.parse(optionsFromAttribute)
+			: {};
 
 		this._options = {
 			...this._options,
@@ -129,7 +146,7 @@ export default class Component {
 	}
 
 	setState(changes) {
-		let stateChanges = {};
+		const stateChanges = {};
 
 		Object.keys(changes).forEach((key) => {
 			if (Array.isArray(changes[key])) {

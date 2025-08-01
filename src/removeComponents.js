@@ -8,7 +8,9 @@ import config from "./config";
  */
 
 export default function removeComponents(context = document.documentElement) {
-	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach((element) => {
-		destroyInstance(element);
-	});
+	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach(
+		(element) => {
+			destroyInstance(element);
+		},
+	);
 }
