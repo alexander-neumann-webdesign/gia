@@ -1,5 +1,5 @@
-import getComponentFromElement from "./getComponentFromElement";
 import config from "./config";
+import getComponentFromElement from "./getComponentFromElement";
 
 /**
  * Destroys and removes instance from DOM element
@@ -11,7 +11,7 @@ export default function destroyInstance(element) {
 	if (instance) {
 		const name = instance._name;
 		instance.unmount();
-		element["__gia_component__"] = null;
+		element.__gia_component__ = null;
 		if (config.get("log")) {
 			console.info(`Removed component "${name}".`);
 		}

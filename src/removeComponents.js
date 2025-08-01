@@ -1,6 +1,6 @@
-import { queryAll } from "./utils";
-import destroyInstance from "./destroyInstance";
 import config from "./config";
+import destroyInstance from "./destroyInstance";
+import { queryAll } from "./utils";
 
 /**
  * Removes instances of components on elements within the context
@@ -8,7 +8,7 @@ import config from "./config";
  */
 
 export default function removeComponents(context = document.documentElement) {
-	queryAll("[" + config.get("attrPrefix") + "-component]", context).forEach(
+	queryAll(`[${config.get("attrPrefix")}-component]`, context).forEach(
 		(element) => {
 			destroyInstance(element);
 		},

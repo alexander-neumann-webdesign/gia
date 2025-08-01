@@ -1,5 +1,5 @@
-import { queryAll } from "./utils";
 import config from "./config";
+import { queryAll } from "./utils";
 
 /**
  * Component without code splitting support
@@ -8,7 +8,7 @@ import config from "./config";
 export default class Component {
 	constructor(element, options) {
 		this.element = element;
-		this.element["__gia_component__"] = this;
+		this.element.__gia_component__ = this;
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
@@ -19,23 +19,18 @@ export default class Component {
 	}
 
 	set ref(items) {
-		const allRefs = queryAll(
-			"[" + config.get("attrPrefix") + "-ref]",
-			this.element,
-		);
+		const attrName = `[${config.get("attrPrefix")}-ref]`;
+		const allRefs = queryAll(attrName, this.element);
 
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
-				let refName = element.getAttribute(config.get("attrPrefix") + "-ref");
+				const refName = element.getAttribute(attrName);
 				if (refName.indexOf(":") !== -1) {
-					let refNameArray = refName.split(":");
-					if (refNameArray[0] == this._name) {
+					const refNameArray = refName.split(":");
+					if (refNameArray[0] === this._name) {
 						if (!this._ref[refNameArray[1]]) {
 							this._ref[refNameArray[1]] = allRefs.filter((item) => {
-								return (
-									item.getAttribute(config.get("attrPrefix") + "-ref") ===
-									refName
-								);
+								return item.getAttribute(attrName) === refName;
 							});
 						}
 					} else {
@@ -44,9 +39,7 @@ export default class Component {
 				} else {
 					if (!this._ref[refName]) {
 						this._ref[refName] = allRefs.filter((item) => {
-							return (
-								item.getAttribute(config.get("attrPrefix") + "-ref") === refName
-							);
+							return item.getAttribute(attrName) === refName;
 						});
 					}
 				}
@@ -68,16 +61,12 @@ export default class Component {
 					const prefixedName = `${this._name}:${name}`;
 
 					let refs = allRefs.filter(
-						(element) =>
-							element.getAttribute(config.get("attrPrefix") + "-ref") ===
-							prefixedName,
+						(element) => element.getAttribute(attrName) === prefixedName,
 					);
 
 					if (refs.length === 0) {
 						refs = allRefs.filter(
-							(element) =>
-								element.getAttribute(config.get("attrPrefix") + "-ref") ===
-								name,
+							(element) => element.getAttribute(attrName) === name,
 						);
 					}
 
@@ -96,7 +85,7 @@ export default class Component {
 				}, {});
 		}
 
-		return this._ref;
+		// return this._ref;
 	}
 
 	get options() {
@@ -105,7 +94,7 @@ export default class Component {
 
 	set options(defaults) {
 		const optionsFromAttribute = this.element.getAttribute(
-			config.get("attrPrefix") + "-options",
+			`[${config.get("attrPrefix")}-options]`,
 		);
 		const options = optionsFromAttribute
 			? JSON.parse(optionsFromAttribute)
@@ -117,7 +106,7 @@ export default class Component {
 			...options,
 		};
 
-		return this._options;
+		// return this._options;
 	}
 
 	get state() {
@@ -210,5 +199,7 @@ export default class Component {
 
 	stateChange(stateChanges) {
 		// this is here only to be rewritten
+		console.warn(`Component ${this._name} does not have "stateChange" method.`);
+		return stateChanges;
 	}
 }
