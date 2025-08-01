@@ -114,7 +114,7 @@ export default class Component {
 	}
 
 	set state(state) {
-		console.warn("You should not change state manually. Use setState instead.");
+		console.warn("Use setState instead.");
 		this._state = state;
 	}
 
@@ -123,7 +123,8 @@ export default class Component {
 	}
 
 	mount() {
-		console.warn(`Component ${this._name} does not have "mount" method.`);
+		// this is here only to be rewritten
+		// console.warn(`Component ${this._name} does not have "mount" method.`);
 	}
 
 	unmount() {
@@ -199,7 +200,7 @@ export default class Component {
 
 	stateChange(stateChanges) {
 		// this is here only to be rewritten
-		console.warn(`Component ${this._name} does not have "stateChange" method.`);
+		// console.warn(`Component ${this._name} does not have "stateChange" method.`);
 		return stateChanges;
 	}
 }

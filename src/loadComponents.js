@@ -36,7 +36,7 @@ export default function loadComponents(
 				createInstance(element, componentName, components[componentName]),
 			);
 		} else {
-			console.warn(`Constructor for component "${componentName}" not found.`);
+			console.warn(`Constructor "${componentName}" not found.`);
 		}
 	});
 
