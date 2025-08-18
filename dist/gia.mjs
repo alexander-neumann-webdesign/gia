@@ -68,7 +68,7 @@ let $ = class {
     return this._ref;
   }
   set ref(t) {
-    const e = `[${l.get("attrPrefix")}-ref]`, s = c(e, this.element);
+    const e = `${l.get("attrPrefix")}-ref`, s = c(`[${e}]`, this.element);
     Object.keys(t).length === 0 ? s.forEach((n) => {
       const o = n.getAttribute(e);
       if (o.indexOf(":") !== -1) {
@@ -103,7 +103,7 @@ let $ = class {
   }
   set options(t) {
     const e = this.element.getAttribute(
-      `[${l.get("attrPrefix")}-options]`
+      `${l.get("attrPrefix")}-options`
     ), s = e ? JSON.parse(e) : {};
     this._options = {
       ...this._options,

@@ -19,8 +19,8 @@ export default class Component {
 	}
 
 	set ref(items) {
-		const attrName = `[${config.get("attrPrefix")}-ref]`;
-		const allRefs = queryAll(attrName, this.element);
+		const attrName = `${config.get("attrPrefix")}-ref`;
+		const allRefs = queryAll(`[${attrName}]`, this.element);
 
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
@@ -94,7 +94,7 @@ export default class Component {
 
 	set options(defaults) {
 		const optionsFromAttribute = this.element.getAttribute(
-			`[${config.get("attrPrefix")}-options]`,
+			`${config.get("attrPrefix")}-options`,
 		);
 		const options = optionsFromAttribute
 			? JSON.parse(optionsFromAttribute)
