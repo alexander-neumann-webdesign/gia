@@ -19,9 +19,9 @@ export default function loadComponents(
 	}
 
 	const initialisedComponents = [];
-	const attrName = `[${config.get("attrPrefix")}-component]`;
+	const attrName = `${config.get("attrPrefix")}-component`;
 
-	queryAll(attrName, context).forEach((element) => {
+	queryAll(`[${attrName}]`, context).forEach((element) => {
 		const instance = getComponentFromElement(element);
 
 		if (instance) {

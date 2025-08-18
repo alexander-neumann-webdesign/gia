@@ -33,8 +33,8 @@ function x(i = {}, t = document.documentElement) {
     console.warn("App has no components");
     return;
   }
-  const e = [], s = `[${l.get("attrPrefix")}-component]`;
-  c(s, t).forEach((n) => {
+  const e = [], s = `${l.get("attrPrefix")}-component`;
+  c(`[${s}]`, t).forEach((n) => {
     const o = _(n);
     if (o)
       return console.warn("Error: instance exists: ", o), !0;
