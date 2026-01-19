@@ -9,10 +9,7 @@ import { queryAll } from "./utils";
  * @param context: DOM element
  */
 
-export default function loadComponents(
-	components = {},
-	context = document.documentElement,
-) {
+export default function loadComponents(components = {}, context = document.documentElement) {
 	if (!components || Object.keys(components).length === 0) {
 		console.warn("App has no components");
 		return;
@@ -26,15 +23,13 @@ export default function loadComponents(
 
 		if (instance) {
 			console.warn("Error: instance exists: ", instance);
-			return true; // continue
+			return; // continue
 		}
 
 		const componentName = element.getAttribute(attrName);
 
 		if (typeof components[componentName] === "function") {
-			initialisedComponents.push(
-				createInstance(element, componentName, components[componentName]),
-			);
+			initialisedComponents.push(createInstance(element, componentName, components[componentName]));
 		} else {
 			console.warn(`Constructor "${componentName}" not found.`);
 		}

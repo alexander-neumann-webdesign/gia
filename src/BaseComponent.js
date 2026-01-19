@@ -9,6 +9,7 @@ export default class Component {
 	constructor(element, options) {
 		this.element = element;
 		this.element.__gia_component__ = this;
+		this._name = this.constructor.name;
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
@@ -264,12 +265,13 @@ export default class Component {
 	_autoBindFunctions() {
 		// Get all methods defined on the child class (e.g., FilteredList)
 		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this));
-		const excludedMethods = ["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"];
+
+		const excludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
 
 		methods.forEach((method) => {
 			// Filter out standard things we shouldn't bind
 			if (
-				excludedMethods.includes(method) ||
+				excludedMethods.has(method) ||
 				method.startsWith("_") // Convention: ignore private helpers? (Optional)
 			) {
 				return;
