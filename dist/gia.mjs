@@ -1,6 +1,18 @@
-var d = Object.defineProperty;
-var m = (o, e, n) => e in o ? d(o, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : o[e] = n;
-var u = (o, e, n) => m(o, typeof e != "symbol" ? e + "" : e, n);
+var _ = Object.defineProperty;
+var m = (s, t, n) => t in s ? _(s, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : s[t] = n;
+var u = (s, t, n) => m(s, typeof t != "symbol" ? t + "" : t, n);
+typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (s) => {
+  if (typeof s != "function") {
+    console.error("Gia: Register failed. Expected a Class, got:", s);
+    return;
+  }
+  const t = s.name;
+  if (!t) {
+    console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
+    return;
+  }
+  window.gia.components[t] = s;
+});
 class p {
   constructor() {
     u(this, "_options", {
@@ -9,117 +21,117 @@ class p {
       // data-component="HelloWorld"
     });
   }
-  set(e, n) {
-    this._options[e] = n;
+  set(t, n) {
+    this._options[t] = n;
   }
-  get(e) {
-    return this._options[e];
+  get(t) {
+    return this._options[t];
   }
 }
 const a = new p();
-function g(o, e, n, t) {
-  if (o.__gia_component__)
-    return console.warn(`Component "${e}" already exists.`), o.__gia_component__;
+function g(s, t, n, e) {
+  if (s.__gia_component__)
+    return console.warn(`Component "${t}" already exists.`), s.__gia_component__;
   try {
-    const s = new n(o, t);
-    return a.get("log") && console.info(`Created instance of component "${e}".`), s;
-  } catch (s) {
-    return console.error(`Failed to create component "${e}".`, s), null;
+    const o = new n(s, e);
+    return a.get("log") && console.info(`Created instance of component "${t}".`), o;
+  } catch (o) {
+    return console.error(`Failed to create component "${t}".`, o), null;
   }
 }
-function _(o) {
-  return typeof o == "string" && (o = document.getElementById(o), !o) ? null : o.__gia_component__;
+function d(s) {
+  return typeof s == "string" && (s = document.getElementById(s), !s) ? null : s.__gia_component__;
 }
-function h(o, e = document) {
-  return typeof o != "string" ? o : Array.prototype.slice.call(e.querySelectorAll(o));
+function h(s, t = document) {
+  return typeof s != "string" ? s : Array.prototype.slice.call(t.querySelectorAll(s));
 }
-function b(o = {}, e = document.documentElement) {
-  if (!o || Object.keys(o).length === 0) {
+function x(s = {}, t = document.documentElement) {
+  if (!s || Object.keys(s).length === 0) {
     console.warn("App has no components");
     return;
   }
-  const n = [], t = `${a.get("attrPrefix")}-component`;
-  h(`[${t}]`, e).forEach((s) => {
-    const i = _(s);
+  const n = [], e = `${a.get("attrPrefix")}-component`;
+  h(`[${e}]`, t).forEach((o) => {
+    const i = d(o);
     if (i) {
       console.warn("Error: instance exists: ", i);
       return;
     }
-    const r = s.getAttribute(t);
-    typeof o[r] == "function" ? n.push(g(s, r, o[r])) : console.warn(`Constructor "${r}" not found.`);
-  }), n.forEach((s) => {
-    s._load();
+    const r = o.getAttribute(e);
+    typeof s[r] == "function" ? n.push(g(o, r, s[r])) : console.warn(`Constructor "${r}" not found.`);
+  }), n.forEach((o) => {
+    o._load();
   });
 }
-function $(o) {
-  const e = _(o);
-  if (e) {
-    const n = e._name || "Unknown";
+function w(s) {
+  const t = d(s);
+  if (t) {
+    const n = t._name || "Unknown";
     try {
-      e.unmount();
-    } catch (t) {
-      console.error(`Gia: Error unmounting component "${n}".`, t);
+      t.unmount();
+    } catch (e) {
+      console.error(`Gia: Error unmounting component "${n}".`, e);
     }
-    o.__gia_component__ = null, e.element && (e.element = null), a.get("log") && console.info(`Removed component "${n}".`);
+    s.__gia_component__ = null, t.element && (t.element = null), a.get("log") && console.info(`Removed component "${n}".`);
   }
 }
-function x(o = document.documentElement) {
-  h(`[${a.get("attrPrefix")}-component]`, o).forEach(
-    (e) => {
-      $(e);
+function P(s = document.documentElement) {
+  h(`[${a.get("attrPrefix")}-component]`, s).forEach(
+    (t) => {
+      w(t);
     }
   );
 }
-let E = class {
-  constructor(e, n) {
-    this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = n || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
+let $ = class {
+  constructor(t, n) {
+    this.element = t, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = n || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
-  set ref(e) {
-    const n = `${a.get("attrPrefix")}-ref`, t = h(`[${n}]`, this.element);
-    Object.keys(e).length === 0 ? t.forEach((s) => {
-      const i = s.getAttribute(n);
+  set ref(t) {
+    const n = `${a.get("attrPrefix")}-ref`, e = h(`[${n}]`, this.element);
+    Object.keys(t).length === 0 ? e.forEach((o) => {
+      const i = o.getAttribute(n);
       if (i.indexOf(":") !== -1) {
         const r = i.split(":");
         if (r[0] === this._name)
-          this._ref[r[1]] || (this._ref[r[1]] = t.filter((c) => c.getAttribute(n) === i));
+          this._ref[r[1]] || (this._ref[r[1]] = e.filter((c) => c.getAttribute(n) === i));
         else
           return;
       } else
-        this._ref[i] || (this._ref[i] = t.filter((r) => r.getAttribute(n) === i));
-    }) : this._ref = Object.keys(e).map((s) => {
-      const i = Array.isArray(e[s]);
-      if (e[s] !== null && i && e[s].length > 0)
+        this._ref[i] || (this._ref[i] = e.filter((r) => r.getAttribute(n) === i));
+    }) : this._ref = Object.keys(t).map((o) => {
+      const i = Array.isArray(t[o]);
+      if (t[o] !== null && i && t[o].length > 0)
         return {
-          name: s,
-          value: e[s]
+          name: o,
+          value: t[o]
         };
-      const r = s, c = `${this._name}:${r}`;
-      let l = t.filter((f) => f.getAttribute(n) === c);
-      return l.length === 0 && (l = t.filter((f) => f.getAttribute(n) === r)), i || (l = l.length ? l[0] : null), {
-        name: s,
+      const r = o, c = `${this._name}:${r}`;
+      let l = e.filter((f) => f.getAttribute(n) === c);
+      return l.length === 0 && (l = e.filter((f) => f.getAttribute(n) === r)), i || (l = l.length ? l[0] : null), {
+        name: o,
         value: l
       };
-    }).reduce((s, i) => (s[i.name] = i.value, s), {});
+    }).reduce((o, i) => (o[i.name] = i.value, o), {});
   }
   get options() {
     return this._options;
   }
-  set options(e) {
-    const n = this.element.getAttribute(`${a.get("attrPrefix")}-options`), t = n ? JSON.parse(n) : {};
+  set options(t) {
+    const n = this.element.getAttribute(`${a.get("attrPrefix")}-options`), e = n ? JSON.parse(n) : {};
     this._options = {
       ...this._options,
-      ...e,
-      ...t
+      ...t,
+      ...e
     };
   }
   get state() {
     return this._state;
   }
-  set state(e) {
-    console.warn("Use setState instead."), this._state = e;
+  set state(t) {
+    console.warn("Use setState instead."), this._state = t;
   }
   _load() {
     this.mount();
@@ -131,113 +143,113 @@ let E = class {
    * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
    * @return {Promise}
    */
-  loadScript(e, n) {
+  loadScript(t, n) {
     if (n && window[n])
       return Promise.resolve(window[n]);
-    const t = document.getElementById(`${e}-js`);
-    return t ? (t._loadPromise || (t._loadPromise = new Promise((s, i) => {
+    const e = document.getElementById(`${t}-js`);
+    return e ? (e._loadPromise || (e._loadPromise = new Promise((o, i) => {
       const r = () => {
-        t.onload = null, t.onerror = null;
+        e.onload = null, e.onerror = null;
       };
-      t.onload = () => {
-        r(), s(n ? window[n] : !0);
-      }, t.onerror = () => {
-        r(), delete t._loadPromise, i(new Error(`Failed to load script: ${e}`));
-      }, !t.src && t.dataset.src ? (t.src = t.dataset.src, delete t.dataset.src) : !t.src && !t.dataset.src && (r(), i(new Error(`Script tag '${e}-js' has no src or data-src.`)));
-    })), t._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}-js' not found.`));
+      e.onload = () => {
+        r(), o(n ? window[n] : !0);
+      }, e.onerror = () => {
+        r(), delete e._loadPromise, i(new Error(`Failed to load script: ${t}`));
+      }, !e.src && e.dataset.src ? (e.src = e.dataset.src, delete e.dataset.src) : !e.src && !e.dataset.src && (r(), i(new Error(`Script tag '${t}-js' has no src or data-src.`)));
+    })), e._loadPromise) : Promise.reject(new Error(`Script tag with ID '${t}-js' not found.`));
   }
   mount() {
   }
   unmount() {
   }
-  getRef(e, n = !1) {
-    return `[${a.get("attrPrefix")}-ref="${n ? `${this._name}:` : ""}${e}"]`;
+  getRef(t, n = !1) {
+    return `[${a.get("attrPrefix")}-ref="${n ? `${this._name}:` : ""}${t}"]`;
   }
-  setState(e) {
+  setState(t) {
     const n = {};
-    Object.keys(e).forEach((t) => {
-      Array.isArray(e[t]) ? this._state[t] != null && Array.isArray(this._state[t]) ? this._state[t].length === e[t].length ? e[t].some((s, i) => this._state[t][i] !== s ? (n[t] = e[t], this._state[t] = n[t], !0) : !1) : (n[t] = e[t], this._state[t] = n[t]) : (n[t] = e[t], this._state[t] = n[t]) : typeof e[t] == "object" ? (this._state[t] != null && typeof this._state[t] == "object" ? (n[t] = {}, Object.keys(e[t]).forEach((s) => {
-        this._state[t][s] !== e[t][s] && (n[t][s] = e[t][s]);
-      })) : n[t] = e[t], this._state[t] = {
-        ...this._state[t],
-        ...n[t]
-      }) : this._state[t] !== e[t] && (n[t] = e[t], this._state[t] = e[t]);
-    }), Object.keys(n).forEach((t) => {
-      Array.isArray(e[t]) ? n[t].length === 0 && delete n[t] : typeof e[t] == "object" && Object.keys(n[t]).length === 0 && delete n[t];
+    Object.keys(t).forEach((e) => {
+      Array.isArray(t[e]) ? this._state[e] != null && Array.isArray(this._state[e]) ? this._state[e].length === t[e].length ? t[e].some((o, i) => this._state[e][i] !== o ? (n[e] = t[e], this._state[e] = n[e], !0) : !1) : (n[e] = t[e], this._state[e] = n[e]) : (n[e] = t[e], this._state[e] = n[e]) : typeof t[e] == "object" ? (this._state[e] != null && typeof this._state[e] == "object" ? (n[e] = {}, Object.keys(t[e]).forEach((o) => {
+        this._state[e][o] !== t[e][o] && (n[e][o] = t[e][o]);
+      })) : n[e] = t[e], this._state[e] = {
+        ...this._state[e],
+        ...n[e]
+      }) : this._state[e] !== t[e] && (n[e] = t[e], this._state[e] = t[e]);
+    }), Object.keys(n).forEach((e) => {
+      Array.isArray(t[e]) ? n[e].length === 0 && delete n[e] : typeof t[e] == "object" && Object.keys(n[e]).length === 0 && delete n[e];
     }), this.stateChange(n);
   }
-  stateChange(e) {
-    return e;
+  stateChange(t) {
+    return t;
   }
   _autoBindFunctions() {
-    const e = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), n = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
-    e.forEach((t) => {
-      n.has(t) || t.startsWith("_") || typeof this[t] == "function" && (this[t] = this[t].bind(this));
+    const t = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), n = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
+    t.forEach((e) => {
+      n.has(e) || e.startsWith("_") || typeof this[e] == "function" && (this[e] = this[e].bind(this));
     });
   }
   _autoBindActions() {
     this.element.querySelectorAll("[data-action]").forEach((n) => {
-      n.dataset.action.split(" ").forEach((s) => {
-        const [i, r] = s.split("->");
+      n.dataset.action.split(" ").forEach((o) => {
+        const [i, r] = o.split("->");
         this[r] ? n.addEventListener(i, (c) => this[r](c)) : console.warn(`Method "${r}" not found in component.`);
       });
     });
   }
 };
-class P extends E {
+class j extends $ {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class A {
+class E {
   constructor() {
     u(this, "list", {});
   }
-  emit(e, n = {}) {
-    n._name = e, this.list[e] ? (a.get("log") && console.info(
-      `${this.list[e].length} handler${this.list[e].length > 1 ? "s" : ""} called on event '${e}'`
-    ), this.list[e].forEach((t) => {
-      t.handler(n), t.once && this.off(e, t.handler);
-    })) : a.get("log") && console.info(`0 handlers called on event '${e}'`);
+  emit(t, n = {}) {
+    n._name = t, this.list[t] ? (a.get("log") && console.info(
+      `${this.list[t].length} handler${this.list[t].length > 1 ? "s" : ""} called on event '${t}'`
+    ), this.list[t].forEach((e) => {
+      e.handler(n), e.once && this.off(t, e.handler);
+    })) : a.get("log") && console.info(`0 handlers called on event '${t}'`);
   }
-  on(e, n, t = !1) {
-    this.list[e] ? this.list[e].push({ once: t, handler: n }) : (this.list[e] = [], this.list[e].push({ once: t, handler: n }));
+  on(t, n, e = !1) {
+    this.list[t] ? this.list[t].push({ once: e, handler: n }) : (this.list[t] = [], this.list[t].push({ once: e, handler: n }));
   }
-  once(e, n) {
-    this.on(e, n, !0);
+  once(t, n) {
+    this.on(t, n, !0);
   }
-  off(e, n) {
-    var t;
-    if (e != null)
+  off(t, n) {
+    var e;
+    if (t != null)
       if (n != null)
-        if ((t = this.list[e]) != null && t.filter(
-          (s) => s.handler === n
+        if ((e = this.list[t]) != null && e.filter(
+          (o) => o.handler === n
         ).length) {
-          const s = this.list[e].filter(
+          const o = this.list[t].filter(
             (r) => r.handler === n
-          )[0], i = this.list[e].indexOf(s);
-          i > -1 && this.list[e].splice(i, 1);
+          )[0], i = this.list[t].indexOf(o);
+          i > -1 && this.list[t].splice(i, 1);
         } else
           console.warn(
-            `Event ${e} cannot be unsubscribed - does not exist.`
+            `Event ${t} cannot be unsubscribed - does not exist.`
           );
       else
-        this.list[e] = [];
+        this.list[t] = [];
     else
       this.list = {};
   }
 }
-const j = new A();
+const C = new E();
 export {
-  E as BaseComponent,
-  P as Component,
+  $ as BaseComponent,
+  j as Component,
   a as config,
   g as createInstance,
-  x as destroyInstance,
-  j as eventbus,
-  _ as getComponentFromElement,
-  b as loadComponents,
-  x as removeComponents
+  P as destroyInstance,
+  C as eventbus,
+  d as getComponentFromElement,
+  x as loadComponents,
+  P as removeComponents
 };
