@@ -1,203 +1,233 @@
-var p = Object.defineProperty;
-var m = (i, t, e) => t in i ? p(i, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : i[t] = e;
-var h = (i, t, e) => m(i, typeof t != "symbol" ? t + "" : t, e);
-class d {
+var _ = Object.defineProperty;
+var p = (o, e, s) => e in o ? _(o, e, { enumerable: !0, configurable: !0, writable: !0, value: s }) : o[e] = s;
+var u = (o, e, s) => p(o, typeof e != "symbol" ? e + "" : e, s);
+class m {
   constructor() {
-    h(this, "_options", {
+    u(this, "_options", {
       log: !1,
       attrPrefix: "data"
       // data-component="HelloWorld"
     });
   }
-  set(t, e) {
-    this._options[t] = e;
+  set(e, s) {
+    this._options[e] = s;
   }
-  get(t) {
-    return this._options[t];
+  get(e) {
+    return this._options[e];
   }
 }
-const l = new d();
-function g(i, t, e, s) {
-  e.prototype._name = t;
-  const n = new e(i, s);
-  return l.get("log") && console.info(`Created instance of component "${t}".`), n;
+const a = new m();
+function g(o, e, s, t) {
+  s.prototype._name = e;
+  const n = new s(o, t);
+  return a.get("log") && console.info(`Created instance of component "${e}".`), n;
 }
-function _(i) {
-  return typeof i == "string" && (i = document.getElementById(i), !i) ? null : i.__gia_component__;
+function d(o) {
+  return typeof o == "string" && (o = document.getElementById(o), !o) ? null : o.__gia_component__;
 }
-function c(i, t = document) {
-  return typeof i != "string" ? i : Array.prototype.slice.call(t.querySelectorAll(i));
+function h(o, e = document) {
+  return typeof o != "string" ? o : Array.prototype.slice.call(e.querySelectorAll(o));
 }
-function x(i = {}, t = document.documentElement) {
-  if (!i || Object.keys(i).length === 0) {
+function b(o = {}, e = document.documentElement) {
+  if (!o || Object.keys(o).length === 0) {
     console.warn("App has no components");
     return;
   }
-  const e = [], s = `${l.get("attrPrefix")}-component`;
-  c(`[${s}]`, t).forEach((n) => {
-    const o = _(n);
-    if (o)
-      return console.warn("Error: instance exists: ", o), !0;
-    const r = n.getAttribute(s);
-    typeof i[r] == "function" ? e.push(
-      g(n, r, i[r])
+  const s = [], t = `${a.get("attrPrefix")}-component`;
+  h(`[${t}]`, e).forEach((n) => {
+    const i = d(n);
+    if (i)
+      return console.warn("Error: instance exists: ", i), !0;
+    const r = n.getAttribute(t);
+    typeof o[r] == "function" ? s.push(
+      g(n, r, o[r])
     ) : console.warn(`Constructor "${r}" not found.`);
-  }), e.forEach((n) => {
+  }), s.forEach((n) => {
     n._load();
   });
 }
-function A(i) {
-  const t = _(i);
-  if (t) {
-    const e = t._name;
-    t.unmount(), i.__gia_component__ = null, l.get("log") && console.info(`Removed component "${e}".`);
+function $(o) {
+  const e = d(o);
+  if (e) {
+    const s = e._name;
+    e.unmount(), o.__gia_component__ = null, a.get("log") && console.info(`Removed component "${s}".`);
   }
 }
-function C(i = document.documentElement) {
-  c(`[${l.get("attrPrefix")}-component]`, i).forEach(
-    (t) => {
-      A(t);
+function P(o = document.documentElement) {
+  h(`[${a.get("attrPrefix")}-component]`, o).forEach(
+    (e) => {
+      $(e);
     }
   );
 }
-let $ = class {
-  constructor(t, e) {
-    this.element = t, this.element.__gia_component__ = this, this._ref = {}, this._options = e || {}, this._state = {};
+let A = class {
+  constructor(e, s) {
+    this.element = e, this.element.__gia_component__ = this, this._ref = {}, this._options = s || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
-  set ref(t) {
-    const e = `${l.get("attrPrefix")}-ref`, s = c(`[${e}]`, this.element);
-    Object.keys(t).length === 0 ? s.forEach((n) => {
-      const o = n.getAttribute(e);
-      if (o.indexOf(":") !== -1) {
-        const r = o.split(":");
+  set ref(e) {
+    const s = `${a.get("attrPrefix")}-ref`, t = h(`[${s}]`, this.element);
+    Object.keys(e).length === 0 ? t.forEach((n) => {
+      const i = n.getAttribute(s);
+      if (i.indexOf(":") !== -1) {
+        const r = i.split(":");
         if (r[0] === this._name)
-          this._ref[r[1]] || (this._ref[r[1]] = s.filter((f) => f.getAttribute(e) === o));
+          this._ref[r[1]] || (this._ref[r[1]] = t.filter((f) => f.getAttribute(s) === i));
         else
           return;
       } else
-        this._ref[o] || (this._ref[o] = s.filter((r) => r.getAttribute(e) === o));
-    }) : this._ref = Object.keys(t).map((n) => {
-      const o = Array.isArray(t[n]);
-      if (t[n] !== null && o && t[n].length > 0)
+        this._ref[i] || (this._ref[i] = t.filter((r) => r.getAttribute(s) === i));
+    }) : this._ref = Object.keys(e).map((n) => {
+      const i = Array.isArray(e[n]);
+      if (e[n] !== null && i && e[n].length > 0)
         return {
           name: n,
-          value: t[n]
+          value: e[n]
         };
       const r = n, f = `${this._name}:${r}`;
-      let a = s.filter(
-        (u) => u.getAttribute(e) === f
-      );
-      return a.length === 0 && (a = s.filter(
-        (u) => u.getAttribute(e) === r
-      )), o || (a = a.length ? a[0] : null), {
+      let l = t.filter((c) => c.getAttribute(s) === f);
+      return l.length === 0 && (l = t.filter((c) => c.getAttribute(s) === r)), i || (l = l.length ? l[0] : null), {
         name: n,
-        value: a
+        value: l
       };
-    }).reduce((n, o) => (n[o.name] = o.value, n), {});
+    }).reduce((n, i) => (n[i.name] = i.value, n), {});
   }
   get options() {
     return this._options;
   }
-  set options(t) {
-    const e = this.element.getAttribute(
-      `${l.get("attrPrefix")}-options`
-    ), s = e ? JSON.parse(e) : {};
+  set options(e) {
+    const s = this.element.getAttribute(`${a.get("attrPrefix")}-options`), t = s ? JSON.parse(s) : {};
     this._options = {
       ...this._options,
-      ...t,
-      ...s
+      ...e,
+      ...t
     };
   }
   get state() {
     return this._state;
   }
-  set state(t) {
-    console.warn("Use setState instead."), this._state = t;
+  set state(e) {
+    console.warn("Use setState instead."), this._state = e;
   }
   _load() {
     this.mount();
+  }
+  /**
+   * Loads a script that is already defined in the DOM with a data-src attribute.
+   * Prevents double-loading and handles race conditions.
+   * * @param {string} scriptId - The ID of the script tag (without "-js" suffix)
+   * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
+   * @return {Promise}
+   */
+  loadScript(e, s) {
+    if (s && window[s])
+      return Promise.resolve(window[s]);
+    const t = document.getElementById(`${e}-js`);
+    return t ? (t._loadPromise || (t._loadPromise = new Promise((n, i) => {
+      const r = () => {
+        t.onload = null, t.onerror = null;
+      };
+      t.onload = () => {
+        r(), n(s ? window[s] : !0);
+      }, t.onerror = () => {
+        r(), delete t._loadPromise, i(new Error(`Failed to load script: ${e}`));
+      }, !t.src && t.dataset.src ? (t.src = t.dataset.src, delete t.dataset.src) : !t.src && !t.dataset.src && (r(), i(new Error(`Script tag '${e}-js' has no src or data-src.`)));
+    })), t._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}-js' not found.`));
   }
   mount() {
   }
   unmount() {
   }
-  getRef(t, e = !1) {
-    return `[${l.get("attrPrefix")}-ref="${e ? `${this._name}:` : ""}${t}"]`;
+  getRef(e, s = !1) {
+    return `[${a.get("attrPrefix")}-ref="${s ? `${this._name}:` : ""}${e}"]`;
   }
-  setState(t) {
-    const e = {};
-    Object.keys(t).forEach((s) => {
-      Array.isArray(t[s]) ? this._state[s] != null && Array.isArray(this._state[s]) ? this._state[s].length === t[s].length ? t[s].some((n, o) => this._state[s][o] !== n ? (e[s] = t[s], this._state[s] = e[s], !0) : !1) : (e[s] = t[s], this._state[s] = e[s]) : (e[s] = t[s], this._state[s] = e[s]) : typeof t[s] == "object" ? (this._state[s] != null && typeof this._state[s] == "object" ? (e[s] = {}, Object.keys(t[s]).forEach((n) => {
-        this._state[s][n] !== t[s][n] && (e[s][n] = t[s][n]);
-      })) : e[s] = t[s], this._state[s] = {
-        ...this._state[s],
-        ...e[s]
-      }) : this._state[s] !== t[s] && (e[s] = t[s], this._state[s] = t[s]);
-    }), Object.keys(e).forEach((s) => {
-      Array.isArray(t[s]) ? e[s].length === 0 && delete e[s] : typeof t[s] == "object" && Object.keys(e[s]).length === 0 && delete e[s];
-    }), this.stateChange(e);
+  setState(e) {
+    const s = {};
+    Object.keys(e).forEach((t) => {
+      Array.isArray(e[t]) ? this._state[t] != null && Array.isArray(this._state[t]) ? this._state[t].length === e[t].length ? e[t].some((n, i) => this._state[t][i] !== n ? (s[t] = e[t], this._state[t] = s[t], !0) : !1) : (s[t] = e[t], this._state[t] = s[t]) : (s[t] = e[t], this._state[t] = s[t]) : typeof e[t] == "object" ? (this._state[t] != null && typeof this._state[t] == "object" ? (s[t] = {}, Object.keys(e[t]).forEach((n) => {
+        this._state[t][n] !== e[t][n] && (s[t][n] = e[t][n]);
+      })) : s[t] = e[t], this._state[t] = {
+        ...this._state[t],
+        ...s[t]
+      }) : this._state[t] !== e[t] && (s[t] = e[t], this._state[t] = e[t]);
+    }), Object.keys(s).forEach((t) => {
+      Array.isArray(e[t]) ? s[t].length === 0 && delete s[t] : typeof e[t] == "object" && Object.keys(s[t]).length === 0 && delete s[t];
+    }), this.stateChange(s);
   }
-  stateChange(t) {
-    return t;
+  stateChange(e) {
+    return e;
+  }
+  _autoBindFunctions() {
+    const e = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), s = ["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"];
+    e.forEach((t) => {
+      s.includes(t) || t.startsWith("_") || typeof this[t] == "function" && (this[t] = this[t].bind(this));
+    });
+  }
+  _autoBindActions() {
+    this.element.querySelectorAll("[data-action]").forEach((s) => {
+      s.dataset.action.split(" ").forEach((n) => {
+        const [i, r] = n.split("->");
+        this[r] ? s.addEventListener(i, (f) => this[r](f)) : console.warn(`Method "${r}" not found in component.`);
+      });
+    });
   }
 };
-class j extends $ {
+class C extends A {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class b {
+class E {
   constructor() {
-    h(this, "list", {});
+    u(this, "list", {});
   }
-  emit(t, e = {}) {
-    e._name = t, this.list[t] ? (l.get("log") && console.info(
-      `${this.list[t].length} handler${this.list[t].length > 1 ? "s" : ""} called on event '${t}'`
-    ), this.list[t].forEach((s) => {
-      s.handler(e), s.once && this.off(t, s.handler);
-    })) : l.get("log") && console.info(`0 handlers called on event '${t}'`);
+  emit(e, s = {}) {
+    s._name = e, this.list[e] ? (a.get("log") && console.info(
+      `${this.list[e].length} handler${this.list[e].length > 1 ? "s" : ""} called on event '${e}'`
+    ), this.list[e].forEach((t) => {
+      t.handler(s), t.once && this.off(e, t.handler);
+    })) : a.get("log") && console.info(`0 handlers called on event '${e}'`);
   }
-  on(t, e, s = !1) {
-    this.list[t] ? this.list[t].push({ once: s, handler: e }) : (this.list[t] = [], this.list[t].push({ once: s, handler: e }));
+  on(e, s, t = !1) {
+    this.list[e] ? this.list[e].push({ once: t, handler: s }) : (this.list[e] = [], this.list[e].push({ once: t, handler: s }));
   }
-  once(t, e) {
-    this.on(t, e, !0);
+  once(e, s) {
+    this.on(e, s, !0);
   }
-  off(t, e) {
-    var s;
-    if (t != null)
-      if (e != null)
-        if ((s = this.list[t]) != null && s.filter(
-          (n) => n.handler === e
+  off(e, s) {
+    var t;
+    if (e != null)
+      if (s != null)
+        if ((t = this.list[e]) != null && t.filter(
+          (n) => n.handler === s
         ).length) {
-          const n = this.list[t].filter(
-            (r) => r.handler === e
-          )[0], o = this.list[t].indexOf(n);
-          o > -1 && this.list[t].splice(o, 1);
+          const n = this.list[e].filter(
+            (r) => r.handler === s
+          )[0], i = this.list[e].indexOf(n);
+          i > -1 && this.list[e].splice(i, 1);
         } else
           console.warn(
-            `Event ${t} cannot be unsubscribed - does not exist.`
+            `Event ${e} cannot be unsubscribed - does not exist.`
           );
       else
-        this.list[t] = [];
+        this.list[e] = [];
     else
       this.list = {};
   }
 }
-const O = new b();
+const j = new E();
 export {
-  $ as BaseComponent,
-  j as Component,
-  l as config,
+  A as BaseComponent,
+  C as Component,
+  a as config,
   g as createInstance,
-  C as destroyInstance,
-  O as eventbus,
-  _ as getComponentFromElement,
-  x as loadComponents,
-  C as removeComponents
+  P as destroyInstance,
+  j as eventbus,
+  d as getComponentFromElement,
+  b as loadComponents,
+  P as removeComponents
 };
