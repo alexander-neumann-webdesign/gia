@@ -12,6 +12,8 @@ export default class Component {
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
+		this._autoBindFunctions();
+		this._autoBindActions();
 	}
 
 	get ref() {
@@ -60,14 +62,10 @@ export default class Component {
 					const name = key;
 					const prefixedName = `${this._name}:${name}`;
 
-					let refs = allRefs.filter(
-						(element) => element.getAttribute(attrName) === prefixedName,
-					);
+					let refs = allRefs.filter((element) => element.getAttribute(attrName) === prefixedName);
 
 					if (refs.length === 0) {
-						refs = allRefs.filter(
-							(element) => element.getAttribute(attrName) === name,
-						);
+						refs = allRefs.filter((element) => element.getAttribute(attrName) === name);
 					}
 
 					if (!isArray) {
@@ -93,12 +91,8 @@ export default class Component {
 	}
 
 	set options(defaults) {
-		const optionsFromAttribute = this.element.getAttribute(
-			`${config.get("attrPrefix")}-options`,
-		);
-		const options = optionsFromAttribute
-			? JSON.parse(optionsFromAttribute)
-			: {};
+		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
+		const options = optionsFromAttribute ? JSON.parse(optionsFromAttribute) : {};
 
 		this._options = {
 			...this._options,
@@ -120,6 +114,69 @@ export default class Component {
 
 	_load() {
 		this.mount();
+	}
+
+	/**
+	 * Loads a script that is already defined in the DOM with a data-src attribute.
+	 * Prevents double-loading and handles race conditions.
+	 * * @param {string} scriptId - The ID of the script tag (without "-js" suffix)
+	 * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
+	 * @return {Promise}
+	 */
+	loadScript(scriptId, globalName) {
+		// SAFETY CHECK: Is the library already active globally?
+		// If 'window.multipleSelect' exists, we don't need to do anything.
+		if (globalName && window[globalName]) {
+			return Promise.resolve(window[globalName]);
+		}
+
+		// 2. DOM LOOKUP: Find the existing script tag
+		const script = document.getElementById(`${scriptId}-js`);
+		if (!script) {
+			return Promise.reject(new Error(`Script tag with ID '${scriptId}-js' not found.`));
+		}
+
+		// CACHE CHECK: Did we already start loading this?
+		// If another component triggered this 5ms ago, return that same running promise.
+		if (script._loadPromise) {
+			return script._loadPromise;
+		}
+
+		// START LOADING
+		script._loadPromise = new Promise((resolve, reject) => {
+			// Define cleanup to avoid memory leaks
+			const cleanup = () => {
+				script.onload = null;
+				script.onerror = null;
+			};
+
+			script.onload = () => {
+				cleanup();
+				resolve(globalName ? window[globalName] : true);
+			};
+
+			script.onerror = () => {
+				cleanup();
+				// Delete the promise so we can try again later if needed
+				delete script._loadPromise;
+				reject(new Error(`Failed to load script: ${scriptId}`));
+			};
+
+			// TRIGGER: Move data-src to src if not already done
+			// If script.src is already set, the browser is likely already downloading it.
+			// We still attach the listeners above to catch the completion event.
+			if (!script.src && script.dataset.src) {
+				script.src = script.dataset.src;
+				// Clean up the data attribute to keep DOM tidy (optional)
+				delete script.dataset.src;
+			} else if (!script.src && !script.dataset.src) {
+				// Edge case: Tag exists but has no source at all
+				cleanup();
+				reject(new Error(`Script tag '${scriptId}-js' has no src or data-src.`));
+			}
+		});
+
+		return script._loadPromise;
 	}
 
 	mount() {
@@ -202,5 +259,45 @@ export default class Component {
 		// this is here only to be rewritten
 		// console.warn(`Component ${this._name} does not have "stateChange" method.`);
 		return stateChanges;
+	}
+
+	_autoBindFunctions() {
+		// Get all methods defined on the child class (e.g., FilteredList)
+		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this));
+		const excludedMethods = ["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"];
+
+		methods.forEach((method) => {
+			// Filter out standard things we shouldn't bind
+			if (
+				excludedMethods.includes(method) ||
+				method.startsWith("_") // Convention: ignore private helpers? (Optional)
+			) {
+				return;
+			}
+
+			// Bind the method to the instance
+			// Check if it is actually a function before binding
+			if (typeof this[method] === "function") {
+				this[method] = this[method].bind(this);
+			}
+		});
+	}
+
+	_autoBindActions() {
+		// Find all elements with data-action inside this component
+		const actionElements = this.element.querySelectorAll("[data-action]");
+
+		actionElements.forEach((el) => {
+			const actions = el.dataset.action.split(" "); // Allow multiple: "click->doX hover->doY"
+			actions.forEach((pair) => {
+				const [event, method] = pair.split("->");
+				if (this[method]) {
+					// Bind the event and ensure 'this' refers to the component instance
+					el.addEventListener(event, (e) => this[method](e));
+				} else {
+					console.warn(`Method "${method}" not found in component.`);
+				}
+			});
+		});
 	}
 }
