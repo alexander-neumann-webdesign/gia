@@ -16,17 +16,9 @@ export function queryAll(selector, context = document) {
 
 export function toggleClass(element, className, condition = null) {
 	if (condition === null) {
-		if (element.classList.contains(className)) {
-			element.classList.remove(className);
-		} else {
-			element.classList.add(className);
-		}
+		element.classList.toggle(className);
 	} else {
-		if (condition) {
-			element.classList.add(className);
-		} else {
-			element.classList.remove(className);
-		}
+		element.classList.toggle(className, !!condition);
 	}
 }
 
