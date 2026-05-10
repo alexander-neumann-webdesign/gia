@@ -166,6 +166,14 @@ Expected HTML Structure:
 	</a>
 </div>
 
+Example PHP (WordPress):
+<div data-component="LightboxGallery">
+	<?php $image_id = 13; $image_src = wp_get_attachment_image_src($image_id, 'full'); ?>
+	<a class="image-holder" data-component="Image" data-parallax data-ref="LightboxGallery:triggers" data-no-swup href="<?= $image_src[0] ?>" data-pswp-width="<?= $image_src[1] ?>" data-pswp-height="<?= $image_src[2] ?>" data-cropped="true" target="_blank" style="">
+		<?= wp_get_attachment_image($image_id, 'full', false, ['loading' => 'lazy']) ?>
+	</a>
+</div>
+
 Suggested SCSS:
 
 [data-component="LightboxGallery"] {
