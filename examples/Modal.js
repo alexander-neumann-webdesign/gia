@@ -45,8 +45,15 @@ class Modal extends gia.Component {
 		// Listen for native close event
 		this.element.addEventListener('close', this.handleNativeClose);
 
-		// Initial state
-		if (this.element.hasAttribute('open')) {
+		// Initial state based on URL hash or DOM
+		const hash = window.location.hash;
+		let shouldBeOpen = this.element.hasAttribute('open');
+
+		if (hash && this.modalId && hash === `#${this.modalId}`) {
+			shouldBeOpen = true;
+		}
+
+		if (shouldBeOpen) {
 			this.setState({ isOpen: true });
 		}
 	}
@@ -105,6 +112,11 @@ class Modal extends gia.Component {
 				if (this.options.preventScroll) {
 					document.body.style.overflow = 'hidden';
 				}
+
+				// Write modal ID to URL
+				if (this.modalId && window.location.hash !== `#${this.modalId}`) {
+					history.pushState(null, '', `#${this.modalId}`);
+				}
 			} else {
 				if (this.element.open) {
 					this.element.close();
@@ -112,6 +124,12 @@ class Modal extends gia.Component {
 
 				if (this.options.preventScroll) {
 					document.body.style.overflow = '';
+				}
+
+				// Remove modal ID from URL
+				if (this.modalId && window.location.hash === `#${this.modalId}`) {
+					const urlWithoutHash = window.location.pathname + window.location.search;
+					history.pushState(null, '', urlWithoutHash || '#');
 				}
 			}
 		}

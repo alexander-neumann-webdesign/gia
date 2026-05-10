@@ -31,19 +31,35 @@ class Tabs extends gia.Component {
 			return;
 		}
 
-		// Initialize state based on DOM. If none active, activate first.
+		// Initialize state based on DOM and URL hash.
+		const hash = window.location.hash;
 		let initialIndex = 0;
+		let foundHashMatch = false;
+
 		this.ref.tab.forEach((tab, index) => {
 			tab.addEventListener('click', (e) => this.handleClick(e, index));
 			tab.addEventListener('keydown', (e) => this.handleKeydown(e, index));
 
-			if (tab.getAttribute('aria-selected') === 'true') {
+			// Check if URL hash matches the tab's ID or its controlled panel's ID
+			const controlsId = tab.getAttribute('aria-controls');
+			const tabId = tab.id;
+
+			if (hash && ((tabId && hash === `#${tabId}`) || (controlsId && hash === `#${controlsId}`))) {
+				initialIndex = index;
+				foundHashMatch = true;
+			} else if (!foundHashMatch && tab.getAttribute('aria-selected') === 'true') {
 				initialIndex = index;
 			}
 		});
 
 		if (this.ref.tab.length > 0) {
 			this.setState({ activeTabIndex: initialIndex });
+
+			if (foundHashMatch) {
+				setTimeout(() => {
+					this.element.scrollIntoView({ behavior: 'smooth' });
+				}, 100);
+			}
 		}
 	}
 

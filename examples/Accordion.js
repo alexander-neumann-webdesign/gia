@@ -29,8 +29,20 @@ class Accordion extends gia.Component {
 			window.addEventListener('accordion:open', this.handleAccordionOpen);
 		}
 
-		// Initial state
-		this.setState({ isOpen: this.element.open });
+		// Initial state based on URL hash or DOM
+		const hash = window.location.hash;
+		let shouldBeOpen = this.element.open;
+
+		if (hash && this.element.id && hash === `#${this.element.id}`) {
+			shouldBeOpen = true;
+
+			// Optional: Scroll to the element if requested by hash
+			setTimeout(() => {
+				this.element.scrollIntoView({ behavior: 'smooth' });
+			}, 100);
+		}
+
+		this.setState({ isOpen: shouldBeOpen });
 	}
 
 	unmount() {
