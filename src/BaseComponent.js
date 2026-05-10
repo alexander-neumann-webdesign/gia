@@ -37,14 +37,12 @@ export default class Component {
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
 				const refName = element.getAttribute(attrName);
-				if (refName.indexOf(":") !== -1) {
-					const refNameArray = refName.split(":");
-					if (refNameArray[0] === this._name) {
-						if (!this._ref[refNameArray[1]]) {
-							this._ref[refNameArray[1]] = refsByAttribute[refName] || [];
+				if (refName.includes(":")) {
+					const [componentName, ref] = refName.split(":");
+					if (componentName === this._name) {
+						if (!this._ref[ref]) {
+							this._ref[ref] = refsByAttribute[refName] || [];
 						}
-					} else {
-						return;
 					}
 				} else {
 					if (!this._ref[refName]) {
