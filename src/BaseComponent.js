@@ -93,7 +93,14 @@ export default class Component {
 
 	set options(defaults) {
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
-		const options = optionsFromAttribute ? JSON.parse(optionsFromAttribute) : {};
+		let options = {};
+		if (optionsFromAttribute) {
+			try {
+				options = JSON.parse(optionsFromAttribute);
+			} catch (e) {
+				console.error(`Failed to parse options for component "${this._name}": ${e.message}`);
+			}
+		}
 
 		this._options = {
 			...this._options,
