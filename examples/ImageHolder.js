@@ -38,7 +38,7 @@ class ImageHolder extends gia.Component {
 
 		// Setup Intersection Observer for 'visible' class
 		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
-			rootMargin: "0px",
+			rootMargin: "100px 0px", // Wake up 100px before entering screen
 			threshold: 0.01
 		});
 		this.intersectionObserver.observe(this.element);
@@ -50,6 +50,11 @@ class ImageHolder extends gia.Component {
 		if (this.options.parallaxSpeed !== 0) {
 			this.isScrollBound = false;
 			this.currentScrollY = window.scrollY || window.pageYOffset;
+
+			// Cache the header element once if needed
+			if (this.options.startFromTop) {
+				this.headerElement = document.querySelector('header#main-header');
+			}
 
 			// Setup Resize Observer on document to catch layout shifts
 			this.bodyResizeObserver = new ResizeObserver(() => {
@@ -199,8 +204,7 @@ class ImageHolder extends gia.Component {
 		this.cachedLayout.windowHeight = window.innerHeight;
 
 		if (this.options.startFromTop) {
-			const header = document.querySelector('header#main-header');
-			this.cachedLayout.headerOffset = header ? header.offsetHeight : 0;
+			this.cachedLayout.headerOffset = this.headerElement ? this.headerElement.offsetHeight : 0;
 		}
 	}
 
@@ -232,7 +236,8 @@ class ImageHolder extends gia.Component {
 		progress = Math.max(0, Math.min(1, progress));
 
 		if (this.options.parallaxCssVar) {
-			this.element.style.setProperty('--parallax-scroll-progress', progress.toFixed(4));
+			const roundedProgress = Math.round(progress * 10000) / 10000;
+			this.element.style.setProperty('--parallax-scroll-progress', roundedProgress);
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;
