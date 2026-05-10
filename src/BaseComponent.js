@@ -25,17 +25,27 @@ export default class Component {
 		const attrName = `${config.get("attrPrefix")}-ref`;
 		const allRefs = queryAll(`[${attrName}]`, this.element);
 
+		const refsByName = {};
+		for (let i = 0; i < allRefs.length; i++) {
+			const element = allRefs[i];
+			const refName = element.getAttribute(attrName);
+			if (!refsByName[refName]) {
+				refsByName[refName] = [];
+			}
+			refsByName[refName].push(element);
+		}
+
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
 				const refName = element.getAttribute(attrName);
 				if (refName.includes(":")) {
 					const [componentName, actualRefName] = refName.split(":");
 					if (componentName === this._name && !this._ref[actualRefName]) {
-						this._ref[actualRefName] = allRefs.filter((item) => item.getAttribute(attrName) === refName);
+						this._ref[actualRefName] = refsByName[refName];
 					}
 				} else {
 					if (!this._ref[refName]) {
-						this._ref[refName] = allRefs.filter((item) => item.getAttribute(attrName) === refName);
+						this._ref[refName] = refsByName[refName];
 					}
 				}
 			});
@@ -49,10 +59,10 @@ export default class Component {
 				}
 
 				const prefixedName = `${this._name}:${key}`;
-				let refs = allRefs.filter((element) => element.getAttribute(attrName) === prefixedName);
+				let refs = refsByName[prefixedName] || [];
 
 				if (refs.length === 0) {
-					refs = allRefs.filter((element) => element.getAttribute(attrName) === key);
+					refs = refsByName[key] || [];
 				}
 
 				acc[key] = isArray ? refs : (refs[0] ?? null);
