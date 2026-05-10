@@ -19,8 +19,10 @@ class E {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
-      autoMountComponents: !1
+      autoMountComponents: !1,
       // Use MutationObserver to automatically mount/unmount components
+      autoBindActions: !1
+      // Automatically bind actions using data-action attributes
     });
   }
   set(t, e) {
@@ -44,8 +46,8 @@ function $(o, t, e, n) {
 function p(o) {
   return typeof o == "string" && (o = document.getElementById(o), !o) ? null : o.__gia_component__;
 }
-function l(o, t = document) {
-  return typeof o != "string" ? o : Array.from(t.querySelectorAll(o));
+function u(o, t = document) {
+  return typeof o != "string" ? o : t.querySelectorAll(o);
 }
 function C(o = {}, t = document.documentElement) {
   if (!o || Object.keys(o).length === 0) {
@@ -53,7 +55,7 @@ function C(o = {}, t = document.documentElement) {
     return;
   }
   const e = [], n = `${a.get("attrPrefix")}-component`;
-  l(`[${n}]`, t).forEach((s) => {
+  u(`[${n}]`, t).forEach((s) => {
     const r = p(s);
     if (r) {
       console.warn("Error: instance exists: ", r);
@@ -78,21 +80,21 @@ function h(o) {
   }
 }
 function S(o = document.documentElement) {
-  l(`[${a.get("attrPrefix")}-component]`, o).forEach(
+  u(`[${a.get("attrPrefix")}-component]`, o).forEach(
     (t) => {
       h(t);
     }
   );
 }
-let y = class {
+let v = class {
   constructor(t, e) {
-    this.element = t, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = e || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
+    this.element = t, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = e || {}, this._state = {}, this._autoBindFunctions(), a.get("autoBindActions") && this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
   set ref(t) {
-    const e = `${a.get("attrPrefix")}-ref`, n = l(`[${e}]`, this.element), s = {};
+    const e = `${a.get("attrPrefix")}-ref`, n = u(`[${e}]`, this.element), s = {};
     for (let r = 0; r < n.length; r++) {
       const i = n[r], c = i.getAttribute(e);
       s[c] || (s[c] = []), s[c].push(i);
@@ -100,17 +102,17 @@ let y = class {
     Object.keys(t).length === 0 ? n.forEach((r) => {
       const i = r.getAttribute(e);
       if (i.includes(":")) {
-        const [c, u] = i.split(":");
-        c === this._name && !this._ref[u] && (this._ref[u] = s[i]);
+        const [c, d] = i.split(":");
+        c === this._name && !this._ref[d] && (this._ref[d] = s[i]);
       } else
         this._ref[i] || (this._ref[i] = s[i]);
     }) : this._ref = Object.keys(t).reduce((r, i) => {
       const c = Array.isArray(t[i]);
       if (t[i] !== null && c && t[i].length > 0)
         return r[i] = t[i], r;
-      const u = `${this._name}:${i}`;
-      let d = s[u] || [];
-      return d.length === 0 && (d = s[i] || []), r[i] = c ? d : d[0] ?? null, r;
+      const d = `${this._name}:${i}`;
+      let l = s[d] || [];
+      return l.length === 0 && (l = s[i] || []), r[i] = c ? l : l[0] ?? null, r;
     }, {});
   }
   get options() {
@@ -188,7 +190,7 @@ let y = class {
     });
   }
   _autoBindActions() {
-    this.element.querySelectorAll("[data-action]").forEach((e) => {
+    u("[data-action]", this.element).forEach((e) => {
       e.dataset.action.split(" ").forEach((s) => {
         const [r, i] = s.split("->");
         this[i] ? e.addEventListener(r, (c) => this[i](c)) : console.warn(`Method "${i}" not found in component.`);
@@ -196,14 +198,14 @@ let y = class {
     });
   }
 };
-class O extends y {
+class O extends v {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class v extends EventTarget {
+class y extends EventTarget {
   emit(t, e = {}) {
     a.get("log") && console.info(`Emitting event '${t}'`);
     const n = new CustomEvent(t, { detail: e });
@@ -220,14 +222,14 @@ class v extends EventTarget {
     e && e._wrapped ? this.removeEventListener(t, e._wrapped) : e && this.removeEventListener(t, e), e || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const N = new v();
+const B = new y();
 let f = null;
 function b(o) {
   const t = `${a.get("attrPrefix")}-component`, e = typeof window < "u" && window.gia ? window.gia.components : {};
   let n = !1;
   o.forEach((s) => {
     s.removedNodes.forEach((r) => {
-      r.nodeType === Node.ELEMENT_NODE && (r.hasAttribute(t) && h(r), l(`[${t}]`, r).forEach((c) => h(c)));
+      r.nodeType === Node.ELEMENT_NODE && (r.hasAttribute(t) && h(r), u(`[${t}]`, r).forEach((c) => h(c)));
     }), s.addedNodes.length > 0 && (n = !0);
   }), n && C(e, document.body);
 }
@@ -243,12 +245,12 @@ a.set = function(o, t) {
 };
 typeof window < "u" && setTimeout(g, 0);
 export {
-  y as BaseComponent,
+  v as BaseComponent,
   O as Component,
   a as config,
   $ as createInstance,
   S as destroyInstance,
-  N as eventbus,
+  B as eventbus,
   p as getComponentFromElement,
   C as loadComponents,
   S as removeComponents
