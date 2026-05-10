@@ -1,130 +1,130 @@
 var _ = Object.defineProperty;
-var m = (s, t, n) => t in s ? _(s, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : s[t] = n;
-var u = (s, t, n) => m(s, typeof t != "symbol" ? t + "" : t, n);
-typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (s) => {
-  if (typeof s != "function") {
-    console.error("Gia: Register failed. Expected a Class, got:", s);
+var w = (o, t, e) => t in o ? _(o, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : o[t] = e;
+var m = (o, t, e) => w(o, typeof t != "symbol" ? t + "" : t, e);
+typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (o) => {
+  if (typeof o != "function") {
+    console.error("Gia: Register failed. Expected a Class, got:", o);
     return;
   }
-  const t = s.name;
+  const t = o.name;
   if (!t) {
     console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
     return;
   }
-  window.gia.components[t] = s;
+  window.gia.components[t] = o;
 });
-class p {
+class E {
   constructor() {
-    u(this, "_options", {
+    m(this, "_options", {
       log: !1,
-      attrPrefix: "data"
+      attrPrefix: "data",
       // data-component="HelloWorld"
+      autoMountComponents: !1
+      // Use MutationObserver to automatically mount/unmount components
     });
   }
-  set(t, n) {
-    this._options[t] = n;
+  set(t, e) {
+    this._options[t] = e;
   }
   get(t) {
     return this._options[t];
   }
 }
-const a = new p();
-function g(s, t, n, e) {
-  if (s.__gia_component__)
-    return console.warn(`Component "${t}" already exists.`), s.__gia_component__;
+const a = new E();
+function $(o, t, e, n) {
+  if (o.__gia_component__)
+    return console.warn(`Component "${t}" already exists.`), o.__gia_component__;
   try {
-    const o = new n(s, e);
-    return a.get("log") && console.info(`Created instance of component "${t}".`), o;
-  } catch (o) {
-    return console.error(`Failed to create component "${t}".`, o), null;
+    const s = new e(o, n);
+    return a.get("log") && console.info(`Created instance of component "${t}".`), s;
+  } catch (s) {
+    return console.error(`Failed to create component "${t}".`, s), null;
   }
 }
-function d(s) {
-  return typeof s == "string" && (s = document.getElementById(s), !s) ? null : s.__gia_component__;
+function p(o) {
+  return typeof o == "string" && (o = document.getElementById(o), !o) ? null : o.__gia_component__;
 }
-function h(s, t = document) {
-  return typeof s != "string" ? s : Array.prototype.slice.call(t.querySelectorAll(s));
+function d(o, t = document) {
+  return typeof o != "string" ? o : Array.from(t.querySelectorAll(o));
 }
-function x(s = {}, t = document.documentElement) {
-  if (!s || Object.keys(s).length === 0) {
+function C(o = {}, t = document.documentElement) {
+  if (!o || Object.keys(o).length === 0) {
     console.warn("App has no components");
     return;
   }
-  const n = [], e = `${a.get("attrPrefix")}-component`;
-  h(`[${e}]`, t).forEach((o) => {
-    const i = d(o);
+  const e = [], n = `${a.get("attrPrefix")}-component`;
+  d(`[${n}]`, t).forEach((s) => {
+    const i = p(s);
     if (i) {
       console.warn("Error: instance exists: ", i);
       return;
     }
-    const r = o.getAttribute(e);
-    typeof s[r] == "function" ? n.push(g(o, r, s[r])) : console.warn(`Constructor "${r}" not found.`);
-  }), n.forEach((o) => {
-    o._load();
+    const r = s.getAttribute(n);
+    typeof o[r] == "function" ? e.push($(s, r, o[r])) : console.warn(`Constructor "${r}" not found.`);
+  }), e.forEach((s) => {
+    s._load();
   });
 }
-function w(s) {
-  const t = d(s);
+function h(o) {
+  const t = p(o);
   if (t) {
-    const n = t._name || "Unknown";
+    const e = t._name || "Unknown";
     try {
       t.unmount();
-    } catch (e) {
-      console.error(`Gia: Error unmounting component "${n}".`, e);
+    } catch (n) {
+      console.error(`Gia: Error unmounting component "${e}".`, n);
     }
-    s.__gia_component__ = null, t.element && (t.element = null), a.get("log") && console.info(`Removed component "${n}".`);
+    o.__gia_component__ = null, t.element && (t.element = null), a.get("log") && console.info(`Removed component "${e}".`);
   }
 }
-function P(s = document.documentElement) {
-  h(`[${a.get("attrPrefix")}-component]`, s).forEach(
+function S(o = document.documentElement) {
+  d(`[${a.get("attrPrefix")}-component]`, o).forEach(
     (t) => {
-      w(t);
+      h(t);
     }
   );
 }
-let $ = class {
-  constructor(t, n) {
-    this.element = t, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = n || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
+let v = class {
+  constructor(t, e) {
+    this.element = t, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = e || {}, this._state = {}, this._autoBindFunctions(), this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
   set ref(t) {
-    const n = `${a.get("attrPrefix")}-ref`, e = h(`[${n}]`, this.element);
-    Object.keys(t).length === 0 ? e.forEach((o) => {
-      const i = o.getAttribute(n);
-      if (i.indexOf(":") !== -1) {
-        const r = i.split(":");
-        if (r[0] === this._name)
-          this._ref[r[1]] || (this._ref[r[1]] = e.filter((c) => c.getAttribute(n) === i));
-        else
-          return;
+    const e = `${a.get("attrPrefix")}-ref`, n = d(`[${e}]`, this.element);
+    Object.keys(t).length === 0 ? n.forEach((s) => {
+      const i = s.getAttribute(e);
+      if (i.includes(":")) {
+        const [r, c] = i.split(":");
+        r === this._name && !this._ref[c] && (this._ref[c] = n.filter((f) => f.getAttribute(e) === i));
       } else
-        this._ref[i] || (this._ref[i] = e.filter((r) => r.getAttribute(n) === i));
-    }) : this._ref = Object.keys(t).map((o) => {
-      const i = Array.isArray(t[o]);
-      if (t[o] !== null && i && t[o].length > 0)
-        return {
-          name: o,
-          value: t[o]
-        };
-      const r = o, c = `${this._name}:${r}`;
-      let l = e.filter((f) => f.getAttribute(n) === c);
-      return l.length === 0 && (l = e.filter((f) => f.getAttribute(n) === r)), i || (l = l.length ? l[0] : null), {
-        name: o,
-        value: l
-      };
-    }).reduce((o, i) => (o[i.name] = i.value, o), {});
+        this._ref[i] || (this._ref[i] = n.filter((r) => r.getAttribute(e) === i));
+    }) : this._ref = Object.keys(t).reduce((s, i) => {
+      const r = Array.isArray(t[i]);
+      if (t[i] !== null && r && t[i].length > 0)
+        return s[i] = t[i], s;
+      const c = `${this._name}:${i}`;
+      let f = n.filter((l) => l.getAttribute(e) === c);
+      return f.length === 0 && (f = n.filter((l) => l.getAttribute(e) === i)), s[i] = r ? f : f[0] ?? null, s;
+    }, {});
   }
   get options() {
     return this._options;
   }
   set options(t) {
-    const n = this.element.getAttribute(`${a.get("attrPrefix")}-options`), e = n ? JSON.parse(n) : {};
+    const e = this.element.getAttribute(`${a.get("attrPrefix")}-options`);
+    let n = {};
+    if (e)
+      try {
+        n = JSON.parse(e);
+      } catch (s) {
+        console.error(`Failed to parse options for component "${this._name}": ${s.message}`);
+      }
     this._options = {
       ...this._options,
       ...t,
-      ...e
+      ...n
     };
   }
   get state() {
@@ -143,113 +143,109 @@ let $ = class {
    * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
    * @return {Promise}
    */
-  loadScript(t, n) {
-    if (n && window[n])
-      return Promise.resolve(window[n]);
-    const e = document.getElementById(`${t}-js`);
-    return e ? (e._loadPromise || (e._loadPromise = new Promise((o, i) => {
+  loadScript(t, e) {
+    if (e && window[e])
+      return Promise.resolve(window[e]);
+    const n = document.getElementById(`${t}-js`);
+    return n ? (n._loadPromise || (n._loadPromise = new Promise((s, i) => {
       const r = () => {
-        e.onload = null, e.onerror = null;
+        n.onload = null, n.onerror = null;
       };
-      e.onload = () => {
-        r(), o(n ? window[n] : !0);
-      }, e.onerror = () => {
-        r(), delete e._loadPromise, i(new Error(`Failed to load script: ${t}`));
-      }, !e.src && e.dataset.src ? (e.src = e.dataset.src, delete e.dataset.src) : !e.src && !e.dataset.src && (r(), i(new Error(`Script tag '${t}-js' has no src or data-src.`)));
-    })), e._loadPromise) : Promise.reject(new Error(`Script tag with ID '${t}-js' not found.`));
+      n.onload = () => {
+        r(), s(e ? window[e] : !0);
+      }, n.onerror = () => {
+        r(), delete n._loadPromise, i(new Error(`Failed to load script: ${t}`));
+      }, !n.src && n.dataset.src ? (n.src = n.dataset.src, delete n.dataset.src) : !n.src && !n.dataset.src && (r(), i(new Error(`Script tag '${t}-js' has no src or data-src.`)));
+    })), n._loadPromise) : Promise.reject(new Error(`Script tag with ID '${t}-js' not found.`));
   }
   mount() {
   }
   unmount() {
   }
-  getRef(t, n = !1) {
-    return `[${a.get("attrPrefix")}-ref="${n ? `${this._name}:` : ""}${t}"]`;
+  getRef(t, e = !1) {
+    return `[${a.get("attrPrefix")}-ref="${e ? `${this._name}:` : ""}${t}"]`;
   }
   setState(t) {
-    const n = {};
-    Object.keys(t).forEach((e) => {
-      Array.isArray(t[e]) ? this._state[e] != null && Array.isArray(this._state[e]) ? this._state[e].length === t[e].length ? t[e].some((o, i) => this._state[e][i] !== o ? (n[e] = t[e], this._state[e] = n[e], !0) : !1) : (n[e] = t[e], this._state[e] = n[e]) : (n[e] = t[e], this._state[e] = n[e]) : typeof t[e] == "object" ? (this._state[e] != null && typeof this._state[e] == "object" ? (n[e] = {}, Object.keys(t[e]).forEach((o) => {
-        this._state[e][o] !== t[e][o] && (n[e][o] = t[e][o]);
-      })) : n[e] = t[e], this._state[e] = {
-        ...this._state[e],
-        ...n[e]
-      }) : this._state[e] !== t[e] && (n[e] = t[e], this._state[e] = t[e]);
-    }), Object.keys(n).forEach((e) => {
-      Array.isArray(t[e]) ? n[e].length === 0 && delete n[e] : typeof t[e] == "object" && Object.keys(n[e]).length === 0 && delete n[e];
-    }), this.stateChange(n);
+    const e = {};
+    let n = !1;
+    Object.keys(t).forEach((s) => {
+      this._state[s] !== t[s] && (e[s] = t[s], this._state[s] = t[s], n = !0);
+    }), n && (this._pendingStateChanges || (this._pendingStateChanges = {}, requestAnimationFrame(() => {
+      this.stateChange(this._pendingStateChanges), this._pendingStateChanges = null;
+    })), Object.assign(this._pendingStateChanges, e));
   }
   stateChange(t) {
     return t;
   }
   _autoBindFunctions() {
-    const t = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), n = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
-    t.forEach((e) => {
-      n.has(e) || e.startsWith("_") || typeof this[e] == "function" && (this[e] = this[e].bind(this));
+    const t = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), e = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
+    t.forEach((n) => {
+      e.has(n) || n.startsWith("_") || typeof this[n] == "function" && (this[n] = this[n].bind(this));
     });
   }
   _autoBindActions() {
-    this.element.querySelectorAll("[data-action]").forEach((n) => {
-      n.dataset.action.split(" ").forEach((o) => {
-        const [i, r] = o.split("->");
-        this[r] ? n.addEventListener(i, (c) => this[r](c)) : console.warn(`Method "${r}" not found in component.`);
+    this.element.querySelectorAll("[data-action]").forEach((e) => {
+      e.dataset.action.split(" ").forEach((s) => {
+        const [i, r] = s.split("->");
+        this[r] ? e.addEventListener(i, (c) => this[r](c)) : console.warn(`Method "${r}" not found in component.`);
       });
     });
   }
 };
-class j extends $ {
+class O extends v {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class E {
-  constructor() {
-    u(this, "list", {});
+class y extends EventTarget {
+  emit(t, e = {}) {
+    a.get("log") && console.info(`Emitting event '${t}'`);
+    const n = new CustomEvent(t, { detail: e });
+    n._name = t, this.dispatchEvent(n);
   }
-  emit(t, n = {}) {
-    n._name = t, this.list[t] ? (a.get("log") && console.info(
-      `${this.list[t].length} handler${this.list[t].length > 1 ? "s" : ""} called on event '${t}'`
-    ), this.list[t].forEach((e) => {
-      e.handler(n), e.once && this.off(t, e.handler);
-    })) : a.get("log") && console.info(`0 handlers called on event '${t}'`);
+  on(t, e, n = !1) {
+    const s = (i) => e({ ...i.detail, _name: i._name });
+    e._wrapped = s, this.addEventListener(t, s, { once: n });
   }
-  on(t, n, e = !1) {
-    this.list[t] ? this.list[t].push({ once: e, handler: n }) : (this.list[t] = [], this.list[t].push({ once: e, handler: n }));
+  once(t, e) {
+    this.on(t, e, !0);
   }
-  once(t, n) {
-    this.on(t, n, !0);
-  }
-  off(t, n) {
-    var e;
-    if (t != null)
-      if (n != null)
-        if ((e = this.list[t]) != null && e.filter(
-          (o) => o.handler === n
-        ).length) {
-          const o = this.list[t].filter(
-            (r) => r.handler === n
-          )[0], i = this.list[t].indexOf(o);
-          i > -1 && this.list[t].splice(i, 1);
-        } else
-          console.warn(
-            `Event ${t} cannot be unsubscribed - does not exist.`
-          );
-      else
-        this.list[t] = [];
-    else
-      this.list = {};
+  off(t, e) {
+    e && e._wrapped ? this.removeEventListener(t, e._wrapped) : e && this.removeEventListener(t, e), e || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const C = new E();
+const j = new y();
+let u = null;
+function b(o) {
+  const t = `${a.get("attrPrefix")}-component`, e = typeof window < "u" && window.gia ? window.gia.components : {};
+  let n = !1;
+  o.forEach((s) => {
+    s.removedNodes.forEach((i) => {
+      i.nodeType === Node.ELEMENT_NODE && (i.hasAttribute(t) && h(i), d(`[${t}]`, i).forEach((c) => h(c)));
+    }), s.addedNodes.length > 0 && (n = !0);
+  }), n && C(e, document.body);
+}
+function g() {
+  typeof document > "u" || (a.get("autoMountComponents") && !u ? (u = new MutationObserver(b), u.observe(document.body, {
+    childList: !0,
+    subtree: !0
+  })) : !a.get("autoMountComponents") && u && (u.disconnect(), u = null));
+}
+const A = a.set;
+a.set = function(o, t) {
+  A.call(this, o, t), o === "autoMountComponents" && g();
+};
+typeof window < "u" && setTimeout(g, 0);
 export {
-  $ as BaseComponent,
-  j as Component,
+  v as BaseComponent,
+  O as Component,
   a as config,
-  g as createInstance,
-  P as destroyInstance,
-  C as eventbus,
-  d as getComponentFromElement,
-  x as loadComponents,
-  P as removeComponents
+  $ as createInstance,
+  S as destroyInstance,
+  j as eventbus,
+  p as getComponentFromElement,
+  C as loadComponents,
+  S as removeComponents
 };

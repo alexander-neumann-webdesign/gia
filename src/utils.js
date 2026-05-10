@@ -11,7 +11,7 @@ export function queryAll(selector, context = document) {
 		return selector;
 	}
 
-	return Array.prototype.slice.call(context.querySelectorAll(selector));
+	return Array.from(context.querySelectorAll(selector));
 }
 
 export function toggleClass(element, className, condition = null) {
@@ -23,22 +23,14 @@ export function toggleClass(element, className, condition = null) {
 }
 
 export function removeClass(nodes, className) {
-	if (Array.isArray(nodes)) {
-		nodes.forEach((node) => node.classList.remove(className));
-	} else {
-		nodes.classList.remove(className);
-	}
-
+	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
+	iterable.forEach((node) => node.classList.remove(className));
 	return nodes;
 }
 
 export function addClass(nodes, className) {
-	if (Array.isArray(nodes)) {
-		nodes.forEach((node) => node.classList.add(className));
-	} else {
-		nodes.classList.add(className);
-	}
-
+	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
+	iterable.forEach((node) => node.classList.add(className));
 	return nodes;
 }
 
