@@ -33,8 +33,11 @@ Following sizes are for modules included separately (bundled separately). Module
 -   [createInstances](#createinstances)
 -   [destroyInstances](#destroyinstances)
 -   [getComponentFromElement](#getcomponentfromelement)
+-   [registry](#registry)
 -   [config](#config)
 -   [eventbus](#eventbus)
+
+[Examples](#examples)
 
 ## Installation
 
@@ -371,15 +374,30 @@ let element = document.getElementById("element");
 let componentInstance = getComponentFromElement(element);
 ```
 
+### registry
+
+Provides a global registry for components, allowing them to be referenced by name. Useful when using the global UMD build instead of a bundler.
+
+```javascript
+import { Component } from "gia";
+
+class SampleComponent extends Component {
+    // ...
+}
+
+gia.register(SampleComponent);
+```
+
 ### config
 
-Config is used as a store for options used in Gia and also as an interface to change default options. Currently, only the `log` option is available.
+Config is used as a store for options used in Gia and also as an interface to change default options. Currently, the `log`, `attrPrefix`, and `autoMountComponents` options are available.
 
 ```javascript
 import config from "gia/config";
 
 config.set("log", false); // disables unnecessary console.log calls
 config.set("attrPrefix", "data"); // changes g-component to data-component
+config.set("autoMountComponents", true); // Use MutationObserver to automatically mount/unmount components
 ```
 
 ### eventbus
@@ -445,3 +463,19 @@ Unregisters handler of event. In case no handler is defined, eventbus removes al
 ```javascript
 eventbus.off("eventName", handler);
 ```
+
+## Examples
+
+A comprehensive set of example components demonstrates modern best practices with Gia. These are located in the `examples/` directory and include:
+* `Accordion`: Progressively-enhanced `<details>` element with `interpolate-size`.
+* `ClipboardCopy`: Simple utility component to copy text.
+* `Header`: Sticky/revealing header based on scroll direction.
+* `ImageHolder`: High-performance scroll-bound parallax image effect.
+* `Modal`: URL hash-syncing `<dialog>` modal with Lenis scroll-locking support.
+* `Reveal`: Scroll-triggered reveal animations.
+* `Slider`: Hardware-accelerated native CSS scroll snapping carousel with variable widths.
+* `Tabs`: URL hash-syncing accessible tabbed interface.
+* `ThemeToggle`: Dark/light mode switcher.
+* `VideoHolder`: Scroll-bound or autoplay video component with progressive enhancement.
+
+These components showcase how to effectively use Gia's event bus, native DOM APIs, hash-state syncing, code-splitting (using `require()`), and efficient scroll performance without layout thrashing.
