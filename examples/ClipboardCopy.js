@@ -1,3 +1,28 @@
+/**
+ * Expected HTML Structure:
+ *
+ * <button data-component="ClipboardCopy" data-copy-text="Text to be copied">
+ *   <span data-ref="buttonText">Copy Text</span>
+ *   <svg>...</svg>
+ * </button>
+ *
+ * Suggested SCSS:
+ *
+ * button[data-component="ClipboardCopy"] {
+ *   transition: background-color 0.3s ease, color 0.3s ease;
+ *
+ *   &.copied {
+ *     background-color: #4caf50;
+ *     color: white;
+ *   }
+ *
+ *   &.copy-error {
+ *     background-color: #f44336;
+ *     color: white;
+ *   }
+ * }
+ */
+
 class ClipboardCopy extends gia.Component {
 	constructor(element) {
 		super(element);

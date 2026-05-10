@@ -1,3 +1,42 @@
+/**
+ * Expected HTML Structure:
+ *
+ * <details data-component="Accordion" id="faq-1">
+ *   <summary>Question title</summary>
+ *   <div class="content">
+ *     <p>Answer content goes here.</p>
+ *   </div>
+ * </details>
+ *
+ * Suggested SCSS:
+ *
+ * details[data-component="Accordion"] {
+ *   ::details-content {
+ *     transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+ *     height: 0;
+ *     overflow: clip;
+ *   }
+ *
+ *   // Browser supports interpolate-size
+ *   @supports (interpolate-size: allow-keywords) {
+ *     :root {
+ *       interpolate-size: allow-keywords;
+ *     }
+ *
+ *     &[open]::details-content {
+ *       height: auto;
+ *     }
+ *   }
+ *
+ *   summary {
+ *     cursor: pointer;
+ *     // Remove default marker if desired
+ *     // list-style: none;
+ *     // &::-webkit-details-marker { display: none; }
+ *   }
+ * }
+ */
+
 class Accordion extends gia.Component {
 	constructor(element) {
 		super(element);
