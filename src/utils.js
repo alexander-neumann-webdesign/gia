@@ -11,42 +11,26 @@ export function queryAll(selector, context = document) {
 		return selector;
 	}
 
-	return Array.prototype.slice.call(context.querySelectorAll(selector));
+	return Array.from(context.querySelectorAll(selector));
 }
 
 export function toggleClass(element, className, condition = null) {
 	if (condition === null) {
-		if (element.classList.contains(className)) {
-			element.classList.remove(className);
-		} else {
-			element.classList.add(className);
-		}
+		element.classList.toggle(className);
 	} else {
-		if (condition) {
-			element.classList.add(className);
-		} else {
-			element.classList.remove(className);
-		}
+		element.classList.toggle(className, !!condition);
 	}
 }
 
 export function removeClass(nodes, className) {
-	if (Array.isArray(nodes)) {
-		nodes.forEach((node) => node.classList.remove(className));
-	} else {
-		nodes.classList.remove(className);
-	}
-
+	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
+	iterable.forEach((node) => node.classList.remove(className));
 	return nodes;
 }
 
 export function addClass(nodes, className) {
-	if (Array.isArray(nodes)) {
-		nodes.forEach((node) => node.classList.add(className));
-	} else {
-		nodes.classList.add(className);
-	}
-
+	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
+	iterable.forEach((node) => node.classList.add(className));
 	return nodes;
 }
 

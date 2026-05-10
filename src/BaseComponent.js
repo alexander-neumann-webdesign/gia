@@ -25,66 +25,50 @@ export default class Component {
 		const attrName = `${config.get("attrPrefix")}-ref`;
 		const allRefs = queryAll(`[${attrName}]`, this.element);
 
+		const refsByName = {};
+		for (let i = 0; i < allRefs.length; i++) {
+			const element = allRefs[i];
+			const refName = element.getAttribute(attrName);
+			if (!refsByName[refName]) {
+				refsByName[refName] = [];
+			}
+			refsByName[refName].push(element);
+		}
+
 		if (Object.keys(items).length === 0) {
 			allRefs.forEach((element) => {
 				const refName = element.getAttribute(attrName);
-				if (refName.indexOf(":") !== -1) {
-					const refNameArray = refName.split(":");
-					if (refNameArray[0] === this._name) {
-						if (!this._ref[refNameArray[1]]) {
-							this._ref[refNameArray[1]] = allRefs.filter((item) => {
-								return item.getAttribute(attrName) === refName;
-							});
-						}
-					} else {
-						return;
+				if (refName.includes(":")) {
+					const [componentName, actualRefName] = refName.split(":");
+					if (componentName === this._name && !this._ref[actualRefName]) {
+						this._ref[actualRefName] = refsByName[refName];
 					}
 				} else {
 					if (!this._ref[refName]) {
-						this._ref[refName] = allRefs.filter((item) => {
-							return item.getAttribute(attrName) === refName;
-						});
+						this._ref[refName] = refsByName[refName];
 					}
 				}
 			});
 		} else {
-			this._ref = Object.keys(items)
-				.map((key) => {
-					const isArray = Array.isArray(items[key]);
+			this._ref = Object.keys(items).reduce((acc, key) => {
+				const isArray = Array.isArray(items[key]);
 
-					// non-empty refs
-					if (items[key] !== null && isArray && items[key].length > 0) {
-						return {
-							name: key,
-							value: items[key],
-						};
-					}
-
-					const name = key;
-					const prefixedName = `${this._name}:${name}`;
-
-					let refs = allRefs.filter((element) => element.getAttribute(attrName) === prefixedName);
-
-					if (refs.length === 0) {
-						refs = allRefs.filter((element) => element.getAttribute(attrName) === name);
-					}
-
-					if (!isArray) {
-						refs = refs.length ? refs[0] : null;
-					}
-
-					return {
-						name: key,
-						value: refs,
-					};
-				})
-				.reduce((acc, ref) => {
-					acc[ref.name] = ref.value;
+				if (items[key] !== null && isArray && items[key].length > 0) {
+					acc[key] = items[key];
 					return acc;
-				}, {});
-		}
+				}
 
-		// return this._ref;
+				const prefixedName = `${this._name}:${key}`;
+				let refs = refsByName[prefixedName] || [];
+
+				if (refs.length === 0) {
+					refs = refsByName[key] || [];
+				}
+
+				acc[key] = isArray ? refs : (refs[0] ?? null);
+				return acc;
+			}, {});
+		}
 	}
 
 	get options() {
@@ -93,7 +77,14 @@ export default class Component {
 
 	set options(defaults) {
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
-		const options = optionsFromAttribute ? JSON.parse(optionsFromAttribute) : {};
+		let options = {};
+		if (optionsFromAttribute) {
+			try {
+				options = JSON.parse(optionsFromAttribute);
+			} catch (e) {
+				console.error(`Failed to parse options for component "${this._name}": ${e.message}`);
+			}
+		}
 
 		this._options = {
 			...this._options,
@@ -195,65 +186,26 @@ export default class Component {
 
 	setState(changes) {
 		const stateChanges = {};
+		let hasChanges = false;
 
 		Object.keys(changes).forEach((key) => {
-			if (Array.isArray(changes[key])) {
-				if (this._state[key] != null && Array.isArray(this._state[key])) {
-					if (this._state[key].length === changes[key].length) {
-						changes[key].some((item, index) => {
-							if (this._state[key][index] !== item) {
-								stateChanges[key] = changes[key];
-								this._state[key] = stateChanges[key];
-								return true;
-							}
-							return false;
-						});
-					} else {
-						stateChanges[key] = changes[key];
-						this._state[key] = stateChanges[key];
-					}
-				} else {
-					stateChanges[key] = changes[key];
-					this._state[key] = stateChanges[key];
-				}
-			} else if (typeof changes[key] === "object") {
-				if (this._state[key] != null && typeof this._state[key] === "object") {
-					stateChanges[key] = {};
-					Object.keys(changes[key]).forEach((subkey) => {
-						if (this._state[key][subkey] !== changes[key][subkey]) {
-							stateChanges[key][subkey] = changes[key][subkey];
-						}
-					});
-				} else {
-					stateChanges[key] = changes[key];
-				}
-
-				this._state[key] = {
-					...this._state[key],
-					...stateChanges[key],
-				};
-			} else {
-				if (this._state[key] !== changes[key]) {
-					stateChanges[key] = changes[key];
-
-					this._state[key] = changes[key];
-				}
+			if (this._state[key] !== changes[key]) {
+				stateChanges[key] = changes[key];
+				this._state[key] = changes[key];
+				hasChanges = true;
 			}
 		});
 
-		Object.keys(stateChanges).forEach((key) => {
-			if (Array.isArray(changes[key])) {
-				if (stateChanges[key].length === 0) {
-					delete stateChanges[key];
-				}
-			} else if (typeof changes[key] === "object") {
-				if (Object.keys(stateChanges[key]).length === 0) {
-					delete stateChanges[key];
-				}
+		if (hasChanges) {
+			if (!this._pendingStateChanges) {
+				this._pendingStateChanges = {};
+				requestAnimationFrame(() => {
+					this.stateChange(this._pendingStateChanges);
+					this._pendingStateChanges = null;
+				});
 			}
-		});
-
-		this.stateChange(stateChanges);
+			Object.assign(this._pendingStateChanges, stateChanges);
+		}
 	}
 
 	stateChange(stateChanges) {

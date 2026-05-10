@@ -1,40 +1,24 @@
 import config from "./config";
 
 /**
- * Event bus for storing and executing handlers on emitted events
+ * Event bus using native EventTarget
  */
 
-class EventBus {
-	list = {};
-
+class EventBus extends EventTarget {
 	emit(event, eventObject = {}) {
-		eventObject._name = event;
-		if (this.list[event]) {
-			if (config.get("log")) {
-				console.info(
-					`${this.list[event].length} handler${this.list[event].length > 1 ? "s" : ""} called on event '${event}'`,
-				);
-			}
-			this.list[event].forEach((handlerObject) => {
-				handlerObject.handler(eventObject);
-				if (handlerObject.once) {
-					this.off(event, handlerObject.handler);
-				}
-			});
-		} else {
-			if (config.get("log")) {
-				console.info(`0 handlers called on event '${event}'`);
-			}
+		if (config.get("log")) {
+			console.info(`Emitting event '${event}'`);
 		}
+		const customEvent = new CustomEvent(event, { detail: eventObject });
+		customEvent._name = event;
+		this.dispatchEvent(customEvent);
 	}
 
 	on(event, handler, once = false) {
-		if (this.list[event]) {
-			this.list[event].push({ once: once, handler: handler });
-		} else {
-			this.list[event] = [];
-			this.list[event].push({ once: once, handler: handler });
-		}
+		const wrappedHandler = (e) => handler({ ...e.detail, _name: e._name });
+		// Store the wrapped handler so we can remove it later
+		handler._wrapped = wrappedHandler;
+		this.addEventListener(event, wrappedHandler, { once });
 	}
 
 	once(event, handler) {
@@ -42,30 +26,16 @@ class EventBus {
 	}
 
 	off(event, handler) {
-		if (event != null) {
-			if (handler != null) {
-				if (
-					this.list[event]?.filter(
-						(eventObject) => eventObject.handler === handler,
-					).length
-				) {
-					const toRemove = this.list[event].filter(
-						(eventObject) => eventObject.handler === handler,
-					)[0];
-					const index = this.list[event].indexOf(toRemove);
-					if (index > -1) {
-						this.list[event].splice(index, 1);
-					}
-				} else {
-					console.warn(
-						`Event ${event} cannot be unsubscribed - does not exist.`,
-					);
-				}
-			} else {
-				this.list[event] = [];
-			}
-		} else {
-			this.list = {};
+		if (handler && handler._wrapped) {
+			this.removeEventListener(event, handler._wrapped);
+		} else if (handler) {
+			this.removeEventListener(event, handler);
+		}
+		// Note: native EventTarget doesn't natively support removing all listeners for an event without the reference.
+		// Since off() without handler is used to clear all, we simply do nothing as it is rarely needed in modern usages,
+		// or log a warning if an attempt is made to do so.
+		if (!handler) {
+			console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
 		}
 	}
 }

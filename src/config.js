@@ -6,6 +6,7 @@ class Config {
 	_options = {
 		log: false,
 		attrPrefix: "data", // data-component="HelloWorld"
+		autoMountComponents: false, // Use MutationObserver to automatically mount/unmount components
 	};
 
 	set(name, value) {

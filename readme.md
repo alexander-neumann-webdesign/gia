@@ -284,6 +284,31 @@ this.setState({ a: "a", b: "c" }); // { b: "c" }    { a: "a", b: "c" }
 this.setState({ b: "d" }); // { b: "d" }    { a: "a", b: "d" }
 ```
 
+#### _autoBindFunctions
+
+Automatically binds all public methods defined on the component (methods that don't start with `_` and aren't core lifecycle methods like `mount` or `unmount`) to the component instance. This is called automatically in the constructor, so you don't need to manually use `.bind(this)` in the `mount` method for event listeners.
+
+#### _autoBindActions
+
+Automatically binds DOM events to component methods using the `data-action` attribute on elements within the component. The attribute format is `data-action="event->methodName"`. It also supports multiple actions separated by spaces. This is called automatically in the constructor.
+
+```html
+<div data-component="SampleComponent">
+    <button data-action="click->handleClick hover->handleHover">Click me</button>
+</div>
+```
+
+#### loadScript
+
+Method for loading external scripts asynchronously, preventing double-loading and handling race conditions. It expects the target script tag to exist in the DOM with a `data-src` attribute and an ID formatted as `scriptId-js`.
+
+```javascript
+// Looks for an element with ID `someLibrary-js` and sets its src from data-src
+this.loadScript('someLibrary', 'globalNameExportedByLibrary').then((library) => {
+    // script is loaded and ready
+});
+```
+
 ## Helpers
 
 ### loadComponents
