@@ -51,8 +51,16 @@ class ImageHolder extends gia.Component {
 		});
 		this.intersectionObserver.observe(this.element);
 
-		// Setup Resize Observer for 'sizes' attribute
-		this.resizeObserver = new ResizeObserver(this.handleResize);
+		// Setup Resize Observer for 'sizes' attribute with a debounce wrapper
+		this.resizeTimeout = null;
+		this.resizeObserver = new ResizeObserver((entries) => {
+			if (this.resizeTimeout) {
+				clearTimeout(this.resizeTimeout);
+			}
+			this.resizeTimeout = setTimeout(() => {
+				this.handleResize(entries);
+			}, 100);
+		});
 		this.resizeObserver.observe(this.element);
 	}
 
@@ -93,6 +101,9 @@ class ImageHolder extends gia.Component {
 		}
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
+		}
+		if (this.resizeTimeout) {
+			clearTimeout(this.resizeTimeout);
 		}
 	}
 
