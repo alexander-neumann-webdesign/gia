@@ -36,9 +36,19 @@ class Tabs extends gia.Component {
 		let initialIndex = 0;
 		let foundHashMatch = false;
 
+		// Store bound functions for cleanup
+		this.tabClickHandlers = [];
+		this.tabKeydownHandlers = [];
+
 		this.ref.tab.forEach((tab, index) => {
-			tab.addEventListener('click', (e) => this.handleClick(e, index));
-			tab.addEventListener('keydown', (e) => this.handleKeydown(e, index));
+			const clickHandler = (e) => this.handleClick(e, index);
+			const keydownHandler = (e) => this.handleKeydown(e, index);
+
+			this.tabClickHandlers.push(clickHandler);
+			this.tabKeydownHandlers.push(keydownHandler);
+
+			tab.addEventListener('click', clickHandler);
+			tab.addEventListener('keydown', keydownHandler);
 
 			// Check if URL hash matches the tab's ID or its controlled panel's ID
 			const controlsId = tab.getAttribute('aria-controls');
@@ -64,9 +74,17 @@ class Tabs extends gia.Component {
 	}
 
 	unmount() {
-		// Event listeners should ideally be bound using data-action, but inline binding here
-		// requires a bit of manual cleanup, or we rely on node disposal.
-		// For thoroughness, we'd remove them here if we saved references.
+		this.ref.tab.forEach((tab, index) => {
+			if (this.tabClickHandlers[index]) {
+				tab.removeEventListener('click', this.tabClickHandlers[index]);
+			}
+			if (this.tabKeydownHandlers[index]) {
+				tab.removeEventListener('keydown', this.tabKeydownHandlers[index]);
+			}
+		});
+
+		this.tabClickHandlers = [];
+		this.tabKeydownHandlers = [];
 	}
 
 	handleClick(event, index) {

@@ -8,6 +8,7 @@ class Header extends gia.Component {
 		};
 
 		this.lastScrollY = 0;
+		this.currentScrollY = 0;
 		this.ticking = false;
 
 		this.setState({
@@ -26,7 +27,8 @@ class Header extends gia.Component {
 			}
 
 			// Initial check
-			this.update(window.scrollY);
+			this.currentScrollY = window.scrollY || window.pageYOffset;
+			this.update();
 
 			// Swup integration: reset header when navigating
 			if (window.swup) {
@@ -50,12 +52,12 @@ class Header extends gia.Component {
 	}
 
 	handleScroll() {
-		// Prevent double handling if Lenis is actively firing
-		if (window.lenis) return;
+		// Read scroll synchronously before rAF to avoid thrashing
+		this.currentScrollY = window.scrollY || window.pageYOffset;
 
 		if (!this.ticking) {
 			window.requestAnimationFrame(() => {
-				this.update(window.scrollY);
+				this.update();
 				this.ticking = false;
 			});
 			this.ticking = true;
@@ -63,33 +65,43 @@ class Header extends gia.Component {
 	}
 
 	handleLenisScroll(e) {
-		this.update(e.scroll);
+		// Bypass reading window.scrollY entirely
+		this.currentScrollY = e.scroll;
+
+		if (!this.ticking) {
+			window.requestAnimationFrame(() => {
+				this.update();
+				this.ticking = false;
+			});
+			this.ticking = true;
+		}
 	}
 
 	handleSwupPageChange() {
 		// Reset state because Swup scrolls to top
 		this.lastScrollY = 0;
+		this.currentScrollY = 0;
 		this.setState({
 			isHidden: false,
 			isScrolled: false
 		});
 	}
 
-	update(currentScrollY) {
-		const isScrolled = currentScrollY > 0;
+	update() {
+		const isScrolled = this.currentScrollY > 0;
 
 		// Determine direction
 		let isHidden = this.state.isHidden;
 
-		if (currentScrollY > this.lastScrollY && currentScrollY > this.options.scrollThreshold) {
+		if (this.currentScrollY > this.lastScrollY && this.currentScrollY > this.options.scrollThreshold) {
 			// Scrolling down past threshold
 			isHidden = true;
-		} else if (currentScrollY < this.lastScrollY) {
+		} else if (this.currentScrollY < this.lastScrollY) {
 			// Scrolling up
 			isHidden = false;
 		}
 
-		this.lastScrollY = currentScrollY;
+		this.lastScrollY = this.currentScrollY;
 
 		// Batch state update
 		if (this.state.isScrolled !== isScrolled || this.state.isHidden !== isHidden) {
