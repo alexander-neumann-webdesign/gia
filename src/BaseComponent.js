@@ -1,6 +1,25 @@
 import config from "./config";
 import { queryAll } from "./utils";
 
+let globalResizeObserver = null;
+const resizeCallbacks = new Map();
+
+const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
+
+function getIntersectionOptionsHash(options) {
+	const root = options.root || null;
+	const rootMargin = options.rootMargin || "0px 0px 0px 0px";
+	const threshold = options.threshold || 0;
+	const thresholdStr = Array.isArray(threshold) ? threshold.join(",") : threshold.toString();
+
+	// Since root is an Element, we can't easily stringify it if it's dynamic.
+	// But usually, root is null. If it's an Element, we just give it a unique ID or use a WeakMap.
+	// For simplicity in a global hash, if root is present we just use an object reference approach or ignore root serialization if it's always document.
+	// Let's create a string hash:
+	const rootId = root ? (root.id || "root-element") : "null";
+	return `${rootId}|${rootMargin}|${thresholdStr}`;
+}
+
 /**
  * Component without code splitting support
  */
@@ -109,6 +128,168 @@ export default class Component {
 
 	_load() {
 		this.mount();
+	}
+
+	_destroy() {
+		this.unmount();
+
+		if (this._observedResizeElements) {
+			for (const element of Array.from(this._observedResizeElements.keys())) {
+				this.unobserveResize(element);
+			}
+		}
+
+		if (this._observedIntersectionElements) {
+			for (const element of Array.from(this._observedIntersectionElements.keys())) {
+				this.unobserveIntersection(element);
+			}
+		}
+	}
+
+	observeResize(element, callback) {
+		if (typeof window === "undefined" || !window.ResizeObserver) return;
+
+		if (!globalResizeObserver) {
+			globalResizeObserver = new ResizeObserver((entries) => {
+				for (const entry of entries) {
+					const callbacks = resizeCallbacks.get(entry.target);
+					if (callbacks) {
+						callbacks.forEach((cb) => cb([entry]));
+					}
+				}
+			});
+		}
+
+		if (!resizeCallbacks.has(element)) {
+			resizeCallbacks.set(element, new Set());
+			globalResizeObserver.observe(element);
+		}
+		resizeCallbacks.get(element).add(callback);
+
+		if (!this._observedResizeElements) {
+			this._observedResizeElements = new Map();
+		}
+		if (!this._observedResizeElements.has(element)) {
+			this._observedResizeElements.set(element, new Set());
+		}
+		this._observedResizeElements.get(element).add(callback);
+	}
+
+	unobserveResize(element, callback = null) {
+		if (!this._observedResizeElements) return;
+
+		const componentCallbacks = this._observedResizeElements.get(element);
+		if (!componentCallbacks) return;
+
+		if (callback) {
+			componentCallbacks.delete(callback);
+			const globalCbs = resizeCallbacks.get(element);
+			if (globalCbs) globalCbs.delete(callback);
+		} else {
+			const globalCbs = resizeCallbacks.get(element);
+			if (globalCbs) {
+				componentCallbacks.forEach((cb) => globalCbs.delete(cb));
+			}
+			componentCallbacks.clear();
+		}
+
+		if (componentCallbacks.size === 0) {
+			this._observedResizeElements.delete(element);
+		}
+
+		const globalCbs = resizeCallbacks.get(element);
+		if (globalCbs && globalCbs.size === 0) {
+			resizeCallbacks.delete(element);
+			if (globalResizeObserver) {
+				globalResizeObserver.unobserve(element);
+			}
+		}
+	}
+
+	observeIntersection(element, callback, options = {}) {
+		if (typeof window === "undefined" || !window.IntersectionObserver) return;
+
+		const hash = getIntersectionOptionsHash(options);
+		let observerData = intersectionObservers.get(hash);
+
+		if (!observerData) {
+			const observer = new IntersectionObserver((entries) => {
+				for (const entry of entries) {
+					const callbacks = observerData.callbacks.get(entry.target);
+					if (callbacks) {
+						callbacks.forEach((cb) => cb([entry]));
+					}
+				}
+			}, options);
+			observerData = { observer, callbacks: new Map() };
+			intersectionObservers.set(hash, observerData);
+		}
+
+		if (!observerData.callbacks.has(element)) {
+			observerData.callbacks.set(element, new Set());
+			observerData.observer.observe(element);
+		}
+		observerData.callbacks.get(element).add(callback);
+
+		if (!this._observedIntersectionElements) {
+			this._observedIntersectionElements = new Map();
+		}
+		if (!this._observedIntersectionElements.has(element)) {
+			this._observedIntersectionElements.set(element, new Map());
+		}
+
+		const componentElementMap = this._observedIntersectionElements.get(element);
+		if (!componentElementMap.has(hash)) {
+			componentElementMap.set(hash, new Set());
+		}
+		componentElementMap.get(hash).add(callback);
+	}
+
+	unobserveIntersection(element, callback = null) {
+		if (!this._observedIntersectionElements) return;
+
+		const componentElementMap = this._observedIntersectionElements.get(element);
+		if (!componentElementMap) return;
+
+		componentElementMap.forEach((componentCallbacks, hash) => {
+			const observerData = intersectionObservers.get(hash);
+
+			if (callback) {
+				if (componentCallbacks.has(callback)) {
+					componentCallbacks.delete(callback);
+					if (observerData && observerData.callbacks.has(element)) {
+						observerData.callbacks.get(element).delete(callback);
+					}
+				}
+			} else {
+				if (observerData && observerData.callbacks.has(element)) {
+					const globalCbs = observerData.callbacks.get(element);
+					componentCallbacks.forEach((cb) => globalCbs.delete(cb));
+				}
+				componentCallbacks.clear();
+			}
+
+			if (componentCallbacks.size === 0) {
+				componentElementMap.delete(hash);
+			}
+
+			if (observerData) {
+				const globalCbs = observerData.callbacks.get(element);
+				if (globalCbs && globalCbs.size === 0) {
+					observerData.callbacks.delete(element);
+					observerData.observer.unobserve(element);
+				}
+
+				if (observerData.callbacks.size === 0) {
+					observerData.observer.disconnect();
+					intersectionObservers.delete(hash);
+				}
+			}
+		});
+
+		if (componentElementMap.size === 0) {
+			this._observedIntersectionElements.delete(element);
+		}
 	}
 
 	/**

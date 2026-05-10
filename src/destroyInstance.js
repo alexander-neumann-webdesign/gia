@@ -31,7 +31,11 @@ export default function destroyInstance(element) {
 		// If unmount() throws an error (e.g. user tries to remove a listener that doesn't exist),
 		// we still want to finish cleaning up the memory references below.
 		try {
-			instance.unmount();
+			if (typeof instance._destroy === "function") {
+				instance._destroy();
+			} else {
+				instance.unmount();
+			}
 		} catch (err) {
 			console.error(`Gia: Error unmounting component "${name}".`, err);
 		}
