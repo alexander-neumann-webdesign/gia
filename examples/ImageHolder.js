@@ -1,6 +1,4 @@
-import Component from "../src/Component.js";
-
-export default class ImageHolder extends Component {
+class ImageHolder extends gia.Component {
 	constructor(element) {
 		super(element);
 
@@ -14,10 +12,6 @@ export default class ImageHolder extends Component {
 		this.isVisible = false;
 		this.rafId = null;
 		this.lastScrollY = window.scrollY;
-
-		this.handleIntersect = this.handleIntersect.bind(this);
-		this.handleResize = this.handleResize.bind(this);
-		this.tick = this.tick.bind(this);
 	}
 
 	mount() {
@@ -79,8 +73,6 @@ export default class ImageHolder extends Component {
 			const width = entry.contentRect.width;
 			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
 			// so defining the actual render width in CSS pixels is exactly what the sizes attribute needs.
-			// e.g. sizes="500px" will tell the browser the image occupies 500 CSS pixels.
-			// The browser will then pick a 1000w image if the device has a DPR of 2.
 			if (this.img && width > 0) {
 				const currentSizes = this.img.getAttribute('sizes');
 				const newSizes = `${Math.ceil(width)}px`;
@@ -103,10 +95,6 @@ export default class ImageHolder extends Component {
 	updateParallax() {
 		if (this.options.parallaxSpeed === 0 || !this.img) return;
 
-		// We calculate the parallax offset based on the element's position relative to the viewport.
-		// A common approach is to map the element's position from bottom of viewport to top of viewport
-		// to a progress value from 0 to 1 or -1 to 1.
-
 		const rect = this.element.getBoundingClientRect();
 		const windowHeight = window.innerHeight;
 
@@ -123,3 +111,5 @@ export default class ImageHolder extends Component {
 		}
 	}
 }
+
+gia.register(ImageHolder);

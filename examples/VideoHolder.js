@@ -1,6 +1,4 @@
-import Component from "../src/Component.js";
-
-export default class VideoHolder extends Component {
+class VideoHolder extends gia.Component {
 	constructor(element) {
 		super(element);
 
@@ -10,12 +8,6 @@ export default class VideoHolder extends Component {
 
 		this.video = this.element.querySelector('video');
 		this.playPauseButton = this.element.querySelector('[data-ref="playPauseButton"]');
-
-		this.handleIntersect = this.handleIntersect.bind(this);
-		this.togglePlay = this.togglePlay.bind(this);
-		this.handleMouseEnter = this.handleMouseEnter.bind(this);
-		this.handleMouseLeave = this.handleMouseLeave.bind(this);
-		this.updateButtonState = this.updateButtonState.bind(this);
 
 		this.isManuallyPaused = false;
 	}
@@ -131,3 +123,5 @@ export default class VideoHolder extends Component {
 		}
 	}
 }
+
+gia.register(VideoHolder);

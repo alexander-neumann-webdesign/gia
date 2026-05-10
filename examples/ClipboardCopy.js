@@ -1,6 +1,4 @@
-import Component from "../src/Component.js";
-
-export default class ClipboardCopy extends Component {
+class ClipboardCopy extends gia.Component {
 	constructor(element) {
 		super(element);
 
@@ -11,8 +9,6 @@ export default class ClipboardCopy extends Component {
 
 		this.originalText = "";
 		this.copyTimeout = null;
-
-		this.handleClick = this.handleClick.bind(this);
 	}
 
 	mount() {
@@ -57,6 +53,9 @@ export default class ClipboardCopy extends Component {
 
 	handleSuccess() {
 		this.element.classList.add("copied");
+
+		// Using aria-live or a polite announcement might be better,
+		// but updating aria-label temporarily is acceptable if no live region is present.
 		this.element.setAttribute("aria-label", this.options.successText);
 
 		const textElement = this.element.querySelector('[data-ref="buttonText"]');
@@ -100,3 +99,5 @@ export default class ClipboardCopy extends Component {
 		}
 	}
 }
+
+gia.register(ClipboardCopy);

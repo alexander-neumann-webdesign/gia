@@ -1,15 +1,10 @@
-import Component from "../src/Component.js";
-
-export default class Tabs extends Component {
+class Tabs extends gia.Component {
 	constructor(element) {
 		super(element);
 
 		this.tabList = this.element.querySelector('[role="tablist"]');
 		this.tabs = Array.from(this.element.querySelectorAll('[role="tab"]'));
 		this.panels = Array.from(this.element.querySelectorAll('[role="tabpanel"]'));
-
-		this.handleClick = this.handleClick.bind(this);
-		this.handleKeydown = this.handleKeydown.bind(this);
 	}
 
 	mount() {
@@ -20,7 +15,7 @@ export default class Tabs extends Component {
 
 		// Initialize state based on DOM. If none active, activate first.
 		let hasActive = false;
-		this.tabs.forEach((tab, index) => {
+		this.tabs.forEach((tab) => {
 			tab.addEventListener('click', this.handleClick);
 			tab.addEventListener('keydown', this.handleKeydown);
 
@@ -81,9 +76,6 @@ export default class Tabs extends Component {
 		}
 
 		if (newTab) {
-			// In manual activation mode, we just focus the tab.
-			// In automatic activation mode, we also activate it.
-			// For simplicity and standard accessibility, we use automatic activation here.
 			this.activateTab(newTab, true);
 		}
 	}
@@ -123,3 +115,5 @@ export default class Tabs extends Component {
 		}
 	}
 }
+
+gia.register(Tabs);
