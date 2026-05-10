@@ -27,8 +27,6 @@ class ImageHolder extends gia.Component {
 		this.setState({
 			isVisible: false
 		});
-
-		this.tickUpdate = this.tickUpdate.bind(this);
 	}
 
 	mount() {
@@ -39,7 +37,11 @@ class ImageHolder extends gia.Component {
 		if (!this.ref.img) return;
 
 		// Setup Intersection Observer for 'visible' class
-		ImageHolder.observe(this.element, this);
+		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
+			rootMargin: "0px",
+			threshold: 0.01
+		});
+		this.intersectionObserver.observe(this.element);
 
 		// Setup Resize Observer for 'sizes' attribute
 		this.resizeObserver = new ResizeObserver(this.handleResize);
@@ -65,8 +67,9 @@ class ImageHolder extends gia.Component {
 	}
 
 	unmount() {
-		ImageHolder.unobserve(this.element, this);
-
+		if (this.intersectionObserver) {
+			this.intersectionObserver.disconnect();
+		}
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 		}
@@ -243,30 +246,6 @@ class ImageHolder extends gia.Component {
 		}
 	}
 }
-
-ImageHolder.instances = new WeakMap();
-
-ImageHolder.observer = new IntersectionObserver((entries) => {
-	entries.forEach((entry) => {
-		const instance = ImageHolder.instances.get(entry.target);
-		if (instance) {
-			instance.handleIntersect([entry]);
-		}
-	});
-}, {
-	rootMargin: "0px",
-	threshold: 0.01
-});
-
-ImageHolder.observe = function(element, instance) {
-	ImageHolder.instances.set(element, instance);
-	ImageHolder.observer.observe(element);
-};
-
-ImageHolder.unobserve = function(element, instance) {
-	ImageHolder.observer.unobserve(element);
-	ImageHolder.instances.delete(element);
-};
 
 gia.register(ImageHolder);
 

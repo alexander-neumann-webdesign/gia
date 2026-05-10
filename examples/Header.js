@@ -15,9 +15,6 @@ class Header extends gia.Component {
 			isHidden: false,
 			isScrolled: false
 		});
-
-		// Pre-bind rAF callback to avoid closure allocation on every scroll
-		this.tickUpdate = this.tickUpdate.bind(this);
 	}
 
 	mount() {
