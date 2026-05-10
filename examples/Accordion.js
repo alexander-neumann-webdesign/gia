@@ -6,16 +6,18 @@ class Accordion extends gia.Component {
 			closeOthers: false, // If true, only one accordion item can be open at a time within the same group
 		};
 
-		// Expected DOM structure using native HTML5:
-		// <details data-component="Accordion">
-		//    <summary>Toggle</summary>
-		//    <div class="content">Content</div>
-		// </details>
+		this.ref = {
+			summary: null // Optional: if you specifically want to reference the summary
+		};
 
 		this.isDetails = this.element.tagName.toLowerCase() === 'details';
 		if (!this.isDetails) {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}
+
+		this.setState({
+			isOpen: false
+		});
 	}
 
 	mount() {
@@ -23,10 +25,12 @@ class Accordion extends gia.Component {
 
 		this.element.addEventListener('toggle', this.handleToggle);
 
-		// Event listener for closing others
 		if (this.options.closeOthers) {
 			window.addEventListener('accordion:open', this.handleAccordionOpen);
 		}
+
+		// Initial state
+		this.setState({ isOpen: this.element.open });
 	}
 
 	unmount() {
@@ -40,24 +44,37 @@ class Accordion extends gia.Component {
 	}
 
 	handleToggle(event) {
-		if (this.element.open) {
-			// Dispatch event for other accordions to close
-			if (this.options.closeOthers) {
-				const customEvent = new CustomEvent('accordion:open', {
-					detail: { instance: this, parent: this.element.parentElement }
-				});
-				window.dispatchEvent(customEvent);
-			}
+		// Only update state if it doesn't match the element's actual state
+		// This prevents infinite loops since stateChange might alter element.open
+		if (this.state.isOpen !== this.element.open) {
+			this.setState({ isOpen: this.element.open });
 		}
 	}
 
 	handleAccordionOpen(event) {
 		const { instance, parent } = event.detail;
 
-		// Close this accordion if it's not the one that just opened,
-		// and it shares the same parent (grouped)
-		if (instance !== this && parent === this.element.parentElement && this.element.open) {
-			this.element.open = false;
+		if (instance !== this && parent === this.element.parentElement && this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
+	}
+
+	stateChange(stateChanges) {
+		if ('isOpen' in stateChanges) {
+			const { isOpen } = stateChanges;
+
+			// Sync DOM if necessary
+			if (this.element.open !== isOpen) {
+				this.element.open = isOpen;
+			}
+
+			// Dispatch event for other accordions
+			if (isOpen && this.options.closeOthers) {
+				const customEvent = new CustomEvent('accordion:open', {
+					detail: { instance: this, parent: this.element.parentElement }
+				});
+				window.dispatchEvent(customEvent);
+			}
 		}
 	}
 }

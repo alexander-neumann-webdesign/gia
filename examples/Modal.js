@@ -6,15 +6,19 @@ class Modal extends gia.Component {
 			preventScroll: true
 		};
 
-		// The component should be attached to a <dialog> element.
+		this.ref = {
+			closeButton: [] // Looks for [data-ref="closeButton"]
+		};
+
+		this.setState({
+			isOpen: false
+		});
+
 		this.isDialog = this.element.tagName.toLowerCase() === 'dialog';
 		if (!this.isDialog) {
 			console.warn("Modal: Component should be attached to a <dialog> element.");
 		}
 
-		this.closeButtons = this.element.querySelectorAll('[data-ref="closeButton"]');
-
-		// Find triggers outside the component using a data attribute matching this modal's ID
 		this.modalId = this.element.id;
 		this.triggers = this.modalId ? document.querySelectorAll(`[data-modal-target="${this.modalId}"]`) : [];
 	}
@@ -27,20 +31,23 @@ class Modal extends gia.Component {
 			trigger.addEventListener('click', this.handleTriggerClick);
 		});
 
-		// Attach events to close buttons
-		this.closeButtons.forEach(btn => {
-			btn.addEventListener('click', this.handleCloseClick);
-		});
+		// Attach events to close buttons from refs
+		if (this.ref.closeButton) {
+			const buttons = Array.isArray(this.ref.closeButton) ? this.ref.closeButton : [this.ref.closeButton];
+			buttons.forEach(btn => {
+				btn.addEventListener('click', this.handleCloseClick);
+			});
+		}
 
-		// Attach backdrop click (clicking outside the dialog content)
+		// Attach backdrop click
 		this.element.addEventListener('click', this.handleBackdropClick);
 
-		// Listen for native close event (e.g., from Escape key)
+		// Listen for native close event
 		this.element.addEventListener('close', this.handleNativeClose);
 
 		// Initial state
 		if (this.element.hasAttribute('open')) {
-			this.onOpen();
+			this.setState({ isOpen: true });
 		}
 	}
 
@@ -49,9 +56,12 @@ class Modal extends gia.Component {
 			trigger.removeEventListener('click', this.handleTriggerClick);
 		});
 
-		this.closeButtons.forEach(btn => {
-			btn.removeEventListener('click', this.handleCloseClick);
-		});
+		if (this.ref.closeButton) {
+			const buttons = Array.isArray(this.ref.closeButton) ? this.ref.closeButton : [this.ref.closeButton];
+			buttons.forEach(btn => {
+				btn.removeEventListener('click', this.handleCloseClick);
+			});
+		}
 
 		this.element.removeEventListener('click', this.handleBackdropClick);
 		this.element.removeEventListener('close', this.handleNativeClose);
@@ -63,50 +73,47 @@ class Modal extends gia.Component {
 
 	handleTriggerClick(e) {
 		e.preventDefault();
-		this.open();
+		this.setState({ isOpen: true });
 	}
 
 	handleCloseClick(e) {
 		e.preventDefault();
-		this.close();
-	}
-
-	open() {
-		if (this.element.open) return;
-
-		// Using showModal for a true modal with a backdrop and focus trapping
-		this.element.showModal();
-		this.onOpen();
-	}
-
-	close() {
-		if (!this.element.open) return;
-
-		this.element.close();
-		// The 'close' event will trigger handleNativeClose which calls onClose
-	}
-
-	onOpen() {
-		if (this.options.preventScroll) {
-			document.body.style.overflow = 'hidden';
-		}
-	}
-
-	onClose() {
-		if (this.options.preventScroll) {
-			document.body.style.overflow = '';
-		}
+		this.setState({ isOpen: false });
 	}
 
 	handleNativeClose() {
-		this.onClose();
+		if (this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
 	}
 
 	handleBackdropClick(event) {
-		// In a native <dialog>, clicking on the ::backdrop targets the dialog element itself.
-		// Clicking on content inside the dialog targets those elements.
 		if (event.target === this.element) {
-			this.close();
+			this.setState({ isOpen: false });
+		}
+	}
+
+	stateChange(stateChanges) {
+		if ('isOpen' in stateChanges) {
+			const { isOpen } = stateChanges;
+
+			if (isOpen) {
+				if (!this.element.open) {
+					this.element.showModal();
+				}
+
+				if (this.options.preventScroll) {
+					document.body.style.overflow = 'hidden';
+				}
+			} else {
+				if (this.element.open) {
+					this.element.close();
+				}
+
+				if (this.options.preventScroll) {
+					document.body.style.overflow = '';
+				}
+			}
 		}
 	}
 }

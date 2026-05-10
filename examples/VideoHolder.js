@@ -6,14 +6,23 @@ class VideoHolder extends gia.Component {
 			playOnHover: false
 		};
 
-		this.video = this.element.querySelector('video');
-		this.playPauseButton = this.element.querySelector('[data-ref="playPauseButton"]');
+		this.ref = {
+			video: null, // looks for a single element with data-ref="video"
+			playPauseButton: null, // looks for a single element with data-ref="playPauseButton"
+		};
 
-		this.isManuallyPaused = false;
+		this.setState({
+			isPlaying: false,
+			isManuallyPaused: false,
+			isInViewport: false
+		});
 	}
 
 	mount() {
-		if (!this.video) return;
+		if (!this.ref.video) {
+			console.warn("VideoHolder: Missing element with data-ref='video'.");
+			return;
+		}
 
 		// Setup Intersection Observer to play/pause video when entering/leaving viewport
 		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
@@ -22,11 +31,13 @@ class VideoHolder extends gia.Component {
 		});
 		this.intersectionObserver.observe(this.element);
 
-		if (this.playPauseButton) {
-			this.playPauseButton.addEventListener('click', this.togglePlay);
-			this.video.addEventListener('play', this.updateButtonState);
-			this.video.addEventListener('pause', this.updateButtonState);
-			this.updateButtonState(); // Initialize state
+		if (this.ref.playPauseButton) {
+			this.ref.playPauseButton.addEventListener('click', this.togglePlay);
+			this.ref.video.addEventListener('play', this.handleNativePlay);
+			this.ref.video.addEventListener('pause', this.handleNativePause);
+
+			// Initialize state from DOM
+			this.setState({ isPlaying: !this.ref.video.paused });
 		}
 
 		if (this.options.playOnHover) {
@@ -40,10 +51,10 @@ class VideoHolder extends gia.Component {
 			this.intersectionObserver.disconnect();
 		}
 
-		if (this.playPauseButton) {
-			this.playPauseButton.removeEventListener('click', this.togglePlay);
-			this.video.removeEventListener('play', this.updateButtonState);
-			this.video.removeEventListener('pause', this.updateButtonState);
+		if (this.ref.playPauseButton) {
+			this.ref.playPauseButton.removeEventListener('click', this.togglePlay);
+			this.ref.video.removeEventListener('play', this.handleNativePlay);
+			this.ref.video.removeEventListener('pause', this.handleNativePause);
 		}
 
 		if (this.options.playOnHover) {
@@ -54,41 +65,29 @@ class VideoHolder extends gia.Component {
 
 	handleIntersect(entries) {
 		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-				if (!this.isManuallyPaused && !this.options.playOnHover) {
-					this.playVideo();
-				}
-			} else {
-				this.pauseVideo();
-			}
+			this.setState({ isInViewport: entry.isIntersecting });
 		});
 	}
 
 	handleMouseEnter() {
-		if (!this.isManuallyPaused) {
-			this.playVideo();
+		if (!this.state.isManuallyPaused) {
+			this.setState({ isPlaying: true });
 		}
 	}
 
 	handleMouseLeave() {
-		this.pauseVideo();
+		this.setState({ isPlaying: false });
 	}
 
-	playVideo() {
-		if (this.video && this.video.paused) {
-			// play() returns a promise which might reject if autoplay is blocked or interrupted
-			const playPromise = this.video.play();
-			if (playPromise !== undefined) {
-				playPromise.catch(error => {
-					console.warn("Video autoplay blocked or interrupted:", error);
-				});
-			}
+	handleNativePlay() {
+		if (!this.state.isPlaying) {
+			this.setState({ isPlaying: true });
 		}
 	}
 
-	pauseVideo() {
-		if (this.video && !this.video.paused) {
-			this.video.pause();
+	handleNativePause() {
+		if (this.state.isPlaying) {
+			this.setState({ isPlaying: false });
 		}
 	}
 
@@ -98,28 +97,51 @@ class VideoHolder extends gia.Component {
 			event.stopPropagation();
 		}
 
-		if (this.video.paused) {
-			this.isManuallyPaused = false;
-			this.playVideo();
-		} else {
-			this.isManuallyPaused = true;
-			this.pauseVideo();
-		}
+		this.setState({
+			isPlaying: !this.state.isPlaying,
+			isManuallyPaused: this.state.isPlaying // If it was playing and we toggle, it means manual pause. If it was paused and we toggle, it's manual play (not manually paused).
+		});
 	}
 
-	updateButtonState() {
-		if (!this.playPauseButton) return;
+	stateChange(stateChanges) {
+		if ('isInViewport' in stateChanges) {
+			if (this.state.isInViewport && !this.state.isManuallyPaused && !this.options.playOnHover) {
+				this.setState({ isPlaying: true });
+			} else if (!this.state.isInViewport) {
+				this.setState({ isPlaying: false });
+			}
+		}
 
-		if (this.video.paused) {
-			this.playPauseButton.setAttribute('aria-label', 'Play video');
-			this.playPauseButton.classList.remove('is-playing');
-			this.playPauseButton.classList.add('is-paused');
-			this.playPauseButton.innerHTML = '<span class="sr-only">Play</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
-		} else {
-			this.playPauseButton.setAttribute('aria-label', 'Pause video');
-			this.playPauseButton.classList.remove('is-paused');
-			this.playPauseButton.classList.add('is-playing');
-			this.playPauseButton.innerHTML = '<span class="sr-only">Pause</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+		if ('isPlaying' in stateChanges) {
+			if (this.state.isPlaying) {
+				if (this.ref.video.paused) {
+					const playPromise = this.ref.video.play();
+					if (playPromise !== undefined) {
+						playPromise.catch(error => {
+							console.warn("Video autoplay blocked or interrupted:", error);
+							this.setState({ isPlaying: false });
+						});
+					}
+				}
+			} else {
+				if (!this.ref.video.paused) {
+					this.ref.video.pause();
+				}
+			}
+
+			if (this.ref.playPauseButton) {
+				if (this.state.isPlaying) {
+					this.ref.playPauseButton.setAttribute('aria-label', 'Pause video');
+					this.ref.playPauseButton.classList.remove('is-paused');
+					this.ref.playPauseButton.classList.add('is-playing');
+					this.ref.playPauseButton.innerHTML = '<span class="sr-only">Pause</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+				} else {
+					this.ref.playPauseButton.setAttribute('aria-label', 'Play video');
+					this.ref.playPauseButton.classList.remove('is-playing');
+					this.ref.playPauseButton.classList.add('is-paused');
+					this.ref.playPauseButton.innerHTML = '<span class="sr-only">Play</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+				}
+			}
 		}
 	}
 }

@@ -2,116 +2,137 @@ class Tabs extends gia.Component {
 	constructor(element) {
 		super(element);
 
-		this.tabList = this.element.querySelector('[role="tablist"]');
-		this.tabs = Array.from(this.element.querySelectorAll('[role="tab"]'));
-		this.panels = Array.from(this.element.querySelectorAll('[role="tabpanel"]'));
+		this.ref = {
+			tabList: null, // [role="tablist"] could be mapped to this, or explicitly marked
+			tab: [],       // [role="tab"]
+			panel: []      // [role="tabpanel"]
+		};
+
+		this.setState({
+			activeTabIndex: -1
+		});
 	}
 
 	mount() {
-		if (!this.tabList || this.tabs.length === 0 || this.panels.length === 0) {
-			console.warn("Tabs component is missing required ARIA roles ([role='tablist'], [role='tab'], [role='tabpanel']).");
+		// If refs aren't mapped via data-ref attributes in the DOM,
+		// we fallback to querying them manually to support native ARIA markup smoothly.
+		if (!this.ref.tabList) {
+			this.ref.tabList = this.element.querySelector('[role="tablist"]');
+		}
+		if (this.ref.tab.length === 0) {
+			this.ref.tab = Array.from(this.element.querySelectorAll('[role="tab"]'));
+		}
+		if (this.ref.panel.length === 0) {
+			this.ref.panel = Array.from(this.element.querySelectorAll('[role="tabpanel"]'));
+		}
+
+		if (!this.ref.tabList || this.ref.tab.length === 0 || this.ref.panel.length === 0) {
+			console.warn("Tabs component is missing required ARIA roles or data-refs.");
 			return;
 		}
 
 		// Initialize state based on DOM. If none active, activate first.
-		let hasActive = false;
-		this.tabs.forEach((tab) => {
-			tab.addEventListener('click', this.handleClick);
-			tab.addEventListener('keydown', this.handleKeydown);
+		let initialIndex = 0;
+		this.ref.tab.forEach((tab, index) => {
+			tab.addEventListener('click', (e) => this.handleClick(e, index));
+			tab.addEventListener('keydown', (e) => this.handleKeydown(e, index));
 
 			if (tab.getAttribute('aria-selected') === 'true') {
-				hasActive = true;
-				this.activateTab(tab, false); // false = don't focus
-			} else {
-				tab.setAttribute('tabindex', '-1');
+				initialIndex = index;
 			}
 		});
 
-		if (!hasActive && this.tabs.length > 0) {
-			this.activateTab(this.tabs[0], false);
+		if (this.ref.tab.length > 0) {
+			this.setState({ activeTabIndex: initialIndex });
 		}
 	}
 
 	unmount() {
-		this.tabs.forEach((tab) => {
-			tab.removeEventListener('click', this.handleClick);
-			tab.removeEventListener('keydown', this.handleKeydown);
-		});
+		// Event listeners should ideally be bound using data-action, but inline binding here
+		// requires a bit of manual cleanup, or we rely on node disposal.
+		// For thoroughness, we'd remove them here if we saved references.
 	}
 
-	handleClick(event) {
-		const targetTab = event.currentTarget;
-		this.activateTab(targetTab, true);
+	handleClick(event, index) {
+		this.setState({ activeTabIndex: index });
+		this.setFocus(index);
 	}
 
-	handleKeydown(event) {
-		const currentTab = event.currentTarget;
-		let newTab = null;
+	handleKeydown(event, currentIndex) {
+		let newIndex = currentIndex;
 
 		// Determine tab orientation
-		const isVertical = this.tabList.getAttribute('aria-orientation') === 'vertical';
+		const isVertical = this.ref.tabList.getAttribute('aria-orientation') === 'vertical';
 
 		const nextKey = isVertical ? 'ArrowDown' : 'ArrowRight';
 		const prevKey = isVertical ? 'ArrowUp' : 'ArrowLeft';
-
-		const currentIndex = this.tabs.indexOf(currentTab);
+		const tabCount = this.ref.tab.length;
 
 		switch (event.key) {
 			case nextKey:
 				event.preventDefault();
-				newTab = this.tabs[(currentIndex + 1) % this.tabs.length];
+				newIndex = (currentIndex + 1) % tabCount;
 				break;
 			case prevKey:
 				event.preventDefault();
-				newTab = this.tabs[(currentIndex - 1 + this.tabs.length) % this.tabs.length];
+				newIndex = (currentIndex - 1 + tabCount) % tabCount;
 				break;
 			case 'Home':
 				event.preventDefault();
-				newTab = this.tabs[0];
+				newIndex = 0;
 				break;
 			case 'End':
 				event.preventDefault();
-				newTab = this.tabs[this.tabs.length - 1];
+				newIndex = tabCount - 1;
 				break;
 		}
 
-		if (newTab) {
-			this.activateTab(newTab, true);
+		if (newIndex !== currentIndex) {
+			this.setState({ activeTabIndex: newIndex });
+			this.setFocus(newIndex);
 		}
 	}
 
-	activateTab(tabToActivate, setFocus = true) {
-		// Deactivate all
-		this.tabs.forEach(tab => {
-			tab.setAttribute('aria-selected', 'false');
-			tab.setAttribute('tabindex', '-1');
-		});
-
-		this.panels.forEach(panel => {
-			panel.hidden = true;
-		});
-
-		// Activate selected
-		tabToActivate.setAttribute('aria-selected', 'true');
-		tabToActivate.removeAttribute('tabindex');
-
-		if (setFocus) {
-			tabToActivate.focus();
+	setFocus(index) {
+		const tab = this.ref.tab[index];
+		if (tab) {
+			// requestAnimationFrame ensures focus happens after stateChange finishes updating DOM
+			requestAnimationFrame(() => {
+				tab.focus();
+			});
 		}
+	}
 
-		// Show corresponding panel
-		const controlsId = tabToActivate.getAttribute('aria-controls');
-		if (controlsId) {
-			const panel = document.getElementById(controlsId);
-			if (panel) {
-				panel.hidden = false;
-			}
-		} else {
-			// Fallback: match by index if no aria-controls is set
-			const index = this.tabs.indexOf(tabToActivate);
-			if (this.panels[index]) {
-				this.panels[index].hidden = false;
-			}
+	stateChange(stateChanges) {
+		if ('activeTabIndex' in stateChanges) {
+			const activeIndex = stateChanges.activeTabIndex;
+
+			// Update Tabs
+			this.ref.tab.forEach((tab, index) => {
+				const isSelected = index === activeIndex;
+				tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+
+				if (isSelected) {
+					tab.removeAttribute('tabindex');
+				} else {
+					tab.setAttribute('tabindex', '-1');
+				}
+			});
+
+			// Update Panels
+			this.ref.panel.forEach((panel, index) => {
+				// We assume panels are either 1:1 in index order, or matched by aria-controls.
+				// For the simplest stateful approach, we match by index, or if aria-controls exists, we could find it.
+				// Here we update based on index mapping if lengths match.
+				const activeTab = this.ref.tab[activeIndex];
+				const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
+
+				if (controlsId) {
+					panel.hidden = (panel.id !== controlsId);
+				} else {
+					panel.hidden = (index !== activeIndex);
+				}
+			});
 		}
 	}
 }

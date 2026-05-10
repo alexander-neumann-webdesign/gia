@@ -7,15 +7,20 @@ class ImageHolder extends gia.Component {
 			parallaxDirection: 'vertical', // 'vertical' or 'horizontal'
 		};
 
-		this.img = this.element.querySelector('img');
+		this.ref = {
+			img: null
+		};
 
-		this.isVisible = false;
 		this.rafId = null;
-		this.lastScrollY = window.scrollY;
+
+		// Initialize state
+		this.setState({
+			isVisible: false
+		});
 	}
 
 	mount() {
-		if (!this.img) return;
+		if (!this.ref.img) return;
 
 		// Setup Intersection Observer for 'visible' class and triggering parallax animation
 		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
@@ -48,24 +53,29 @@ class ImageHolder extends gia.Component {
 
 	handleIntersect(entries) {
 		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
+			this.setState({
+				isVisible: entry.isIntersecting
+			});
+		});
+	}
+
+	stateChange(stateChanges) {
+		if ('isVisible' in stateChanges) {
+			if (this.state.isVisible) {
 				this.element.classList.add('visible');
-				this.isVisible = true;
 
 				if (this.options.parallaxSpeed !== 0 && !this.rafId) {
-					this.lastScrollY = window.scrollY;
 					this.rafId = requestAnimationFrame(this.tick);
 				}
 			} else {
 				this.element.classList.remove('visible');
-				this.isVisible = false;
 
 				if (this.rafId) {
 					cancelAnimationFrame(this.rafId);
 					this.rafId = null;
 				}
 			}
-		});
+		}
 	}
 
 	handleResize(entries) {
@@ -73,19 +83,19 @@ class ImageHolder extends gia.Component {
 			const width = entry.contentRect.width;
 			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
 			// so defining the actual render width in CSS pixels is exactly what the sizes attribute needs.
-			if (this.img && width > 0) {
-				const currentSizes = this.img.getAttribute('sizes');
+			if (this.ref.img && width > 0) {
+				const currentSizes = this.ref.img.getAttribute('sizes');
 				const newSizes = `${Math.ceil(width)}px`;
 
 				if (currentSizes !== newSizes) {
-					this.img.setAttribute('sizes', newSizes);
+					this.ref.img.setAttribute('sizes', newSizes);
 				}
 			}
 		}
 	}
 
 	tick() {
-		if (!this.isVisible) return;
+		if (!this.state.isVisible) return;
 
 		this.updateParallax();
 
@@ -93,7 +103,7 @@ class ImageHolder extends gia.Component {
 	}
 
 	updateParallax() {
-		if (this.options.parallaxSpeed === 0 || !this.img) return;
+		if (this.options.parallaxSpeed === 0 || !this.ref.img) return;
 
 		const rect = this.element.getBoundingClientRect();
 		const windowHeight = window.innerHeight;
@@ -105,9 +115,9 @@ class ImageHolder extends gia.Component {
 		const offset = progress * this.options.parallaxSpeed * -100; // Multiplier to give speed a sensible range
 
 		if (this.options.parallaxDirection === 'horizontal') {
-			this.img.style.transform = `translate3d(${offset}px, 0, 0)`;
+			this.ref.img.style.transform = `translate3d(${offset}px, 0, 0)`;
 		} else {
-			this.img.style.transform = `translate3d(0, ${offset}px, 0)`;
+			this.ref.img.style.transform = `translate3d(0, ${offset}px, 0)`;
 		}
 	}
 }

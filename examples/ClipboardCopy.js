@@ -7,18 +7,23 @@ class ClipboardCopy extends gia.Component {
 			successText: "Copied!",
 		};
 
+		this.ref = {
+			buttonText: null // looks for data-ref="buttonText", falls back to element.textContent if not found
+		};
+
 		this.originalText = "";
 		this.copyTimeout = null;
+
+		this.setState({
+			status: 'idle' // 'idle', 'copied', 'error'
+		});
 	}
 
 	mount() {
 		this.element.addEventListener("click", this.handleClick);
 
-		// Save original text to restore it later if we are changing it on success
-		// Assumes a text node or a simple span inside the button.
-		const textElement = this.element.querySelector('[data-ref="buttonText"]');
-		if (textElement) {
-			this.originalText = textElement.textContent;
+		if (this.ref.buttonText) {
+			this.originalText = this.ref.buttonText.textContent;
 		} else {
 			this.originalText = this.element.textContent;
 		}
@@ -44,58 +49,60 @@ class ClipboardCopy extends gia.Component {
 
 		try {
 			await navigator.clipboard.writeText(textToCopy);
-			this.handleSuccess();
+			this.setState({ status: 'copied' });
 		} catch (err) {
 			console.error("ClipboardCopy: Failed to copy text: ", err);
-			this.handleError();
+			this.setState({ status: 'error' });
 		}
 	}
 
-	handleSuccess() {
-		this.element.classList.add("copied");
+	stateChange(stateChanges) {
+		if ('status' in stateChanges) {
+			const { status } = stateChanges;
 
-		// Using aria-live or a polite announcement might be better,
-		// but updating aria-label temporarily is acceptable if no live region is present.
-		this.element.setAttribute("aria-label", this.options.successText);
+			// Clear existing timeout
+			if (this.copyTimeout) {
+				clearTimeout(this.copyTimeout);
+				this.copyTimeout = null;
+			}
 
-		const textElement = this.element.querySelector('[data-ref="buttonText"]');
-		if (textElement && this.options.successText) {
-			textElement.textContent = this.options.successText;
-		} else if (this.options.successText) {
-			this.element.textContent = this.options.successText;
-		}
+			// Apply DOM changes based on status
+			if (status === 'copied') {
+				this.element.classList.add("copied");
+				this.element.classList.remove("copy-error");
+				this.element.setAttribute("aria-label", this.options.successText);
 
-		if (this.copyTimeout) {
-			clearTimeout(this.copyTimeout);
-		}
+				if (this.options.successText) {
+					if (this.ref.buttonText) {
+						this.ref.buttonText.textContent = this.options.successText;
+					} else {
+						this.element.textContent = this.options.successText;
+					}
+				}
 
-		this.copyTimeout = setTimeout(() => {
-			this.resetState();
-		}, this.options.successDuration);
-	}
+				this.copyTimeout = setTimeout(() => {
+					this.setState({ status: 'idle' });
+				}, this.options.successDuration);
 
-	handleError() {
-		this.element.classList.add("copy-error");
+			} else if (status === 'error') {
+				this.element.classList.add("copy-error");
+				this.element.classList.remove("copied");
 
-		if (this.copyTimeout) {
-			clearTimeout(this.copyTimeout);
-		}
+				this.copyTimeout = setTimeout(() => {
+					this.setState({ status: 'idle' });
+				}, this.options.successDuration);
 
-		this.copyTimeout = setTimeout(() => {
-			this.resetState();
-		}, this.options.successDuration);
-	}
+			} else if (status === 'idle') {
+				this.element.classList.remove("copied");
+				this.element.classList.remove("copy-error");
+				this.element.removeAttribute("aria-label");
 
-	resetState() {
-		this.element.classList.remove("copied");
-		this.element.classList.remove("copy-error");
-		this.element.removeAttribute("aria-label");
-
-		const textElement = this.element.querySelector('[data-ref="buttonText"]');
-		if (textElement) {
-			textElement.textContent = this.originalText;
-		} else {
-			this.element.textContent = this.originalText;
+				if (this.ref.buttonText) {
+					this.ref.buttonText.textContent = this.originalText;
+				} else {
+					this.element.textContent = this.originalText;
+				}
+			}
 		}
 	}
 }
