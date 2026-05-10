@@ -7,6 +7,7 @@ class Config {
 		log: false,
 		attrPrefix: "data", // data-component="HelloWorld"
 		autoMountComponents: false, // Use MutationObserver to automatically mount/unmount components
+		autoBindActions: false, // Automatically bind actions using data-action attributes
 	};
 
 	set(name, value) {

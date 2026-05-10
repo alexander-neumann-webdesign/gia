@@ -14,7 +14,9 @@ export default class Component {
 		this._options = options || {};
 		this._state = {};
 		this._autoBindFunctions();
-		this._autoBindActions();
+		if (config.get("autoBindActions")) {
+			this._autoBindActions();
+		}
 	}
 
 	get ref() {
@@ -239,7 +241,7 @@ export default class Component {
 
 	_autoBindActions() {
 		// Find all elements with data-action inside this component
-		const actionElements = this.element.querySelectorAll("[data-action]");
+		const actionElements = queryAll("[data-action]", this.element);
 
 		actionElements.forEach((el) => {
 			const actions = el.dataset.action.split(" "); // Allow multiple: "click->doX hover->doY"

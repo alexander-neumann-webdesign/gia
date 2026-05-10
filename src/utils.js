@@ -11,7 +11,7 @@ export function queryAll(selector, context = document) {
 		return selector;
 	}
 
-	return Array.from(context.querySelectorAll(selector));
+	return context.querySelectorAll(selector);
 }
 
 export function toggleClass(element, className, condition = null) {
