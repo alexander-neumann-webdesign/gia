@@ -36,6 +36,14 @@ class ImageHolder extends gia.Component {
 
 		if (!this.ref.img) return;
 
+		this.initObservers();
+
+		if (this.options.parallaxSpeed !== 0) {
+			this.initParallax();
+		}
+	}
+
+	initObservers() {
 		// Setup Intersection Observer for 'visible' class
 		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
 			rootMargin: "0px",
@@ -43,42 +51,67 @@ class ImageHolder extends gia.Component {
 		});
 		this.intersectionObserver.observe(this.element);
 
-		// Setup Resize Observer for 'sizes' attribute
-		this.resizeObserver = new ResizeObserver(this.handleResize);
+		// Setup Resize Observer for 'sizes' attribute with a debounce wrapper
+		this.resizeTimeout = null;
+		this.resizeObserver = new ResizeObserver((entries) => {
+			if (this.resizeTimeout) {
+				clearTimeout(this.resizeTimeout);
+			}
+			this.resizeTimeout = setTimeout(() => {
+				this.handleResize(entries);
+			}, 100);
+		});
 		this.resizeObserver.observe(this.element);
+	}
 
-		if (this.options.parallaxSpeed !== 0) {
-			this.isScrollBound = false;
-			this.currentScrollY = window.scrollY || window.pageYOffset;
+	initParallax() {
+		this.isScrollBound = false;
+		this.currentScrollY = window.scrollY || window.pageYOffset;
 
-			// Setup Resize Observer on document to catch layout shifts
-			this.bodyResizeObserver = new ResizeObserver(() => {
-				this.cacheLayout();
-				if (this.state.isVisible) {
-					this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
-				}
-			});
-			this.bodyResizeObserver.observe(document.body);
-
-			// Initial calculation based on immediate state
-			this.cacheLayout();
-			this.updateParallax();
+		// Cache the header element once if needed
+		if (this.options.startFromTop) {
+			this.headerElement = document.querySelector('header#main-header');
 		}
+
+		// Setup Resize Observer on document to catch layout shifts
+		this.bodyResizeObserver = new ResizeObserver(() => {
+			this.cacheLayout();
+			if (this.state.isVisible) {
+				this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
+			}
+		});
+		this.bodyResizeObserver.observe(document.body);
+
+		// Initial calculation based on immediate state
+		this.cacheLayout();
+		this.updateParallax();
 	}
 
 	unmount() {
+		this.destroyObservers();
+
+		if (this.options.parallaxSpeed !== 0) {
+			this.destroyParallax();
+		}
+	}
+
+	destroyObservers() {
 		if (this.intersectionObserver) {
 			this.intersectionObserver.disconnect();
 		}
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 		}
-		if (this.options.parallaxSpeed !== 0) {
-			this.unbindScroll();
+		if (this.resizeTimeout) {
+			clearTimeout(this.resizeTimeout);
+		}
+	}
 
-			if (this.bodyResizeObserver) {
-				this.bodyResizeObserver.disconnect();
-			}
+	destroyParallax() {
+		this.unbindScroll();
+
+		if (this.bodyResizeObserver) {
+			this.bodyResizeObserver.disconnect();
 		}
 	}
 
@@ -125,12 +158,14 @@ class ImageHolder extends gia.Component {
 		}
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(() => {
-				this.updateParallax();
-				this.ticking = false;
-			});
+			window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
+	}
+
+	tickUpdate() {
+		this.updateParallax();
+		this.ticking = false;
 	}
 
 	stateChange(stateChanges) {
@@ -197,8 +232,7 @@ class ImageHolder extends gia.Component {
 		this.cachedLayout.windowHeight = window.innerHeight;
 
 		if (this.options.startFromTop) {
-			const header = document.querySelector('header#main-header');
-			this.cachedLayout.headerOffset = header ? header.offsetHeight : 0;
+			this.cachedLayout.headerOffset = this.headerElement ? this.headerElement.offsetHeight : 0;
 		}
 	}
 
@@ -230,7 +264,8 @@ class ImageHolder extends gia.Component {
 		progress = Math.max(0, Math.min(1, progress));
 
 		if (this.options.parallaxCssVar) {
-			this.element.style.setProperty('--parallax-scroll-progress', progress.toFixed(4));
+			const roundedProgress = Math.round(progress * 10000) / 10000;
+			this.element.style.setProperty('--parallax-scroll-progress', roundedProgress);
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;

@@ -56,10 +56,7 @@ class Header extends gia.Component {
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(() => {
-				this.update();
-				this.ticking = false;
-			});
+			window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -69,12 +66,14 @@ class Header extends gia.Component {
 		this.currentScrollY = e.scroll;
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(() => {
-				this.update();
-				this.ticking = false;
-			});
+			window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
+	}
+
+	tickUpdate() {
+		this.update();
+		this.ticking = false;
 	}
 
 	handleSwupPageChange() {
