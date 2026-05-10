@@ -3,7 +3,7 @@ class Header extends gia.Component {
 		super(element);
 
 		this.options = {
-			sticky: true,
+			scrollEvents: true,
 			scrollThreshold: 50 // Minimum scroll amount before hiding/showing
 		};
 
@@ -17,7 +17,7 @@ class Header extends gia.Component {
 	}
 
 	mount() {
-		if (this.options.sticky) {
+		if (this.options.scrollEvents) {
 			// Lenis scroll listener or fallback to Native scroll
 			if (window.lenis) {
 				window.lenis.on('scroll', this.handleLenisScroll);
@@ -36,7 +36,7 @@ class Header extends gia.Component {
 	}
 
 	unmount() {
-		if (this.options.sticky) {
+		if (this.options.scrollEvents) {
 			if (window.lenis) {
 				window.lenis.off('scroll', this.handleLenisScroll);
 			} else {

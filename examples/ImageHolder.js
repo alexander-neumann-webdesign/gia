@@ -108,16 +108,33 @@ class ImageHolder extends gia.Component {
 		const rect = this.element.getBoundingClientRect();
 		const windowHeight = window.innerHeight;
 
-		// progress ranges from -1 (bottom of viewport) to 1 (top of viewport)
-		const centerOffset = (rect.top + rect.height / 2) - (windowHeight / 2);
-		const progress = centerOffset / (windowHeight / 2);
+		// Total scrollable distance for the element within the viewport:
+		// Starts when rect.top == windowHeight (element top hits viewport bottom)
+		// Ends when rect.bottom == 0 (element bottom hits viewport top)
+		// So total distance is windowHeight + rect.height
+		const totalDistance = windowHeight + rect.height;
 
-		const offset = progress * this.options.parallaxSpeed * -100; // Multiplier to give speed a sensible range
+		// Current scrolled distance for the element:
+		// When it first enters (rect.top == windowHeight), currentDistance is 0.
+		// When it leaves (rect.bottom == 0), currentDistance is totalDistance.
+		const currentDistance = windowHeight - rect.top;
+
+		// Normalize progress from 0 (just entered) to 1 (just left)
+		// Clamp it between 0 and 1 just in case
+		let progress = currentDistance / totalDistance;
+		progress = Math.max(0, Math.min(1, progress));
+
+		// We map progress 0 -> 1 to an offset from -Speed to +Speed (or vice versa depending on intended direction)
+		// Let's map it from -Speed/2 to +Speed/2 to center the image when progress is 0.5
+		const mappedProgress = progress - 0.5;
+
+		// Use percentage based on the image size
+		const offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
 
 		if (this.options.parallaxDirection === 'horizontal') {
-			this.ref.img.style.transform = `translate3d(${offset}px, 0, 0)`;
+			this.ref.img.style.transform = `translate3d(${offsetPercent}%, 0, 0)`;
 		} else {
-			this.ref.img.style.transform = `translate3d(0, ${offset}px, 0)`;
+			this.ref.img.style.transform = `translate3d(0, ${offsetPercent}%, 0)`;
 		}
 	}
 }
