@@ -30,6 +30,10 @@ class ImageHolder extends gia.Component {
 	}
 
 	mount() {
+		if (!this.ref.img) {
+			this.ref.img = this.element.querySelector('img');
+		}
+
 		if (!this.ref.img) return;
 
 		// Setup Intersection Observer for 'visible' class
