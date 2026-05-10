@@ -25,11 +25,7 @@ class VideoHolder extends gia.Component {
 		}
 
 		// Setup Intersection Observer to play/pause video when entering/leaving viewport
-		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
-			rootMargin: "0px",
-			threshold: 0.01 // Start playing as soon as 1% is visible
-		});
-		this.intersectionObserver.observe(this.element);
+		VideoHolder.observe(this.element, this);
 
 		if (this.ref.playPauseButton) {
 			this.ref.playPauseButton.addEventListener('click', this.togglePlay);
@@ -57,9 +53,7 @@ class VideoHolder extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		if (this.intersectionObserver) {
-			this.intersectionObserver.disconnect();
-		}
+		VideoHolder.unobserve(this.element, this);
 
 		if (this.ref.playPauseButton) {
 			this.ref.playPauseButton.removeEventListener('click', this.togglePlay);
@@ -161,6 +155,30 @@ class VideoHolder extends gia.Component {
 		}
 	}
 }
+
+VideoHolder.instances = new WeakMap();
+
+VideoHolder.observer = new IntersectionObserver((entries) => {
+	entries.forEach((entry) => {
+		const instance = VideoHolder.instances.get(entry.target);
+		if (instance) {
+			instance.handleIntersect([entry]);
+		}
+	});
+}, {
+	rootMargin: "0px",
+	threshold: 0.01 // Start playing as soon as 1% is visible
+});
+
+VideoHolder.observe = function(element, instance) {
+	VideoHolder.instances.set(element, instance);
+	VideoHolder.observer.observe(element);
+};
+
+VideoHolder.unobserve = function(element, instance) {
+	VideoHolder.observer.unobserve(element);
+	VideoHolder.instances.delete(element);
+};
 
 gia.register(VideoHolder);
 

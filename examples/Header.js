@@ -15,6 +15,9 @@ class Header extends gia.Component {
 			isHidden: false,
 			isScrolled: false
 		});
+
+		// Pre-bind rAF callback to avoid closure allocation on every scroll
+		this.tickUpdate = this.tickUpdate.bind(this);
 	}
 
 	mount() {
@@ -56,10 +59,7 @@ class Header extends gia.Component {
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(() => {
-				this.update();
-				this.ticking = false;
-			});
+			window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -69,12 +69,14 @@ class Header extends gia.Component {
 		this.currentScrollY = e.scroll;
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(() => {
-				this.update();
-				this.ticking = false;
-			});
+			window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
+	}
+
+	tickUpdate() {
+		this.update();
+		this.ticking = false;
 	}
 
 	handleSwupPageChange() {

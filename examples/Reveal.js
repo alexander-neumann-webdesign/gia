@@ -15,33 +15,25 @@ class Reveal extends gia.Component {
 	}
 
 	mount() {
-		this.observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						this.setState({ isInview: true });
-
-						if (this.options.once) {
-							this.observer.unobserve(this.element);
-						}
-					} else if (!this.options.once) {
-						this.setState({ isInview: false });
-					}
-				});
-			},
-			{
-				threshold: this.options.threshold,
-				rootMargin: this.options.rootMargin
-			}
-		);
-
-		this.observer.observe(this.element);
+		Reveal.observe(this.element, this);
 	}
 
 	unmount() {
-		if (this.observer) {
-			this.observer.disconnect();
-		}
+		Reveal.unobserve(this.element, this);
+	}
+
+	handleIntersect(entries) {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				this.setState({ isInview: true });
+
+				if (this.options.once) {
+					Reveal.unobserve(this.element, this);
+				}
+			} else if (!this.options.once) {
+				this.setState({ isInview: false });
+			}
+		});
 	}
 
 	stateChange(stateChanges) {
@@ -54,6 +46,42 @@ class Reveal extends gia.Component {
 		}
 	}
 }
+
+Reveal.instances = new WeakMap();
+Reveal.observers = new Map();
+
+Reveal.getObserver = function(options) {
+	const key = JSON.stringify({ threshold: options.threshold, rootMargin: options.rootMargin });
+
+	if (!Reveal.observers.has(key)) {
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				const instance = Reveal.instances.get(entry.target);
+				if (instance) {
+					instance.handleIntersect([entry]);
+				}
+			});
+		}, {
+			threshold: options.threshold,
+			rootMargin: options.rootMargin
+		});
+		Reveal.observers.set(key, observer);
+	}
+
+	return Reveal.observers.get(key);
+};
+
+Reveal.observe = function(element, instance) {
+	Reveal.instances.set(element, instance);
+	const observer = Reveal.getObserver(instance.options);
+	observer.observe(element);
+};
+
+Reveal.unobserve = function(element, instance) {
+	const observer = Reveal.getObserver(instance.options);
+	observer.unobserve(element);
+	Reveal.instances.delete(element);
+};
 
 gia.register(Reveal);
 
