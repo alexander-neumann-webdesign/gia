@@ -13,6 +13,7 @@ export default class Component {
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
+		this._stateAttributeCache = {};
 		this._autoBindFunctions();
 		if (config.get("autoBindActions")) {
 			this._autoBindActions();
@@ -201,11 +202,37 @@ export default class Component {
 		if (hasChanges) {
 			if (!this._pendingStateChanges) {
 				this._pendingStateChanges = {};
+				this._pendingAttributeChanges = {};
 				requestAnimationFrame(() => {
+					// Apply batched attribute changes
+					Object.keys(this._pendingAttributeChanges).forEach((attrName) => {
+						const value = this._pendingAttributeChanges[attrName];
+						this.element.setAttribute(attrName, value);
+					});
+
 					this.stateChange(this._pendingStateChanges);
 					this._pendingStateChanges = null;
+					this._pendingAttributeChanges = null;
 				});
 			}
+
+			// Process state changes for attributes
+			Object.keys(stateChanges).forEach((key) => {
+				const value = stateChanges[key];
+				const type = typeof value;
+
+				if (type === "boolean" || type === "string") {
+					if (!this._stateAttributeCache[key]) {
+						// Convert camelCase to kebab-case
+						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+						this._stateAttributeCache[key] = `data-${kebabKey}`;
+					}
+
+					const attrName = this._stateAttributeCache[key];
+					this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
+				}
+			});
+
 			Object.assign(this._pendingStateChanges, stateChanges);
 		}
 	}
