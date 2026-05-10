@@ -44,20 +44,20 @@ class ImageHolder extends gia.Component {
 		this.resizeObserver.observe(this.element);
 
 		if (this.options.parallaxSpeed !== 0) {
-			if (window.lenis) {
-				window.lenis.on('scroll', this.handleScroll);
-			} else {
-				window.addEventListener('scroll', this.handleScroll, { passive: true });
-			}
+			this.isScrollBound = false;
+			this.currentScrollY = window.scrollY || window.pageYOffset;
 
 			// Setup Resize Observer on document to catch layout shifts
 			this.bodyResizeObserver = new ResizeObserver(() => {
 				this.cacheLayout();
-				this.handleScroll();
+				if (this.state.isVisible) {
+					this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
+				}
 			});
 			this.bodyResizeObserver.observe(document.body);
 
-			// Initial check
+			// Initial calculation based on immediate state
+			this.cacheLayout();
 			this.updateParallax();
 		}
 	}
@@ -70,15 +70,33 @@ class ImageHolder extends gia.Component {
 			this.resizeObserver.disconnect();
 		}
 		if (this.options.parallaxSpeed !== 0) {
-			if (window.lenis) {
-				window.lenis.off('scroll', this.handleScroll);
-			} else {
-				window.removeEventListener('scroll', this.handleScroll);
-			}
+			this.unbindScroll();
 
 			if (this.bodyResizeObserver) {
 				this.bodyResizeObserver.disconnect();
 			}
+		}
+	}
+
+	bindScroll() {
+		if (this.isScrollBound) return;
+		this.isScrollBound = true;
+
+		if (window.lenis) {
+			window.lenis.on('scroll', this.handleScroll);
+		} else {
+			window.addEventListener('scroll', this.handleScroll, { passive: true });
+		}
+	}
+
+	unbindScroll() {
+		if (!this.isScrollBound) return;
+		this.isScrollBound = false;
+
+		if (window.lenis) {
+			window.lenis.off('scroll', this.handleScroll);
+		} else {
+			window.removeEventListener('scroll', this.handleScroll);
 		}
 	}
 
@@ -90,8 +108,17 @@ class ImageHolder extends gia.Component {
 		});
 	}
 
-	handleScroll() {
+	handleScroll(e) {
 		if (!this.state.isVisible) return;
+
+		// If Lenis is firing this, intercept scroll directly from event.
+		// If Native scroll fired this, `e.scroll` is undefined, use window.scrollY.
+		// Important: We read scrollY synchronously OUTSIDE requestAnimationFrame to avoid thrashing.
+		if (e && typeof e.scroll === 'number') {
+			this.currentScrollY = e.scroll;
+		} else {
+			this.currentScrollY = window.scrollY || window.pageYOffset;
+		}
 
 		if (!this.ticking) {
 			window.requestAnimationFrame(() => {
@@ -107,13 +134,22 @@ class ImageHolder extends gia.Component {
 			if (this.state.isVisible) {
 				this.element.classList.add('visible');
 
-				// Force a recalculation as soon as it becomes visible
 				if (this.options.parallaxSpeed !== 0) {
+					// Dynamically bind scroll listener only when visible to save resources
+					this.bindScroll();
+
+					// Force a recalculation as soon as it becomes visible
 					this.cacheLayout();
+					this.currentScrollY = window.scrollY || window.pageYOffset;
 					this.updateParallax();
 				}
 			} else {
 				this.element.classList.remove('visible');
+
+				if (this.options.parallaxSpeed !== 0) {
+					// Dynamically unbind scroll listener when out of view
+					this.unbindScroll();
+				}
 			}
 		}
 	}
@@ -165,11 +201,10 @@ class ImageHolder extends gia.Component {
 	updateParallax() {
 		if (this.options.parallaxSpeed === 0 || !this.ref.img) return;
 
-		const scrollTop = window.scrollY || window.pageYOffset;
 		const { elementTop, elementHeight, windowHeight, headerOffset } = this.cachedLayout;
 
 		// Calculate element's current position relative to viewport WITHOUT getBoundingClientRect
-		const currentRectTop = elementTop - scrollTop;
+		const currentRectTop = elementTop - this.currentScrollY;
 
 		let totalDistance;
 		let currentDistance;
