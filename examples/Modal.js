@@ -45,6 +45,12 @@ class Modal extends gia.Component {
 		// Listen for native close event
 		this.element.addEventListener('close', this.handleNativeClose);
 
+		// Swup integration: Force close on page transition to avoid dangling modals
+		if (window.swup) {
+			this.handleSwupOut = this.handleSwupOut.bind(this);
+			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
+		}
+
 		// Initial state based on URL hash or DOM
 		const hash = window.location.hash;
 		let shouldBeOpen = this.element.hasAttribute('open');
@@ -59,6 +65,10 @@ class Modal extends gia.Component {
 	}
 
 	unmount() {
+		if (window.swup && this.handleSwupOut) {
+			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
+		}
+
 		this.triggers.forEach(trigger => {
 			trigger.removeEventListener('click', this.handleTriggerClick);
 		});
@@ -100,6 +110,12 @@ class Modal extends gia.Component {
 		}
 	}
 
+	handleSwupOut() {
+		if (this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
+	}
+
 	stateChange(stateChanges) {
 		if ('isOpen' in stateChanges) {
 			const { isOpen } = stateChanges;
@@ -111,6 +127,11 @@ class Modal extends gia.Component {
 
 				if (this.options.preventScroll) {
 					document.body.style.overflow = 'hidden';
+
+					// Lenis integration: Stop smooth scrolling
+					if (window.lenis) {
+						window.lenis.stop();
+					}
 				}
 
 				// Write modal ID to URL
@@ -124,6 +145,11 @@ class Modal extends gia.Component {
 
 				if (this.options.preventScroll) {
 					document.body.style.overflow = '';
+
+					// Lenis integration: Resume smooth scrolling
+					if (window.lenis) {
+						window.lenis.start();
+					}
 				}
 
 				// Remove modal ID from URL
