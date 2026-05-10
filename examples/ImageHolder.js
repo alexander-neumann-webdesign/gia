@@ -36,9 +36,17 @@ class ImageHolder extends gia.Component {
 
 		if (!this.ref.img) return;
 
+		this.initObservers();
+
+		if (this.options.parallaxSpeed !== 0) {
+			this.initParallax();
+		}
+	}
+
+	initObservers() {
 		// Setup Intersection Observer for 'visible' class
 		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
-			rootMargin: "100px 0px", // Wake up 100px before entering screen
+			rootMargin: "0px",
 			threshold: 0.01
 		});
 		this.intersectionObserver.observe(this.element);
@@ -46,44 +54,53 @@ class ImageHolder extends gia.Component {
 		// Setup Resize Observer for 'sizes' attribute
 		this.resizeObserver = new ResizeObserver(this.handleResize);
 		this.resizeObserver.observe(this.element);
+	}
 
-		if (this.options.parallaxSpeed !== 0) {
-			this.isScrollBound = false;
-			this.currentScrollY = window.scrollY || window.pageYOffset;
+	initParallax() {
+		this.isScrollBound = false;
+		this.currentScrollY = window.scrollY || window.pageYOffset;
 
-			// Cache the header element once if needed
-			if (this.options.startFromTop) {
-				this.headerElement = document.querySelector('header#main-header');
-			}
-
-			// Setup Resize Observer on document to catch layout shifts
-			this.bodyResizeObserver = new ResizeObserver(() => {
-				this.cacheLayout();
-				if (this.state.isVisible) {
-					this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
-				}
-			});
-			this.bodyResizeObserver.observe(document.body);
-
-			// Initial calculation based on immediate state
-			this.cacheLayout();
-			this.updateParallax();
+		// Cache the header element once if needed
+		if (this.options.startFromTop) {
+			this.headerElement = document.querySelector('header#main-header');
 		}
+
+		// Setup Resize Observer on document to catch layout shifts
+		this.bodyResizeObserver = new ResizeObserver(() => {
+			this.cacheLayout();
+			if (this.state.isVisible) {
+				this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
+			}
+		});
+		this.bodyResizeObserver.observe(document.body);
+
+		// Initial calculation based on immediate state
+		this.cacheLayout();
+		this.updateParallax();
 	}
 
 	unmount() {
+		this.destroyObservers();
+
+		if (this.options.parallaxSpeed !== 0) {
+			this.destroyParallax();
+		}
+	}
+
+	destroyObservers() {
 		if (this.intersectionObserver) {
 			this.intersectionObserver.disconnect();
 		}
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 		}
-		if (this.options.parallaxSpeed !== 0) {
-			this.unbindScroll();
+	}
 
-			if (this.bodyResizeObserver) {
-				this.bodyResizeObserver.disconnect();
-			}
+	destroyParallax() {
+		this.unbindScroll();
+
+		if (this.bodyResizeObserver) {
+			this.bodyResizeObserver.disconnect();
 		}
 	}
 
