@@ -3,7 +3,9 @@ class ImageHolder extends gia.Component {
 		super(element);
 
 		this.options = {
-			parallax: false,
+			parallaxSpeed: 0,
+			parallaxDirection: 'vertical',
+			parallaxCssVar: false,
 			startFromTop: false
 		};
 
@@ -12,6 +14,14 @@ class ImageHolder extends gia.Component {
 		};
 
 		this.ticking = false;
+
+		// Layout caching for performance
+		this.cachedLayout = {
+			elementTop: 0,
+			elementHeight: 0,
+			windowHeight: 0,
+			headerOffset: 0
+		};
 
 		// Initialize state
 		this.setState({
@@ -33,7 +43,7 @@ class ImageHolder extends gia.Component {
 		this.resizeObserver = new ResizeObserver(this.handleResize);
 		this.resizeObserver.observe(this.element);
 
-		if (this.options.parallax) {
+		if (this.options.parallaxSpeed !== 0) {
 			if (window.lenis) {
 				window.lenis.on('scroll', this.handleScroll);
 			} else {
@@ -41,7 +51,10 @@ class ImageHolder extends gia.Component {
 			}
 
 			// Setup Resize Observer on document to catch layout shifts
-			this.bodyResizeObserver = new ResizeObserver(this.handleScroll);
+			this.bodyResizeObserver = new ResizeObserver(() => {
+				this.cacheLayout();
+				this.handleScroll();
+			});
 			this.bodyResizeObserver.observe(document.body);
 
 			// Initial check
@@ -56,7 +69,7 @@ class ImageHolder extends gia.Component {
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 		}
-		if (this.options.parallax) {
+		if (this.options.parallaxSpeed !== 0) {
 			if (window.lenis) {
 				window.lenis.off('scroll', this.handleScroll);
 			} else {
@@ -95,7 +108,8 @@ class ImageHolder extends gia.Component {
 				this.element.classList.add('visible');
 
 				// Force a recalculation as soon as it becomes visible
-				if (this.options.parallax) {
+				if (this.options.parallaxSpeed !== 0) {
+					this.cacheLayout();
 					this.updateParallax();
 				}
 			} else {
@@ -105,6 +119,8 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleResize(entries) {
+		let widthChanged = false;
+
 		for (let entry of entries) {
 			const width = entry.contentRect.width;
 			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
@@ -116,41 +132,77 @@ class ImageHolder extends gia.Component {
 				if (currentSizes !== newSizes) {
 					this.ref.img.setAttribute('sizes', newSizes);
 				}
+
+				// We only care about layout caching if parallax is enabled
+				if (this.options.parallaxSpeed !== 0) {
+					widthChanged = true;
+				}
 			}
+		}
+
+		if (widthChanged) {
+			this.cacheLayout();
+			this.updateParallax();
+		}
+	}
+
+	cacheLayout() {
+		if (this.options.parallaxSpeed === 0) return;
+
+		const rect = this.element.getBoundingClientRect();
+		const scrollTop = window.scrollY || window.pageYOffset;
+
+		this.cachedLayout.elementHeight = rect.height;
+		this.cachedLayout.elementTop = rect.top + scrollTop;
+		this.cachedLayout.windowHeight = window.innerHeight;
+
+		if (this.options.startFromTop) {
+			const header = document.querySelector('header#main-header');
+			this.cachedLayout.headerOffset = header ? header.offsetHeight : 0;
 		}
 	}
 
 	updateParallax() {
-		if (!this.options.parallax) return;
+		if (this.options.parallaxSpeed === 0 || !this.ref.img) return;
 
-		const rect = this.element.getBoundingClientRect();
-		const windowHeight = window.innerHeight;
+		const scrollTop = window.scrollY || window.pageYOffset;
+		const { elementTop, elementHeight, windowHeight, headerOffset } = this.cachedLayout;
+
+		// Calculate element's current position relative to viewport WITHOUT getBoundingClientRect
+		const currentRectTop = elementTop - scrollTop;
 
 		let totalDistance;
 		let currentDistance;
 
 		if (this.options.startFromTop) {
-			// Find the main header to determine offset
-			const header = document.querySelector('header#main-header');
-			const headerOffset = header ? header.getBoundingClientRect().bottom : 0;
-
 			// Starts when rect.top == headerOffset
 			// Ends when rect.bottom == 0
-			totalDistance = rect.height + headerOffset;
-			currentDistance = headerOffset - rect.top;
+			totalDistance = elementHeight + headerOffset;
+			currentDistance = headerOffset - currentRectTop;
 		} else {
 			// Starts when rect.top == windowHeight
 			// Ends when rect.bottom == 0
-			totalDistance = windowHeight + rect.height;
-			currentDistance = windowHeight - rect.top;
+			totalDistance = windowHeight + elementHeight;
+			currentDistance = windowHeight - currentRectTop;
 		}
 
 		// Normalize progress from 0 (just entered) to 1 (just left)
 		let progress = currentDistance / totalDistance;
 		progress = Math.max(0, Math.min(1, progress));
 
-		// Set CSS variable
-		this.element.style.setProperty('--scroll-progress', progress.toFixed(4));
+		if (this.options.parallaxCssVar) {
+			this.element.style.setProperty('--parallax-scroll-progress', progress.toFixed(4));
+		} else {
+			// Map progress 0 -> 1 to an offset from -Speed to +Speed
+			const mappedProgress = progress - 0.5;
+			const offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
+
+			if (this.options.parallaxDirection === 'horizontal') {
+				this.ref.img.style.transform = `translate3d(${offsetPercent}%, 0, 0)`;
+			} else {
+				this.ref.img.style.transform = `translate3d(0, ${offsetPercent}%, 0)`;
+			}
+		}
 	}
 }
 
@@ -159,7 +211,7 @@ gia.register(ImageHolder);
 /**
  * Expected HTML Structure:
  *
- * <div data-component="ImageHolder" data-options='{"parallax": true, "startFromTop": false}'>
+ * <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
  *   <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
  * </div>
  *
@@ -176,26 +228,26 @@ gia.register(ImageHolder);
  *     opacity: 0;
  *     will-change: transform;
  *
- *     // Default entrance animation if parallax is false
+ *     // Entrance animation
+ *     // Do NOT transition transform if parallaxSpeed is active, it will cause severe lag!
  *     transform: translateY(20px);
- *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+ *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
  *   }
  *
  *   &.visible img {
  *     opacity: 1;
- *     // Only if no parallax is used
- *     transform: translateY(0);
+ *     // If parallaxSpeed === 0, JS will not touch transform, so we can reset it here natively:
+ *     // transform: translateY(0);
  *   }
  *
- *   // If parallax is true, we use the --scroll-progress CSS variable (0.0000 to 1.0000)
- *   // We map progress 0 -> 1 to -10% to +10% transform. Center it when progress is 0.5.
- *   &[data-options*='"parallax": true'] img,
- *   &[data-options*='"parallax":true'] img {
- *     // Calculate parallax: (progress * 20%) - 10%
- *     transform: translate3d(0, calc((var(--scroll-progress, 0.5) * 20%) - 10%), 0);
- *
- *     // Make sure we remove the transition for transform, otherwise parallax lags!
- *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
- *   }
+ *   // --- Advanced Usage: parallaxCssVar ---
+ *   // If "parallaxCssVar": true is passed, JS will NOT apply inline transforms.
+ *   // Instead it sets --parallax-scroll-progress (0.0000 to 1.0000) on the ImageHolder element.
+ *   // You can use this to drive opacity, scale, rotations, etc:
+ *   //
+ *   // &[data-options*='"parallaxCssVar": true'] img,
+ *   // &[data-options*='"parallaxCssVar":true'] img {
+ *   //   transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.2)));
+ *   // }
  * }
  */
