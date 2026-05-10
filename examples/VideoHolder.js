@@ -1,47 +1,3 @@
-/**
- * Expected HTML Structure:
- *
- * <div data-component="VideoHolder">
- *   <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
- *   <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
- *     <!-- Icons injected via JS -->
- *   </button>
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="VideoHolder"] {
- *   position: relative;
- *
- *   video {
- *     width: 100%;
- *     height: auto;
- *     display: block;
- *   }
- *
- *   button[data-ref="playPauseButton"] {
- *     position: absolute;
- *     bottom: 16px;
- *     right: 16px;
- *     background: rgba(0,0,0,0.5);
- *     color: white;
- *     border: none;
- *     border-radius: 50%;
- *     width: 48px;
- *     height: 48px;
- *     cursor: pointer;
- *     display: flex;
- *     align-items: center;
- *     justify-content: center;
- *     transition: background-color 0.3s ease;
- *
- *     &:hover {
- *       background: rgba(0,0,0,0.8);
- *     }
- *   }
- * }
- */
-
 class VideoHolder extends gia.Component {
 	constructor(element) {
 		super(element);
@@ -207,3 +163,47 @@ class VideoHolder extends gia.Component {
 }
 
 gia.register(VideoHolder);
+
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="VideoHolder">
+ *   <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
+ *   <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
+ *     <!-- Icons injected via JS -->
+ *   </button>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * div[data-component="VideoHolder"] {
+ *   position: relative;
+ *
+ *   video {
+ *     width: 100%;
+ *     height: auto;
+ *     display: block;
+ *   }
+ *
+ *   button[data-ref="playPauseButton"] {
+ *     position: absolute;
+ *     bottom: 16px;
+ *     right: 16px;
+ *     background: rgba(0,0,0,0.5);
+ *     color: white;
+ *     border: none;
+ *     border-radius: 50%;
+ *     width: 48px;
+ *     height: 48px;
+ *     cursor: pointer;
+ *     display: flex;
+ *     align-items: center;
+ *     justify-content: center;
+ *     transition: background-color 0.3s ease;
+ *
+ *     &:hover {
+ *       background: rgba(0,0,0,0.8);
+ *     }
+ *   }
+ * }
+ */

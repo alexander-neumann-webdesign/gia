@@ -1,52 +1,3 @@
-/**
- * Expected HTML Structure:
- *
- * <div data-component="Tabs">
- *   <div role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
- *     <button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
- *     <button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
- *   </div>
- *   <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
- *     <p>Panel 1 content</p>
- *   </div>
- *   <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
- *     <p>Panel 2 content</p>
- *   </div>
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="Tabs"] {
- *   [role="tab"] {
- *     cursor: pointer;
- *     border-bottom: 2px solid transparent;
- *     transition: border-color 0.3s ease, color 0.3s ease;
- *
- *     &[aria-selected="true"] {
- *       border-color: currentColor;
- *       font-weight: bold;
- *     }
- *   }
- *
- *   [role="tabpanel"] {
- *     // Modern discrete transition
- *     transition: opacity 0.4s ease, display 0.4s allow-discrete;
- *     opacity: 1;
- *
- *     &[hidden] {
- *       opacity: 0;
- *       display: none;
- *     }
- *
- *     @starting-style {
- *       &:not([hidden]) {
- *         opacity: 0;
- *       }
- *     }
- *   }
- * }
- */
-
 class Tabs extends gia.Component {
 	constructor(element) {
 		super(element);
@@ -203,3 +154,52 @@ class Tabs extends gia.Component {
 }
 
 gia.register(Tabs);
+
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="Tabs">
+ *   <div role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
+ *     <button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
+ *     <button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
+ *   </div>
+ *   <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+ *     <p>Panel 1 content</p>
+ *   </div>
+ *   <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+ *     <p>Panel 2 content</p>
+ *   </div>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * div[data-component="Tabs"] {
+ *   [role="tab"] {
+ *     cursor: pointer;
+ *     border-bottom: 2px solid transparent;
+ *     transition: border-color 0.3s ease, color 0.3s ease;
+ *
+ *     &[aria-selected="true"] {
+ *       border-color: currentColor;
+ *       font-weight: bold;
+ *     }
+ *   }
+ *
+ *   [role="tabpanel"] {
+ *     // Modern discrete transition
+ *     transition: opacity 0.4s ease, display 0.4s allow-discrete;
+ *     opacity: 1;
+ *
+ *     &[hidden] {
+ *       opacity: 0;
+ *       display: none;
+ *     }
+ *
+ *     @starting-style {
+ *       &:not([hidden]) {
+ *         opacity: 0;
+ *       }
+ *     }
+ *   }
+ * }
+ */

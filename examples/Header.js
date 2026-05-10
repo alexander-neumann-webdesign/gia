@@ -1,39 +1,9 @@
-/**
- * Expected HTML Structure:
- *
- * <header data-component="StickyHeader">
- *   <div class="inner">
- *     <h1>Site Title</h1>
- *     <nav>...</nav>
- *   </div>
- * </header>
- *
- * Suggested SCSS:
- *
- * header[data-component="StickyHeader"] {
- *   position: sticky;
- *   top: 0;
- *   width: 100%;
- *   z-index: 100;
- *   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
- *   will-change: transform;
- *
- *   &.is-hidden {
- *     transform: translateY(-100%);
- *   }
- *
- *   &.is-scrolled {
- *     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
- *     background-color: white;
- *   }
- * }
- */
-
-class StickyHeader extends gia.Component {
+class Header extends gia.Component {
 	constructor(element) {
 		super(element);
 
 		this.options = {
+			sticky: true,
 			scrollThreshold: 50 // Minimum scroll amount before hiding/showing
 		};
 
@@ -47,23 +17,35 @@ class StickyHeader extends gia.Component {
 	}
 
 	mount() {
-		// Native scroll listener
-		window.addEventListener('scroll', this.handleScroll, { passive: true });
+		if (this.options.sticky) {
+			// Lenis scroll listener or fallback to Native scroll
+			if (window.lenis) {
+				window.lenis.on('scroll', this.handleLenisScroll);
+			} else {
+				window.addEventListener('scroll', this.handleScroll, { passive: true });
+			}
 
-		// Lenis scroll listener
-		if (window.lenis) {
-			window.lenis.on('scroll', this.handleLenisScroll);
+			// Initial check
+			this.update(window.scrollY);
+
+			// Swup integration: reset header when navigating
+			if (window.swup) {
+				window.swup.hooks.on("page:view", this.handleSwupPageChange);
+			}
 		}
-
-		// Initial check
-		this.update(window.scrollY);
 	}
 
 	unmount() {
-		window.removeEventListener('scroll', this.handleScroll);
+		if (this.options.sticky) {
+			if (window.lenis) {
+				window.lenis.off('scroll', this.handleLenisScroll);
+			} else {
+				window.removeEventListener('scroll', this.handleScroll);
+			}
 
-		if (window.lenis) {
-			window.lenis.off('scroll', this.handleLenisScroll);
+			if (window.swup) {
+				window.swup.hooks.off("page:view", this.handleSwupPageChange);
+			}
 		}
 	}
 
@@ -82,6 +64,15 @@ class StickyHeader extends gia.Component {
 
 	handleLenisScroll(e) {
 		this.update(e.scroll);
+	}
+
+	handleSwupPageChange() {
+		// Reset state because Swup scrolls to top
+		this.lastScrollY = 0;
+		this.setState({
+			isHidden: false,
+			isScrolled: false
+		});
 	}
 
 	update(currentScrollY) {
@@ -128,4 +119,4 @@ class StickyHeader extends gia.Component {
 	}
 }
 
-gia.register(StickyHeader);
+gia.register(Header);

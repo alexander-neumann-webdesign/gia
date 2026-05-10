@@ -1,33 +1,3 @@
-/**
- * Expected HTML Structure:
- *
- * <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
- *   <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="ImageHolder"] {
- *   overflow: hidden;
- *   position: relative;
- *
- *   img {
- *     width: 100%;
- *     height: auto;
- *     display: block;
- *     opacity: 0;
- *     transform: translateY(20px); // Only if no parallax is used
- *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
- *     will-change: transform;
- *   }
- *
- *   &.visible img {
- *     opacity: 1;
- *     transform: translateY(0); // Only if no parallax is used, parallax overrides this inline
- *   }
- * }
- */
-
 class ImageHolder extends gia.Component {
 	constructor(element) {
 		super(element);
@@ -153,3 +123,33 @@ class ImageHolder extends gia.Component {
 }
 
 gia.register(ImageHolder);
+
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+ *   <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * div[data-component="ImageHolder"] {
+ *   overflow: hidden;
+ *   position: relative;
+ *
+ *   img {
+ *     width: 100%;
+ *     height: auto;
+ *     display: block;
+ *     opacity: 0;
+ *     transform: translateY(20px); // Only if no parallax is used
+ *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+ *     will-change: transform;
+ *   }
+ *
+ *   &.visible img {
+ *     opacity: 1;
+ *     transform: translateY(0); // Only if no parallax is used, parallax overrides this inline
+ *   }
+ * }
+ */
