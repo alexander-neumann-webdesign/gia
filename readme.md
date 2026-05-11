@@ -454,9 +454,11 @@ The `examples/` directory contains a comprehensive set of real-world use cases d
 ### UI & Interactive Elements
 *   **Accordion**: A semantic and accessible accordion component utilizing native `<details>` and `<summary>` elements. It manages state reactively to ensure only one panel remains open at a time if desired, and syncs open states with the URL hash.
 *   **ClipboardCopy**: A simple utility component that copies text from a referenced element to the user's clipboard. It showcases how to use `this.setState` to provide temporary visual feedback after a successful action.
+*   **FilterableList**: A robust filtering and sorting component for collections of items. It intelligently manages state via URL parameters for deep linking and utilizes the View Transitions API for seamless, hardware-accelerated DOM reordering and filtering animations.
 *   **Modal**: An accessible dialog window component that utilizes the native `<dialog>` element. It supports triggering via external targets and manages URL hash syncing for easy direct linking to open modals.
 *   **OffCanvasMenu**: A slide-out navigation menu component triggered by user interaction. It demonstrates state-based class toggling and how to handle clicks outside the component to close the menu.
 *   **Slider**: A swipeable content slider demonstrating complex touch event handling and hardware-accelerated CSS transforms. It manages active slide states and updates pagination indicators reactively.
+*   **SplitText**: A performant text splitting component designed for complex typography animations. It intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API, while automatically preserving accessibility for screen readers.
 *   **Tabs**: A robust tabbed interface component that relies on state management to switch active views. It also supports URL hash syncing so users can bookmark and load specific tabs on page load.
 *   **ThemeToggle**: A dark/light mode toggle switch component that persists user preference. It shows how Gia components can interact with `localStorage` and mutate global state efficiently.
 *   **Tooltip**: A dynamic tooltip component using the Floating UI library via asynchronous dynamic import inside `require()`, providing perfectly positioned floating elements.
