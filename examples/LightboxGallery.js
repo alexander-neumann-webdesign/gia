@@ -110,14 +110,12 @@ class CustomObjectPosition {
 			let translateY = "0";
 
 			if (translate !== "none") {
-			    const translateParts = translate.split(" ");
-			    translateX = translateParts[0] || "0";
-			    translateY = translateParts[1] || "0";
+			    const [tx = "0", ty = "0"] = translate.split(" ");
+			    translateX = tx;
+			    translateY = ty;
 			}
 
-			const posParts = objectPosition.split(" ");
-			const positionX = posParts[0] || "50%";
-			const positionY = posParts[1] || "50%";
+			const [positionX = "50%", positionY = "50%"] = objectPosition.split(" ");
 
 			const fillZoomLevel = thumbBounds.w / itemData.width;
 			const offsetY_float = parseFloat(offsetY);
@@ -146,7 +144,7 @@ class CustomObjectPosition {
 
 	getCroppedBoundsOffset(position, imageSize, thumbSize, zoomLevel) {
 		const float = parseFloat(position);
-		return position.indexOf("%") > 0 ? ((thumbSize - imageSize * zoomLevel) * float) / 100 : float;
+		return position.includes("%") ? ((thumbSize - imageSize * zoomLevel) * float) / 100 : float;
 	}
 }
 
