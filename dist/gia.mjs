@@ -1,6 +1,6 @@
-var O = Object.defineProperty;
-var $ = (r, e, n) => e in r ? O(r, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : r[e] = n;
-var m = (r, e, n) => $(r, typeof e != "symbol" ? e + "" : e, n);
+var C = Object.defineProperty;
+var O = (r, e, n) => e in r ? C(r, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : r[e] = n;
+var m = (r, e, n) => O(r, typeof e != "symbol" ? e + "" : e, n);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (r) => {
   if (typeof r != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", r);
@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = r;
 });
-class A {
+class $ {
   constructor() {
     m(this, "_options", {
       log: !1,
@@ -32,8 +32,8 @@ class A {
     return this._options[e];
   }
 }
-const f = new A();
-function P(r, e, n, s) {
+const f = new $();
+function A(r, e, n, s) {
   if (r.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
   try {
@@ -43,13 +43,13 @@ function P(r, e, n, s) {
     return console.error(`Failed to create component "${e}".`, t), null;
   }
 }
-function v(r) {
+function E(r) {
   return typeof r == "string" && (r = document.getElementById(r), !r) ? null : r.__gia_component__;
 }
 function g(r, e = document) {
   return typeof r != "string" ? r : e.querySelectorAll(r);
 }
-function z(r = {}, e = document.documentElement) {
+function P(r = {}, e = document.documentElement) {
   let n = !0;
   if (r) {
     for (const c in r)
@@ -63,10 +63,10 @@ function z(r = {}, e = document.documentElement) {
     return;
   }
   const s = [], t = `${f.get("attrPrefix")}-component`, i = g(`[${t}]`, e), o = i.length, a = (c) => {
-    if (v(c))
+    if (E(c))
       return;
     const u = c.getAttribute(t);
-    typeof r[u] == "function" ? s.push(P(c, u, r[u])) : console.warn(`Constructor "${u}" not found.`);
+    typeof r[u] == "function" ? s.push(A(c, u, r[u])) : console.warn(`Constructor "${u}" not found.`);
   };
   for (let c = 0; c < o; c++)
     a(i[c]);
@@ -75,7 +75,7 @@ function z(r = {}, e = document.documentElement) {
   });
 }
 function b(r) {
-  const e = v(r);
+  const e = E(r);
   if (e) {
     const n = e._name || "Unknown";
     try {
@@ -94,7 +94,7 @@ function N(r = document.documentElement) {
   );
 }
 let p = null;
-const d = /* @__PURE__ */ new Map(), _ = /* @__PURE__ */ new Map(), w = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), E = /* @__PURE__ */ new WeakMap();
+const d = /* @__PURE__ */ new Map(), _ = /* @__PURE__ */ new Map(), z = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), w = /* @__PURE__ */ new WeakMap();
 function I(r) {
   const e = r.root || null, n = r.rootMargin || "0px 0px 0px 0px", s = r.threshold || 0, t = Array.isArray(s) ? s.join(",") : s.toString();
   return `${e ? e.id || "root-element" : "null"}|${n}|${t}`;
@@ -209,7 +209,7 @@ let S = class {
     i || (i = { observer: new IntersectionObserver((c) => {
       for (const l of c) {
         const u = i.callbacks.get(l.target);
-        u && u.forEach((C) => C([l]));
+        u && u.forEach((y) => y([l]));
       }
     }, s), callbacks: /* @__PURE__ */ new Map() }, _.set(t, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(n), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
     const o = this._observedIntersectionElements.get(e);
@@ -298,11 +298,11 @@ let S = class {
   }
   _autoBindFunctions() {
     const e = Object.getPrototypeOf(this);
-    let n = E.get(e);
+    let n = w.get(e);
     n || (n = Object.getOwnPropertyNames(e).filter((s) => {
       var t;
-      return !w.has(s) && !s.startsWith("_") && typeof ((t = Object.getOwnPropertyDescriptor(e, s)) == null ? void 0 : t.value) == "function";
-    }), E.set(e, n));
+      return !z.has(s) && !s.startsWith("_") && typeof ((t = Object.getOwnPropertyDescriptor(e, s)) == null ? void 0 : t.value) == "function";
+    }), w.set(e, n));
     for (let s = 0; s < n.length; s++) {
       const t = n[s];
       this[t] = this[t].bind(this);
@@ -313,7 +313,7 @@ let S = class {
       n.dataset.action.split(" ").forEach((t) => {
         const i = t.indexOf("->");
         let o, a;
-        i !== -1 ? (o = t.substring(0, i), a = t.substring(i + 2)) : (o = t, a = void 0), this[a] && typeof this[a] == "function" && !a.startsWith("_") && !w.has(a) ? n.addEventListener(o, (c) => this[a](c)) : console.warn(`Method "${a}" not found or not allowed in component.`);
+        i !== -1 ? (o = t.substring(0, i), a = t.substring(i + 2)) : (o = t, a = void 0), this[a] ? n.addEventListener(o, (c) => this[a](c)) : console.warn(`Method "${a}" not found in component.`);
       });
     });
   }
@@ -353,10 +353,10 @@ function R(r) {
       i.nodeType === Node.ELEMENT_NODE && s.add(i);
     });
   }), s.forEach((t) => {
-    t.isConnected && z(n, t);
+    t.isConnected && P(n, t);
   });
 }
-function y() {
+function v() {
   typeof document > "u" || (f.get("autoMountComponents") && !h ? (h = new MutationObserver(R), h.observe(document.body, {
     childList: !0,
     subtree: !0
@@ -364,17 +364,17 @@ function y() {
 }
 const x = f.set;
 f.set = function(r, e) {
-  x.call(this, r, e), r === "autoMountComponents" && y();
+  x.call(this, r, e), r === "autoMountComponents" && v();
 };
-typeof window < "u" && setTimeout(y, 0);
+typeof window < "u" && setTimeout(v, 0);
 export {
   S as BaseComponent,
   B as Component,
   f as config,
-  P as createInstance,
+  A as createInstance,
   N as destroyInstance,
   L as eventbus,
-  v as getComponentFromElement,
-  z as loadComponents,
+  E as getComponentFromElement,
+  P as loadComponents,
   N as removeComponents
 };
