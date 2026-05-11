@@ -117,10 +117,14 @@ export default class Component {
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
 		let options = {};
 		if (optionsFromAttribute) {
-			try {
-				options = JSON.parse(optionsFromAttribute);
-			} catch (e) {
-				console.error(`Failed to parse options for component "${this._name}": ${e.message}`);
+			// ⚡ BOLT OPTIMIZATION: Avoid JSON.parse in try/catch if it's clearly not JSON
+			const trimmedStr = optionsFromAttribute.trim();
+			if (trimmedStr.startsWith("{") || trimmedStr.startsWith("[")) {
+				try {
+					options = JSON.parse(trimmedStr);
+				} catch (e) {
+					console.error(`Failed to parse options for component "${this._name}": ${e.message}`);
+				}
 			}
 		}
 

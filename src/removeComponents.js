@@ -8,9 +8,10 @@ import { queryAll } from "./utils";
  */
 
 export default function removeComponents(context = document.documentElement) {
-	queryAll(`[${config.get("attrPrefix")}-component]`, context).forEach(
-		(element) => {
-			destroyInstance(element);
-		},
-	);
+	const components = queryAll(`[${config.get("attrPrefix")}-component]`, context);
+
+	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
+	for (let i = 0; i < components.length; i++) {
+		destroyInstance(components[i]);
+	}
 }

@@ -56,7 +56,8 @@ export default function loadComponents(components = {}, context = document.docum
 	}
 
 	// call _load/require/mount
-	initialisedComponents.forEach((component) => {
-		component._load();
-	});
+	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid array iteration overhead
+	for (let i = 0; i < initialisedComponents.length; i++) {
+		initialisedComponents[i]._load();
+	}
 }
