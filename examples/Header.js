@@ -112,22 +112,41 @@ class Header extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ('isHidden' in stateChanges) {
-			if (this.state.isHidden) {
-				this.element.classList.add('is-hidden');
-			} else {
-				this.element.classList.remove('is-hidden');
-			}
-		}
-
-		if ('isScrolled' in stateChanges) {
-			if (this.state.isScrolled) {
-				this.element.classList.add('is-scrolled');
-			} else {
-				this.element.classList.remove('is-scrolled');
-			}
-		}
+		// Classes are now automatically mapped to data-is-hidden and data-is-scrolled by BaseComponent
 	}
 }
 
 gia.register(Header);
+
+/**
+ * Expected HTML Structure:
+ *
+ * <header data-component="Header" id="main-header">
+ *   <div class="header-inner">
+ *     <div class="logo">Logo</div>
+ *     <nav>Nav Items</nav>
+ *   </div>
+ * </header>
+ *
+ * Suggested SCSS:
+ *
+ * header[data-component="Header"] {
+ *   position: fixed;
+ *   top: 0;
+ *   left: 0;
+ *   width: 100%;
+ *   transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+ *   padding: 2rem 0;
+ *   background-color: transparent;
+ *
+ *   &[data-is-scrolled="true"] {
+ *     padding: 1rem 0;
+ *     background-color: white;
+ *     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+ *   }
+ *
+ *   &[data-is-hidden="true"] {
+ *     transform: translateY(-100%);
+ *   }
+ * }
+ */
