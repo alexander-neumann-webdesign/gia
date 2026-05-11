@@ -18,6 +18,20 @@ class SplitText extends gia.Component {
 		this._charIndex = 0;
 		this._wordIndex = 0;
 		this._lineIndex = 0;
+
+		// Initialize/Cache Segmenters once for performance
+		this._initSegmenters();
+	}
+
+	_initSegmenters() {
+		if (window.Intl && Intl.Segmenter) {
+			if (!SplitText._wordSegmenter) {
+				SplitText._wordSegmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'word' });
+			}
+			if (!SplitText._graphemeSegmenter) {
+				SplitText._graphemeSegmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'grapheme' });
+			}
+		}
 	}
 
 	mount() {
@@ -121,9 +135,8 @@ class SplitText extends gia.Component {
 
 		// Use Intl.Segmenter for word boundaries if available, fallback to regex
 		let words = [];
-		if (window.Intl && Intl.Segmenter) {
-			const segmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'word' });
-			const segments = segmenter.segment(text);
+		if (SplitText._wordSegmenter) {
+			const segments = SplitText._wordSegmenter.segment(text);
 			for (const segment of segments) {
 				words.push({ text: segment.segment, isWordLike: segment.isWordLike });
 			}
@@ -167,9 +180,8 @@ class SplitText extends gia.Component {
 			if (doChars) {
 				// Use Intl.Segmenter for graphemes (characters/emojis)
 				let chars = [];
-				if (window.Intl && Intl.Segmenter) {
-					const segmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'grapheme' });
-					const segments = segmenter.segment(wordText);
+				if (SplitText._graphemeSegmenter) {
+					const segments = SplitText._graphemeSegmenter.segment(wordText);
 					for (const segment of segments) {
 						chars.push(segment.segment);
 					}
@@ -204,16 +216,22 @@ class SplitText extends gia.Component {
 	calculateLines() {
 		if (this.words.length === 0) return;
 
+		// Phase 1: STRICT DOM READS
+		// We read all offsets into an array first to prevent layout thrashing (forced reflows)
+		const offsetTops = new Array(this.words.length);
+		for (let i = 0; i < this.words.length; i++) {
+			offsetTops[i] = this.words[i].offsetTop;
+		}
+
+		// Group words into lines based on cached offsets
 		let currentLine = [];
 		let currentTop = null;
 		const linesArray = [];
 
-		// Group words into lines by measuring their offsetTop
 		for (let i = 0; i < this.words.length; i++) {
 			const word = this.words[i];
-			const top = word.offsetTop;
+			const top = offsetTops[i];
 
-			// If currentTop is null (first word) or top has changed by a significant amount (line break)
 			if (currentTop === null || Math.abs(currentTop - top) > 2) {
 				currentLine = [];
 				linesArray.push(currentLine);
@@ -222,28 +240,27 @@ class SplitText extends gia.Component {
 			currentLine.push(word);
 		}
 
-		// Now wrap the grouped words into line elements.
-		// Because we support nested elements, we CANNOT simply wrap words into a block level element,
-		// because those words might be deeply nested in different tags (e.g. half a line in <strong>, half in <em>).
-		// Moving them into a new <span class="split-line"> would tear them out of their semantic wrappers!
+		// Phase 2: STRICT DOM WRITES
+		// Defer applying styles until the next frame to keep main thread unblocked
+		requestAnimationFrame(() => {
+			for (let i = 0; i < linesArray.length; i++) {
+				const lineWords = linesArray[i];
 
-		// To fix this and preserve HTML structure:
-		// We will NOT wrap them in a DOM element.
-		// Instead, we will assign a CSS variable `--line-index` directly to the `.split-word` or `.split-char` elements.
+				for (let j = 0; j < lineWords.length; j++) {
+					const wordEl = lineWords[j];
+					wordEl.style.setProperty("--line-index", i);
 
-		for (let i = 0; i < linesArray.length; i++) {
-			const lineWords = linesArray[i];
-
-			for (let j = 0; j < lineWords.length; j++) {
-				lineWords[j].style.setProperty("--line-index", i);
-
-				// Also pass it down to chars if they exist
-				const childChars = lineWords[j].querySelectorAll('.split-char');
-				for(let k = 0; k < childChars.length; k++) {
-				    childChars[k].style.setProperty("--line-index", i);
+					// Instead of querySelectorAll (which is a read operation), we iterate children directly
+					// if they exist, since we know we appended .split-char spans as direct children.
+					const children = wordEl.children;
+					for(let k = 0; k < children.length; k++) {
+						if (children[k].classList.contains("split-char")) {
+							children[k].style.setProperty("--line-index", i);
+						}
+					}
 				}
 			}
-		}
+		});
 	}
 
 	unmount() {
