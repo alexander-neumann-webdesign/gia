@@ -35,7 +35,7 @@ function handleMutations(mutations) {
     // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
     addedElements.forEach((node) => {
         // ensure node is still in document
-        if (document.body.contains(node)) {
+        if (node.isConnected) {
             loadComponents(componentsToLoad, node);
         }
     });

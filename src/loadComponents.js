@@ -18,16 +18,14 @@ export default function loadComponents(components = {}, context = document.docum
 	const initialisedComponents = [];
 	const attrName = `${config.get("attrPrefix")}-component`;
 
-	const elements = Array.from(queryAll(`[${attrName}]`, context));
-	if (context instanceof Element && context.hasAttribute(attrName)) {
-		elements.push(context);
-	}
+	const elements = queryAll(`[${attrName}]`, context);
+	const elementsLength = elements.length;
 
-	elements.forEach((element) => {
+	const processElement = (element) => {
 		const instance = getComponentFromElement(element);
 
 		if (instance) {
-			return; // continue
+			return;
 		}
 
 		const componentName = element.getAttribute(attrName);
@@ -37,7 +35,15 @@ export default function loadComponents(components = {}, context = document.docum
 		} else {
 			console.warn(`Constructor "${componentName}" not found.`);
 		}
-	});
+	};
+
+	for (let i = 0; i < elementsLength; i++) {
+		processElement(elements[i]);
+	}
+
+	if (context instanceof Element && context.hasAttribute(attrName)) {
+		processElement(context);
+	}
 
 	// call _load/require/mount
 	initialisedComponents.forEach((component) => {
