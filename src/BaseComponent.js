@@ -1,10 +1,13 @@
-import config from "./config";
-import { queryAll } from "./utils";
+import config from "./config.js";
+import { queryAll } from "./utils.js";
 
 let globalResizeObserver = null;
 const resizeCallbacks = new Map();
 
 const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
+
+const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
+const protoMethodsCache = new WeakMap();
 
 function getIntersectionOptionsHash(options) {
 	const root = options.root || null;
@@ -372,13 +375,15 @@ export default class Component {
 		const stateChanges = {};
 		let hasChanges = false;
 
-		Object.keys(changes).forEach((key) => {
+		const changeKeys = Object.keys(changes);
+		for (let i = 0; i < changeKeys.length; i++) {
+			const key = changeKeys[i];
 			if (this._state[key] !== changes[key]) {
 				stateChanges[key] = changes[key];
 				this._state[key] = changes[key];
 				hasChanges = true;
 			}
-		});
+		}
 
 		if (hasChanges) {
 			if (!this._pendingStateChanges) {
@@ -386,10 +391,12 @@ export default class Component {
 				this._pendingAttributeChanges = {};
 				requestAnimationFrame(() => {
 					// Apply batched attribute changes
-					Object.keys(this._pendingAttributeChanges).forEach((attrName) => {
+					const attrKeys = Object.keys(this._pendingAttributeChanges);
+					for (let i = 0; i < attrKeys.length; i++) {
+						const attrName = attrKeys[i];
 						const value = this._pendingAttributeChanges[attrName];
 						this.element.setAttribute(attrName, value);
-					});
+					}
 
 					this.stateChange(this._pendingStateChanges);
 					this._pendingStateChanges = null;
@@ -398,7 +405,9 @@ export default class Component {
 			}
 
 			// Process state changes for attributes
-			Object.keys(stateChanges).forEach((key) => {
+			const stateKeys = Object.keys(stateChanges);
+			for (let i = 0; i < stateKeys.length; i++) {
+				const key = stateKeys[i];
 				const value = stateChanges[key];
 				const type = typeof value;
 
@@ -412,7 +421,7 @@ export default class Component {
 					const attrName = this._stateAttributeCache[key];
 					this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 				}
-			});
+			}
 
 			Object.assign(this._pendingStateChanges, stateChanges);
 		}
@@ -425,26 +434,25 @@ export default class Component {
 	}
 
 	_autoBindFunctions() {
-		// Get all methods defined on the child class (e.g., FilteredList)
-		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this));
+		const proto = Object.getPrototypeOf(this);
+		let methods = protoMethodsCache.get(proto);
 
-		const excludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
+		if (!methods) {
+			methods = Object.getOwnPropertyNames(proto).filter((method) => {
+				return (
+					!globalExcludedMethods.has(method) &&
+					!method.startsWith("_") &&
+					typeof Object.getOwnPropertyDescriptor(proto, method)?.value === "function"
+				);
+			});
+			protoMethodsCache.set(proto, methods);
+		}
 
-		methods.forEach((method) => {
-			// Filter out standard things we shouldn't bind
-			if (
-				excludedMethods.has(method) ||
-				method.startsWith("_") // Convention: ignore private helpers? (Optional)
-			) {
-				return;
-			}
-
-			// Bind the method to the instance
-			// Check if it is actually a function before binding
-			if (typeof this[method] === "function") {
-				this[method] = this[method].bind(this);
-			}
-		});
+		// Bind the cached methods to the instance
+		for (let i = 0; i < methods.length; i++) {
+			const method = methods[i];
+			this[method] = this[method].bind(this);
+		}
 	}
 
 	_autoBindActions() {
