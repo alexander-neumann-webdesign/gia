@@ -84,6 +84,11 @@ class Tooltip extends gia.Component {
 		// WCAG 1.4.13: Hoverable (keep open when moving over the tooltip itself)
 		this.popoverElement.addEventListener('mouseenter', this.handleTooltipEnter);
 		this.popoverElement.addEventListener('mouseleave', this.handleTooltipLeave);
+
+		// Compatibility: Swup page transitions
+		if (window.swup) {
+			window.swup.hooks.on('animation:out:start', this.closeTooltip);
+		}
 	}
 
 	unmount() {
@@ -95,6 +100,10 @@ class Tooltip extends gia.Component {
 		if (this.popoverElement) {
 			this.popoverElement.removeEventListener('mouseenter', this.handleTooltipEnter);
 			this.popoverElement.removeEventListener('mouseleave', this.handleTooltipLeave);
+		}
+
+		if (window.swup) {
+			window.swup.hooks.off('animation:out:start', this.closeTooltip);
 		}
 
 		this.removeGlobalListeners();
@@ -126,15 +135,21 @@ class Tooltip extends gia.Component {
 			this.popoverElement.style.display = 'block';
 		}
 
-		// Initialize Floating UI autoUpdate
+		// Initialize Floating UI autoUpdate with animationFrame for performance
 		this.cleanupAutoUpdate = this.autoUpdate(
 			this.element,
 			this.popoverElement,
-			() => this.updatePosition()
+			() => this.updatePosition(),
+			{ animationFrame: true }
 		);
 
 		// Add global listeners when open (for Escape key)
 		window.addEventListener('keydown', this.handleEscape);
+
+		// Compatibility: Lenis smooth scrolling (requires manual position updates because standard scroll events are virtualized)
+		if (window.lenis) {
+			window.lenis.on('scroll', this.updatePosition);
+		}
 	}
 
 	handleHide() {
@@ -175,6 +190,10 @@ class Tooltip extends gia.Component {
 
 	removeGlobalListeners() {
 		window.removeEventListener('keydown', this.handleEscape);
+
+		if (window.lenis) {
+			window.lenis.off('scroll', this.updatePosition);
+		}
 	}
 
 	handleEscape(e) {
