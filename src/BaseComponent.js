@@ -60,42 +60,52 @@ export default class Component {
 			refsByName[refName].push(element);
 		}
 
-		if (Object.keys(items).length === 0) {
-			const refNames = Object.keys(refsByName);
-			for (let i = 0; i < refNames.length; i++) {
-				const refName = refNames[i];
-				const colonIndex = refName.indexOf(":");
-				if (colonIndex !== -1) {
-					const componentName = refName.substring(0, colonIndex);
-					const actualRefName = refName.substring(colonIndex + 1);
-					if (componentName === this._name && !this._ref[actualRefName]) {
-						this._ref[actualRefName] = refsByName[refName];
-					}
-				} else {
-					if (!this._ref[refName]) {
-						this._ref[refName] = refsByName[refName];
+		let itemsEmpty = true;
+		for (const key in items) {
+			if (Object.prototype.hasOwnProperty.call(items, key)) {
+				itemsEmpty = false;
+				break;
+			}
+		}
+
+		if (itemsEmpty) {
+			for (const refName in refsByName) {
+				if (Object.prototype.hasOwnProperty.call(refsByName, refName)) {
+					const colonIndex = refName.indexOf(":");
+					if (colonIndex !== -1) {
+						const componentName = refName.substring(0, colonIndex);
+						const actualRefName = refName.substring(colonIndex + 1);
+						if (componentName === this._name && !this._ref[actualRefName]) {
+							this._ref[actualRefName] = refsByName[refName];
+						}
+					} else {
+						if (!this._ref[refName]) {
+							this._ref[refName] = refsByName[refName];
+						}
 					}
 				}
 			}
 		} else {
-			this._ref = Object.keys(items).reduce((acc, key) => {
-				const isArray = Array.isArray(items[key]);
+			this._ref = {};
+			for (const key in items) {
+				if (Object.prototype.hasOwnProperty.call(items, key)) {
+					const isArray = Array.isArray(items[key]);
 
-				if (items[key] !== null && isArray && items[key].length > 0) {
-					acc[key] = items[key];
-					return acc;
+					if (items[key] !== null && isArray && items[key].length > 0) {
+						this._ref[key] = items[key];
+						continue;
+					}
+
+					const prefixedName = `${this._name}:${key}`;
+					let refs = refsByName[prefixedName] || [];
+
+					if (refs.length === 0) {
+						refs = refsByName[key] || [];
+					}
+
+					this._ref[key] = isArray ? refs : (refs[0] ?? null);
 				}
-
-				const prefixedName = `${this._name}:${key}`;
-				let refs = refsByName[prefixedName] || [];
-
-				if (refs.length === 0) {
-					refs = refsByName[key] || [];
-				}
-
-				acc[key] = isArray ? refs : (refs[0] ?? null);
-				return acc;
-			}, {});
+			}
 		}
 	}
 
@@ -378,13 +388,13 @@ export default class Component {
 		const stateChanges = {};
 		let hasChanges = false;
 
-		const changeKeys = Object.keys(changes);
-		for (let i = 0; i < changeKeys.length; i++) {
-			const key = changeKeys[i];
-			if (this._state[key] !== changes[key]) {
-				stateChanges[key] = changes[key];
-				this._state[key] = changes[key];
-				hasChanges = true;
+		for (const key in changes) {
+			if (Object.prototype.hasOwnProperty.call(changes, key)) {
+				if (this._state[key] !== changes[key]) {
+					stateChanges[key] = changes[key];
+					this._state[key] = changes[key];
+					hasChanges = true;
+				}
 			}
 		}
 
@@ -394,12 +404,12 @@ export default class Component {
 				this._pendingAttributeChanges = {};
 				requestAnimationFrame(() => {
 					// Apply batched attribute changes
-					const attrKeys = Object.keys(this._pendingAttributeChanges);
-					for (let i = 0; i < attrKeys.length; i++) {
-						const attrName = attrKeys[i];
-						const value = this._pendingAttributeChanges[attrName];
-						if (this.element.getAttribute(attrName) !== value) {
-							this.element.setAttribute(attrName, value);
+					for (const attrName in this._pendingAttributeChanges) {
+						if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
+							const value = this._pendingAttributeChanges[attrName];
+							if (this.element.getAttribute(attrName) !== value) {
+								this.element.setAttribute(attrName, value);
+							}
 						}
 					}
 
@@ -410,21 +420,21 @@ export default class Component {
 			}
 
 			// Process state changes for attributes
-			const stateKeys = Object.keys(stateChanges);
-			for (let i = 0; i < stateKeys.length; i++) {
-				const key = stateKeys[i];
-				const value = stateChanges[key];
-				const type = typeof value;
+			for (const key in stateChanges) {
+				if (Object.prototype.hasOwnProperty.call(stateChanges, key)) {
+					const value = stateChanges[key];
+					const type = typeof value;
 
-				if (type === "boolean" || type === "string") {
-					if (!this._stateAttributeCache[key]) {
-						// Convert camelCase to kebab-case
-						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-						this._stateAttributeCache[key] = `data-${kebabKey}`;
+					if (type === "boolean" || type === "string") {
+						if (!this._stateAttributeCache[key]) {
+							// Convert camelCase to kebab-case
+							const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+							this._stateAttributeCache[key] = `data-${kebabKey}`;
+						}
+
+						const attrName = this._stateAttributeCache[key];
+						this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 					}
-
-					const attrName = this._stateAttributeCache[key];
-					this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 				}
 			}
 

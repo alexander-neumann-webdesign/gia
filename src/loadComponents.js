@@ -10,7 +10,17 @@ import { queryAll } from "./utils";
  */
 
 export default function loadComponents(components = {}, context = document.documentElement) {
-	if (!components || Object.keys(components).length === 0) {
+	let componentsEmpty = true;
+	if (components) {
+		for (const key in components) {
+			if (Object.prototype.hasOwnProperty.call(components, key)) {
+				componentsEmpty = false;
+				break;
+			}
+		}
+	}
+
+	if (componentsEmpty) {
 		console.warn("App has no components");
 		return;
 	}
