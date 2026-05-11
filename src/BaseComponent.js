@@ -487,11 +487,11 @@ export default class Component {
 					method = undefined; // Will trigger the warning below
 				}
 
-				if (this[method]) {
+				if (this[method] && typeof this[method] === "function" && !method.startsWith("_") && !globalExcludedMethods.has(method)) {
 					// Bind the event and ensure 'this' refers to the component instance
 					el.addEventListener(event, (e) => this[method](e));
 				} else {
-					console.warn(`Method "${method}" not found in component.`);
+					console.warn(`Method "${method}" not found or not allowed in component.`);
 				}
 			});
 		});

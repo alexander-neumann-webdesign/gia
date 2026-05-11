@@ -1,0 +1,4 @@
+## 2024-05-11 - [DOM-based XSS in Component Actions]
+**Vulnerability:** A cross-site scripting (XSS) / arbitrary component method execution vulnerability existed in `_autoBindActions` in `src/BaseComponent.js`. The framework automatically binds DOM events to component instance methods based on `data-action="event->method"` attributes if `autoBindActions` is enabled. It only checked if `this[method]` existed.
+**Learning:** This allowed an attacker to execute internal, potentially dangerous methods like `__proto__`, `constructor`, `setState`, etc., if they could control or inject elements with a malicious `data-action` attribute into the DOM.
+**Prevention:** Always strictly validate dynamically bound method names. Ensure they are actually functions, are public (e.g., do not start with `_`), and are not in a list of protected internal/lifecycle methods.
