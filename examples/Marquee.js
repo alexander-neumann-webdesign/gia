@@ -35,6 +35,9 @@ class Marquee extends gia.Component {
 		this.scrollVelocity = 0;
 		this.lastScrollY = window.scrollY || window.pageYOffset;
 		this.isScrollBound = false;
+
+		// RAF timing
+		this.lastTime = 0;
 	}
 
 	mount() {
@@ -67,7 +70,8 @@ class Marquee extends gia.Component {
 	play() {
 		if (!this.ticking) {
 			this.ticking = true;
-			this.tick();
+			this.lastTime = performance.now();
+			this.tick(this.lastTime);
 		}
 	}
 
@@ -211,15 +215,22 @@ class Marquee extends gia.Component {
 		}
 	}
 
-	tick() {
+	tick(time) {
 		if (!this.ticking) return;
+
+		// Calculate delta time for consistent speed across refresh rates (e.g., 60hz vs 144hz)
+		// Normalize against a standard 60fps frame (~16.67ms)
+		const dt = time - this.lastTime;
+		this.lastTime = time;
+
+		const timeScale = Math.min(dt / 16.67, 2); // Cap at 2 to prevent huge jumps on lag spikes
 
 		let frameOffset = 0;
 
 		// Move forward if not hovered and not dragging
 		if (!this.state.isDragging && (!this.options.pauseOnHover || !this.state.isHovered)) {
 			const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
-			frameOffset += this.options.speed * directionMultiplier;
+			frameOffset += (this.options.speed * directionMultiplier) * timeScale;
 		}
 
 		// Apply scroll velocity if any
