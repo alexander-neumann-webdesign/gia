@@ -76,12 +76,8 @@ class ThemeToggle extends gia.Component {
 
 			// Update button visual state if needed (e.g., swapping SVG icons)
 			if (theme === this.options.darkThemeName) {
-				this.element.classList.add('is-dark');
-				this.element.classList.remove('is-light');
 				this.element.setAttribute('aria-label', 'Switch to light mode');
 			} else {
-				this.element.classList.add('is-light');
-				this.element.classList.remove('is-dark');
 				this.element.setAttribute('aria-label', 'Switch to dark mode');
 			}
 		}
@@ -121,7 +117,7 @@ gia.register(ThemeToggle);
  *   .icon-light { display: none; }
  *   .icon-dark { display: block; }
  *
- *   &.is-dark {
+ *   &[data-theme="dark"] {
  *     .icon-light { display: block; }
  *     .icon-dark { display: none; }
  *   }
