@@ -473,27 +473,44 @@ export default class Component {
 	_autoBindActions() {
 		// Find all elements with data-action inside this component
 		const actionElements = queryAll("[data-action]", this.element);
+		const length = actionElements.length;
 
-		actionElements.forEach((el) => {
-			const actions = el.dataset.action.split(" "); // Allow multiple: "click->doX hover->doY"
-			actions.forEach((pair) => {
-				const arrowIndex = pair.indexOf("->");
-				let event, method;
-				if (arrowIndex !== -1) {
-					event = pair.substring(0, arrowIndex);
-					method = pair.substring(arrowIndex + 2);
-				} else {
-					event = pair;
-					method = undefined; // Will trigger the warning below
+		// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
+		for (let i = 0; i < length; i++) {
+			const el = actionElements[i];
+			const actionString = el.dataset.action; // Allow multiple: "click->doX hover->doY"
+
+			let startIndex = 0;
+			// ⚡ BOLT OPTIMIZATION: Avoid .split() to prevent intermediate array allocations
+			while (startIndex < actionString.length) {
+				let spaceIndex = actionString.indexOf(" ", startIndex);
+				if (spaceIndex === -1) {
+					spaceIndex = actionString.length;
 				}
 
-				if (this[method]) {
-					// Bind the event and ensure 'this' refers to the component instance
-					el.addEventListener(event, (e) => this[method](e));
-				} else {
-					console.warn(`Method "${method}" not found in component.`);
+				if (spaceIndex > startIndex) {
+					const pair = actionString.substring(startIndex, spaceIndex);
+					const arrowIndex = pair.indexOf("->");
+
+					let event, method;
+					if (arrowIndex !== -1) {
+						event = pair.substring(0, arrowIndex);
+						method = pair.substring(arrowIndex + 2);
+					} else {
+						event = pair;
+						method = undefined; // Will trigger the warning below
+					}
+
+					if (this[method]) {
+						// Bind the event and ensure 'this' refers to the component instance
+						el.addEventListener(event, (e) => this[method](e));
+					} else {
+						console.warn(`Method "${method}" not found in component.`);
+					}
 				}
-			});
-		});
+
+				startIndex = spaceIndex + 1;
+			}
+		}
 	}
 }
