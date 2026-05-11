@@ -448,7 +448,7 @@ class VisibilityComponent extends Component {
 
 The `examples/` directory contains a comprehensive set of real-world use cases demonstrating best practices with Gia. These examples include advanced patterns like URL hash-syncing, hardware-accelerated scroll snapping, reactive accordions, and high-performance parallax scroll-bound animations.
 
-You can preview all examples locally by opening `demo/index.html` in your browser. Or check out the [Live Demo](https://thezim.github.io/gia/demo/).
+You can preview all examples locally by opening `demo/index.html` in your browser. Or check out the [Live Demo](https://alexander-neumann-webdesign.github.io/gia/demo/).
 
 ### UI & Interactive Elements
 *   **Accordion**: A semantic and accessible accordion component utilizing native `<details>` and `<summary>` elements. It manages state reactively to ensure only one panel remains open at a time if desired, and syncs open states with the URL hash.
