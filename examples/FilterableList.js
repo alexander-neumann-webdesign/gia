@@ -34,8 +34,33 @@ class FilterableList extends gia.Component {
 		// Save the original index of each item to preserve stable sorting when values are equal
 		this.ref.item.forEach((item, index) => {
 			item._originalIndex = index;
-			// Ensure items have view transition names applied correctly
-			// View transition name will be applied dynamically
+			item._dataCache = {};
+
+			for (let i = 0; i < item.attributes.length; i++) {
+				const attr = item.attributes[i];
+				if (attr.name.startsWith('data-')) {
+					const key = attr.name.replace('data-', '');
+					const val = attr.value;
+
+					let parsedVal;
+					if (val.startsWith('[') && val.endsWith(']')) {
+						try {
+							parsedVal = JSON.parse(val);
+							if (!Array.isArray(parsedVal)) parsedVal = [parsedVal.toString()];
+						} catch (e) {
+							parsedVal = [val];
+						}
+					} else {
+						parsedVal = [val];
+					}
+
+					item._dataCache[key] = {
+						array: parsedVal,
+						raw: val,
+						num: parseFloat(val)
+					};
+				}
+			}
 		});
 
 		// Parse initial state from URL
@@ -231,30 +256,23 @@ class FilterableList extends gia.Component {
 			let isVisible = true;
 
 			// Check all active filter types
-			for (const [type, activeValues] of Object.entries(this.activeFilters)) {
+			for (const type in this.activeFilters) {
+				const activeValues = this.activeFilters[type];
 				if (activeValues && activeValues.length > 0) {
-					const itemValueStr = item.getAttribute(`data-${type}`);
+					const cached = item._dataCache[type];
 
-					if (!itemValueStr) {
+					if (!cached) {
 						isVisible = false;
 						break;
 					}
 
-					// Support JSON arrays in attributes (e.g. data-groups='["A", "B"]') or simple strings
-					let itemValues = [];
-					if (itemValueStr.startsWith('[') && itemValueStr.endsWith(']')) {
-						try {
-							itemValues = JSON.parse(itemValueStr);
-							if (!Array.isArray(itemValues)) itemValues = [itemValues.toString()];
-						} catch (e) {
-							itemValues = [itemValueStr];
+					let hasMatch = false;
+					for (let i = 0; i < activeValues.length; i++) {
+						if (cached.array.includes(activeValues[i])) {
+							hasMatch = true;
+							break;
 						}
-					} else {
-						itemValues = [itemValueStr];
 					}
-
-					// OR logic within the same type: item must have AT LEAST ONE of the active values
-					const hasMatch = activeValues.some(val => itemValues.includes(val));
 
 					if (!hasMatch) {
 						isVisible = false;
@@ -276,24 +294,21 @@ class FilterableList extends gia.Component {
 			const isDesc = sortDirection === 'desc';
 
 			visibleItems.sort((a, b) => {
-				const valA = a.getAttribute(`data-${sortProperty}`);
-				const valB = b.getAttribute(`data-${sortProperty}`);
+				const cacheA = a._dataCache[sortProperty];
+				const cacheB = b._dataCache[sortProperty];
 
 				// Handle missing attributes
-				if (valA === null && valB === null) return a._originalIndex - b._originalIndex;
-				if (valA === null) return isDesc ? 1 : -1;
-				if (valB === null) return isDesc ? -1 : 1;
+				if (!cacheA && !cacheB) return a._originalIndex - b._originalIndex;
+				if (!cacheA) return isDesc ? 1 : -1;
+				if (!cacheB) return isDesc ? -1 : 1;
 
 				// Try numeric sort
-				const numA = parseFloat(valA);
-				const numB = parseFloat(valB);
-
-				if (!isNaN(numA) && !isNaN(numB)) {
-					return isDesc ? numB - numA : numA - numB;
+				if (!isNaN(cacheA.num) && !isNaN(cacheB.num)) {
+					return isDesc ? cacheB.num - cacheA.num : cacheA.num - cacheB.num;
 				}
 
 				// Fallback to string sort
-				const comp = valA.localeCompare(valB);
+				const comp = cacheA.raw.localeCompare(cacheB.raw);
 				return isDesc ? -comp : comp;
 			});
 		} else {
@@ -303,7 +318,7 @@ class FilterableList extends gia.Component {
 
 		// Perform DOM update
 		if (animate && document.startViewTransition) {
-			const componentId = this._name + '_' + Math.random().toString(36).substring(2, 9);
+			const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
 
 			// Apply unique names before transition
 			visibleItems.concat(hiddenItems).forEach(item => {
