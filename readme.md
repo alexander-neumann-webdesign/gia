@@ -38,13 +38,13 @@ When using the UMD build, components can be registered using `gia.register()` to
 
 ## Architecture & Usage
 
-Gia's approach is to provide a structured lifecycle and state management system strictly bound to specific DOM nodes.
+Gia's approach is to provide a structured lifecycle and state management system strictly bound to specific DOM nodes. The `eventbus` is powered by the native `EventTarget` API. State management optimizes render performance through shallow comparison in `setState` and uses `requestAnimationFrame` for DOM batching.
 
 ### Defining a Component (`Component` vs `BaseComponent`)
 
 Gia provides two base classes you can extend:
 
-1.  **`BaseComponent`**: The core, ultra-lightweight base class. It handles state management, event auto-binding, the ref system, and standard lifecycles (`mount`, `unmount`). Use this by default for maximum performance.
+1.  **`BaseComponent`**: The core, ultra-lightweight base class. It manages DOM element attachment (`this.element`), component naming (`this._name`), and configuration options parsing from attributes. It handles state management, event auto-binding, the ref system, and standard lifecycles (`mount`, `unmount`). Use this by default for maximum performance.
 2.  **`Component`**: Extends `BaseComponent` by adding an asynchronous `require()` lifecycle method that executes *before* `mount()`. Use this when you need to dynamically load external scripts or heavy dependencies (like a vendor library) only when the component is actually present on the page.
 
 To create a new component, define your defaults in the constructor, handle optional asynchronous loading in `require()`, and attach logic in `mount()`.
@@ -127,7 +127,7 @@ loadComponents(components, container);
 ```
 
 ### Auto-mounting Loading
-If you enable `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver`. You still call `loadComponents` once to register the component classes, but Gia will automatically detect newly injected HTML and mount/unmount instances automatically.
+By default, the `MutationObserver`-based auto-mounting capability is disabled. If you enable `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver`. You still call `loadComponents` once to register the component classes, but Gia will automatically detect newly injected HTML and mount/unmount instances automatically.
 
 ```html
 <!-- Initial HTML structure -->
@@ -334,6 +334,10 @@ Gia includes several helpful utilities to work with components programmatically.
 ### `getComponentFromElement(element)`
 If you need to access a component instance from outside (e.g., from another vanilla JS script or global event), you can retrieve it directly from the DOM node.
 
+```html
+<div id="my-component-div" data-component="MyComponent"></div>
+```
+
 ```javascript
 import { getComponentFromElement } from "gia";
 
@@ -349,29 +353,56 @@ if (instance) {
 ### Eventbus
 Gia provides a native `EventTarget` based global event bus to decouple components. It allows components to communicate globally without needing direct references to each other.
 
+```html
+<div data-component="ComponentA"></div>
+<div data-component="ComponentB"></div>
+```
+
 ```javascript
-import { eventbus } from "gia";
+import { eventbus, Component } from "gia";
 
-// In Component A
-eventbus.emit("customEvent", { message: "Hello World" });
-
-// In Component B
-mount() {
-    eventbus.on("customEvent", this.handleEvent);
+class ComponentA extends Component {
+    mount() {
+        eventbus.emit("customEvent", { message: "Hello World" });
+    }
 }
 
-handleEvent(event) {
-    console.log(event.detail.message); // "Hello World"
+class ComponentB extends Component {
+    mount() {
+        eventbus.on("customEvent", this.handleEvent);
+    }
+
+    handleEvent(event) {
+        console.log(event.detail.message); // "Hello World"
+    }
 }
 ```
 
 ### Dynamic Script Loading
-Avoid blocking the main thread or dealing with race conditions when loading external scripts by using the `loadScript` utility inside the `require` lifecycle.
+Avoid blocking the main thread or dealing with race conditions when loading external scripts by using the `loadScript` utility inside the `require` lifecycle. The target script element can be anywhere in the document, such as the `<head>`.
+
+```html
+<!-- Usually in the document <head> or at the end of the <body> -->
+<script id="vendor-js" data-src="..."></script>
+
+<!-- The component instance -->
+<div data-component="MyComponent">
+    <!-- Component content goes here -->
+</div>
+```
 
 ```javascript
-// Expects an element: <script id="vendor-js" data-src="..."></script>
-async require() {
-    await this.loadScript('vendor', 'VendorGlobal');
+import { Component } from "gia";
+
+class MyComponent extends Component {
+    async require() {
+        // Loads the script and waits for the global 'VendorGlobal' to be available
+        await this.loadScript('vendor-js', 'VendorGlobal');
+    }
+
+    mount() {
+        console.log("Vendor library loaded:", window.VendorGlobal);
+    }
 }
 ```
 
