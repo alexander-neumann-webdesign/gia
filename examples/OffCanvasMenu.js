@@ -26,6 +26,14 @@ class OffCanvasMenu extends gia.Component {
 		// Methods are automatically bound via _autoBindFunctions in BaseComponent
 		this.triggers.forEach(trigger => {
 			trigger.addEventListener('click', this.handleTriggerClick);
+
+			// Accessibility: set aria-controls and initial aria-expanded state
+			if (this.menuId) {
+				trigger.setAttribute('aria-controls', this.menuId);
+			}
+			if (!trigger.hasAttribute('aria-expanded')) {
+				trigger.setAttribute('aria-expanded', this.state.isOpen ? 'true' : 'false');
+			}
 		});
 
 		// Attach backdrop click
@@ -102,6 +110,11 @@ class OffCanvasMenu extends gia.Component {
 		if ('isOpen' in stateChanges) {
 			const { isOpen } = stateChanges;
 
+			// Accessibility: update aria-expanded on triggers
+			this.triggers.forEach(trigger => {
+				trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			});
+
 			if (isOpen) {
 				if (!this.element.open) {
 					this.element.showModal();
@@ -151,7 +164,7 @@ gia.register(OffCanvasMenu);
  *
  * <!-- Trigger inside Header, e.g., a burger button -->
  * <header>
- *   <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
+ *   <button data-offcanvas-target="main-menu" aria-label="Open menu" aria-expanded="false" aria-controls="main-menu">☰</button>
  * </header>
  *
  * <!-- The OffCanvasMenu itself -->
