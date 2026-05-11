@@ -45,23 +45,13 @@ class ImageHolder extends gia.Component {
 
 	initObservers() {
 		// Setup Intersection Observer for 'visible' class
-		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
+		this.observeIntersection(this.element, this.handleIntersect, {
 			rootMargin: "0px",
 			threshold: 0.01
 		});
-		this.intersectionObserver.observe(this.element);
 
-		// Setup Resize Observer for 'sizes' attribute with a debounce wrapper
-		this.resizeTimeout = null;
-		this.resizeObserver = new ResizeObserver((entries) => {
-			if (this.resizeTimeout) {
-				clearTimeout(this.resizeTimeout);
-			}
-			this.resizeTimeout = setTimeout(() => {
-				this.handleResize(entries);
-			}, 100);
-		});
-		this.resizeObserver.observe(this.element);
+		// Setup Resize Observer for 'sizes' attribute
+		this.observeResize(this.element, this.handleResize);
 	}
 
 	initParallax() {
@@ -74,45 +64,28 @@ class ImageHolder extends gia.Component {
 		}
 
 		// Setup Resize Observer on document to catch layout shifts
-		this.bodyResizeObserver = new ResizeObserver(() => {
-			this.cacheLayout();
-			if (this.state.isVisible) {
-				this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
-			}
-		});
-		this.bodyResizeObserver.observe(document.body);
+		this.observeResize(document.body, this.handleBodyResize);
 
 		// Initial calculation based on immediate state
 		this.cacheLayout();
 		this.updateParallax();
 	}
 
-	unmount() {
-		this.destroyObservers();
+	handleBodyResize() {
+		this.cacheLayout();
+		if (this.state.isVisible) {
+			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
+		}
+	}
 
+	unmount() {
 		if (this.options.parallaxSpeed !== 0) {
 			this.destroyParallax();
 		}
 	}
 
-	destroyObservers() {
-		if (this.intersectionObserver) {
-			this.intersectionObserver.disconnect();
-		}
-		if (this.resizeObserver) {
-			this.resizeObserver.disconnect();
-		}
-		if (this.resizeTimeout) {
-			clearTimeout(this.resizeTimeout);
-		}
-	}
-
 	destroyParallax() {
 		this.unbindScroll();
-
-		if (this.bodyResizeObserver) {
-			this.bodyResizeObserver.disconnect();
-		}
 	}
 
 	bindScroll() {

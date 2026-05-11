@@ -14,33 +14,27 @@ class Reveal extends gia.Component {
 	}
 
 	mount() {
-		this.observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						this.setState({ isInview: true });
+		this.observeIntersection(this.element, this.handleIntersect, {
+			threshold: this.options.threshold,
+			rootMargin: this.options.rootMargin
+		});
+	}
 
-						if (this.options.once) {
-							this.observer.unobserve(this.element);
-						}
-					} else if (!this.options.once) {
-						this.setState({ isInview: false });
-					}
-				});
-			},
-			{
-				threshold: this.options.threshold,
-				rootMargin: this.options.rootMargin
+	handleIntersect(entries) {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				this.setState({ isInview: true });
+
+				if (this.options.once) {
+					this.unobserveIntersection(this.element, this.handleIntersect);
+				}
+			} else if (!this.options.once) {
+				this.setState({ isInview: false });
 			}
-		);
-
-		this.observer.observe(this.element);
+		});
 	}
 
 	unmount() {
-		if (this.observer) {
-			this.observer.disconnect();
-		}
 	}
 
 	stateChange(stateChanges) {
