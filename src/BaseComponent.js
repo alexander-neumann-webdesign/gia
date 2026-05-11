@@ -61,10 +61,13 @@ export default class Component {
 		}
 
 		if (Object.keys(items).length === 0) {
-			allRefs.forEach((element) => {
-				const refName = element.getAttribute(attrName);
-				if (refName.includes(":")) {
-					const [componentName, actualRefName] = refName.split(":");
+			const refNames = Object.keys(refsByName);
+			for (let i = 0; i < refNames.length; i++) {
+				const refName = refNames[i];
+				const colonIndex = refName.indexOf(":");
+				if (colonIndex !== -1) {
+					const componentName = refName.substring(0, colonIndex);
+					const actualRefName = refName.substring(colonIndex + 1);
 					if (componentName === this._name && !this._ref[actualRefName]) {
 						this._ref[actualRefName] = refsByName[refName];
 					}
@@ -73,7 +76,7 @@ export default class Component {
 						this._ref[refName] = refsByName[refName];
 					}
 				}
-			});
+			}
 		} else {
 			this._ref = Object.keys(items).reduce((acc, key) => {
 				const isArray = Array.isArray(items[key]);
@@ -137,13 +140,13 @@ export default class Component {
 		this.unmount();
 
 		if (this._observedResizeElements) {
-			for (const element of Array.from(this._observedResizeElements.keys())) {
+			for (const element of this._observedResizeElements.keys()) {
 				this.unobserveResize(element);
 			}
 		}
 
 		if (this._observedIntersectionElements) {
-			for (const element of Array.from(this._observedIntersectionElements.keys())) {
+			for (const element of this._observedIntersectionElements.keys()) {
 				this.unobserveIntersection(element);
 			}
 		}
@@ -464,7 +467,16 @@ export default class Component {
 		actionElements.forEach((el) => {
 			const actions = el.dataset.action.split(" "); // Allow multiple: "click->doX hover->doY"
 			actions.forEach((pair) => {
-				const [event, method] = pair.split("->");
+				const arrowIndex = pair.indexOf("->");
+				let event, method;
+				if (arrowIndex !== -1) {
+					event = pair.substring(0, arrowIndex);
+					method = pair.substring(arrowIndex + 2);
+				} else {
+					event = pair;
+					method = undefined; // Will trigger the warning below
+				}
+
 				if (this[method]) {
 					// Bind the event and ensure 'this' refers to the component instance
 					el.addEventListener(event, (e) => this[method](e));
