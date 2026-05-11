@@ -3,6 +3,7 @@ class Tooltip extends gia.Component {
 		super(element);
 
 		this.popoverElement = null;
+		this.arrowElement = null;
 		this.isOpen = false;
 		this.cleanupAutoUpdate = null;
 	}
@@ -11,9 +12,6 @@ class Tooltip extends gia.Component {
 		// Asynchronously load the Floating UI UMD script.
 		// Expected to be added to the bottom of your HTML:
 		// <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
-		// or via CDN:
-		// <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0/dist/floating-ui.core.umd.js"></script>
-		// <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3/dist/floating-ui.dom.umd.js"></script>
 		try {
 			// For this example we assume floating-ui-dom exposes window.FloatingUIDOM
 			await this.loadScript("floating-ui", "FloatingUIDOM");
@@ -37,17 +35,24 @@ class Tooltip extends gia.Component {
 		}
 
 		// Destructure needed Floating UI methods
-		const { computePosition, offset, flip, shift, autoUpdate } = window.FloatingUIDOM;
+		const { computePosition, offset, flip, shift, autoUpdate, arrow } = window.FloatingUIDOM;
 		this.computePosition = computePosition;
 		this.offset = offset;
 		this.flip = flip;
 		this.shift = shift;
 		this.autoUpdate = autoUpdate;
+		this.arrow = arrow;
 
+		// Create Popover
 		this.popoverElement = document.createElement('div');
 		this.popoverElement.popover = 'manual';
 		this.popoverElement.className = 'gia-tooltip-popover';
 		this.popoverElement.textContent = this.text;
+
+		// Create Arrow
+		this.arrowElement = document.createElement('div');
+		this.arrowElement.className = 'gia-tooltip-arrow';
+		this.popoverElement.appendChild(this.arrowElement);
 
 		const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
 		this.popoverElement.id = tooltipId;
@@ -185,13 +190,34 @@ class Tooltip extends gia.Component {
 			middleware: [
 				this.offset(8),
 				this.flip(),
-				this.shift({ padding: 8 })
+				this.shift({ padding: 8 }),
+				this.arrow({ element: this.arrowElement })
 			]
-		}).then(({ x, y }) => {
+		}).then(({ x, y, placement, middlewareData }) => {
 			Object.assign(this.popoverElement.style, {
 				left: `${x}px`,
 				top: `${y}px`,
 			});
+
+			// Accessing the data
+			if (middlewareData.arrow) {
+				const { x: arrowX, y: arrowY } = middlewareData.arrow;
+
+				const staticSide = {
+					top: 'bottom',
+					right: 'left',
+					bottom: 'top',
+					left: 'right',
+				}[placement.split('-')[0]];
+
+				Object.assign(this.arrowElement.style, {
+					left: arrowX != null ? `${arrowX}px` : '',
+					top: arrowY != null ? `${arrowY}px` : '',
+					right: '',
+					bottom: '',
+					[staticSide]: '-4px', // 4px is half the width/height of the 8px arrow
+				});
+			}
 		});
 	}
 }
@@ -226,6 +252,14 @@ gia.register(Tooltip);
  *
  *   &::backdrop {
  *     display: none;
+ *   }
+ *
+ *   .gia-tooltip-arrow {
+ *     position: absolute;
+ *     background-color: #333;
+ *     width: 8px;
+ *     height: 8px;
+ *     transform: rotate(45deg);
  *   }
  * }
  */
