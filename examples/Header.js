@@ -4,7 +4,10 @@ class Header extends gia.Component {
 
 		this.options = {
 			scrollEvents: true,
-			scrollThreshold: 50 // Minimum scroll amount before hiding/showing
+			scrollThreshold: 50, // Distance over which to scrub
+			scrubTransition: false,
+			hideOnScroll: true,
+			hideThreshold: 50 // Minimum scroll amount before hiding/showing
 		};
 
 		this.lastScrollY = 0;
@@ -80,6 +83,9 @@ class Header extends gia.Component {
 		// Reset state because Swup scrolls to top
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
+		if (this.options.scrubTransition) {
+			this.element.style.setProperty('--header-progress', '0');
+		}
 		this.setState({
 			isHidden: false,
 			isScrolled: false
@@ -89,14 +95,31 @@ class Header extends gia.Component {
 	update() {
 		const isScrolled = this.currentScrollY > 0;
 
-		// Determine direction
+		// Handle scrub transition manually via CSS custom property
+		// to guarantee high performance updates (avoiding setState here)
+		if (this.options.scrubTransition) {
+			// Clamp progress between 0 and 1
+			let progress = this.currentScrollY / this.options.scrollThreshold;
+			if (progress < 0) progress = 0;
+			if (progress > 1) progress = 1;
+
+			// We only want to set the property if it has changed, or unconditionally since this is a raf frame
+			// and setting custom properties is fast, but let's just set it
+			this.element.style.setProperty('--header-progress', progress.toString());
+		}
+
+		// Determine direction and hide
 		let isHidden = this.state.isHidden;
 
-		if (this.currentScrollY > this.lastScrollY && this.currentScrollY > this.options.scrollThreshold) {
-			// Scrolling down past threshold
-			isHidden = true;
-		} else if (this.currentScrollY < this.lastScrollY) {
-			// Scrolling up
+		if (this.options.hideOnScroll) {
+			if (this.currentScrollY > this.lastScrollY && this.currentScrollY > this.options.hideThreshold) {
+				// Scrolling down past threshold
+				isHidden = true;
+			} else if (this.currentScrollY < this.lastScrollY) {
+				// Scrolling up
+				isHidden = false;
+			}
+		} else {
 			isHidden = false;
 		}
 
@@ -136,13 +159,22 @@ gia.register(Header);
  *   left: 0;
  *   width: 100%;
  *   transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+ *
+ *   // Default values when scrubTransition is false
  *   padding: 2rem 0;
  *   background-color: transparent;
  *
+ *   // If scrubTransition: true is used, you can use --header-progress (0 to 1)
+ *   // to smoothly interpolate styles instead of relying on the data-is-scrolled transition:
+ *   // padding: calc(2rem - (1rem * var(--header-progress, 0))) 0;
+ *   // background-color: rgba(255, 255, 255, var(--header-progress, 0));
+ *   // box-shadow: 0 2px 10px rgba(0,0,0, calc(0.1 * var(--header-progress, 0)));
+ *
  *   &[data-is-scrolled="true"] {
- *     padding: 1rem 0;
- *     background-color: white;
- *     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+ *     // Only needed if scrubTransition is false
+ *     // padding: 1rem 0;
+ *     // background-color: white;
+ *     // box-shadow: 0 2px 10px rgba(0,0,0,0.1);
  *   }
  *
  *   &[data-is-hidden="true"] {
