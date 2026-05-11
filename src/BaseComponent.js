@@ -395,7 +395,9 @@ export default class Component {
 					for (let i = 0; i < attrKeys.length; i++) {
 						const attrName = attrKeys[i];
 						const value = this._pendingAttributeChanges[attrName];
-						this.element.setAttribute(attrName, value);
+						if (this.element.getAttribute(attrName) !== value) {
+							this.element.setAttribute(attrName, value);
+						}
 					}
 
 					this.stateChange(this._pendingStateChanges);
