@@ -4,15 +4,6 @@ class Tooltip extends gia.Component {
 
 		this.popoverElement = null;
 		this.isOpen = false;
-
-		// Bind methods
-		this.handleShow = this.handleShow.bind(this);
-		this.handleHide = this.handleHide.bind(this);
-		this.handleEscape = this.handleEscape.bind(this);
-		this.updatePosition = this.updatePosition.bind(this);
-		this.handleScroll = this.handleScroll.bind(this);
-		this.handleTooltipEnter = this.handleTooltipEnter.bind(this);
-		this.handleTooltipLeave = this.handleTooltipLeave.bind(this);
 	}
 
 	mount() {
