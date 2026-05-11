@@ -1,481 +1,304 @@
 # Gia
 
-Minimalistic JavaScript framework for server rendered websites.
-**2.68 Kb** minified gzipped with all it’s parts loaded with a `script` tag.
-Gia is modular in it’s nature. Following is the table of module sizes.
+A high-performance, minimalistic JavaScript framework designed for progressively enhancing server-rendered websites.
 
-| **4.88 Kb** | Component (with code splitting support) |
-| ----------- | --------------------------------------- |
-| **1.80 Kb** | **BaseComponent**                       |
-| **1.62 Kb** | eventbus                                |
-| **1.39 Kb** | **loadComponents**                      |
-| **1.26 Kb** | removeComponents                        |
-| **0.88 Kb** | destroyInstance                         |
-| **0.79 Kb** | createInstance                          |
-| **0.69 Kb** | config                                  |
-| **0.56 Kb** | getComponentFromElement                 |
+Gia provides a robust architectural foundation with a minimal footprint: **~3.53 Kb minified and gzipped** for the complete UMD build, and **~4.05 Kb** for the ESM build.
 
-Following sizes are for modules included separately (bundled separately). Modules often include common code, so when included and bundled together, final sizes are smaller and don't just add up.
+## Features & Benefits
 
-[Installation](#installation)
-
-[Usage](#usage)
-
-[Component](#component)
-
--   [Variables](#variables)
--   [Methods](#methods)
-
-[Helpers](#helpers)
-
--   [loadComponents](#loadcomponents)
--   [removeComponents](#removecomponents)
--   [createInstances](#createinstances)
--   [destroyInstances](#destroyinstances)
--   [getComponentFromElement](#getcomponentfromelement)
--   [registry](#registry)
--   [config](#config)
--   [eventbus](#eventbus)
-
-[Examples](#examples)
+- **Performance-First Architecture:** Leverages `requestAnimationFrame` for batched DOM mutations, avoiding layout thrashing. Components handle state reactively and efficiently update the DOM only when necessary.
+- **Native Web APIs:** Built on top of standard browser APIs, avoiding the need for heavy abstractions or Virtual DOMs. The global event bus relies on the native `EventTarget` interface.
+- **Progressive Enhancement:** Seamlessly attaches scoped behavior to existing server-rendered HTML using data attributes.
+- **Auto-binding Magic:** Automatically binds component methods (`_autoBindFunctions`) and DOM events via `data-action` attributes (`_autoBindActions`), drastically reducing boilerplate code.
+- **Optimized Ref Mapping:** Automatically maps complex DOM structures to internal component references (`this.ref`) via `data-ref` attributes, with $O(N+M)$ performance parsing.
+- **Built-in Global Features:** An optional `MutationObserver`-powered auto-mounting capability allows you to handle dynamic content (e.g., AJAX loaded content) transparently.
+- **Code Splitting Ready:** Natively supports dynamic imports via the `require()` component lifecycle method to defer non-essential library loading.
 
 ## Installation
 
-Include Gia with scripts tag
+You can install Gia via npm or simply include it via a script tag.
 
-```html
-<script src="./dist/gia.umd.js"></script>
-<!-- exposes all modules under global gia object -->
-
-<!-- also possible to include only parts -->
-<script src="./dist/BaseComponent.min.js"></script>
-<script src="./dist/loadComponents.min.js"></script>
-```
-
-or with _npm_ and _import_
+### NPM
 
 ```shell
 npm install gia --save
 ```
 
 ```javascript
-// import needed modules from npm
-import Component from "gia/Component";
-import loadComponents from "gia/loadComponents";
+import { Component, loadComponents } from "gia";
 ```
 
-## Usage
-
-First, a component needs to be created.
-
-```javascript
-class SampleComponent extends Component {
-	mount() {
-		console.log("Hello world!");
-	}
-}
-```
-
-Define the element where the component needs to be attached:
+### Script Tag (UMD)
 
 ```html
-<div data-component="SampleComponent">...</div>
+<script src="./dist/gia.umd.js"></script>
 ```
 
-And let the magic begin.
+When using the UMD build, components can be registered using `gia.register()` to make them discoverable globally.
+
+## Architecture & Usage
+
+Gia's approach is to provide a structured lifecycle and state management system strictly bound to specific DOM nodes.
+
+### Defining a Component
+
+To create a new component, extend `gia.Component` (or `gia.BaseComponent` for an even lighter footprint without code-splitting polyfills). You define your references in the constructor, handle asynchronous loading in `require()`, and attach logic in `mount()`.
 
 ```javascript
-const components = {
-	SampleComponent: SampleComponent,
-};
-
-loadComponents(components);
-```
-
-This simple setup will give you component with a simple lifecycle, scoped to the DOM element, plus some other super powers!
-
-## Component
-
-Component is the building stone of Gia architecture. Gia only works with your HTML through components. To create new component, extend Gia default Component, or modified Gia component. If you’re really trying to go for minimal size and code splitting is not going to be needed, it is also possible to use BaseComponent, which does not include polyfills needed for code splitting.
-
-```javascript
-import Component from "gia/Component";
+import { Component, loadComponents } from "gia";
 
 class SampleComponent extends Component {
-	mount() {
-		console.log("Hello world!");
-	}
-}
-```
+    constructor(element) {
+        super(element);
+        // Define your expected references
+        this.ref = {};
+    }
 
-### Variables
+    // 1. Optional: Asynchronously load heavy dependencies
+    async require() {
+        // e.g., await this.loadScript('libraryId', 'GlobalVar');
+    }
 
-There are several variables available in component by default.
+    // 2. Setup the component after require() resolves
+    mount() {
+        console.log("Component mounted on:", this.element);
+    }
 
-#### element
-
-Variable holding the root element of the component.
-
-```javascript
-this.element; // DOM element
-```
-
-#### ref
-
-Variable holding object with all the elements marked with `data-ref` attribute within the root element, where the contents of the attribute is used as _ref_ name. By setting the `ref` variable, component gets a signal to look for the elements available within the root element of component. So this..
-
-```html
-<div data-component="SampleComponent">
-	<div data-ref="singleRef">
-		<div data-ref="multipleRefs">
-			<div data-ref="multipleRefs"></div>
-		</div>
-	</div>
-</div>
-```
-
-```javascript
-constructor(element) {
-    super(element);
-    this.ref = {
-        singleRef: null, // looks for single element
-        multipleRefs: [], // looks for multiple element
+    // 3. Cleanup when component is removed
+    unmount() {
+        console.log("Component unmounted");
     }
 }
 ```
 
-…will end up in following value of the `ref` variable.
+## Global Configuration (`gia.config`)
+
+Gia provides a global `config` object to customize the framework's behavior.
 
 ```javascript
-console.log(this.ref);
-// { "multipleRefs": [DOM element, DOM element], "singleRef": DOM element }
+import { config } from "gia";
+
+// Enable detailed logging (useful during development)
+config.set("log", true);
+
+// Change the default attribute prefix (defaults to 'data')
+// e.g., setting to 'g' means Gia looks for 'g-component' instead of 'data-component'
+config.set("attrPrefix", "data");
+
+// Automatically mount/unmount components as they enter/leave the DOM via MutationObserver
+config.set("autoMountComponents", true);
+
+// Automatically parse and bind `data-action` listeners inside components
+config.set("autoBindActions", true);
 ```
 
-In case an empty object is set, component will look for any elements available and assume for all to be multiple (store in array).
+## Loading Components
+
+How you initialize components depends on your `autoMountComponents` configuration.
+
+### Manual Loading (Default)
+When `autoMountComponents` is `false` (the default for performance), you must explicitly tell Gia to search a DOM context and attach components. This is typically done on initial page load, and again whenever you inject new HTML.
 
 ```javascript
-constructor(element) {
-    super(element);
-    this.ref = {};
-    console.log(this.ref);
-    // { "multipleRefs": [DOM element, DOM element], singleRef: [ DOM element ] }
-}
-```
-
-In case some components are overlapping, but you would still like to use a same names for the ref elements, it is also possible to define the component for which the element is intended for inside of `data-ref` attribute.
-
-```html
-<div data-component="SampleComponent">
-	<div data-component="AnotherComponent">
-		<div data-ref="SampleComponent:refElement"></div>
-	</div>
-</div>
-```
-
-The `refElement` will only be selected and stored by `SampleComponent`, and no others.
-
-#### options
-
-Variable holding options of the component. Default options can be set in constructor of the component. Options get automatically rewritten from the `data-options` attribute.
-
-```html
-<div data-component="SampleComponent" data-options='{"someOption": "customValue"}'></div>
-```
-
-```javascript
-constructor(element) {
-    super(element);
-    this.options = {
-        someOptions: "defaultValue"
-    };
-    console.log(this.options); // {someOption: "customValue"}
-}
-```
-
-#### state
-
-Variable holding state of the component. It is not necessary to use state at all, as components are not used to actually render HTML. However, in combination with **setState** and **stateChange** methods, state can be useful for certain components, like some sort of filter where simple state can be helpful. Another use case is component which often updates DOM, as by using **setState and stateChange** methods, modifications of DOM are made only when the state actually changed. State should only be changed by **setState** function and takes a form of object.
-
-```javascript
-console.log(this.state); // {}
-```
-
-### Methods
-
-Component has a set of methods that can be used through it's lifecycle.
-
-#### require
-
-Method used for code splitting to require any libraries needed for the component to work.
-This method is asynchronous and after it is resolved, the execution of **mount** method follows.
-
-```javascript
-async require() {
-    this.throttle = await import('lodash/throttle');
-}
-```
-
-#### mount
-
-Method called after all assets are loaded - if any defined (after require method is resolved).
-This is where you would add all your listeners and such...
-
-```javascript
-mount() {
-    this.scrollHandler = this.handleScroll.bind(this);
-
-    this.element.addEventListener('click', this.handleClick.bind(this));
-    window.addEventListener('scroll', this.scrollHandler);
-}
-```
-
-#### unmount
-
-Method called before the component is destroyed (on `removeComponents` call).
-This is where you would remove any global listeners.
-Note that any listeners attached on or within the component root element are removed when the element is removed from DOM, as the component instance is stored within the element, so there is no need to remove those listeners, in case the element is removed from DOM.
-
-```javascript
-unmount() {
-    this.element.removeEventListener('click', this.handleClick); // mostly not needed
-    window.removeEventListener('scroll', this.scrollHandler);
-}
-```
-
-#### setState
-
-Method called to update state of the component. Only the changes of state are required to be passed in a form of object. Component will merge the changes with current state on it's own.
-
-```javascript
-this.setState({
-	a: "a",
-});
-```
-
-Note that it is recommended to only use simple state with one layer for the state to work correctly. State is here to allow some simple manipulation powered with state, not to store a complex state of whole application.
-
-```javascript
-this.setState({
-	a: "a",
-	b: ["a"],
-	c: { a: "a" },
-}); // all fine
-
-this.setState({
-	a: {
-		b: { c: "c" },
-	},
-}); // not recommended
-```
-
-#### stateChange
-
-This function gets called by **setState** method and any changes to state are passed as an argument. Ideally, any manipulation with DOM would be done within this function, as only the actual changes to state are passed on to here in a form of object.
-
-```javascript
-stateChange(stateChanges) {
-   if('a' in stateChanges) {
-        // "a" property of state was updated
-   }
-   console.log(stateChanges, this.state);
-}
-```
-
-```javascript
-this.setState({ a: "a", b: "b" }); // { a: "a", b: "b" }    { a: "a", b: "b" }
-this.setState({ a: "a", b: "c" }); // { b: "c" }    { a: "a", b: "c" }
-this.setState({ b: "d" }); // { b: "d" }    { a: "a", b: "d" }
-```
-
-#### _autoBindFunctions
-
-Automatically binds all public methods defined on the component (methods that don't start with `_` and aren't core lifecycle methods like `mount` or `unmount`) to the component instance. This is called automatically in the constructor, so you don't need to manually use `.bind(this)` in the `mount` method for event listeners.
-
-#### _autoBindActions
-
-Automatically binds DOM events to component methods using the `data-action` attribute on elements within the component. The attribute format is `data-action="event->methodName"`. It also supports multiple actions separated by spaces. This is called automatically in the constructor.
-
-```html
-<div data-component="SampleComponent">
-    <button data-action="click->handleClick hover->handleHover">Click me</button>
-</div>
-```
-
-#### loadScript
-
-Method for loading external scripts asynchronously, preventing double-loading and handling race conditions. It expects the target script tag to exist in the DOM with a `data-src` attribute and an ID formatted as `scriptId-js`.
-
-```javascript
-// Looks for an element with ID `someLibrary-js` and sets its src from data-src
-this.loadScript('someLibrary', 'globalNameExportedByLibrary').then((library) => {
-    // script is loaded and ready
-});
-```
-
-## Helpers
-
-### loadComponents
-
-Initialises components within defined scope. In case an instance of the component already exists on the element, function skips initialisation. That means **loadComponents** can be always called without a context, but context should be defined for best performance.
-
-```javascript
-import loadComponents from 'gia/loadComponents';
+import { loadComponents } from "gia";
+import MyComponent from "./MyComponent";
 
 const components = {
-    "SampleComponent": SampleComponent,
-}
-
-loadComponents(components [, context]); // context is optional and defaults to document.documentElement
-```
-
-### removeComponents
-
-Calls destroy method on every component within the context and removes component instance from the element.
-
-```javascript
-import removeComponents from "gia/removeComponents";
-
-removeComponents([context]); // context is optional and defaults to document.documentElement
-```
-
-### createInstances
-
-Creates and returns instance of component. This function is used by **loadComponents**, but can be helpful in case of manually creating component instances. Classic use case would be using a set of components with one parent component controlling the others.
-
-```javascript
-import createInstance from 'gia/createInstance';
-
-let instance = createInstance(element, componentName, component[, options]);
-// options are optional and are passed into component contructor as second argument
-
-instance._load(); // this is necessary
-```
-
-Note that calling `instance._load()` is required to start the lifecycle of the component.
-
-### destroyInstances
-
-Calls **unmount** method of component and removes instance of component form the element. This function is used by **removeComponents**.
-
-```javascript
-import destroyInstance from "gia/destroyInstance";
-
-destroyInstance(element);
-```
-
-### getComponentFromElement
-
-Returns instance of component from element.
-
-```javascript
-import getComponentFromElement from "gia/getComponentFromElement";
-
-let element = document.getElementById("element");
-let componentInstance = getComponentFromElement(element);
-```
-
-### registry
-
-Provides a global registry for components, allowing them to be referenced by name. Useful when using the global UMD build instead of a bundler.
-
-```javascript
-import { Component } from "gia";
-
-class SampleComponent extends Component {
-    // ...
-}
-
-gia.register(SampleComponent);
-```
-
-### config
-
-Config is used as a store for options used in Gia and also as an interface to change default options. Currently, the `log`, `attrPrefix`, and `autoMountComponents` options are available.
-
-```javascript
-import config from "gia/config";
-
-config.set("log", false); // disables unnecessary console.log calls
-config.set("attrPrefix", "data"); // changes g-component to data-component
-config.set("autoMountComponents", true); // Use MutationObserver to automatically mount/unmount components
-```
-
-### eventbus
-
-Eventbus can be used to communicate between components in a clear way. While it is possible to get an instance of another component and modify it directly, eventbus provides a simple interface that makes the interaction clearly visible from within the component.
-
-```javascript
-import eventbus from "gia/eventbus";
-import Component from "gia/Component";
-
-class Component1 extends Component {
-	mount() {
-		eventbus.on("writeConsole", this.handleEventBusCall);
-	}
-
-	handleEventBusCall() {
-		console.log("Component2 triggered this through evenbus.");
-	}
-}
-
-class Component2 extends Component {
-	mount() {
-		eventbus.emit("writeConsole");
-	}
-}
-
-const components = {
-	Component1: Component1,
-	Component2: Component2,
+    MyComponent: MyComponent,
+    AnotherComponent: AnotherComponent
 };
 
-loadComponents(components); // will console.log "Component2 triggered this through evenbus."
+// Mounts all instances found within document.documentElement
+loadComponents(components);
+
+// Later, if you fetch HTML via AJAX and inject it into '#ajax-container':
+const container = document.getElementById("ajax-container");
+loadComponents(components, container);
 ```
 
-#### on
-
-Registers handler of event.
+### Auto-mounting Loading
+If you enable `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver`. You still call `loadComponents` once to register the component classes, but Gia will automatically detect newly injected HTML and mount/unmount instances automatically.
 
 ```javascript
-eventbus.on("eventName", handler);
+import { config, loadComponents } from "gia";
+
+config.set("autoMountComponents", true);
+loadComponents({ MyComponent });
+// Now, anytime `<div data-component="MyComponent">` is added to the DOM, it mounts automatically.
 ```
 
-#### once
+## The Ref System (`this.ref`)
 
-Registers handler of event, but handler is only called once and then removed.
+Gia abstracts querying the DOM by automatically finding and caching elements marked with `data-ref` within the component's root `this.element`. It uses a highly optimized single-pass pre-indexing strategy.
 
-```javascript
-eventbus.once("eventName", handler);
+To use refs, you must define the `this.ref` object in the constructor to tell Gia what to look for:
+- Use `null` to indicate a **single element**.
+- Use `[]` to indicate an **array of elements**.
+- Use an empty object `{}` if you want Gia to automatically grab everything it finds as an array.
+
+```html
+<div data-component="MyComponent">
+    <button data-ref="trigger">Click Me</button>
+    <div data-ref="items">Item 1</div>
+    <div data-ref="items">Item 2</div>
+
+    <!-- References can also be namespaced if components overlap -->
+    <div data-ref="MyComponent:nestedItem">Nested</div>
+</div>
 ```
 
-#### emit
-
-Calls any handlers previously registered with the same event name. Optional event object can be used as a argument, which gets passed into a handlers as an argument.
-
 ```javascript
-eventbus.emit('eventName'[, eventObject]);
+class MyComponent extends Component {
+    constructor(element) {
+        super(element);
+        // Explicitly define the expected structure
+        this.ref = {
+            trigger: null, // Resolves to a single HTMLElement
+            items: [],     // Resolves to an Array of HTMLElements
+        };
+    }
+
+    mount() {
+        console.log(this.ref.trigger);      // <button>
+        console.log(this.ref.items.length); // 2
+    }
+}
 ```
 
-#### off
+## Event Binding (`data-action`)
 
-Unregisters handler of event. In case no handler is defined, eventbus removes all handlers for that event. In case not even event name is defined, eventbus removes all handlers for all events.
+Manually querying elements and binding event listeners can be tedious. If you enable `config.set("autoBindActions", true)`, Gia automatically maps `data-action` attributes to component methods.
+
+The format is `data-action="eventName->methodName"`. You can define multiple actions separated by spaces.
+
+```html
+<div data-component="ClickableComponent">
+    <!-- Triggers handleClick on click, and handleHover on mouseenter -->
+    <button data-action="click->handleClick mouseenter->handleHover">Action Button</button>
+</div>
+```
 
 ```javascript
-eventbus.off("eventName", handler);
+class ClickableComponent extends Component {
+    constructor(element) {
+        super(element);
+        this.ref = {};
+    }
+
+    handleClick(event) {
+        console.log("Clicked!", event.target);
+    }
+
+    handleHover(event) {
+        console.log("Hovered!");
+    }
+}
+```
+*Note: Because `BaseComponent` automatically calls `_autoBindFunctions`, you do not need to manually `.bind(this)` on your methods. `this` inside `handleClick` will safely point to the component instance.*
+
+## State Management & Reactivity
+
+Gia encourages reactive DOM updates via `this.setState()` and `stateChange()`. This abstracts away direct DOM manipulation into a clean flow, and uses `requestAnimationFrame` to batch DOM updates for maximum performance.
+
+### Defining and Mutating State
+State should only be updated using `this.setState()`. When the state object is merged, Gia calculates the differences. If changes occur, it queues a call to `stateChange()` in the next animation frame.
+
+```javascript
+class CounterComponent extends Component {
+    constructor(element) {
+        super(element);
+        // Define refs
+        this.ref = {
+            button: null,
+            display: null
+        };
+        // Define initial state
+        this.state = {
+            count: 0
+        };
+    }
+
+    mount() {
+        this.ref.button.addEventListener('click', () => {
+            // Update state. This does NOT change the DOM immediately.
+            this.setState({ count: this.state.count + 1 });
+        });
+    }
+
+    // Called automatically by Gia via requestAnimationFrame when state changes
+    stateChange(changes) {
+        // 'changes' only contains keys that actually changed
+        if ('count' in changes) {
+            this.ref.display.textContent = this.state.count;
+        }
+    }
+}
+```
+
+### State-to-Attribute Auto-binding
+As a bonus, `BaseComponent` automatically maps `boolean` and `string` state values directly to `data-` attributes on the component's root element (`this.element`). CamelCase state keys are converted to kebab-case.
+
+```javascript
+this.setState({
+    isOpen: true,
+    status: 'loading',
+    items: [1, 2, 3] // Arrays and objects are ignored by the attribute binder
+});
+```
+This automatically updates the root element:
+```html
+<div data-component="MyComponent" data-is-open="true" data-status="loading">
+```
+This allows you to write highly performant CSS that reacts to component state without writing manual class-toggling logic.
+
+## Helper Functions
+
+Gia includes several helpful utilities to work with components programmatically.
+
+### `getComponentFromElement(element)`
+If you need to access a component instance from outside (e.g., from another vanilla JS script or global event), you can retrieve it directly from the DOM node.
+
+```javascript
+import { getComponentFromElement } from "gia";
+
+const el = document.getElementById("my-component-div");
+const instance = getComponentFromElement(el);
+
+if (instance) {
+    // You can now call public methods or access state
+    console.log(instance.state.isOpen);
+}
+```
+
+### Eventbus
+Gia provides a native `EventTarget` based global event bus to decouple components. It allows components to communicate globally without needing direct references to each other.
+
+```javascript
+import { eventbus } from "gia";
+
+// In Component A
+eventbus.emit("customEvent", { message: "Hello World" });
+
+// In Component B
+mount() {
+    eventbus.on("customEvent", this.handleEvent);
+}
+
+handleEvent(event) {
+    console.log(event.detail.message); // "Hello World"
+}
+```
+
+### Dynamic Script Loading
+Avoid blocking the main thread or dealing with race conditions when loading external scripts by using the `loadScript` utility inside the `require` lifecycle.
+
+```javascript
+// Expects an element: <script id="vendor-js" data-src="..."></script>
+async require() {
+    await this.loadScript('vendor', 'VendorGlobal');
+}
 ```
 
 ## Examples
 
-A comprehensive set of example components demonstrates modern best practices with Gia. These are located in the `examples/` directory and include:
-* `Accordion`: Progressively-enhanced `<details>` element with `interpolate-size`.
-* `ClipboardCopy`: Simple utility component to copy text.
-* `Header`: Sticky/revealing header based on scroll direction.
-* `ImageHolder`: High-performance scroll-bound parallax image effect.
-* `Modal`: URL hash-syncing `<dialog>` modal with Lenis scroll-locking support.
-* `Reveal`: Scroll-triggered reveal animations.
-* `Slider`: Hardware-accelerated native CSS scroll snapping carousel with variable widths.
-* `Tabs`: URL hash-syncing accessible tabbed interface.
-* `ThemeToggle`: Dark/light mode switcher.
-* `VideoHolder`: Scroll-bound or autoplay video component with progressive enhancement.
-
-These components showcase how to effectively use Gia's event bus, native DOM APIs, hash-state syncing, code-splitting (using `require()`), and efficient scroll performance without layout thrashing.
+The `examples/` directory contains a comprehensive set of real-world use cases demonstrating best practices with Gia. These examples include advanced patterns like URL hash-syncing, hardware-accelerated scroll snapping, reactive accordions, and high-performance parallax scroll-bound animations.
