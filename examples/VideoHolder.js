@@ -25,11 +25,10 @@ class VideoHolder extends gia.Component {
 		}
 
 		// Setup Intersection Observer to play/pause video when entering/leaving viewport
-		this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
+		this.observeIntersection(this.element, this.handleIntersect, {
 			rootMargin: "0px",
 			threshold: 0.01 // Start playing as soon as 1% is visible
 		});
-		this.intersectionObserver.observe(this.element);
 
 		if (this.ref.playPauseButton) {
 			this.ref.playPauseButton.addEventListener('click', this.togglePlay);
@@ -55,10 +54,6 @@ class VideoHolder extends gia.Component {
 	unmount() {
 		if (window.swup && this.handleSwupOut) {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
-		}
-
-		if (this.intersectionObserver) {
-			this.intersectionObserver.disconnect();
 		}
 
 		if (this.ref.playPauseButton) {
