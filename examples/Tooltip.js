@@ -14,7 +14,7 @@ class Tooltip extends gia.Component {
 		// <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
 		try {
 			// For this example we assume floating-ui-dom exposes window.FloatingUIDOM
-			await this.loadScript("floating-ui", "FloatingUIDOM");
+			await this.loadScript("floating-ui-dom-js", "FloatingUIDOM");
 		} catch (error) {
 			console.error("Tooltip: Failed to load Floating UI.", error);
 		}

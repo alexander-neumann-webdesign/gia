@@ -1,0 +1,633 @@
+/* --- Accordion --- */
+details[data-component="Accordion"] {
+  ::details-content {
+    transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+    height: 0;
+    overflow: clip;
+  }
+
+  // Browser supports interpolate-size
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+
+    &[open]::details-content {
+      height: auto;
+    }
+  }
+
+  summary {
+    cursor: pointer;
+    // Remove default marker if desired
+    // list-style: none;
+    // &::-webkit-details-marker { display: none; }
+  }
+}
+
+
+/* --- ClipboardCopy --- */
+button[data-component="ClipboardCopy"] {
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  &[data-status="copied"] {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &[data-status="error"] {
+    background-color: #f44336;
+    color: white;
+  }
+}
+
+
+/* --- FilterableList --- */
+div[data-component="FilterableList"] {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  // View transitions styles
+  ::view-transition-group(*) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+
+/* --- Header --- */
+header[data-component="Header"] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+
+  // Default values when scrubTransition is false
+  padding: 2rem 0;
+  background-color: transparent;
+
+  // If scrubTransition: true is used, you can use --header-progress (0 to 1)
+  // to smoothly interpolate styles instead of relying on the data-is-scrolled transition:
+  // padding: calc(2rem - (1rem * var(--header-progress, 0))) 0;
+  // background-color: rgba(255, 255, 255, var(--header-progress, 0));
+  // box-shadow: 0 2px 10px rgba(0,0,0, calc(0.1 * var(--header-progress, 0)));
+
+  &[data-is-scrolled="true"] {
+    // Only needed if scrubTransition is false
+    // padding: 1rem 0;
+    // background-color: white;
+    // box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  &[data-is-hidden="true"] {
+    transform: translateY(-100%);
+  }
+}
+
+
+/* --- ImageHolder --- */
+div[data-component="ImageHolder"] {
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0;
+    will-change: transform;
+
+    // Entrance animation
+    // Do NOT transition transform if parallaxSpeed is active, it will cause severe lag!
+    transform: translateY(20px);
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  &.visible img {
+    opacity: 1;
+    // If parallaxSpeed === 0, JS will not touch transform, so we can reset it here natively:
+    // transform: translateY(0);
+  }
+
+  // --- Advanced Usage: parallaxCssVar ---
+  // If "parallaxCssVar": true is passed, JS will NOT apply inline transforms.
+  // Instead it sets --parallax-scroll-progress (0.0000 to 1.0000) on the ImageHolder element.
+  // You can use this to drive opacity, scale, rotations, etc:
+  //
+  // &[data-options*='"parallaxCssVar": true'] img,
+  // &[data-options*='"parallaxCssVar":true'] img {
+  //   transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.2)));
+  // }
+}
+
+
+/* --- LightboxGallery --- */
+
+
+/* --- Marquee --- */
+div[data-component="Marquee"] {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  display: flex;
+  user-select: none;
+
+  .marquee-track {
+    display: flex;
+    flex-wrap: nowrap;
+    will-change: transform;
+  }
+
+  .marquee-item {
+    flex-shrink: 0;
+    padding: 0 2rem;
+  }
+}
+
+
+/* --- Modal --- */
+dialog[data-component="Modal"] {
+  // Center it via standard dialog rules, or custom
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+  &::backdrop {
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+
+    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+    opacity: 0;
+  }
+
+  // Modern discrete animation logic
+  transition: opacity 0.4s ease, transform 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+  opacity: 0;
+  transform: translateY(10px);
+
+  &[open] {
+    opacity: 1;
+    transform: translateY(0);
+
+    &::backdrop {
+      opacity: 1;
+    }
+  }
+
+  @starting-style {
+    &[open] {
+      opacity: 0;
+      transform: translateY(10px);
+
+      &::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+
+/* --- OffCanvasMenu --- */
+dialog[data-component="OffCanvasMenu"] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border: none;
+  padding: 0;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+
+  // Slide from left by default
+  transform: translateX(-100%);
+  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+  opacity: 0;
+
+  &::backdrop {
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+    opacity: 0;
+  }
+
+  &[open] {
+    transform: translateX(0);
+    opacity: 1;
+
+    &::backdrop {
+      opacity: 1;
+    }
+  }
+
+  @starting-style {
+    &[open] {
+      transform: translateX(-100%);
+      opacity: 0;
+
+      &::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  .offcanvas-content {
+    padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+
+/* --- PongGame --- */
+
+.pong-section {
+    position: relative;
+    width: 100%;
+    min-height: 60vh;
+    overflow: hidden;
+    background-color: #111827; // Fallback
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // Crucial: The container receives pointer events
+    touch-action: none; // Prevent scrolling on touch devices when playing
+}
+
+.pong-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none; // Let events pass through to section or content
+}
+
+.pong-content {
+    position: relative;
+    z-index: 10; // Keep above canvas
+    color: white;
+    text-align: center;
+    pointer-events: auto; // Content needs to be clickable
+    background: rgba(17, 24, 39, 0.7);
+    padding: 2rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+}
+
+.pong-scoreboard {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin: 2rem 0;
+
+    .score-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+
+        span:first-child {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+}
+
+.pong-pause-btn {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+
+    &:hover, &:focus-visible {
+        background: rgba(255, 255, 255, 0.2);
+        outline: none;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+
+/* --- Reveal --- */
+[data-component="Reveal"] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+
+  &[data-is-inview="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* --- Slider --- */
+.slider-wrapper[data-component="Slider"] {
+  position: relative;
+  max-width: 100%;
+
+  .embla {
+    overflow: hidden;
+  }
+
+  .embla__container {
+    display: flex;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .embla__slide {
+    flex: 0 0 100%;
+    min-width: 0;
+
+    @media (min-width: 768px) {
+      flex: 0 0 50%;
+    }
+  }
+
+  button {
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+
+/* --- SplitText --- */
+[data-component="SplitText"] {
+  // Hide the text initially to prevent Flash of Unstyled Content (FOUC)
+  opacity: 0;
+  visibility: hidden;
+
+  &[data-initialized="true"] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  // Example staggered animation using the generated CSS variables
+  .split-char {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation-delay: calc(var(--char-index) * 0.03s);
+  }
+
+  .split-word {
+     // Prevent awkward wrapping mid-word
+     display: inline-block;
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* --- Tabs --- */
+div[data-component="Tabs"] {
+  [role="tab"] {
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease, color 0.3s ease;
+
+    &[aria-selected="true"] {
+      border-color: currentColor;
+      font-weight: bold;
+    }
+  }
+
+  [role="tabpanel"] {
+    // Modern discrete transition
+    transition: opacity 0.4s ease, display 0.4s allow-discrete;
+    opacity: 1;
+
+    &[hidden] {
+      opacity: 0;
+      display: none;
+    }
+
+    @starting-style {
+      &:not([hidden]) {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+
+/* --- ThemeToggle --- */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// For the button itself:
+button[data-component="ThemeToggle"] {
+  .icon-light { display: none; }
+  .icon-dark { display: block; }
+
+  &[data-theme="dark"] {
+    .icon-light { display: block; }
+    .icon-dark { display: none; }
+  }
+}
+
+
+/* --- TodoApp --- */
+.todo-app {
+  max-width: 500px;
+  margin: 0 auto;
+  font-family: system-ui, sans-serif;
+
+  // Styles when app has tasks via BaseComponent data attribute binding
+  &[data-has-tasks="true"] {
+    .todo-list {
+      border-top: 1px solid #eee;
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.todo-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.todo-submit-btn, .todo-delete-btn {
+  padding: 0.5rem 1rem;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #004494;
+  }
+}
+
+.todo-delete-btn {
+  background-color: #dc3545;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+
+  &:hover {
+    background-color: #c82333;
+  }
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+
+  &.is-completed {
+    .todo-text {
+      text-decoration: line-through;
+      color: #6c757d;
+    }
+  }
+}
+
+.todo-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+
+/* --- Tooltip --- */
+.gia-tooltip-popover {
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+
+  // Modern popovers reset
+  margin: 0;
+  inset: auto;
+  border: none;
+
+  &::backdrop {
+    display: none;
+  }
+
+  .gia-tooltip-arrow {
+    position: absolute;
+    background-color: #333;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+  }
+}
+
+
+/* --- VideoHolder --- */
+div[data-component="VideoHolder"] {
+  position: relative;
+
+  video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button[data-ref="playPauseButton"] {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: rgba(0,0,0,0.8);
+    }
+  }
+}

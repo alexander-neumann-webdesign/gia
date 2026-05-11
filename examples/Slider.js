@@ -33,7 +33,7 @@ class Slider extends gia.Component {
 		// <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
 		// to the bottom of your HTML.
 		try {
-			await this.loadScript("vendor/embla/embla-carousel.umd", "EmblaCarousel");
+			await this.loadScript("embla-carousel-js", "EmblaCarousel");
 		} catch (error) {
 			console.error("Slider: Failed to load Embla Carousel.", error);
 		}

@@ -1,0 +1,510 @@
+/* --- Accordion --- */
+details[data-component=Accordion] ::details-content {
+  transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+  height: 0;
+  overflow: clip;
+}
+@supports (interpolate-size: allow-keywords) {
+  details[data-component=Accordion] :root {
+    interpolate-size: allow-keywords;
+  }
+  details[data-component=Accordion][open]::details-content {
+    height: auto;
+  }
+}
+details[data-component=Accordion] summary {
+  cursor: pointer;
+}
+
+/* --- ClipboardCopy --- */
+button[data-component=ClipboardCopy] {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+button[data-component=ClipboardCopy][data-status=copied] {
+  background-color: #4caf50;
+  color: white;
+}
+button[data-component=ClipboardCopy][data-status=error] {
+  background-color: #f44336;
+  color: white;
+}
+
+/* --- FilterableList --- */
+div[data-component=FilterableList] .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+div[data-component=FilterableList] ::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Header --- */
+header[data-component=Header] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+  padding: 2rem 0;
+  background-color: transparent;
+}
+header[data-component=Header][data-is-hidden=true] {
+  transform: translateY(-100%);
+}
+
+/* --- ImageHolder --- */
+div[data-component=ImageHolder] {
+  overflow: hidden;
+  position: relative;
+}
+div[data-component=ImageHolder] img {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0;
+  will-change: transform;
+  transform: translateY(20px);
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+div[data-component=ImageHolder].visible img {
+  opacity: 1;
+}
+
+/* --- LightboxGallery --- */
+/* --- Marquee --- */
+div[data-component=Marquee] {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  display: flex;
+  user-select: none;
+}
+div[data-component=Marquee] .marquee-track {
+  display: flex;
+  flex-wrap: nowrap;
+  will-change: transform;
+}
+div[data-component=Marquee] .marquee-item {
+  flex-shrink: 0;
+  padding: 0 2rem;
+}
+
+/* --- Modal --- */
+dialog[data-component=Modal] {
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+dialog[data-component=Modal]::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+  opacity: 0;
+}
+dialog[data-component=Modal] {
+  transition: opacity 0.4s ease, transform 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+  opacity: 0;
+  transform: translateY(10px);
+}
+dialog[data-component=Modal][open] {
+  opacity: 1;
+  transform: translateY(0);
+}
+dialog[data-component=Modal][open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  dialog[data-component=Modal][open] {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  dialog[data-component=Modal][open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* --- OffCanvasMenu --- */
+dialog[data-component=OffCanvasMenu] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border: none;
+  padding: 0;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+  opacity: 0;
+}
+dialog[data-component=OffCanvasMenu]::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+  opacity: 0;
+}
+dialog[data-component=OffCanvasMenu][open] {
+  transform: translateX(0);
+  opacity: 1;
+}
+dialog[data-component=OffCanvasMenu][open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  dialog[data-component=OffCanvasMenu][open] {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  dialog[data-component=OffCanvasMenu][open]::backdrop {
+    opacity: 0;
+  }
+}
+dialog[data-component=OffCanvasMenu] .offcanvas-content {
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* --- PongGame --- */
+.pong-section {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  overflow: hidden;
+  background-color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.pong-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.pong-content {
+  position: relative;
+  z-index: 10;
+  color: white;
+  text-align: center;
+  pointer-events: auto;
+  background: rgba(17, 24, 39, 0.7);
+  padding: 2rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.pong-scoreboard {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+.pong-scoreboard .score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pong-scoreboard .score-card span:first-child {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+}
+.pong-scoreboard .score-card .score {
+  font-size: 3rem;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.pong-pause-btn {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.pong-pause-btn:hover, .pong-pause-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+.pong-pause-btn:active {
+  transform: scale(0.95);
+}
+
+/* --- Reveal --- */
+[data-component=Reveal] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+[data-component=Reveal][data-is-inview=true] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Slider --- */
+.slider-wrapper[data-component=Slider] {
+  position: relative;
+  max-width: 100%;
+}
+.slider-wrapper[data-component=Slider] .embla {
+  overflow: hidden;
+}
+.slider-wrapper[data-component=Slider] .embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+.slider-wrapper[data-component=Slider] .embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .slider-wrapper[data-component=Slider] .embla__slide {
+    flex: 0 0 50%;
+  }
+}
+.slider-wrapper[data-component=Slider] button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- SplitText --- */
+[data-component=SplitText] {
+  opacity: 0;
+  visibility: hidden;
+}
+[data-component=SplitText][data-initialized=true] {
+  opacity: 1;
+  visibility: visible;
+}
+[data-component=SplitText] .split-char {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation-delay: calc(var(--char-index) * 0.03s);
+}
+[data-component=SplitText] .split-word {
+  display: inline-block;
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* --- Tabs --- */
+div[data-component=Tabs] [role=tab] {
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+div[data-component=Tabs] [role=tab][aria-selected=true] {
+  border-color: currentColor;
+  font-weight: bold;
+}
+div[data-component=Tabs] [role=tabpanel] {
+  transition: opacity 0.4s ease, display 0.4s allow-discrete;
+  opacity: 1;
+}
+div[data-component=Tabs] [role=tabpanel][hidden] {
+  opacity: 0;
+  display: none;
+}
+@starting-style {
+  div[data-component=Tabs] [role=tabpanel]:not([hidden]) {
+    opacity: 0;
+  }
+}
+
+/* --- ThemeToggle --- */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+}
+
+:root[data-theme=dark] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button[data-component=ThemeToggle] .icon-light {
+  display: none;
+}
+button[data-component=ThemeToggle] .icon-dark {
+  display: block;
+}
+button[data-component=ThemeToggle][data-theme=dark] .icon-light {
+  display: block;
+}
+button[data-component=ThemeToggle][data-theme=dark] .icon-dark {
+  display: none;
+}
+
+/* --- TodoApp --- */
+.todo-app {
+  max-width: 500px;
+  margin: 0 auto;
+  font-family: system-ui, sans-serif;
+}
+.todo-app[data-has-tasks=true] .todo-list {
+  border-top: 1px solid #eee;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.todo-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.todo-submit-btn, .todo-delete-btn {
+  padding: 0.5rem 1rem;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.todo-submit-btn:hover, .todo-delete-btn:hover {
+  background-color: #004494;
+}
+
+.todo-delete-btn {
+  background-color: #dc3545;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+.todo-delete-btn:hover {
+  background-color: #c82333;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+.todo-item.is-completed .todo-text {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+.todo-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+/* --- Tooltip --- */
+.gia-tooltip-popover {
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin: 0;
+  inset: auto;
+  border: none;
+}
+.gia-tooltip-popover::backdrop {
+  display: none;
+}
+.gia-tooltip-popover .gia-tooltip-arrow {
+  position: absolute;
+  background-color: #333;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+}
+
+/* --- VideoHolder --- */
+div[data-component=VideoHolder] {
+  position: relative;
+}
+div[data-component=VideoHolder] video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+div[data-component=VideoHolder] button[data-ref=playPauseButton] {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/*# sourceMappingURL=demo.css.map */

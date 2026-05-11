@@ -1,4 +1,4 @@
-import gia from "../src/gia";
+
 
 class PongGame extends gia.Component {
     constructor(element) {
@@ -310,7 +310,7 @@ class PongGame extends gia.Component {
 }
 
 gia.register(PongGame);
-export default PongGame;
+
 
 /*
 ========================================
