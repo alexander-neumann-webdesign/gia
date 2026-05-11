@@ -451,21 +451,86 @@ class VisibilityComponent extends Component {
 
 The `examples/` directory contains a comprehensive set of real-world use cases demonstrating best practices with Gia. These examples include advanced patterns like URL hash-syncing, hardware-accelerated scroll snapping, reactive accordions, and high-performance parallax scroll-bound animations.
 
+### UI & Interactive Elements
 *   **Accordion**: A semantic and accessible accordion component utilizing native `<details>` and `<summary>` elements. It manages state reactively to ensure only one panel remains open at a time if desired, and syncs open states with the URL hash.
 *   **ClipboardCopy**: A simple utility component that copies text from a referenced element to the user's clipboard. It showcases how to use `this.setState` to provide temporary visual feedback after a successful action.
-*   **Header**: A scroll-aware site header component that responds to scroll direction and offset. It intelligently caches layout dimensions and uses `requestAnimationFrame` to apply transforms without layout thrashing.
-*   **ImageHolder**: A highly optimized image component that provides a smooth parallax implementation and tracks viewport entrance to lazy load sources. It automatically calculates and sets the `sizes` attribute dynamically based on the image's layout dimensions for perfect responsive loading.
-*   **LightboxGallery**: A fully featured gallery component demonstrating dynamic script loading by pulling in a vendor library only when required. It handles complex DOM structures and global event bindings.
 *   **Modal**: An accessible dialog window component that utilizes the native `<dialog>` element. It supports triggering via external targets and manages URL hash syncing for easy direct linking to open modals.
 *   **OffCanvasMenu**: A slide-out navigation menu component triggered by user interaction. It demonstrates state-based class toggling and how to handle clicks outside the component to close the menu.
-*   **Reveal**: A highly optimized scroll-reveal component that fades and translates elements into view as they enter the viewport. It leverages the global `observeIntersection` API to handle potentially hundreds of elements without performance degradation.
 *   **Slider**: A swipeable content slider demonstrating complex touch event handling and hardware-accelerated CSS transforms. It manages active slide states and updates pagination indicators reactively.
 *   **Tabs**: A robust tabbed interface component that relies on state management to switch active views. It also supports URL hash syncing so users can bookmark and load specific tabs on page load.
 *   **ThemeToggle**: A dark/light mode toggle switch component that persists user preference. It shows how Gia components can interact with `localStorage` and mutate global state efficiently.
+*   **Tooltip**: A dynamic tooltip component using the Floating UI library via asynchronous dynamic import inside `require()`, providing perfectly positioned floating elements.
+
+### Media & Scroll Effects
+*   **Header**: A scroll-aware site header component that responds to scroll direction and offset. It intelligently caches layout dimensions and uses `requestAnimationFrame` to apply transforms without layout thrashing.
+*   **ImageHolder**: A highly optimized image component that provides a smooth parallax implementation and tracks viewport entrance to lazy load sources. It automatically calculates and sets the `sizes` attribute dynamically based on the image's layout dimensions for perfect responsive loading.
+*   **LightboxGallery**: A fully featured gallery component demonstrating dynamic script loading by pulling in a vendor library only when required. It handles complex DOM structures and global event bindings.
+*   **Marquee**: An infinite scrolling marquee component cloning elements and handling continuous requestAnimationFrame updates with Lenis scroll velocity integration.
+*   **Reveal**: A highly optimized scroll-reveal component that fades and translates elements into view as they enter the viewport. It leverages the global `observeIntersection` API to handle potentially hundreds of elements without performance degradation.
 *   **VideoHolder**: A lazy-loading video component that pauses playback when scrolled out of view to save system resources. It uses intersection observers to handle complex playback logic asynchronously.
+
+### Advanced Apps & Logic
+*   **TodoApp**: A full todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
+*   **PongGame**: A complete Pong game built inside a Gia component to demonstrate a complex game loop running within `requestAnimationFrame`, keyboard input handling, scoring state, and canvas drawing.
 
 ## Bonus Tip: Gia and Swup
 
-Gia pairs exceptionally well with page transition libraries like [Swup](https://swup.js.org/). Because Gia relies on standard DOM manipulation and clearly defined `mount()` and `unmount()` lifecycles, it perfectly complements Swup's approach to replacing only the `<body>` or specific containers.
+Gia pairs exceptionally well with page transition libraries like [Swup](https://swup.js.org/). Because Gia relies on standard DOM manipulation and clearly defined `mount()` and `unmount()` lifecycles, it perfectly complements Swup's approach to replacing only specific containers.
 
-You can easily tie Gia's loading mechanisms directly into Swup's lifecycle hooks. Simply call `loadComponents()` when Swup injects new content, and optionally trigger component cleanup during the `animation:out:start` phase so heavy processes (like WebGL scenes or complex animations) are gracefully stopped before the transition occurs.
+### Global Integration
+
+You can easily tie Gia's loading mechanisms directly into Swup's lifecycle hooks. By listening to `content:replace`, you can initialize new components when Swup injects new HTML. By listening to `content:remove`, you can ensure that memory is freed properly by destroying old components.
+
+```javascript
+import { loadComponents, removeComponents } from "gia";
+import Swup from "swup";
+import MyComponent from "./MyComponent";
+
+const components = { MyComponent };
+
+const swup = new Swup({
+    containers: ["#swup-container"]
+});
+
+// Mount components on initial load
+loadComponents(components, document.getElementById("swup-container"));
+
+// Re-mount components when Swup replaces the content
+swup.hooks.on("content:replace", () => {
+    loadComponents(components, document.getElementById("swup-container"));
+});
+
+// Cleanup components right before Swup removes the old content
+swup.hooks.on("content:remove", () => {
+    removeComponents(document.getElementById("swup-container"));
+});
+```
+
+### Component-Level Integration
+
+Sometimes individual components need to react to page transitions (e.g., closing an open menu before the page navigates away, or resetting scroll-dependent state). You can safely check for Swup and bind to its hooks within your component's lifecycle:
+
+```javascript
+import { Component } from "gia";
+
+class OffCanvasMenu extends Component {
+    mount() {
+        // ... standard mount logic ...
+
+        // Close the menu if a link inside it triggers a Swup transition
+        if (window.swup) {
+            this.handleSwupTransition = () => {
+                this.setState({ isOpen: false });
+            };
+            window.swup.hooks.on("animation:out:start", this.handleSwupTransition);
+        }
+    }
+
+    unmount() {
+        // Always clean up the hook listener
+        if (window.swup && this.handleSwupTransition) {
+            window.swup.hooks.off("animation:out:start", this.handleSwupTransition);
+        }
+    }
+}
+```
