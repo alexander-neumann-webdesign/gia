@@ -24,13 +24,19 @@ export function toggleClass(element, className, condition = null) {
 
 export function removeClass(nodes, className) {
 	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
-	iterable.forEach((node) => node.classList.remove(className));
+	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
+	for (let i = 0; i < iterable.length; i++) {
+		iterable[i].classList.remove(className);
+	}
 	return nodes;
 }
 
 export function addClass(nodes, className) {
 	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
-	iterable.forEach((node) => node.classList.add(className));
+	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
+	for (let i = 0; i < iterable.length; i++) {
+		iterable[i].classList.add(className);
+	}
 	return nodes;
 }
 

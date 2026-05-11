@@ -11,34 +11,42 @@ function handleMutations(mutations) {
 
     const addedElements = new Set();
 
-    mutations.forEach((mutation) => {
+    // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
+    for (let m = 0; m < mutations.length; m++) {
+        const mutation = mutations[m];
+
         // Handle removed nodes
-        mutation.removedNodes.forEach((node) => {
+        for (let i = 0; i < mutation.removedNodes.length; i++) {
+            const node = mutation.removedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
                 if (node.hasAttribute(attrName)) {
                     destroyInstance(node);
                 }
                 const nestedComponents = queryAll(`[${attrName}]`, node);
-                nestedComponents.forEach((childNode) => destroyInstance(childNode));
+                for (let j = 0; j < nestedComponents.length; j++) {
+                    destroyInstance(nestedComponents[j]);
+                }
             }
-        });
+        }
 
         // Track added nodes
-        mutation.addedNodes.forEach((node) => {
+        for (let i = 0; i < mutation.addedNodes.length; i++) {
+            const node = mutation.addedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
                 addedElements.add(node);
             }
-        });
-    });
+        }
+    }
 
     // If nodes were added, run loadComponents ONLY on the added nodes rather than the whole body
     // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
-    addedElements.forEach((node) => {
+    // Set elements can be iterated via for...of (avoiding Array.from())
+    for (const node of addedElements) {
         // ensure node is still in document
         if (node.isConnected) {
             loadComponents(componentsToLoad, node);
         }
-    });
+    }
 }
 
 export function initObserver() {
