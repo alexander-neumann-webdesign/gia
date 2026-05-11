@@ -18,11 +18,15 @@ export default function loadComponents(components = {}, context = document.docum
 	const initialisedComponents = [];
 	const attrName = `${config.get("attrPrefix")}-component`;
 
-	queryAll(`[${attrName}]`, context).forEach((element) => {
+	const elements = Array.from(queryAll(`[${attrName}]`, context));
+	if (context instanceof Element && context.hasAttribute(attrName)) {
+		elements.push(context);
+	}
+
+	elements.forEach((element) => {
 		const instance = getComponentFromElement(element);
 
 		if (instance) {
-			console.warn("Error: instance exists: ", instance);
 			return; // continue
 		}
 

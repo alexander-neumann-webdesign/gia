@@ -9,7 +9,7 @@ function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
     const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
 
-    let hasAddedNodes = false;
+    const addedElements = new Set();
 
     mutations.forEach((mutation) => {
         // Handle removed nodes
@@ -23,18 +23,22 @@ function handleMutations(mutations) {
             }
         });
 
-        // Track if there are added nodes
-        if (mutation.addedNodes.length > 0) {
-            hasAddedNodes = true;
-        }
+        // Track added nodes
+        mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                addedElements.add(node);
+            }
+        });
     });
 
-    // If nodes were added, run loadComponents on the body so any new components are initialized
-    // We pass the global registry to ensure dynamically loaded templates get initialized correctly
-    if (hasAddedNodes) {
-        // Just call loadComponents and it will find all uninitialized data-components
-        loadComponents(componentsToLoad, document.body);
-    }
+    // If nodes were added, run loadComponents ONLY on the added nodes rather than the whole body
+    // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
+    addedElements.forEach((node) => {
+        // ensure node is still in document
+        if (document.body.contains(node)) {
+            loadComponents(componentsToLoad, node);
+        }
+    });
 }
 
 export function initObserver() {
