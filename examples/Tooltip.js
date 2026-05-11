@@ -4,6 +4,22 @@ class Tooltip extends gia.Component {
 
 		this.popoverElement = null;
 		this.isOpen = false;
+		this.cleanupAutoUpdate = null;
+	}
+
+	async require() {
+		// Asynchronously load the Floating UI UMD script.
+		// Expected to be added to the bottom of your HTML:
+		// <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
+		// or via CDN:
+		// <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0/dist/floating-ui.core.umd.js"></script>
+		// <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3/dist/floating-ui.dom.umd.js"></script>
+		try {
+			// For this example we assume floating-ui-dom exposes window.FloatingUIDOM
+			await this.loadScript("floating-ui", "FloatingUIDOM");
+		} catch (error) {
+			console.error("Tooltip: Failed to load Floating UI.", error);
+		}
 	}
 
 	mount() {
@@ -14,6 +30,19 @@ class Tooltip extends gia.Component {
 			console.warn('Tooltip: No data-tooltip attribute found on element.');
 			return;
 		}
+
+		if (typeof window.FloatingUIDOM === "undefined") {
+			console.error("Tooltip: FloatingUIDOM is not defined on window.");
+			return;
+		}
+
+		// Destructure needed Floating UI methods
+		const { computePosition, offset, flip, shift, autoUpdate } = window.FloatingUIDOM;
+		this.computePosition = computePosition;
+		this.offset = offset;
+		this.flip = flip;
+		this.shift = shift;
+		this.autoUpdate = autoUpdate;
 
 		this.popoverElement = document.createElement('div');
 		this.popoverElement.popover = 'manual';
@@ -30,6 +59,12 @@ class Tooltip extends gia.Component {
 		if (!('popover' in HTMLElement.prototype)) {
 			this.popoverElement.style.display = 'none';
 			this.popoverElement.style.position = 'fixed';
+		} else {
+			// Essential for popovers working with absolute positioning libs
+			this.popoverElement.style.position = 'absolute';
+			this.popoverElement.style.margin = '0';
+			this.popoverElement.style.top = '0';
+			this.popoverElement.style.left = '0';
 		}
 
 		document.body.appendChild(this.popoverElement);
@@ -59,12 +94,19 @@ class Tooltip extends gia.Component {
 
 		this.removeGlobalListeners();
 
+		if (this.cleanupAutoUpdate) {
+			this.cleanupAutoUpdate();
+			this.cleanupAutoUpdate = null;
+		}
+
 		if (this.popoverElement && this.popoverElement.parentNode) {
 			this.popoverElement.parentNode.removeChild(this.popoverElement);
 		}
 	}
 
 	handleShow() {
+		if (!this.computePosition) return;
+
 		if (this.hideTimeout) {
 			clearTimeout(this.hideTimeout);
 			this.hideTimeout = null;
@@ -79,12 +121,15 @@ class Tooltip extends gia.Component {
 			this.popoverElement.style.display = 'block';
 		}
 
-		this.updatePosition();
+		// Initialize Floating UI autoUpdate
+		this.cleanupAutoUpdate = this.autoUpdate(
+			this.element,
+			this.popoverElement,
+			() => this.updatePosition()
+		);
 
-		// Add global listeners when open
+		// Add global listeners when open (for Escape key)
 		window.addEventListener('keydown', this.handleEscape);
-		window.addEventListener('scroll', this.handleScroll, { passive: true });
-		window.addEventListener('resize', this.updatePosition, { passive: true });
 	}
 
 	handleHide() {
@@ -115,13 +160,16 @@ class Tooltip extends gia.Component {
 			this.popoverElement.style.display = 'none';
 		}
 
+		if (this.cleanupAutoUpdate) {
+			this.cleanupAutoUpdate();
+			this.cleanupAutoUpdate = null;
+		}
+
 		this.removeGlobalListeners();
 	}
 
 	removeGlobalListeners() {
 		window.removeEventListener('keydown', this.handleEscape);
-		window.removeEventListener('scroll', this.handleScroll);
-		window.removeEventListener('resize', this.updatePosition);
 	}
 
 	handleEscape(e) {
@@ -131,84 +179,20 @@ class Tooltip extends gia.Component {
 		}
 	}
 
-	handleScroll() {
-		// Update position if it's open and user scrolls
-		if (this.isOpen) {
-			requestAnimationFrame(() => {
-				this.updatePosition();
-			});
-		}
-	}
-
 	updatePosition() {
-		if (!this.isOpen) return;
-
-		const triggerRect = this.element.getBoundingClientRect();
-		const popoverRect = this.popoverElement.getBoundingClientRect();
-
-		let placement = this.position;
-		const spacing = 8; // Offset from the trigger
-
-		const calculateCoords = (pos) => {
-			let t, l;
-			switch (pos) {
-				case 'top':
-					t = triggerRect.top - popoverRect.height - spacing;
-					l = triggerRect.left + (triggerRect.width / 2) - (popoverRect.width / 2);
-					break;
-				case 'bottom':
-					t = triggerRect.bottom + spacing;
-					l = triggerRect.left + (triggerRect.width / 2) - (popoverRect.width / 2);
-					break;
-				case 'left':
-					t = triggerRect.top + (triggerRect.height / 2) - (popoverRect.height / 2);
-					l = triggerRect.left - popoverRect.width - spacing;
-					break;
-				case 'right':
-					t = triggerRect.top + (triggerRect.height / 2) - (popoverRect.height / 2);
-					l = triggerRect.right + spacing;
-					break;
-			}
-			return { t, l };
-		};
-
-		let { t, l } = calculateCoords(placement);
-
-		// Boundaries logic to prevent tooltip from going off-screen
-		const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-		const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-
-		let outOfBounds = false;
-
-		if (placement === 'top' && t < 0) {
-			placement = 'bottom';
-			outOfBounds = true;
-		} else if (placement === 'bottom' && (t + popoverRect.height) > viewportHeight) {
-			placement = 'top';
-			outOfBounds = true;
-		} else if (placement === 'left' && l < 0) {
-			placement = 'right';
-			outOfBounds = true;
-		} else if (placement === 'right' && (l + popoverRect.width) > viewportWidth) {
-			placement = 'left';
-			outOfBounds = true;
-		}
-
-		if (outOfBounds) {
-			const newCoords = calculateCoords(placement);
-			t = newCoords.t;
-			l = newCoords.l;
-		}
-
-		// Final clamping to keep the tooltip visible horizontally/vertically if it still overflows
-		if (l < spacing) l = spacing;
-		if (l + popoverRect.width > viewportWidth - spacing) l = viewportWidth - popoverRect.width - spacing;
-		if (t < spacing) t = spacing;
-		if (t + popoverRect.height > viewportHeight - spacing) t = viewportHeight - popoverRect.height - spacing;
-
-		// Since popovers are rendered in the top layer, position: fixed is used implicitly
-		this.popoverElement.style.top = `${t}px`;
-		this.popoverElement.style.left = `${l}px`;
+		this.computePosition(this.element, this.popoverElement, {
+			placement: this.position,
+			middleware: [
+				this.offset(8),
+				this.flip(),
+				this.shift({ padding: 8 })
+			]
+		}).then(({ x, y }) => {
+			Object.assign(this.popoverElement.style, {
+				left: `${x}px`,
+				top: `${y}px`,
+			});
+		});
 	}
 }
 
@@ -216,6 +200,9 @@ gia.register(Tooltip);
 
 /**
  * Expected HTML Structure:
+ *
+ * <!-- Required External Script: -->
+ * <!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
  *
  * <button data-component="Tooltip" data-tooltip="This is a helpful tip" data-position="top">
  *   Hover or Focus Me
