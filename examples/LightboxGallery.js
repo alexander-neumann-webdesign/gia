@@ -24,8 +24,8 @@ class LightboxGallery extends gia.Component {
 	async require() {
 		if (typeof window.PhotoSwipeLightbox === "undefined" || typeof window.PhotoSwipe === "undefined") {
 			await Promise.all([
-				this.loadScript("vendor/photoswipe/photoswipe-lightbox.umd", "PhotoSwipeLightbox"),
-				this.loadScript("vendor/photoswipe/photoswipe.umd", "PhotoSwipe"),
+				this.loadScript("photoswipe-lightbox-js", "PhotoSwipeLightbox"),
+				this.loadScript("photoswipe-js", "PhotoSwipe"),
 			]);
 		}
 	}
