@@ -57,11 +57,20 @@ export default class Component {
 			refsByName[refName].push(element);
 		}
 
-		if (Object.keys(items).length === 0) {
-			allRefs.forEach((element) => {
+		let hasItems = false;
+		for (const _ in items) {
+			hasItems = true;
+			break;
+		}
+
+		if (!hasItems) {
+			for (let i = 0; i < allRefs.length; i++) {
+				const element = allRefs[i];
 				const refName = element.getAttribute(attrName);
-				if (refName.includes(":")) {
-					const [componentName, actualRefName] = refName.split(":");
+				const colonIndex = refName.indexOf(":");
+				if (colonIndex !== -1) {
+					const componentName = refName.substring(0, colonIndex);
+					const actualRefName = refName.substring(colonIndex + 1);
 					if (componentName === this._name && !this._ref[actualRefName]) {
 						this._ref[actualRefName] = refsByName[refName];
 					}
@@ -70,26 +79,25 @@ export default class Component {
 						this._ref[refName] = refsByName[refName];
 					}
 				}
-			});
+			}
 		} else {
-			this._ref = Object.keys(items).reduce((acc, key) => {
+			for (const key in items) {
 				const isArray = Array.isArray(items[key]);
 
 				if (items[key] !== null && isArray && items[key].length > 0) {
-					acc[key] = items[key];
-					return acc;
+					this._ref[key] = items[key];
+					continue;
 				}
 
 				const prefixedName = `${this._name}:${key}`;
-				let refs = refsByName[prefixedName] || [];
+				let refs = refsByName[prefixedName];
 
-				if (refs.length === 0) {
-					refs = refsByName[key] || [];
+				if (!refs || refs.length === 0) {
+					refs = refsByName[key];
 				}
 
-				acc[key] = isArray ? refs : (refs[0] ?? null);
-				return acc;
-			}, {});
+				this._ref[key] = isArray ? (refs || []) : (refs ? refs[0] : null);
+			}
 		}
 	}
 
@@ -369,16 +377,20 @@ export default class Component {
 	}
 
 	setState(changes) {
-		const stateChanges = {};
 		let hasChanges = false;
+		let stateChanges = null;
 
-		Object.keys(changes).forEach((key) => {
-			if (this._state[key] !== changes[key]) {
-				stateChanges[key] = changes[key];
-				this._state[key] = changes[key];
-				hasChanges = true;
+		for (const key in changes) {
+			const newValue = changes[key];
+			if (this._state[key] !== newValue) {
+				if (!hasChanges) {
+					hasChanges = true;
+					stateChanges = {};
+				}
+				stateChanges[key] = newValue;
+				this._state[key] = newValue;
 			}
-		});
+		}
 
 		if (hasChanges) {
 			if (!this._pendingStateChanges) {
@@ -386,10 +398,9 @@ export default class Component {
 				this._pendingAttributeChanges = {};
 				requestAnimationFrame(() => {
 					// Apply batched attribute changes
-					Object.keys(this._pendingAttributeChanges).forEach((attrName) => {
-						const value = this._pendingAttributeChanges[attrName];
-						this.element.setAttribute(attrName, value);
-					});
+					for (const attrName in this._pendingAttributeChanges) {
+						this.element.setAttribute(attrName, this._pendingAttributeChanges[attrName]);
+					}
 
 					this.stateChange(this._pendingStateChanges);
 					this._pendingStateChanges = null;
@@ -398,23 +409,23 @@ export default class Component {
 			}
 
 			// Process state changes for attributes
-			Object.keys(stateChanges).forEach((key) => {
+			for (const key in stateChanges) {
 				const value = stateChanges[key];
 				const type = typeof value;
 
 				if (type === "boolean" || type === "string") {
-					if (!this._stateAttributeCache[key]) {
+					let attrName = this._stateAttributeCache[key];
+					if (!attrName) {
 						// Convert camelCase to kebab-case
-						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-						this._stateAttributeCache[key] = `data-${kebabKey}`;
+						attrName = `data-${key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`;
+						this._stateAttributeCache[key] = attrName;
 					}
 
-					const attrName = this._stateAttributeCache[key];
 					this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 				}
-			});
 
-			Object.assign(this._pendingStateChanges, stateChanges);
+				this._pendingStateChanges[key] = value;
+			}
 		}
 	}
 
@@ -430,13 +441,14 @@ export default class Component {
 
 		const excludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
 
-		methods.forEach((method) => {
+		for (let i = 0; i < methods.length; i++) {
+			const method = methods[i];
 			// Filter out standard things we shouldn't bind
 			if (
 				excludedMethods.has(method) ||
-				method.startsWith("_") // Convention: ignore private helpers? (Optional)
+				method[0] === "_" // Convention: ignore private helpers? (Optional)
 			) {
-				return;
+				continue;
 			}
 
 			// Bind the method to the instance
@@ -444,7 +456,7 @@ export default class Component {
 			if (typeof this[method] === "function") {
 				this[method] = this[method].bind(this);
 			}
-		});
+		}
 	}
 
 	_autoBindActions() {

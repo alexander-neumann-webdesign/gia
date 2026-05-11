@@ -1,6 +1,6 @@
-var C = Object.defineProperty;
-var y = (r, e, t) => e in r ? C(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var m = (r, e, t) => y(r, typeof e != "symbol" ? e + "" : e, t);
+var y = Object.defineProperty;
+var C = (r, e, t) => e in r ? y(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
+var w = (r, e, t) => C(r, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (r) => {
   if (typeof r != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", r);
@@ -15,7 +15,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
 });
 class $ {
   constructor() {
-    m(this, "_options", {
+    w(this, "_options", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -32,18 +32,18 @@ class $ {
     return this._options[e];
   }
 }
-const c = new $();
+const f = new $();
 function A(r, e, t, n) {
   if (r.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
   try {
     const s = new t(r, n);
-    return c.get("log") && console.info(`Created instance of component "${e}".`), s;
+    return f.get("log") && console.info(`Created instance of component "${e}".`), s;
   } catch (s) {
     return console.error(`Failed to create component "${e}".`, s), null;
   }
 }
-function w(r) {
+function v(r) {
   return typeof r == "string" && (r = document.getElementById(r), !r) ? null : r.__gia_component__;
 }
 function g(r, e = document) {
@@ -54,9 +54,9 @@ function z(r = {}, e = document.documentElement) {
     console.warn("App has no components");
     return;
   }
-  const t = [], n = `${c.get("attrPrefix")}-component`;
+  const t = [], n = `${f.get("attrPrefix")}-component`;
   g(`[${n}]`, e).forEach((s) => {
-    const i = w(s);
+    const i = v(s);
     if (i) {
       console.warn("Error: instance exists: ", i);
       return;
@@ -67,8 +67,8 @@ function z(r = {}, e = document.documentElement) {
     s._load();
   });
 }
-function p(r) {
-  const e = w(r);
+function b(r) {
+  const e = v(r);
   if (e) {
     const t = e._name || "Unknown";
     try {
@@ -76,56 +76,66 @@ function p(r) {
     } catch (n) {
       console.error(`Gia: Error unmounting component "${t}".`, n);
     }
-    r.__gia_component__ = null, e.element && (e.element = null), c.get("log") && console.info(`Removed component "${t}".`);
+    r.__gia_component__ = null, e.element && (e.element = null), f.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function P(r = document.documentElement) {
-  g(`[${c.get("attrPrefix")}-component]`, r).forEach(
+function O(r = document.documentElement) {
+  g(`[${f.get("attrPrefix")}-component]`, r).forEach(
     (e) => {
-      p(e);
+      b(e);
     }
   );
 }
 let h = null;
-const d = /* @__PURE__ */ new Map(), _ = /* @__PURE__ */ new Map();
-function O(r) {
+const l = /* @__PURE__ */ new Map(), m = /* @__PURE__ */ new Map();
+function I(r) {
   const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", n = r.threshold || 0, s = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${s}`;
 }
 let R = class {
   constructor(e, t) {
-    this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._stateAttributeCache = {}, this._autoBindFunctions(), c.get("autoBindActions") && this._autoBindActions();
+    this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._stateAttributeCache = {}, this._autoBindFunctions(), f.get("autoBindActions") && this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
   set ref(e) {
-    const t = `${c.get("attrPrefix")}-ref`, n = g(`[${t}]`, this.element), s = {};
-    for (let i = 0; i < n.length; i++) {
-      const o = n[i], a = o.getAttribute(t);
-      s[a] || (s[a] = []), s[a].push(o);
+    const t = `${f.get("attrPrefix")}-ref`, n = g(`[${t}]`, this.element), s = {};
+    for (let o = 0; o < n.length; o++) {
+      const a = n[o], c = a.getAttribute(t);
+      s[c] || (s[c] = []), s[c].push(a);
     }
-    Object.keys(e).length === 0 ? n.forEach((i) => {
-      const o = i.getAttribute(t);
-      if (o.includes(":")) {
-        const [a, f] = o.split(":");
-        a === this._name && !this._ref[f] && (this._ref[f] = s[o]);
-      } else
-        this._ref[o] || (this._ref[o] = s[o]);
-    }) : this._ref = Object.keys(e).reduce((i, o) => {
-      const a = Array.isArray(e[o]);
-      if (e[o] !== null && a && e[o].length > 0)
-        return i[o] = e[o], i;
-      const f = `${this._name}:${o}`;
-      let u = s[f] || [];
-      return u.length === 0 && (u = s[o] || []), i[o] = a ? u : u[0] ?? null, i;
-    }, {});
+    let i = !1;
+    for (const o in e) {
+      i = !0;
+      break;
+    }
+    if (i)
+      for (const o in e) {
+        const a = Array.isArray(e[o]);
+        if (e[o] !== null && a && e[o].length > 0) {
+          this._ref[o] = e[o];
+          continue;
+        }
+        const c = `${this._name}:${o}`;
+        let d = s[c];
+        (!d || d.length === 0) && (d = s[o]), this._ref[o] = a ? d || [] : d ? d[0] : null;
+      }
+    else
+      for (let o = 0; o < n.length; o++) {
+        const c = n[o].getAttribute(t), d = c.indexOf(":");
+        if (d !== -1) {
+          const _ = c.substring(0, d), p = c.substring(d + 1);
+          _ === this._name && !this._ref[p] && (this._ref[p] = s[c]);
+        } else
+          this._ref[c] || (this._ref[c] = s[c]);
+      }
   }
   get options() {
     return this._options;
   }
   set options(e) {
-    const t = this.element.getAttribute(`${c.get("attrPrefix")}-options`);
+    const t = this.element.getAttribute(`${f.get("attrPrefix")}-options`);
     let n = {};
     if (t)
       try {
@@ -159,10 +169,10 @@ let R = class {
   observeResize(e, t) {
     typeof window > "u" || !window.ResizeObserver || (h || (h = new ResizeObserver((n) => {
       for (const s of n) {
-        const i = d.get(s.target);
+        const i = l.get(s.target);
         i && i.forEach((o) => o([s]));
       }
-    })), d.has(e) || (d.set(e, /* @__PURE__ */ new Set()), h.observe(e)), d.get(e).add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map()), this._observedResizeElements.has(e) || this._observedResizeElements.set(e, /* @__PURE__ */ new Set()), this._observedResizeElements.get(e).add(t));
+    })), l.has(e) || (l.set(e, /* @__PURE__ */ new Set()), h.observe(e)), l.get(e).add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map()), this._observedResizeElements.has(e) || this._observedResizeElements.set(e, /* @__PURE__ */ new Set()), this._observedResizeElements.get(e).add(t));
   }
   unobserveResize(e, t = null) {
     if (!this._observedResizeElements) return;
@@ -170,26 +180,26 @@ let R = class {
     if (!n) return;
     if (t) {
       n.delete(t);
-      const i = d.get(e);
+      const i = l.get(e);
       i && i.delete(t);
     } else {
-      const i = d.get(e);
+      const i = l.get(e);
       i && n.forEach((o) => i.delete(o)), n.clear();
     }
     n.size === 0 && this._observedResizeElements.delete(e);
-    const s = d.get(e);
-    s && s.size === 0 && (d.delete(e), h && h.unobserve(e));
+    const s = l.get(e);
+    s && s.size === 0 && (l.delete(e), h && h.unobserve(e));
   }
   observeIntersection(e, t, n = {}) {
     if (typeof window > "u" || !window.IntersectionObserver) return;
-    const s = O(n);
-    let i = _.get(s);
-    i || (i = { observer: new IntersectionObserver((f) => {
-      for (const u of f) {
-        const b = i.callbacks.get(u.target);
-        b && b.forEach((v) => v([u]));
+    const s = I(n);
+    let i = m.get(s);
+    i || (i = { observer: new IntersectionObserver((c) => {
+      for (const d of c) {
+        const _ = i.callbacks.get(d.target);
+        _ && _.forEach((p) => p([d]));
       }
-    }, n), callbacks: /* @__PURE__ */ new Map() }, _.set(s, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
+    }, n), callbacks: /* @__PURE__ */ new Map() }, m.set(s, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
     const o = this._observedIntersectionElements.get(e);
     o.has(s) || o.set(s, /* @__PURE__ */ new Set()), o.get(s).add(t);
   }
@@ -197,19 +207,19 @@ let R = class {
     if (!this._observedIntersectionElements) return;
     const n = this._observedIntersectionElements.get(e);
     n && (n.forEach((s, i) => {
-      const o = _.get(i);
+      const o = m.get(i);
       if (t)
         s.has(t) && (s.delete(t), o && o.callbacks.has(e) && o.callbacks.get(e).delete(t));
       else {
         if (o && o.callbacks.has(e)) {
           const a = o.callbacks.get(e);
-          s.forEach((f) => a.delete(f));
+          s.forEach((c) => a.delete(c));
         }
         s.clear();
       }
       if (s.size === 0 && n.delete(i), o) {
         const a = o.callbacks.get(e);
-        a && a.size === 0 && (o.callbacks.delete(e), o.observer.unobserve(e)), o.callbacks.size === 0 && (o.observer.disconnect(), _.delete(i));
+        a && a.size === 0 && (o.callbacks.delete(e), o.observer.unobserve(e)), o.callbacks.size === 0 && (o.observer.disconnect(), m.delete(i));
       }
     }), n.size === 0 && this._observedIntersectionElements.delete(e));
   }
@@ -240,38 +250,39 @@ let R = class {
   unmount() {
   }
   getRef(e, t = !1) {
-    return `[${c.get("attrPrefix")}-ref="${t ? `${this._name}:` : ""}${e}"]`;
+    return `[${f.get("attrPrefix")}-ref="${t ? `${this._name}:` : ""}${e}"]`;
   }
   setState(e) {
-    const t = {};
-    let n = !1;
-    Object.keys(e).forEach((s) => {
-      this._state[s] !== e[s] && (t[s] = e[s], this._state[s] = e[s], n = !0);
-    }), n && (this._pendingStateChanges || (this._pendingStateChanges = {}, this._pendingAttributeChanges = {}, requestAnimationFrame(() => {
-      Object.keys(this._pendingAttributeChanges).forEach((s) => {
-        const i = this._pendingAttributeChanges[s];
-        this.element.setAttribute(s, i);
-      }), this.stateChange(this._pendingStateChanges), this._pendingStateChanges = null, this._pendingAttributeChanges = null;
-    })), Object.keys(t).forEach((s) => {
-      const i = t[s], o = typeof i;
-      if (o === "boolean" || o === "string") {
-        if (!this._stateAttributeCache[s]) {
-          const f = s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-          this._stateAttributeCache[s] = `data-${f}`;
+    let t = !1, n = null;
+    for (const s in e) {
+      const i = e[s];
+      this._state[s] !== i && (t || (t = !0, n = {}), n[s] = i, this._state[s] = i);
+    }
+    if (t) {
+      this._pendingStateChanges || (this._pendingStateChanges = {}, this._pendingAttributeChanges = {}, requestAnimationFrame(() => {
+        for (const s in this._pendingAttributeChanges)
+          this.element.setAttribute(s, this._pendingAttributeChanges[s]);
+        this.stateChange(this._pendingStateChanges), this._pendingStateChanges = null, this._pendingAttributeChanges = null;
+      }));
+      for (const s in n) {
+        const i = n[s], o = typeof i;
+        if (o === "boolean" || o === "string") {
+          let a = this._stateAttributeCache[s];
+          a || (a = `data-${s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, this._stateAttributeCache[s] = a), this._pendingAttributeChanges[a] = o === "boolean" ? i ? "true" : "false" : i;
         }
-        const a = this._stateAttributeCache[s];
-        this._pendingAttributeChanges[a] = o === "boolean" ? i ? "true" : "false" : i;
+        this._pendingStateChanges[s] = i;
       }
-    }), Object.assign(this._pendingStateChanges, t));
+    }
   }
   stateChange(e) {
     return e;
   }
   _autoBindFunctions() {
     const e = Object.getOwnPropertyNames(Object.getPrototypeOf(this)), t = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
-    e.forEach((n) => {
-      t.has(n) || n.startsWith("_") || typeof this[n] == "function" && (this[n] = this[n].bind(this));
-    });
+    for (let n = 0; n < e.length; n++) {
+      const s = e[n];
+      t.has(s) || s[0] === "_" || typeof this[s] == "function" && (this[s] = this[s].bind(this));
+    }
   }
   _autoBindActions() {
     g("[data-action]", this.element).forEach((t) => {
@@ -282,7 +293,7 @@ let R = class {
     });
   }
 };
-class B extends R {
+class k extends R {
   async require() {
   }
   _load() {
@@ -291,7 +302,7 @@ class B extends R {
 }
 class S extends EventTarget {
   emit(e, t = {}) {
-    c.get("log") && console.info(`Emitting event '${e}'`);
+    f.get("log") && console.info(`Emitting event '${e}'`);
     const n = new CustomEvent(e, { detail: t });
     n._name = e, this.dispatchEvent(n);
   }
@@ -306,36 +317,36 @@ class S extends EventTarget {
     t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t), t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const N = new S();
-let l = null;
-function I(r) {
-  const e = `${c.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {};
+const B = new S();
+let u = null;
+function x(r) {
+  const e = `${f.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {};
   let n = !1;
   r.forEach((s) => {
     s.removedNodes.forEach((i) => {
-      i.nodeType === Node.ELEMENT_NODE && (i.hasAttribute(e) && p(i), g(`[${e}]`, i).forEach((a) => p(a)));
+      i.nodeType === Node.ELEMENT_NODE && (i.hasAttribute(e) && b(i), g(`[${e}]`, i).forEach((a) => b(a)));
     }), s.addedNodes.length > 0 && (n = !0);
   }), n && z(t, document.body);
 }
 function E() {
-  typeof document > "u" || (c.get("autoMountComponents") && !l ? (l = new MutationObserver(I), l.observe(document.body, {
+  typeof document > "u" || (f.get("autoMountComponents") && !u ? (u = new MutationObserver(x), u.observe(document.body, {
     childList: !0,
     subtree: !0
-  })) : !c.get("autoMountComponents") && l && (l.disconnect(), l = null));
+  })) : !f.get("autoMountComponents") && u && (u.disconnect(), u = null));
 }
-const x = c.set;
-c.set = function(r, e) {
-  x.call(this, r, e), r === "autoMountComponents" && E();
+const M = f.set;
+f.set = function(r, e) {
+  M.call(this, r, e), r === "autoMountComponents" && E();
 };
 typeof window < "u" && setTimeout(E, 0);
 export {
   R as BaseComponent,
-  B as Component,
-  c as config,
+  k as Component,
+  f as config,
   A as createInstance,
-  P as destroyInstance,
-  N as eventbus,
-  w as getComponentFromElement,
+  O as destroyInstance,
+  B as eventbus,
+  v as getComponentFromElement,
   z as loadComponents,
-  P as removeComponents
+  O as removeComponents
 };
