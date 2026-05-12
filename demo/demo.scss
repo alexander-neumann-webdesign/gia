@@ -210,7 +210,7 @@ div[data-component="ImageHolder"] {
     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
-  &.visible img {
+  &[data-is-visible="true"][data-is-loaded="true"] img {
     opacity: 1;
     // If parallaxSpeed === 0, JS will not touch transform, so we can reset it here natively:
     // transform: translateY(0);
