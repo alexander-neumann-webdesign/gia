@@ -472,14 +472,20 @@ dialog[data-component="OffCanvasMenu"] {
 
 /* --- Reveal --- */
 [data-component="Reveal"] {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: opacity, transform;
+  // Pure trigger component by default.
+  // Apply standard fade-up animations only to targeted children (.reveal-item)
+  .reveal-item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: opacity, transform;
+  }
 
   &[data-is-inview="true"] {
-    opacity: 1;
-    transform: translateY(0);
+    .reveal-item {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -527,24 +533,57 @@ dialog[data-component="OffCanvasMenu"] {
     visibility: visible;
   }
 
-  // Example staggered animation using the generated CSS variables
-  .split-char {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    animation-delay: calc(var(--char-index) * 0.03s);
-  }
-
   .split-word {
      // Prevent awkward wrapping mid-word
      display: inline-block;
   }
+
+  // --- Demos linked with Reveal ---
+  &.split-lines-demo {
+    .split-word {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      // Wait until parent Reveal adds .is-inview or similar? We'll rely on Reveal's [data-is-inview="true"]
+      // so we use a parent selector
+    }
+  }
+
+  &.split-words-demo {
+    .split-word {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  }
+
+  &.split-chars-demo {
+    .split-char {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  }
 }
 
-@keyframes slideUp {
-  to {
+[data-component="Reveal"][data-is-inview="true"] {
+  .split-lines-demo .split-word {
     opacity: 1;
     transform: translateY(0);
+    // Add delay based on line index
+    transition-delay: calc(var(--line-index, 0) * 0.1s);
+  }
+
+  .split-words-demo .split-word {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(var(--word-index, 0) * 0.05s);
+  }
+
+  .split-chars-demo .split-char {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(var(--char-index, 0) * 0.03s);
   }
 }
 
