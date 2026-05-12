@@ -326,6 +326,15 @@ dialog[data-component="Modal"] {
       }
     }
   }
+
+  &[data-is-closing="true"] {
+    opacity: 0;
+    transform: translateY(10px);
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
 }
 
 
@@ -373,6 +382,15 @@ dialog[data-component="OffCanvasMenu"] {
       &::backdrop {
         opacity: 0;
       }
+    }
+  }
+
+  &[data-is-closing="true"] {
+    opacity: 0;
+    transform: translateX(-100%);
+
+    &::backdrop {
+      opacity: 0;
     }
   }
 
@@ -878,6 +896,8 @@ div[data-component="VideoHolder"] {
     * {
         pointer-events: auto;
     }
+}
+
 /* --- ClipboardCopy --- */
 button[data-component="ClipboardCopy"] {
   display: inline-flex;
