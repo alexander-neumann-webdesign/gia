@@ -414,6 +414,16 @@ dialog[data-component="OffCanvasMenu"] {
 
 /* --- Tabs --- */
 div[data-component="Tabs"] {
+  .tab-panels {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    > * {
+      grid-row-start: 1;
+      grid-column-start: 1;
+    }
+  }
+
   [role="tab"] {
     cursor: pointer;
     border-bottom: 2px solid transparent;

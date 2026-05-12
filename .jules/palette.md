@@ -4,3 +4,6 @@
 ## 2024-05-12 - Add aria-expanded and aria-controls to Modal toggle
 **Learning:** Similar to off-canvas menus, modal dialog components with dynamic external triggers often lack the necessary ARIA attributes to connect the trigger button to the modal content (`aria-controls`) and to accurately broadcast the state of the dialog to screen readers (`aria-expanded`).
 **Action:** Always ensure that dynamically attached external UI triggers for modals correctly initialize and continuously sync their `aria-controls` and `aria-expanded` attributes with the component's internal state.
+## 2026-05-12 - Stack tab panels for smooth transitions
+**Learning:** When fading out an active tab and fading in a new tab simultaneously, not stacking them causes layout shifts where both are temporarily visible in flow.
+**Action:** Wrap tab panels in a container and use `display: grid` with overlapping children (e.g., `grid-area: 1 / 1`) to ensure stable crossfade animations.
