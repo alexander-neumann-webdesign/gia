@@ -342,17 +342,16 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
 }
 
 /* --- Reveal --- */
-[data-component=Reveal] {
+[data-component=Reveal]:not(.reveal-no-transform) {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: opacity, transform;
 }
-[data-component=Reveal][data-is-inview=true] {
+[data-component=Reveal]:not(.reveal-no-transform)[data-is-inview=true] {
   opacity: 1;
   transform: translateY(0);
 }
-
 /* --- Slider --- */
 .slider-wrapper[data-component=Slider] {
   position: relative;
@@ -388,22 +387,41 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   opacity: 1;
   visibility: visible;
 }
-[data-component=SplitText] .split-char {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  animation-delay: calc(var(--char-index) * 0.03s);
-}
 [data-component=SplitText] .split-word {
   display: inline-block;
 }
-
-@keyframes slideUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+[data-component=SplitText].split-lines-demo .split-word {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
+[data-component=SplitText].split-words-demo .split-word {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+[data-component=SplitText].split-chars-demo .split-char {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+[data-component=Reveal][data-is-inview=true] .split-lines-demo .split-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--line-index, 0) * 0.1s);
+}
+[data-component=Reveal][data-is-inview=true] .split-words-demo .split-word {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--word-index, 0) * 0.05s);
+}
+[data-component=Reveal][data-is-inview=true] .split-chars-demo .split-char {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--char-index, 0) * 0.03s);
+}
+
 /* --- Tabs --- */
 div[data-component=Tabs] .tab-panels {
   display: grid;
