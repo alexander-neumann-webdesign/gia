@@ -195,6 +195,8 @@ gia.register(Modal);
  *
  * dialog[data-component="Modal"] {
  *   // Center it via standard dialog rules, or custom
+ *   margin: auto;
+ *   inset: 0;
  *   border: none;
  *   border-radius: 8px;
  *   padding: 0;
@@ -204,7 +206,7 @@ gia.register(Modal);
  *     background-color: rgba(0,0,0,0.5);
  *     backdrop-filter: blur(4px);
  *
- *     transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+ *     transition: opacity 0.4s ease, backdrop-filter 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
  *     opacity: 0;
  *   }
  *
