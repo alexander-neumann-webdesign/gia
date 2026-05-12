@@ -12,7 +12,6 @@ class FilterableList extends gia.Component {
 		this.options = {
 			defaultSort: '', // e.g. 'price:asc'
 			activeFilterClass: 'is-active', // Class to apply to active filter buttons
-			itemHiddenClass: 'is-hidden', // Class to apply to hidden items
 		};
 
 		// Define internal state variables that don't trigger batched DOM updates automatically
@@ -349,12 +348,10 @@ class FilterableList extends gia.Component {
 		// Update hidden state
 		hiddenItems.forEach(item => {
 			item.hidden = true;
-			item.classList.add(this.options.itemHiddenClass);
 		});
 
 		visibleItems.forEach(item => {
 			item.hidden = false;
-			item.classList.remove(this.options.itemHiddenClass);
 		});
 
 		// Reorder visible items in the DOM
@@ -477,6 +474,10 @@ gia.register(FilterableList);
  *     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
  *     gap: 1rem;
  *     transition: height 0.4s ease;
+ *   }
+ *
+ *   .item[hidden] {
+ *     display: none !important;
  *   }
  *
  *   // View transitions styles
