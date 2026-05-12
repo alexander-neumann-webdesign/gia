@@ -1,3 +1,10 @@
+// Browser supports interpolate-size
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
 /* --- Accordion --- */
 details[data-component="Accordion"] {
   ::details-content {
@@ -6,19 +13,13 @@ details[data-component="Accordion"] {
     overflow: clip;
   }
 
-  // Browser supports interpolate-size
-  @supports (interpolate-size: allow-keywords) {
-    :root {
-      interpolate-size: allow-keywords;
-    }
-
-    &[open]::details-content {
-      height: auto;
-    }
+  &[open]::details-content {
+    height: auto;
   }
 
   summary {
     cursor: pointer;
+    user-select: none;
     // Remove default marker if desired
     // list-style: none;
     // &::-webkit-details-marker { display: none; }
