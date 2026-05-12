@@ -136,7 +136,42 @@ class TodoApp extends gia.Component {
 	stateChange(stateChanges) {
 		if ('tasks' in stateChanges) {
 			if (this.ref.list) {
-				this.renderTasks(stateChanges.tasks);
+				if (document.startViewTransition) {
+					// Apply view transition names to current items
+					const currentItems = this.ref.list.querySelectorAll('li');
+					for (let i = 0; i < currentItems.length; i++) {
+						const deleteBtn = currentItems[i].querySelector('[data-action="delete"]');
+						if (deleteBtn) {
+							const id = deleteBtn.getAttribute('data-id');
+							currentItems[i].style.viewTransitionName = `todo-${id}`;
+						}
+					}
+
+					const transition = document.startViewTransition(() => {
+						this.renderTasks(stateChanges.tasks);
+
+						// Apply view transition names to the newly created items
+						const newItems = this.ref.list.querySelectorAll('li');
+						for (let i = 0; i < newItems.length; i++) {
+							const deleteBtn = newItems[i].querySelector('[data-action="delete"]');
+							if (deleteBtn) {
+								const id = deleteBtn.getAttribute('data-id');
+								newItems[i].style.viewTransitionName = `todo-${id}`;
+							}
+						}
+					});
+
+					transition.finished.finally(() => {
+						if (this.ref.list) {
+							const items = this.ref.list.querySelectorAll('li');
+							for (let i = 0; i < items.length; i++) {
+								items[i].style.viewTransitionName = '';
+							}
+						}
+					});
+				} else {
+					this.renderTasks(stateChanges.tasks);
+				}
 			}
 
 			// Update a state attribute on the component itself for CSS styling based on task count
@@ -220,6 +255,12 @@ gia.register(TodoApp);
  * </div>
  *
  * Suggested SCSS:
+ *
+ * // View transitions styles (must be global, not scoped)
+ * ::view-transition-group(*) {
+ *   animation-duration: 0.3s;
+ *   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+ * }
  *
  * .todo-app {
  *   max-width: 500px;
