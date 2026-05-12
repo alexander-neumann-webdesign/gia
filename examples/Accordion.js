@@ -105,6 +105,13 @@ gia.register(Accordion);
  *
  * Suggested SCSS:
  *
+ * // Browser supports interpolate-size
+ * @supports (interpolate-size: allow-keywords) {
+ *   :root {
+ *     interpolate-size: allow-keywords;
+ *   }
+ * }
+ *
  * details[data-component="Accordion"] {
  *   ::details-content {
  *     transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
@@ -112,19 +119,13 @@ gia.register(Accordion);
  *     overflow: clip;
  *   }
  *
- *   // Browser supports interpolate-size
- *   @supports (interpolate-size: allow-keywords) {
- *     :root {
- *       interpolate-size: allow-keywords;
- *     }
- *
- *     &[open]::details-content {
- *       height: auto;
- *     }
+ *   &[open]::details-content {
+ *     height: auto;
  *   }
  *
  *   summary {
  *     cursor: pointer;
+ *     user-select: none;
  *     // Remove default marker if desired
  *     // list-style: none;
  *     // &::-webkit-details-marker { display: none; }
