@@ -744,3 +744,59 @@ div[data-component="VideoHolder"] {
     }
   }
 }
+
+/* --- ClipboardCopy --- */
+button[data-component="ClipboardCopy"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  min-width: 160px; /* Prevent layout shift when text changes */
+  justify-content: center;
+
+  svg {
+    width: 1.25em;
+    height: 1.25em;
+  }
+
+  .copy-icon {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  .check-icon {
+    transition: stroke-dashoffset 0.4s ease;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    stroke: #4caf50;
+  }
+
+  &[data-status="copied"] {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #4caf50;
+
+    .copy-icon {
+      opacity: 0;
+    }
+
+    .check-icon {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &[data-status="error"] {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #f44336;
+  }
+}
