@@ -29,6 +29,14 @@ class Modal extends gia.Component {
 		// Attach events to triggers
 		this.triggers.forEach(trigger => {
 			trigger.addEventListener('click', this.handleTriggerClick);
+
+			// Accessibility: set aria-controls and initial aria-expanded state
+			if (this.modalId) {
+				trigger.setAttribute('aria-controls', this.modalId);
+			}
+			if (!trigger.hasAttribute('aria-expanded')) {
+				trigger.setAttribute('aria-expanded', this.state.isOpen ? 'true' : 'false');
+			}
 		});
 
 		// Attach events to close buttons from refs
@@ -120,6 +128,11 @@ class Modal extends gia.Component {
 		if ('isOpen' in stateChanges) {
 			const { isOpen } = stateChanges;
 
+			// Accessibility: update aria-expanded on triggers
+			this.triggers.forEach(trigger => {
+				trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			});
+
 			if (isOpen) {
 				if (!this.element.open) {
 					this.element.showModal();
@@ -168,7 +181,7 @@ gia.register(Modal);
  * Expected HTML Structure:
  *
  * <!-- Triggers can be anywhere -->
- * <button data-modal-target="my-modal">Open Modal</button>
+ * <button data-modal-target="my-modal" aria-controls="my-modal" aria-expanded="false">Open Modal</button>
  *
  * <!-- The modal itself -->
  * <dialog data-component="Modal" id="my-modal">
