@@ -19,3 +19,7 @@
 ## 2025-02-12 - [Avoid JSON.parse within Try/Catch in Hot Paths]
 **Learning:** Checking for JSON validity via `try { JSON.parse(str) }` is extremely slow if the string is often not JSON, because generating and catching exceptions in JavaScript engines involves significant stack trace and unrolling overhead.
 **Action:** Optimize string parsing by adding an early return/fast check like `if (str.startsWith('{') || str.startsWith('['))` before attempting `JSON.parse` to quickly bail out on primitive strings and prevent unnecessary exception handling.
+
+## 2024-05-12 - Global Cache for State Attribute Conversions
+**Learning:** Moving from a per-instance object cache (`this._stateAttributeCache`) to a module-level `Map` (`globalStateAttributeCache`) for storing `camelCase` to `kebab-case` state attribute conversions significantly reduces memory overhead and redundant regex parsing (`.replace()`) across components. Since state keys like `isOpen` and `isLoading` are frequently repeated across different instances, sharing a global `Map` avoids duplicating the same conversion for every single component instance. A global `Map` also performed slightly faster than a global Object in benchmark testing.
+**Action:** When implementing lookup caches for values that are identical across instances (like key conversions or standard string formats), prefer a module-level `Map` rather than a per-instance property to save memory and skip duplicate computation.
