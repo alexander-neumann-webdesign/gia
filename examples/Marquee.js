@@ -33,11 +33,16 @@ class Marquee extends gia.Component {
 
 		// Scroll acceleration state
 		this.scrollVelocity = 0;
+		this.dragVelocity = 0;
+		this.lastDragTime = 0;
 		this.lastScrollY = window.scrollY || window.pageYOffset;
 		this.isScrollBound = false;
 
 		// RAF timing
 		this.lastTime = 0;
+
+		// Smooth deceleration multiplier
+		this.speedMultiplier = 1;
 	}
 
 	mount() {
@@ -152,6 +157,8 @@ class Marquee extends gia.Component {
 
 		this.setState({ isDragging: true });
 		this.lastDragX = e.clientX;
+		this.lastDragTime = performance.now();
+		this.dragVelocity = 0;
 
 		// Optional: add a grabbing cursor class
 		this.element.style.cursor = 'grabbing';
@@ -161,8 +168,14 @@ class Marquee extends gia.Component {
 		if (!this.state.isDragging) return;
 
 		const deltaX = e.clientX - this.lastDragX;
+		const now = performance.now();
+		const dt = Math.max(now - this.lastDragTime, 1);
+
+		this.dragVelocity = deltaX / (dt / 16.67);
+
 		this.currentOffset += deltaX;
 		this.lastDragX = e.clientX;
+		this.lastDragTime = now;
 
 		// We handle rendering directly here or in the tick loop.
 		// If motion is disabled, we might need to manually call renderPosition if tick is paused
@@ -176,6 +189,13 @@ class Marquee extends gia.Component {
 
 		this.setState({ isDragging: false });
 		this.element.style.cursor = '';
+
+		const timeSinceLastMove = performance.now() - this.lastDragTime;
+		if (timeSinceLastMove < 50) {
+			this.scrollVelocity = this.dragVelocity;
+		} else {
+			this.scrollVelocity = 0;
+		}
 	}
 
 	handleResize([entry]) {
@@ -227,24 +247,28 @@ class Marquee extends gia.Component {
 
 		let frameOffset = 0;
 
-		// Move forward if not hovered and not dragging
-		if (!this.state.isDragging && (!this.options.pauseOnHover || !this.state.isHovered)) {
-			const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
-			frameOffset += (this.options.speed * directionMultiplier) * timeScale;
+		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
+		const targetMultiplier = isPaused ? 0 : 1;
+
+		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * 0.1 * timeScale;
+
+		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
+			this.speedMultiplier = targetMultiplier;
 		}
+
+		const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
+		frameOffset += (this.options.speed * directionMultiplier) * this.speedMultiplier * timeScale;
 
 		// Apply scroll velocity if any
 		if (Math.abs(this.scrollVelocity) > 0.01) {
-			frameOffset += this.scrollVelocity;
-			// Decay the scroll velocity (friction)
-			this.scrollVelocity *= 0.9;
+			frameOffset += this.scrollVelocity * timeScale;
+			// Decay the scroll velocity (friction) using frame-rate independent exponential smoothing
+			this.scrollVelocity *= Math.pow(0.9, timeScale);
 		} else {
 			this.scrollVelocity = 0;
 		}
 
-		if (!this.state.isDragging) {
-			this.currentOffset += frameOffset;
-		}
+		this.currentOffset += frameOffset;
 
 		this.renderPosition();
 
