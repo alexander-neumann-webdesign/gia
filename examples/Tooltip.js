@@ -265,11 +265,29 @@ gia.register(Tooltip);
  *   font-size: 0.875rem;
  *   white-space: nowrap;
  *   z-index: 1000;
+ *   overflow: visible; // Prevent tooltip from being scrollable
  *
  *   // Modern popovers reset
  *   margin: 0;
  *   inset: auto;
  *   border: none;
+ *
+ *   // Modern discrete animation logic
+ *   transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), overlay 0.3s allow-discrete, display 0.3s allow-discrete;
+ *   opacity: 0;
+ *   transform: scale(0.9);
+ *
+ *   &:popover-open {
+ *     opacity: 1;
+ *     transform: scale(1);
+ *   }
+ *
+ *   @starting-style {
+ *     &:popover-open {
+ *       opacity: 0;
+ *       transform: scale(0.9);
+ *     }
+ *   }
  *
  *   &::backdrop {
  *     display: none;
