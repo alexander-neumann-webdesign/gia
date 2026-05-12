@@ -309,8 +309,8 @@
         <h2>Reveal</h2>
         <div class="demo-block">
             <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
-  <h2>Fade me in</h2>
-  <p>When I scroll into view.</p>
+  <h2 class="reveal-item">Fade me in</h2>
+  <p class="reveal-item" style="transition-delay: 0.1s;">When I scroll into view.</p>
 </div>
 
 
@@ -345,7 +345,7 @@
         <div class="demo-block">
             <div style="display: flex; flex-direction: column; gap: 4rem;">
                 <!-- Splitting Lines -->
-                <div data-component="Reveal" class="reveal-no-transform" data-options='{"threshold": 0.5, "once": true}'>
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
                     <h3>Splitting Lines</h3>
                     <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"]}'>
                         This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
@@ -354,7 +354,7 @@
                 </div>
 
                 <!-- Splitting Words -->
-                <div data-component="Reveal" class="reveal-no-transform" data-options='{"threshold": 0.5, "once": true}'>
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
                     <h3>Splitting Words</h3>
                     <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
                         Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block reaches the viewport threshold.
@@ -362,7 +362,7 @@
                 </div>
 
                 <!-- Splitting Characters -->
-                <div data-component="Reveal" class="reveal-no-transform" data-options='{"threshold": 0.5, "once": true}'>
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
                     <h3>Splitting Characters</h3>
                     <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
                         Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like 👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates each letter.

@@ -342,16 +342,17 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
 }
 
 /* --- Reveal --- */
-[data-component=Reveal]:not(.reveal-no-transform) {
+[data-component=Reveal] .reveal-item {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: opacity, transform;
 }
-[data-component=Reveal]:not(.reveal-no-transform)[data-is-inview=true] {
+[data-component=Reveal][data-is-inview=true] .reveal-item {
   opacity: 1;
   transform: translateY(0);
 }
+
 /* --- Slider --- */
 .slider-wrapper[data-component=Slider] {
   position: relative;
