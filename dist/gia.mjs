@@ -239,14 +239,14 @@ let x = class {
   /**
    * Loads a script that is already defined in the DOM with a data-src attribute.
    * Prevents double-loading and handles race conditions.
-   * * @param {string} scriptId - The ID of the script tag (without "-js" suffix)
+   * @param {string} scriptId - The exact ID of the script tag
    * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
    * @return {Promise}
    */
   loadScript(e, t) {
     if (t && window[t])
       return Promise.resolve(window[t]);
-    const s = document.getElementById(`${e}-js`);
+    const s = document.getElementById(e);
     return s ? (s._loadPromise || (s._loadPromise = new Promise((n, i) => {
       const o = () => {
         s.onload = null, s.onerror = null;
@@ -255,8 +255,8 @@ let x = class {
         o(), n(t ? window[t] : !0);
       }, s.onerror = () => {
         o(), delete s._loadPromise, i(new Error(`Failed to load script: ${e}`));
-      }, !s.src && s.dataset.src ? (s.src = s.dataset.src, delete s.dataset.src) : !s.src && !s.dataset.src && (o(), i(new Error(`Script tag '${e}-js' has no src or data-src.`)));
-    })), s._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}-js' not found.`));
+      }, !s.src && s.dataset.src ? (s.src = s.dataset.src, delete s.dataset.src) : !s.src && !s.dataset.src && (o(), i(new Error(`Script tag '${e}' has no src or data-src.`)));
+    })), s._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
   }
   mount() {
   }

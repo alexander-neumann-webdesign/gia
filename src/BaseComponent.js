@@ -315,7 +315,7 @@ export default class Component {
 	/**
 	 * Loads a script that is already defined in the DOM with a data-src attribute.
 	 * Prevents double-loading and handles race conditions.
-	 * * @param {string} scriptId - The ID of the script tag (without "-js" suffix)
+	 * @param {string} scriptId - The exact ID of the script tag
 	 * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
 	 * @return {Promise}
 	 */
@@ -327,9 +327,9 @@ export default class Component {
 		}
 
 		// 2. DOM LOOKUP: Find the existing script tag
-		const script = document.getElementById(`${scriptId}-js`);
+		const script = document.getElementById(scriptId);
 		if (!script) {
-			return Promise.reject(new Error(`Script tag with ID '${scriptId}-js' not found.`));
+			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
 		}
 
 		// CACHE CHECK: Did we already start loading this?
@@ -368,7 +368,7 @@ export default class Component {
 			} else if (!script.src && !script.dataset.src) {
 				// Edge case: Tag exists but has no source at all
 				cleanup();
-				reject(new Error(`Script tag '${scriptId}-js' has no src or data-src.`));
+				reject(new Error(`Script tag '${scriptId}' has no src or data-src.`));
 			}
 		});
 
