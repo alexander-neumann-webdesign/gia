@@ -287,6 +287,8 @@ div[data-component="Marquee"] {
 /* --- Modal --- */
 dialog[data-component="Modal"] {
   // Center it via standard dialog rules, or custom
+  margin: auto;
+  inset: 0;
   border: none;
   border-radius: 8px;
   padding: 0;
@@ -296,7 +298,7 @@ dialog[data-component="Modal"] {
     background-color: rgba(0,0,0,0.5);
     backdrop-filter: blur(4px);
 
-    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+    transition: opacity 0.4s ease, backdrop-filter 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
     opacity: 0;
   }
 
@@ -777,6 +779,48 @@ div[data-component="VideoHolder"] {
   }
 }
 
+
+.physics-section {
+    position: relative;
+    width: 100%;
+    min-height: 60vh;
+    overflow: hidden;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // The container receives pointer events
+    touch-action: none; // Prevent scrolling when dragging shapes
+}
+
+.physics-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+
+    // allow canvas to intercept mouse events for Matter.js MouseConstraint
+    pointer-events: auto;
+}
+
+.physics-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none; // Let events pass through to canvas
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    // Re-enable pointer events on interactive children
+    * {
+        pointer-events: auto;
+    }
 /* --- ClipboardCopy --- */
 button[data-component="ClipboardCopy"] {
   display: inline-flex;

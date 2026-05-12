@@ -226,6 +226,8 @@ div[data-component=Marquee] .marquee-item {
 
 /* --- Modal --- */
 dialog[data-component=Modal] {
+  margin: auto;
+  inset: 0;
   border: none;
   border-radius: 8px;
   padding: 0;
@@ -234,7 +236,7 @@ dialog[data-component=Modal] {
 dialog[data-component=Modal]::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
-  transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+  transition: opacity 0.4s ease, backdrop-filter 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
   opacity: 0;
 }
 dialog[data-component=Modal] {
@@ -648,6 +650,41 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
   background: rgba(0, 0, 0, 0.8);
 }
 
+.physics-section {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.physics-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+.physics-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.physics-content * {
+  pointer-events: auto;
 /* --- ClipboardCopy --- */
 button[data-component=ClipboardCopy] {
   display: inline-flex;
