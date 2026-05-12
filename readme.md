@@ -14,6 +14,21 @@ Gia provides a robust architectural foundation with a minimal footprint: **~3.53
 - **Built-in Global Features:** An optional `MutationObserver`-powered auto-mounting capability allows you to handle dynamic content (e.g., AJAX loaded content) transparently.
 - **Code Splitting Ready:** Natively supports dynamic imports via the `require()` component lifecycle method to defer non-essential library loading.
 
+
+## Table of Contents
+- [Features & Benefits](#features--benefits)
+- [Installation](#installation)
+- [Architecture & Usage](#architecture--usage)
+- [Global Configuration (`gia.config`)](#global-configuration-giaconfig)
+- [Loading Components](#loading-components)
+- [Component Options (`data-options`)](#component-options-data-options)
+- [The Ref System (`this.ref`)](#the-ref-system-thisref)
+- [Event Binding (`data-action`)](#event-binding-data-action)
+- [State Management & Reactivity](#state-management--reactivity)
+- [Helper Functions](#helper-functions)
+- [Examples](#examples)
+- [Bonus Tip: Gia and Swup](#bonus-tip-gia-and-swup)
+
 ## Installation
 
 You can install Gia via npm or simply include it via a script tag.
@@ -106,9 +121,23 @@ How you initialize components depends on your `autoMountComponents` configuratio
 ### Manual Loading (Default)
 When `autoMountComponents` is `false` (the default for performance), you must explicitly tell Gia to search a DOM context and attach components. This is typically done on initial page load, and again whenever you inject new HTML.
 
+```html
+<div id="ajax-container">
+    <div data-component="MyComponent"></div>
+    <div data-component="AnotherComponent"></div>
+</div>
+```
+
 ```javascript
-import { loadComponents } from "gia";
-import MyComponent from "./MyComponent";
+import { loadComponents, Component } from "gia";
+
+class MyComponent extends Component {
+    mount() { console.log("MyComponent mounted"); }
+}
+
+class AnotherComponent extends Component {
+    mount() { console.log("AnotherComponent mounted"); }
+}
 
 const components = {
     MyComponent: MyComponent,
@@ -311,12 +340,33 @@ class CounterComponent extends Component {
 ### State-to-Attribute Auto-binding
 As a bonus, `BaseComponent` automatically maps `boolean` and `string` state values directly to `data-` attributes on the component's root element (`this.element`). CamelCase state keys are converted to kebab-case.
 
+```html
+<div data-component="StateExampleComponent">
+    <!-- Component content goes here -->
+</div>
+```
+
 ```javascript
-this.setState({
-    isOpen: true,
-    status: 'loading',
-    items: [1, 2, 3] // Arrays and objects are ignored by the attribute binder
-});
+import { Component } from "gia";
+
+class StateExampleComponent extends Component {
+    constructor(element) {
+        super(element);
+        this.state = {
+            isOpen: false,
+            status: 'idle',
+            items: []
+        };
+    }
+
+    mount() {
+        this.setState({
+            isOpen: true,
+            status: 'loading',
+            items: [1, 2, 3] // Arrays and objects are ignored by the attribute binder
+        });
+    }
+}
 ```
 This automatically updates the root element:
 ```html
@@ -336,14 +386,22 @@ If you need to access a component instance from outside (e.g., from another vani
 ```
 
 ```javascript
-import { getComponentFromElement } from "gia";
+import { getComponentFromElement, Component } from "gia";
 
+class MyComponent extends Component {
+    constructor(element) {
+        super(element);
+        this.state = { isOpen: true };
+    }
+}
+
+// Assume MyComponent is registered/loaded
 const el = document.getElementById("my-component-div");
 const instance = getComponentFromElement(el);
 
 if (instance) {
     // You can now call public methods or access state
-    console.log(instance.state.isOpen);
+    console.log(instance.state.isOpen); // true
 }
 ```
 
