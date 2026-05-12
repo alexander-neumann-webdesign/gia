@@ -1,6 +1,6 @@
-var $ = Object.defineProperty;
-var A = (r, e, t) => e in r ? $(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var w = (r, e, t) => A(r, typeof e != "symbol" ? e + "" : e, t);
+var A = Object.defineProperty;
+var P = (r, e, t) => e in r ? A(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
+var w = (r, e, t) => P(r, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (r) => {
   if (typeof r != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", r);
@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = r;
 });
-class P {
+class S {
   constructor() {
     w(this, "_options", {
       log: !1,
@@ -32,8 +32,8 @@ class P {
     return this._options[e];
   }
 }
-const l = new P();
-function S(r, e, t, s) {
+const l = new S();
+function I(r, e, t, s) {
   if (r.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
   try {
@@ -43,13 +43,13 @@ function S(r, e, t, s) {
     return console.error(`Failed to create component "${e}".`, n), null;
   }
 }
-function E(r) {
+function C(r) {
   return typeof r == "string" && (r = document.getElementById(r), !r) ? null : r.__gia_component__;
 }
 function _(r, e = document) {
   return typeof r != "string" ? r : e.querySelectorAll(r);
 }
-function I(r = {}, e = document.documentElement) {
+function z(r = {}, e = document.documentElement) {
   let t = !0;
   if (r) {
     for (const c in r)
@@ -63,10 +63,10 @@ function I(r = {}, e = document.documentElement) {
     return;
   }
   const s = [], n = `${l.get("attrPrefix")}-component`, i = _(`[${n}]`, e), o = i.length, a = (c) => {
-    if (E(c))
+    if (C(c))
       return;
     const d = c.getAttribute(n);
-    typeof r[d] == "function" ? s.push(S(c, d, r[d])) : console.warn(`Constructor "${d}" not found.`);
+    typeof r[d] == "function" ? s.push(I(c, d, r[d])) : console.warn(`Constructor "${d}" not found.`);
   };
   for (let c = 0; c < o; c++)
     a(i[c]);
@@ -75,7 +75,7 @@ function I(r = {}, e = document.documentElement) {
     s[c]._load();
 }
 function m(r) {
-  const e = E(r);
+  const e = C(r);
   if (e) {
     const t = e._name || "Unknown";
     try {
@@ -92,7 +92,7 @@ function B(r = document.documentElement) {
     m(e[t]);
 }
 let p = null;
-const u = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), z = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), v = /* @__PURE__ */ new WeakMap(), y = /* @__PURE__ */ new Map();
+const h = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), y = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new Map();
 function M(r) {
   const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", s = r.threshold || 0, n = Array.isArray(s) ? s.join(",") : s.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${n}`;
@@ -182,10 +182,10 @@ let x = class {
   observeResize(e, t) {
     typeof window > "u" || !window.ResizeObserver || (p || (p = new ResizeObserver((s) => {
       for (const n of s) {
-        const i = u.get(n.target);
+        const i = h.get(n.target);
         i && i.forEach((o) => o([n]));
       }
-    })), u.has(e) || (u.set(e, /* @__PURE__ */ new Set()), p.observe(e)), u.get(e).add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map()), this._observedResizeElements.has(e) || this._observedResizeElements.set(e, /* @__PURE__ */ new Set()), this._observedResizeElements.get(e).add(t));
+    })), h.has(e) || (h.set(e, /* @__PURE__ */ new Set()), p.observe(e)), h.get(e).add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map()), this._observedResizeElements.has(e) || this._observedResizeElements.set(e, /* @__PURE__ */ new Set()), this._observedResizeElements.get(e).add(t));
   }
   unobserveResize(e, t = null) {
     if (!this._observedResizeElements) return;
@@ -193,15 +193,15 @@ let x = class {
     if (!s) return;
     if (t) {
       s.delete(t);
-      const i = u.get(e);
+      const i = h.get(e);
       i && i.delete(t);
     } else {
-      const i = u.get(e);
+      const i = h.get(e);
       i && s.forEach((o) => i.delete(o)), s.clear();
     }
     s.size === 0 && this._observedResizeElements.delete(e);
-    const n = u.get(e);
-    n && n.size === 0 && (u.delete(e), p && p.unobserve(e));
+    const n = h.get(e);
+    n && n.size === 0 && (h.delete(e), p && p.unobserve(e));
   }
   observeIntersection(e, t, s = {}) {
     if (typeof window > "u" || !window.IntersectionObserver) return;
@@ -210,7 +210,7 @@ let x = class {
     i || (i = { observer: new IntersectionObserver((c) => {
       for (const f of c) {
         const d = i.callbacks.get(f.target);
-        d && d.forEach((h) => h([f]));
+        d && d.forEach((u) => u([f]));
       }
     }, s), callbacks: /* @__PURE__ */ new Map() }, b.set(n, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
     const o = this._observedIntersectionElements.get(e);
@@ -283,8 +283,8 @@ let x = class {
         if (Object.prototype.hasOwnProperty.call(t, n)) {
           const i = t[n], o = typeof i;
           if (o === "boolean" || o === "string") {
-            let a = y.get(n);
-            a || (a = `data-${n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, y.set(n, a)), this._pendingAttributeChanges[a] = o === "boolean" ? i ? "true" : "false" : i;
+            let a = E.get(n);
+            a || (a = `data-${n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, E.set(n, a)), this._pendingAttributeChanges[a] = o === "boolean" ? i ? "true" : "false" : i;
           }
         }
       Object.assign(this._pendingStateChanges, t);
@@ -295,11 +295,11 @@ let x = class {
   }
   _autoBindFunctions() {
     const e = Object.getPrototypeOf(this);
-    let t = v.get(e);
+    let t = y.get(e);
     t || (t = Object.getOwnPropertyNames(e).filter((s) => {
       var n;
-      return !z.has(s) && !s.startsWith("_") && typeof ((n = Object.getOwnPropertyDescriptor(e, s)) == null ? void 0 : n.value) == "function";
-    }), v.set(e, t));
+      return !v.has(s) && !s.startsWith("_") && typeof ((n = Object.getOwnPropertyDescriptor(e, s)) == null ? void 0 : n.value) == "function";
+    }), y.set(e, t));
     for (let s = 0; s < t.length; s++) {
       const n = t[s];
       this[n] = this[n].bind(this);
@@ -314,8 +314,8 @@ let x = class {
         let a = i.indexOf(" ", o);
         if (a === -1 && (a = i.length), a > o) {
           const c = i.substring(o, a), f = c.indexOf("->");
-          let d, h;
-          f !== -1 ? (d = c.substring(0, f), h = c.substring(f + 2)) : (d = c, h = void 0), this[h] ? n.addEventListener(d, (O) => this[h](O)) : console.warn(`Method "${h}" not found in component.`);
+          let d, u;
+          f !== -1 ? (d = c.substring(0, f), u = c.substring(f + 2)) : (d = c, u = void 0), this[u] && typeof this[u] == "function" && !u.startsWith("_") && !v.has(u) ? n.addEventListener(d, ($) => this[u]($)) : console.warn(`Method "${u}" not found, is restricted, or is not a function in component.`);
         }
         o = a + 1;
       }
@@ -367,9 +367,9 @@ function k(r) {
     }
   }
   for (const n of s)
-    n.isConnected && I(t, n);
+    n.isConnected && z(t, n);
 }
-function C() {
+function O() {
   typeof document > "u" || (l.get("autoMountComponents") && !g ? (g = new MutationObserver(k), g.observe(document.body, {
     childList: !0,
     subtree: !0
@@ -377,17 +377,17 @@ function C() {
 }
 const N = l.set;
 l.set = function(r, e) {
-  N.call(this, r, e), r === "autoMountComponents" && C();
+  N.call(this, r, e), r === "autoMountComponents" && O();
 };
-typeof window < "u" && setTimeout(C, 0);
+typeof window < "u" && setTimeout(O, 0);
 export {
   x as BaseComponent,
   F as Component,
   l as config,
-  S as createInstance,
+  I as createInstance,
   B as destroyInstance,
   T as eventbus,
-  E as getComponentFromElement,
-  I as loadComponents,
+  C as getComponentFromElement,
+  z as loadComponents,
   B as removeComponents
 };
