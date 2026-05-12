@@ -47,6 +47,16 @@ gia.register(Reveal);
 /**
  * Expected HTML Structure:
  *
+ * <noscript>
+ *   <style>
+ *     [data-component="Reveal"] {
+ *       opacity: 1 !important;
+ *       visibility: visible !important;
+ *       transform: translateY(0) !important;
+ *     }
+ *   </style>
+ * </noscript>
+ *
  * <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
  *   <h2>Fade me in</h2>
  *   <p>When I scroll into view.</p>
@@ -56,13 +66,16 @@ gia.register(Reveal);
  *
  * [data-component="Reveal"] {
  *   opacity: 0;
+ *   visibility: hidden;
  *   transform: translateY(30px);
- *   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
- *   will-change: opacity, transform;
+ *   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.8s;
+ *   will-change: opacity, transform, visibility;
  *
  *   &[data-is-inview="true"] {
  *     opacity: 1;
+ *     visibility: visible;
  *     transform: translateY(0);
+ *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s;
  *   }
  * }
  */
