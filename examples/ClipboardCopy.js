@@ -106,7 +106,11 @@ gia.register(ClipboardCopy);
  * Expected HTML Structure:
  *
  * <button data-component="ClipboardCopy" data-copy-text="SAVE20">
- *   <span data-ref="buttonText">SAVE20</span>
+ *   <span class="stack-children">
+ *     <span class="sizer" aria-hidden="true">SAVE20</span>
+ *     <span class="sizer" aria-hidden="true">Copied!</span>
+ *     <span data-ref="buttonText">SAVE20</span>
+ *   </span>
  *   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon">
  *     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
  *     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
@@ -130,8 +134,23 @@ gia.register(ClipboardCopy);
  *   border-radius: 4px;
  *   cursor: pointer;
  *   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
- *   min-width: 160px; // Prevent layout shift when text changes
  *   justify-content: center;
+ *
+ *   .stack-children {
+ *     display: grid;
+ *     grid-template-columns: 1fr;
+ *     justify-items: center;
+ *
+ *     > * {
+ *       grid-row-start: 1;
+ *       grid-column-start: 1;
+ *     }
+ *
+ *     .sizer {
+ *       visibility: hidden;
+ *       pointer-events: none;
+ *     }
+ *   }
  *
  *   svg {
  *     width: 1.25em;

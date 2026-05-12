@@ -622,8 +622,20 @@ button[data-component=ClipboardCopy] {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-  min-width: 160px; /* Prevent layout shift when text changes */
   justify-content: center;
+}
+button[data-component=ClipboardCopy] .stack-children {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+button[data-component=ClipboardCopy] .stack-children > * {
+  grid-row-start: 1;
+  grid-column-start: 1;
+}
+button[data-component=ClipboardCopy] .stack-children .sizer {
+  visibility: hidden;
+  pointer-events: none;
 }
 button[data-component=ClipboardCopy] svg {
   width: 1.25em;
