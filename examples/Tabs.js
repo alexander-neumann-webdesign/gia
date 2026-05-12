@@ -2,6 +2,8 @@ class Tabs extends gia.Component {
 	constructor(element) {
 		super(element);
 
+		this._id = Math.random().toString(36).substring(2, 9);
+
 		this.ref = {
 			tabList: null, // [role="tablist"] could be mapped to this, or explicitly marked
 			tab: [],       // [role="tab"]
@@ -141,32 +143,62 @@ class Tabs extends gia.Component {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
 
-			// Update Tabs
-			this.ref.tab.forEach((tab, index) => {
-				const isSelected = index === activeIndex;
-				tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+			const updateDOM = () => {
+				// Update Tabs
+				this.ref.tab.forEach((tab, index) => {
+					const isSelected = index === activeIndex;
+					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
-				if (isSelected) {
-					tab.removeAttribute('tabindex');
-				} else {
-					tab.setAttribute('tabindex', '-1');
+					if (isSelected) {
+						tab.removeAttribute('tabindex');
+					} else {
+						tab.setAttribute('tabindex', '-1');
+					}
+				});
+
+				// Update Panels
+				this.ref.panel.forEach((panel, index) => {
+					// We assume panels are either 1:1 in index order, or matched by aria-controls.
+					// For the simplest stateful approach, we match by index, or if aria-controls exists, we could find it.
+					// Here we update based on index mapping if lengths match.
+					const activeTab = this.ref.tab[activeIndex];
+					const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
+
+					if (controlsId) {
+						panel.hidden = (panel.id !== controlsId);
+					} else {
+						panel.hidden = (index !== activeIndex);
+					}
+				});
+			};
+
+			const panelsContainer = this.ref.panel[0]?.parentElement;
+
+			if (document.startViewTransition && panelsContainer) {
+				const activePanel = this.ref.panel[activeIndex];
+
+				panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
+				if (activePanel) {
+					activePanel.style.viewTransitionName = `tabs-panel-${this._id}-${activeIndex}`;
 				}
-			});
 
-			// Update Panels
-			this.ref.panel.forEach((panel, index) => {
-				// We assume panels are either 1:1 in index order, or matched by aria-controls.
-				// For the simplest stateful approach, we match by index, or if aria-controls exists, we could find it.
-				// Here we update based on index mapping if lengths match.
-				const activeTab = this.ref.tab[activeIndex];
-				const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
+				// Disable root transition to prevent full-page crossfade
+				document.documentElement.style.viewTransitionName = 'none';
 
-				if (controlsId) {
-					panel.hidden = (panel.id !== controlsId);
-				} else {
-					panel.hidden = (index !== activeIndex);
-				}
-			});
+				const transition = document.startViewTransition(() => updateDOM());
+
+				transition.finished.catch(() => {
+					// Ignore AbortError when rapid clicks interrupt an ongoing transition
+				}).finally(() => {
+					panelsContainer.style.viewTransitionName = '';
+					if (activePanel) {
+						activePanel.style.viewTransitionName = '';
+					}
+					document.documentElement.style.viewTransitionName = '';
+				});
+			} else {
+				updateDOM();
+			}
 		}
 	}
 }
