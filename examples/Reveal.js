@@ -51,7 +51,7 @@ gia.register(Reveal);
  *   <style>
  *     [data-component="Reveal"] {
  *       opacity: 1 !important;
- *       visibility: visible !important;
+ *       pointer-events: auto !important;
  *       transform: translateY(0) !important;
  *     }
  *   </style>
@@ -66,16 +66,15 @@ gia.register(Reveal);
  *
  * [data-component="Reveal"] {
  *   opacity: 0;
- *   visibility: hidden;
+ *   pointer-events: none;
  *   transform: translateY(30px);
- *   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.8s;
- *   will-change: opacity, transform, visibility;
+ *   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+ *   will-change: opacity, transform;
  *
  *   &[data-is-inview="true"] {
  *     opacity: 1;
- *     visibility: visible;
+ *     pointer-events: auto;
  *     transform: translateY(0);
- *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s;
  *   }
  * }
  */
