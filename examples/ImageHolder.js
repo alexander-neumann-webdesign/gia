@@ -25,7 +25,8 @@ class ImageHolder extends gia.Component {
 
 		// Initialize state
 		this.setState({
-			isVisible: false
+			isVisible: false,
+			isLoaded: false
 		});
 	}
 
@@ -35,6 +36,12 @@ class ImageHolder extends gia.Component {
 		}
 
 		if (!this.ref.img) return;
+
+		if (this.ref.img.complete) {
+			this.setState({ isLoaded: true });
+		} else {
+			this.ref.img.addEventListener('load', this.handleLoad.bind(this));
+		}
 
 		this.initObservers();
 
@@ -110,6 +117,10 @@ class ImageHolder extends gia.Component {
 		}
 	}
 
+	handleLoad(e) {
+		this.setState({ isLoaded: true });
+	}
+
 	handleIntersect(entries) {
 		entries.forEach((entry) => {
 			this.setState({
@@ -144,8 +155,6 @@ class ImageHolder extends gia.Component {
 	stateChange(stateChanges) {
 		if ('isVisible' in stateChanges) {
 			if (this.state.isVisible) {
-				this.element.classList.add('visible');
-
 				if (this.options.parallaxSpeed !== 0) {
 					// Dynamically bind scroll listener only when visible to save resources
 					this.bindScroll();
@@ -156,8 +165,6 @@ class ImageHolder extends gia.Component {
 					this.updateParallax();
 				}
 			} else {
-				this.element.classList.remove('visible');
-
 				if (this.options.parallaxSpeed !== 0) {
 					// Dynamically unbind scroll listener when out of view
 					this.unbindScroll();
@@ -281,7 +288,7 @@ gia.register(ImageHolder);
  *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
  *   }
  *
- *   &.visible img {
+ *   &[data-is-visible="true"][data-is-loaded="true"] img {
  *     opacity: 1;
  *     // If parallaxSpeed === 0, JS will not touch transform, so we can reset it here natively:
  *     // transform: translateY(0);
