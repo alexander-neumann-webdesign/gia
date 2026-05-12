@@ -162,6 +162,34 @@ div[data-component="FilterableList"] {
     animation-duration: 0.4s;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  ::view-transition-new(*):only-child {
+    animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(*):only-child {
+    animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes enter-scale-up {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
+
+@keyframes exit-scale-down {
+  from { transform: scale(1); }
+  to { transform: scale(0.9); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 
