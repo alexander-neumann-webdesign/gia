@@ -14,6 +14,7 @@ class Tooltip extends gia.Component {
 		// <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
 		try {
 			// For this example we assume floating-ui-dom exposes window.FloatingUIDOM
+			await this.loadScript("floating-ui-js", "FloatingUICore");
 			await this.loadScript("floating-ui-dom-js", "FloatingUIDOM");
 		} catch (error) {
 			console.error("Tooltip: Failed to load Floating UI.", error);
@@ -35,7 +36,8 @@ class Tooltip extends gia.Component {
 		}
 
 		// Destructure needed Floating UI methods
-		const { computePosition, offset, flip, shift, autoUpdate, arrow } = window.FloatingUIDOM;
+		const { computePosition, autoUpdate } = window.FloatingUIDOM;
+		const { offset, flip, shift, arrow } = window.FloatingUICore;
 		this.computePosition = computePosition;
 		this.offset = offset;
 		this.flip = flip;
