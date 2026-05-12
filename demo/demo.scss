@@ -157,19 +157,20 @@ div[data-component="FilterableList"] {
     }
   }
 
-  // View transitions styles
-  ::view-transition-group(*) {
-    animation-duration: 0.4s;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
+}
 
-  ::view-transition-new(*):only-child {
-    animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+// View transitions styles
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
-  ::view-transition-old(*):only-child {
-    animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+::view-transition-new(*):only-child {
+  animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(*):only-child {
+  animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes enter-scale-up {
@@ -878,6 +879,8 @@ div[data-component="VideoHolder"] {
     * {
         pointer-events: auto;
     }
+}
+
 /* --- ClipboardCopy --- */
 button[data-component="ClipboardCopy"] {
   display: inline-flex;

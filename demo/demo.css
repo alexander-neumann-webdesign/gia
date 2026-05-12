@@ -130,14 +130,17 @@ div[data-component=FilterableList] .item .item-details .price-tag {
   border-radius: 4px;
   font-size: 0.9rem;
 }
-div[data-component=FilterableList] ::view-transition-group(*) {
+
+::view-transition-group(*) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
-div[data-component=FilterableList] ::view-transition-new(*):only-child {
+
+::view-transition-new(*):only-child {
   animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
-div[data-component=FilterableList] ::view-transition-old(*):only-child {
+
+::view-transition-old(*):only-child {
   animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -718,6 +721,8 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
 }
 .physics-content * {
   pointer-events: auto;
+}
+
 /* --- ClipboardCopy --- */
 button[data-component=ClipboardCopy] {
   display: inline-flex;
