@@ -405,6 +405,14 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   }
 }
 /* --- Tabs --- */
+div[data-component=Tabs] .tab-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+div[data-component=Tabs] .tab-panels > * {
+  grid-row-start: 1;
+  grid-column-start: 1;
+}
 div[data-component=Tabs] [role=tab] {
   cursor: pointer;
   border-bottom: 2px solid transparent;
