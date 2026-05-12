@@ -61,9 +61,12 @@
     <button data-ref="filter" data-filter-type="shape" data-filter-value="*">All Shapes</button>
     <button data-ref="filter" data-filter-type="shape" data-filter-value="circle">Circle</button>
     <button data-ref="filter" data-filter-type="shape" data-filter-value="square">Square</button>
+    <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle">Triangle</button>
 
     <button data-ref="filter" data-filter-type="color" data-filter-value="red">Red</button>
     <button data-ref="filter" data-filter-type="color" data-filter-value="blue">Blue</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="green">Green</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="yellow">Yellow</button>
 
     <!-- Sorter Controls -->
     <select data-ref="sorter">
@@ -75,14 +78,89 @@
   </div>
 
   <div data-ref="container" class="grid">
-    <div data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
-      Apple (Circle, Red, $10)
+    <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
+      <div class="shape-visual" data-shape="circle" data-color="red"></div>
+      <div class="item-details">
+        <span class="item-name">Apple</span>
+        <span class="price-tag">$10</span>
+      </div>
     </div>
-    <div data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
-      Box (Square, Blue, $20)
+    <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
+      <div class="shape-visual" data-shape="square" data-color="blue"></div>
+      <div class="item-details">
+        <span class="item-name">Box</span>
+        <span class="price-tag">$20</span>
+      </div>
     </div>
-    <div data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
-      Blueberry (Circle, Blue, $5)
+    <div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
+      <div class="shape-visual" data-shape="circle" data-color="blue"></div>
+      <div class="item-details">
+        <span class="item-name">Blueberry</span>
+        <span class="price-tag">$5</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15">
+      <div class="shape-visual" data-shape="triangle" data-color="green"></div>
+      <div class="item-details">
+        <span class="item-name">Tree</span>
+        <span class="price-tag">$15</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50">
+      <div class="shape-visual" data-shape="circle" data-color="yellow"></div>
+      <div class="item-details">
+        <span class="item-name">Sun</span>
+        <span class="price-tag">$50</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2">
+      <div class="shape-visual" data-shape="square" data-color="red"></div>
+      <div class="item-details">
+        <span class="item-name">Brick</span>
+        <span class="price-tag">$2</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30">
+      <div class="shape-visual" data-shape="triangle" data-color="blue"></div>
+      <div class="item-details">
+        <span class="item-name">Sail</span>
+        <span class="price-tag">$30</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8">
+      <div class="shape-visual" data-shape="square" data-color="green"></div>
+      <div class="item-details">
+        <span class="item-name">Grass</span>
+        <span class="price-tag">$8</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6">
+      <div class="shape-visual" data-shape="circle" data-color="green"></div>
+      <div class="item-details">
+        <span class="item-name">Lime</span>
+        <span class="price-tag">$6</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign" data-price="40">
+      <div class="shape-visual" data-shape="triangle" data-color="red"></div>
+      <div class="item-details">
+        <span class="item-name">Yield Sign</span>
+        <span class="price-tag">$40</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note" data-price="1">
+      <div class="shape-visual" data-shape="square" data-color="yellow"></div>
+      <div class="item-details">
+        <span class="item-name">Sticky Note</span>
+        <span class="price-tag">$1</span>
+      </div>
+    </div>
+    <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese" data-price="12">
+      <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
+      <div class="item-details">
+        <span class="item-name">Cheese</span>
+        <span class="price-tag">$12</span>
+      </div>
     </div>
   </div>
 </div>
@@ -109,7 +187,7 @@
         <h2>ImageHolder</h2>
         <div class="demo-block">
             <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
-  <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
+  <img data-ref="img" src="sample-image.jpg"  sizes="100vw" alt="A nice image" loading="lazy" />
 </div>
 
 
@@ -348,7 +426,7 @@
         <h2>VideoHolder</h2>
         <div class="demo-block">
             <div data-component="VideoHolder">
-  <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
+  <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata"></video>
   <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
     <!-- Icons injected via JS -->
   </button>
