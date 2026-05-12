@@ -1,3 +1,6 @@
 ## 2024-05-11 - Add aria-expanded to OffCanvasMenu toggle
 **Learning:** For overlay components like modals or off-canvas menus, standard components might add the click listener but fail to initialize ARIA attributes or track the component state back to the UI element triggering it.
 **Action:** When adding or updating toggling UI elements in this repo, ensure `aria-controls` is set connecting the button to the menu and that `aria-expanded` is dynamically updated when the component state changes.
+## 2024-05-12 - Add aria-expanded and aria-controls to Modal toggle
+**Learning:** Similar to off-canvas menus, modal dialog components with dynamic external triggers often lack the necessary ARIA attributes to connect the trigger button to the modal content (`aria-controls`) and to accurately broadcast the state of the dialog to screen readers (`aria-expanded`).
+**Action:** Always ensure that dynamically attached external UI triggers for modals correctly initialize and continuously sync their `aria-controls` and `aria-expanded` attributes with the component's internal state.
