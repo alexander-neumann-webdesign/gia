@@ -105,18 +105,18 @@ gia.register(Accordion);
  *
  * Suggested SCSS:
  *
- * // Browser supports interpolate-size
- * @supports (interpolate-size: allow-keywords) {
- *   :root {
- *     interpolate-size: allow-keywords;
- *   }
+ * // Ensure interpolate-size is available globally for parsers
+ * :root {
+ *   interpolate-size: allow-keywords;
  * }
  *
  * details[data-component="Accordion"] {
- *   ::details-content {
- *     transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
- *     height: 0;
- *     overflow: clip;
+ *   @supports (interpolate-size: allow-keywords) {
+ *     ::details-content {
+ *       transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+ *       height: 0;
+ *       overflow: clip;
+ *     }
  *   }
  *
  *   &[open]::details-content {
