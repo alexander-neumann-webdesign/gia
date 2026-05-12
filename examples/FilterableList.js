@@ -324,6 +324,7 @@ class FilterableList extends gia.Component {
 			visibleItems.concat(hiddenItems).forEach(item => {
 				item.style.viewTransitionName = `${componentId}-${item._originalIndex}`;
 			});
+			this.ref.container.style.viewTransitionName = `${componentId}-container`;
 
 			const transition = document.startViewTransition(() => {
 				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
@@ -334,6 +335,7 @@ class FilterableList extends gia.Component {
 				visibleItems.concat(hiddenItems).forEach(item => {
 					item.style.viewTransitionName = '';
 				});
+				this.ref.container.style.viewTransitionName = '';
 			});
 		} else {
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
@@ -428,9 +430,12 @@ gia.register(FilterableList);
  *     <button data-ref="filter" data-filter-type="shape" data-filter-value="*">All Shapes</button>
  *     <button data-ref="filter" data-filter-type="shape" data-filter-value="circle">Circle</button>
  *     <button data-ref="filter" data-filter-type="shape" data-filter-value="square">Square</button>
+ *     <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle">Triangle</button>
  *
  *     <button data-ref="filter" data-filter-type="color" data-filter-value="red">Red</button>
  *     <button data-ref="filter" data-filter-type="color" data-filter-value="blue">Blue</button>
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="green">Green</button>
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="yellow">Yellow</button>
  *
  *     <!-- Sorter Controls -->
  *     <select data-ref="sorter">
@@ -442,25 +447,36 @@ gia.register(FilterableList);
  *   </div>
  *
  *   <div data-ref="container" class="grid">
- *     <div data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
- *       Apple (Circle, Red, $10)
+ *     <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
+ *       <div class="shape-visual" data-shape="circle" data-color="red"></div>
+ *       <div class="item-details">
+ *         <span class="item-name">Apple</span>
+ *         <span class="price-tag">$10</span>
+ *       </div>
  *     </div>
- *     <div data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
- *       Box (Square, Blue, $20)
+ *     <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
+ *       <div class="shape-visual" data-shape="square" data-color="blue"></div>
+ *       <div class="item-details">
+ *         <span class="item-name">Box</span>
+ *         <span class="price-tag">$20</span>
+ *       </div>
  *     </div>
- *     <div data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
- *       Blueberry (Circle, Blue, $5)
- *     </div>
+ *     <!-- Add more items as needed (min 12 for good demo) -->
  *   </div>
  * </div>
  *
  * Suggested SCSS:
+ *
+ * :root {
+ *   interpolate-size: allow-keywords;
+ * }
  *
  * div[data-component="FilterableList"] {
  *   .grid {
  *     display: grid;
  *     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
  *     gap: 1rem;
+ *     transition: height 0.4s ease;
  *   }
  *
  *   // View transitions styles
