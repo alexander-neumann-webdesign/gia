@@ -76,6 +76,9 @@ div[data-component=FilterableList] .item {
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
+div[data-component=FilterableList] .item[hidden] {
+  display: none !important;
+}
 div[data-component=FilterableList] .item .shape-visual {
   width: 60px;
   height: 60px;
