@@ -8,6 +8,7 @@ const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks
 
 const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
 const protoMethodsCache = new WeakMap();
+const globalStateAttributeCache = new Map();
 
 function getIntersectionOptionsHash(options) {
 	const root = options.root || null;
@@ -35,7 +36,6 @@ export default class Component {
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
-		this._stateAttributeCache = {};
 		this._autoBindFunctions();
 		if (config.get("autoBindActions")) {
 			this._autoBindActions();
@@ -430,13 +430,14 @@ export default class Component {
 					const type = typeof value;
 
 					if (type === "boolean" || type === "string") {
-						if (!this._stateAttributeCache[key]) {
+						let attrName = globalStateAttributeCache.get(key);
+						if (!attrName) {
 							// Convert camelCase to kebab-case
 							const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-							this._stateAttributeCache[key] = `data-${kebabKey}`;
+							attrName = `data-${kebabKey}`;
+							globalStateAttributeCache.set(key, attrName);
 						}
 
-						const attrName = this._stateAttributeCache[key];
 						this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 					}
 				}
