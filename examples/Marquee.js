@@ -38,6 +38,9 @@ class Marquee extends gia.Component {
 
 		// RAF timing
 		this.lastTime = 0;
+
+		// Smooth deceleration multiplier
+		this.speedMultiplier = 1;
 	}
 
 	mount() {
@@ -227,11 +230,17 @@ class Marquee extends gia.Component {
 
 		let frameOffset = 0;
 
-		// Move forward if not hovered and not dragging
-		if (!this.state.isDragging && (!this.options.pauseOnHover || !this.state.isHovered)) {
-			const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
-			frameOffset += (this.options.speed * directionMultiplier) * timeScale;
+		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
+		const targetMultiplier = isPaused ? 0 : 1;
+
+		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * 0.1 * timeScale;
+
+		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
+			this.speedMultiplier = targetMultiplier;
 		}
+
+		const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
+		frameOffset += (this.options.speed * directionMultiplier) * this.speedMultiplier * timeScale;
 
 		// Apply scroll velocity if any
 		if (Math.abs(this.scrollVelocity) > 0.01) {
@@ -242,9 +251,7 @@ class Marquee extends gia.Component {
 			this.scrollVelocity = 0;
 		}
 
-		if (!this.state.isDragging) {
-			this.currentOffset += frameOffset;
-		}
+		this.currentOffset += frameOffset;
 
 		this.renderPosition();
 

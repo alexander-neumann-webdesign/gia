@@ -405,6 +405,37 @@ if (instance) {
 }
 ```
 
+### `createInstance(element, componentName, component, options)`
+Manually creates and attaches a component instance to a specific DOM element.
+
+```javascript
+import { createInstance } from "gia";
+import MyComponent from "./MyComponent";
+
+const element = document.getElementById("my-element");
+const instance = createInstance(element, "MyComponent", MyComponent, { someOption: true });
+```
+
+### `destroyInstance(element)`
+Destroys the component instance attached to a specific DOM element, triggering its `unmount` lifecycle method and cleaning up memory references.
+
+```javascript
+import { destroyInstance } from "gia";
+
+const element = document.getElementById("my-element");
+destroyInstance(element);
+```
+
+### `removeComponents(context)`
+Destroys and removes all component instances within a given DOM context. By default, it searches the entire `document.documentElement`.
+
+```javascript
+import { removeComponents } from "gia";
+
+const container = document.getElementById("ajax-container");
+removeComponents(container);
+```
+
 ### Eventbus
 Gia provides a native `EventTarget` based global event bus to decouple components. It allows components to communicate globally without needing direct references to each other.
 

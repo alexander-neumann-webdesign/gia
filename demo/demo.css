@@ -160,7 +160,7 @@ div[data-component=ImageHolder] img {
   transform: translateY(20px);
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
-div[data-component=ImageHolder].visible img {
+div[data-component=ImageHolder][data-is-visible=true][data-is-loaded=true] img {
   opacity: 1;
 }
 
@@ -605,6 +605,67 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton] {
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
   background: rgba(0, 0, 0, 0.8);
+}
+
+/* --- ClipboardCopy --- */
+button[data-component=ClipboardCopy] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  justify-content: center;
+}
+button[data-component=ClipboardCopy] .stack-children {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+button[data-component=ClipboardCopy] .stack-children > * {
+  grid-row-start: 1;
+  grid-column-start: 1;
+}
+button[data-component=ClipboardCopy] .stack-children .sizer {
+  visibility: hidden;
+  pointer-events: none;
+}
+button[data-component=ClipboardCopy] svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+button[data-component=ClipboardCopy] .copy-icon {
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+button[data-component=ClipboardCopy] .check-icon {
+  transition: stroke-dashoffset 0.4s ease;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  stroke: #4caf50;
+}
+button[data-component=ClipboardCopy][data-status=copied] {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+  color: #4caf50;
+}
+button[data-component=ClipboardCopy][data-status=copied] .copy-icon {
+  opacity: 0;
+}
+button[data-component=ClipboardCopy][data-status=copied] .check-icon {
+  stroke-dashoffset: 0;
+}
+button[data-component=ClipboardCopy][data-status=error] {
+  background-color: #ffebee;
+  border-color: #f44336;
+  color: #f44336;
 }
 
 /*# sourceMappingURL=demo.css.map */
