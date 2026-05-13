@@ -91,23 +91,31 @@
             <div data-component="FilterableList" data-options='{"defaultSort": "name:asc"}'>
   <div class="controls">
     <!-- Filter Controls -->
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="*">All Shapes</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="circle">Circle</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="square">Square</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle">Triangle</button>
+    <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true" class="is-active">All Shapes</button>
+    <button data-ref="filter" data-filter-type="shape" data-filter-value="circle" aria-pressed="false">Circle</button>
+    <button data-ref="filter" data-filter-type="shape" data-filter-value="square" aria-pressed="false">Square</button>
+    <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle" aria-pressed="false">Triangle</button>
 
-    <button data-ref="filter" data-filter-type="color" data-filter-value="red">Red</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="blue">Blue</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="green">Green</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="yellow">Yellow</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="red" aria-pressed="false">Red</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="blue" aria-pressed="false">Blue</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="green" aria-pressed="false">Green</button>
+    <button data-ref="filter" data-filter-type="color" data-filter-value="yellow" aria-pressed="false">Yellow</button>
 
     <!-- Sorter Controls -->
-    <select data-ref="sorter">
+    <select data-ref="sorter" aria-label="Sort options">
       <option value="name:asc">Name (A-Z)</option>
       <option value="name:desc">Name (Z-A)</option>
       <option value="price:asc">Price (Low-High)</option>
       <option value="price:desc">Price (High-Low)</option>
     </select>
+  </div>
+
+  <div aria-live="polite" data-ref="announcer" class="results-announcer">
+    <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
+    <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
+    <span data-ref="announcerEmpty" hidden>
+      No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
+    </span>
   </div>
 
   <div data-ref="container" class="grid">
