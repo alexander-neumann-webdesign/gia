@@ -10,9 +10,12 @@ class OpenStreetMap extends gia.Component {
 	}
 
 	async require() {
-		// Asynchronously load the Leaflet script
+		// Asynchronously load the Leaflet script and style
 		try {
-			await this.loadScript("leaflet-js", "L");
+			await Promise.all([
+				this.loadScript("leaflet-js", "L"),
+				this.loadStyle("leaflet-css")
+			]);
 		} catch (error) {
 			console.error("OpenStreetMap: Failed to load Leaflet.", error);
 		}
@@ -80,7 +83,7 @@ gia.register(OpenStreetMap);
  * Expected HTML Structure:
  *
  * <!-- Required External Resources in <head> or before component: -->
- * <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" /> -->
+ * <!-- <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" /> -->
  *
  * <!-- Required External Script (usually at end of <body>): -->
  * <!-- <script id="leaflet-js" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> -->
