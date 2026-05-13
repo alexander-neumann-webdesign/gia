@@ -204,20 +204,25 @@
       var items = document.querySelectorAll('#FilterableList .item');
 
       var activeFilters = {};
-      if (params.has('shape')) activeFilters.shape = params.get('shape').split(',').filter(Boolean);
-      if (params.has('color')) activeFilters.color = params.get('color').split(',').filter(Boolean);
+      for (var key of params.keys()) {
+        if (key.startsWith('filter-')) {
+          var type = key.replace('filter-', '');
+          var vals = params.get(key).split(',').filter(Boolean);
+          if (vals.length > 0) {
+            activeFilters[type] = vals;
+          }
+        }
+      }
 
       if (Object.keys(activeFilters).length > 0) {
         items.forEach(function(item) {
           var isVisible = true;
           for (var type in activeFilters) {
             var activeValues = activeFilters[type];
-            if (activeValues.length > 0) {
-              var itemVal = item.getAttribute('data-' + type);
-              if (!itemVal || activeValues.indexOf(itemVal) === -1) {
-                isVisible = false;
-                break;
-              }
+            var itemVal = item.getAttribute('data-' + type);
+            if (!itemVal || activeValues.indexOf(itemVal) === -1) {
+              isVisible = false;
+              break;
             }
           }
           if (!isVisible) {
