@@ -1018,6 +1018,53 @@ button[data-component=ClipboardCopy][data-status=error] {
   color: #f44336;
 }
 
+.dual-range-slider input[type=range] {
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  margin: 0;
+}
+.dual-range-slider input[type=range]#price-max::-webkit-slider-runnable-track {
+  background: #ddd;
+  height: 4px;
+  border-radius: 2px;
+}
+.dual-range-slider input[type=range]#price-max::-moz-range-track {
+  background: #ddd;
+  height: 4px;
+  border-radius: 2px;
+}
+.dual-range-slider input[type=range]#price-min::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+  border-radius: 2px;
+}
+.dual-range-slider input[type=range]#price-min::-moz-range-track {
+  background: transparent;
+  height: 4px;
+  border-radius: 2px;
+}
+.dual-range-slider input[type=range]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
+  margin-top: -6px;
+}
+.dual-range-slider input[type=range]::-moz-range-thumb {
+  pointer-events: auto;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
 /* --- CustomCursor --- */
 @media (pointer: fine) {
   body {

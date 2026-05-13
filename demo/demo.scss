@@ -1193,6 +1193,65 @@ button[data-component="ClipboardCopy"] {
   }
 }
 
+// Dual range slider styling
+.dual-range-slider {
+  input[type="range"] {
+    pointer-events: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: transparent;
+    margin: 0;
+
+    // Ensure only the max slider's track is visible as the background
+    &#price-max {
+      &::-webkit-slider-runnable-track {
+        background: #ddd;
+        height: 4px;
+        border-radius: 2px;
+      }
+      &::-moz-range-track {
+        background: #ddd;
+        height: 4px;
+        border-radius: 2px;
+      }
+    }
+
+    &#price-min {
+      &::-webkit-slider-runnable-track {
+        background: transparent;
+        height: 4px;
+        border-radius: 2px;
+      }
+      &::-moz-range-track {
+        background: transparent;
+        height: 4px;
+        border-radius: 2px;
+      }
+    }
+
+    &::-webkit-slider-thumb {
+      pointer-events: auto;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+      margin-top: -6px; // Center thumb on track
+    }
+
+    &::-moz-range-thumb {
+      pointer-events: auto;
+      -moz-appearance: none;
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+    }
+  }
 /* --- CustomCursor --- */
 
 // Hide default cursor globally if desired,

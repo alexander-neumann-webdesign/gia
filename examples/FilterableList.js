@@ -23,6 +23,83 @@ class FilterableList extends gia.Component {
 		// Define internal state variables that don't trigger batched DOM updates automatically
 		this.activeFilters = {};
 		this.activeSort = this.options.defaultSort;
+
+		this.applyChangesDebounced = this.debounce(this.applyChanges.bind(this), 300);
+	}
+
+	debounce(func, wait) {
+		let timeout;
+		return function executedFunction(...args) {
+			const later = () => {
+				clearTimeout(timeout);
+				func(...args);
+			};
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+	}
+
+	fuzzyMatch(str, pattern) {
+		str = str.toLowerCase();
+		pattern = pattern.toLowerCase();
+
+		// Exact substring match check first (fastest)
+		if (str.includes(pattern)) return true;
+
+		// If the pattern is too long or empty, don't fuzzy match
+		if (pattern.length === 0 || pattern.length > str.length) return false;
+
+		// Calculate max allowed typos based on pattern length
+		// 1 typo for 3-5 chars, 2 typos for 6+ chars
+		let maxTypos = 0;
+		if (pattern.length >= 3) maxTypos = 1;
+		if (pattern.length >= 6) maxTypos = 2;
+
+		if (maxTypos === 0) return false;
+
+		// Simple edit distance algorithm
+		const m = pattern.length;
+		const n = str.length;
+
+		// We only need two rows of the DP table
+		let prevRow = Array(n + 1).fill(0);
+		let currRow = Array(n + 1).fill(0);
+
+		// Initialize first row
+		for (let j = 0; j <= n; j++) {
+			prevRow[j] = 0; // 0 because we allow the match to start anywhere in `str`
+		}
+
+		let minEditDistance = Infinity;
+
+		for (let i = 1; i <= m; i++) {
+			currRow[0] = i; // If str is empty, distance is length of pattern prefix
+			for (let j = 1; j <= n; j++) {
+				if (pattern[i - 1] === str[j - 1]) {
+					currRow[j] = prevRow[j - 1];
+				} else {
+					currRow[j] = 1 + Math.min(
+						prevRow[j],     // Deletion
+						currRow[j - 1], // Insertion
+						prevRow[j - 1]  // Substitution
+					);
+				}
+			}
+
+			// Copy currRow to prevRow for next iteration
+			for (let j = 0; j <= n; j++) {
+				prevRow[j] = currRow[j];
+			}
+		}
+
+		// Check the minimum distance in the last row (meaning the full pattern was matched)
+		for (let j = 1; j <= n; j++) {
+			if (currRow[j] < minEditDistance) {
+				minEditDistance = currRow[j];
+			}
+		}
+
+		return minEditDistance <= maxTypos;
 	}
 
 	mount() {
@@ -205,7 +282,11 @@ class FilterableList extends gia.Component {
 
 		this.activeFilters[filterType] = values;
 
-		this.applyChanges();
+		if (e.type === 'input') {
+			this.applyChangesDebounced();
+		} else {
+			this.applyChanges();
+		}
 	}
 
 	handleFilterClick(e) {
@@ -306,8 +387,8 @@ class FilterableList extends gia.Component {
 								break;
 							}
 						} else if (operator === 'includes') {
-							// Case insensitive substring search
-							if (cached.raw.toLowerCase().includes(filterVal.toLowerCase())) {
+							// Case insensitive fuzzy substring search
+							if (this.fuzzyMatch(cached.raw, filterVal)) {
 								hasMatch = true;
 								break;
 							}
@@ -372,6 +453,9 @@ class FilterableList extends gia.Component {
 			});
 			this.ref.container.style.viewTransitionName = `${componentId}-container`;
 
+			// Disable full page transitions so pointer events continue to work for controls outside the container
+			document.documentElement.style.viewTransitionName = 'none';
+
 			const transition = document.startViewTransition(() => {
 				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 			});
@@ -385,6 +469,7 @@ class FilterableList extends gia.Component {
 					item.style.viewTransitionName = '';
 				});
 				this.ref.container.style.viewTransitionName = '';
+				document.documentElement.style.viewTransitionName = '';
 			});
 		} else {
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
