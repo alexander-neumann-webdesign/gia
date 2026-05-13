@@ -84,7 +84,10 @@ class Header extends gia.Component {
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
 		if (this.options.scrubTransition) {
-			this.element.style.setProperty('--header-progress', '0');
+			if (this._lastHeaderProgress !== '0') {
+				this.element.style.setProperty('--header-progress', '0');
+				this._lastHeaderProgress = '0';
+			}
 		}
 		this.setState({
 			isHidden: false,
@@ -105,7 +108,11 @@ class Header extends gia.Component {
 
 			// We only want to set the property if it has changed, or unconditionally since this is a raf frame
 			// and setting custom properties is fast, but let's just set it
-			this.element.style.setProperty('--header-progress', progress.toString());
+			const progressStr = progress.toString();
+			if (this._lastHeaderProgress !== progressStr) {
+				this.element.style.setProperty('--header-progress', progressStr);
+				this._lastHeaderProgress = progressStr;
+			}
 		}
 
 		// Determine direction and hide

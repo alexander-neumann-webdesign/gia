@@ -245,16 +245,23 @@ class ImageHolder extends gia.Component {
 
 		if (this.options.parallaxCssVar) {
 			const roundedProgress = Math.round(progress * 10000) / 10000;
-			this.element.style.setProperty('--parallax-scroll-progress', roundedProgress);
+			const progressStr = roundedProgress.toString();
+			if (this._lastParallaxProgress !== progressStr) {
+				this.element.style.setProperty('--parallax-scroll-progress', progressStr);
+				this._lastParallaxProgress = progressStr;
+			}
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;
 			const offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
 
-			if (this.options.parallaxDirection === 'horizontal') {
-				this.ref.img.style.transform = `translate3d(${offsetPercent}%, 0, 0)`;
-			} else {
-				this.ref.img.style.transform = `translate3d(0, ${offsetPercent}%, 0)`;
+			const transformStr = this.options.parallaxDirection === 'horizontal'
+				? `translate3d(${offsetPercent}%, 0, 0)`
+				: `translate3d(0, ${offsetPercent}%, 0)`;
+
+			if (this._lastTransform !== transformStr) {
+				this.ref.img.style.transform = transformStr;
+				this._lastTransform = transformStr;
 			}
 		}
 	}
