@@ -252,11 +252,11 @@ div[data-component=FilterableList] .item .item-details .price-tag {
 }
 
 ::view-transition-new(*):only-child {
-  animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards, fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 ::view-transition-old(*):only-child {
-  animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards, fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes enter-scale-up {
