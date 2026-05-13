@@ -226,6 +226,8 @@ class MatterPhysicsBackground extends gia.Component {
             this.render.canvas.height = this.height * window.devicePixelRatio;
             this.render.options.width = this.width;
             this.render.options.height = this.height;
+            this.render.bounds.max.x = this.width;
+            this.render.bounds.max.y = this.height;
         }
 
         this._createWalls();
