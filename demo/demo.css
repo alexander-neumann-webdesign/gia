@@ -40,14 +40,16 @@ p, h1, h2, h3, h4, h5, h6 {
 /* --- Accordion --- */
 @supports (interpolate-size: allow-keywords) {
   details[data-component=Accordion]::details-content {
-    transition: height 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+    transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
     height: 0;
+    opacity: 0;
     overflow: clip;
     display: block;
   }
 }
 details[data-component=Accordion][open]::details-content {
   height: auto;
+  opacity: 1;
 }
 details[data-component=Accordion] .content {
   padding: 1rem 0;
@@ -1015,5 +1017,3 @@ button[data-component=ClipboardCopy][data-status=error] {
   border-color: #f44336;
   color: #f44336;
 }
-
-/*# sourceMappingURL=demo.css.map */
