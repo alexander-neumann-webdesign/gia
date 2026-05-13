@@ -241,6 +241,36 @@
         </div>
     </section>
 
+    <section id="Form">
+        <h2>Form</h2>
+        <div class="demo-block">
+            <div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action"}'>
+              <form data-ref="form" method="POST">
+                <div style="margin-bottom: 1rem;">
+                  <label for="name" style="display: block; margin-bottom: 0.5rem;">Name</label>
+                  <input type="text" id="name" name="name" required style="width: 100%; padding: 0.5rem;" />
+                </div>
+                <div style="margin-bottom: 1rem;">
+                  <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
+                  <input type="email" id="email" name="email" required style="width: 100%; padding: 0.5rem;" />
+                </div>
+                <div style="margin-bottom: 1rem;">
+                  <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
+                  <textarea id="message" name="message" required style="width: 100%; padding: 0.5rem;" rows="4"></textarea>
+                </div>
+                <button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Send Message</button>
+              </form>
+
+              <div data-ref="successMessage" hidden class="form-success">
+                Thank you for your message. It has been sent successfully.
+              </div>
+              <div data-ref="errorMessage" hidden class="form-error">
+                There was an error trying to send your message. Please try again later.
+              </div>
+            </div>
+        </div>
+    </section>
+
     <section id="Header">
         <h2>Header</h2>
         <div class="demo-block">
@@ -644,6 +674,7 @@
     <script src="../examples/Accordion.js"></script>
     <script src="../examples/ClipboardCopy.js"></script>
     <script src="../examples/FilterableList.js"></script>
+    <script src="../examples/Form.js"></script>
     <script src="../examples/Header.js"></script>
     <script src="../examples/ImageHolder.js"></script>
     <script src="../examples/LightboxGallery.js"></script>

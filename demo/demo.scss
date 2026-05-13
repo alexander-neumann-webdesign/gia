@@ -281,6 +281,30 @@ div[data-component="FilterableList"] {
 }
 
 
+/* --- Form --- */
+.form-success {
+  color: green;
+  padding: 1rem;
+  border: 1px solid green;
+  margin-top: 1rem;
+}
+
+.form-error {
+  color: red;
+  padding: 1rem;
+  border: 1px solid red;
+  margin-top: 1rem;
+}
+
+.is-submitting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 /* --- Header --- */
 header[data-component="Header"] {
   position: fixed;
