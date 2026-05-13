@@ -1,6 +1,6 @@
 var A = Object.defineProperty;
-var S = (r, e, t) => e in r ? A(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var w = (r, e, t) => S(r, typeof e != "symbol" ? e + "" : e, t);
+var P = (r, e, t) => e in r ? A(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
+var w = (r, e, t) => P(r, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (r) => {
   if (typeof r != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", r);
@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = r;
 });
-class I {
+class S {
   constructor() {
     w(this, "_options", {
       log: !1,
@@ -32,8 +32,8 @@ class I {
     return this._options[e];
   }
 }
-const l = new I();
-function P(r, e, t, n) {
+const l = new S();
+function I(r, e, t, n) {
   if (r.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
   try {
@@ -66,7 +66,7 @@ function z(r = {}, e = document.documentElement) {
     if (C(a))
       return;
     const d = a.getAttribute(o);
-    typeof r[d] == "function" ? n.push(P(a, d, r[d])) : console.warn(`Constructor "${d}" not found.`);
+    typeof r[d] == "function" ? n.push(I(a, d, r[d])) : console.warn(`Constructor "${d}" not found.`);
   };
   for (let a = 0; a < s; a++)
     c(i[a]);
@@ -86,7 +86,7 @@ function b(r) {
     r.__gia_component__ = null, e.element && (e.element = null), l.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function j(r = document.documentElement) {
+function B(r = document.documentElement) {
   const e = _(`[${l.get("attrPrefix")}-component]`, r);
   for (let t = 0; t < e.length; t++)
     b(e[t]);
@@ -247,7 +247,7 @@ let R = class {
     if (t && window[t])
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
-    return n ? (n._loadPromise || (n._loadPromise = new Promise((o, i) => {
+    return n ? n.tagName !== "SCRIPT" ? Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : (n._loadPromise || (n._loadPromise = new Promise((o, i) => {
       const s = () => {
         n.onload = null, n.onerror = null;
       };
@@ -380,10 +380,10 @@ export {
   R as BaseComponent,
   T as Component,
   l as config,
-  P as createInstance,
-  j as destroyInstance,
-  T as eventbus,
+  I as createInstance,
+  B as destroyInstance,
+  F as eventbus,
   C as getComponentFromElement,
   z as loadComponents,
-  j as removeComponents
+  B as removeComponents
 };
