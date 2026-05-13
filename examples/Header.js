@@ -103,9 +103,11 @@ class Header extends gia.Component {
 			if (progress < 0) progress = 0;
 			if (progress > 1) progress = 1;
 
-			// We only want to set the property if it has changed, or unconditionally since this is a raf frame
-			// and setting custom properties is fast, but let's just set it
-			this.element.style.setProperty('--header-progress', progress.toString());
+			const progressStr = progress.toString();
+			if (this._lastProgressStr !== progressStr) {
+				this._lastProgressStr = progressStr;
+				this.element.style.setProperty('--header-progress', progressStr);
+			}
 		}
 
 		// Determine direction and hide
