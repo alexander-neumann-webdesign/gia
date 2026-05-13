@@ -320,7 +320,10 @@ class FilterableList extends gia.Component {
 				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 			});
 
-			transition.finished.finally(() => {
+			transition.ready.catch(() => {});
+			transition.finished.catch(() => {
+				// Ignore AbortError when transition is skipped
+			}).finally(() => {
 				// Clean up to avoid global namespace pollution
 				visibleItems.concat(hiddenItems).forEach(item => {
 					item.style.viewTransitionName = '';

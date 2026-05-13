@@ -191,6 +191,7 @@ class Tabs extends gia.Component {
 
 				const transition = document.startViewTransition(() => updateDOM());
 
+				transition.ready.catch(() => {});
 				transition.finished.catch(() => {
 					// Ignore AbortError when rapid clicks interrupt an ongoing transition
 				}).finally(() => {
