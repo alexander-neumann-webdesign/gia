@@ -696,6 +696,34 @@
         </div>
     </section>
 
+    <section id="CustomCursor">
+        <h2>CustomCursor</h2>
+        <div class="demo-block">
+            <div style="padding: 2rem; border: 1px solid #ccc; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
+                <article class="news-card" data-hover-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer;">
+                    <h3>Hover me for text cursor</h3>
+                    <p>When you hover this block, the cursor will expand and show the text "Read more".</p>
+                </article>
+
+                <nav style="display: flex; gap: 1rem;">
+                    <button type="button" data-magnetic style="padding: 1rem; background: #eee; border: none; border-radius: 8px;">
+                        Magnetic Button
+                    </button>
+                    <a href="#" class="social-icon" data-magnetic style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #eee; border-radius: 50%;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Place this outside your main content wrapper near the body tag -->
+    <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
+        <div class="custom-cursor__dot" data-ref="CustomCursor:dot">
+            <span class="custom-cursor__text" data-ref="CustomCursor:text"></span>
+        </div>
+    </div>
+
     <script src="../dist/gia.umd.js"></script>
     <script>
         gia.config.set('log', true);
@@ -726,6 +754,7 @@
     <script src="../examples/VideoHolder.js"></script>
     <script src="../examples/OpenStreetMap.js"></script>
     <script src="../examples/MapLibreMap.js"></script>
+    <script src="../examples/CustomCursor.js"></script>
 
     <script src="./demo.js"></script>
 
