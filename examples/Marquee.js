@@ -58,10 +58,16 @@ class Marquee extends gia.Component {
 		// Observe resize to adjust clones and bounds
 		this.observeResize(this.element, this.handleResize);
 
-		// Start autoplay loop
-		if (!this.prefersReducedMotion) {
-			this.play();
-		}
+		// Start autoplay loop when in viewport
+		this.observeIntersection(this.element, ([entry]) => {
+			if (entry.isIntersecting) {
+				if (!this.prefersReducedMotion) {
+					this.play();
+				}
+			} else {
+				this.pause();
+			}
+		});
 
 		this.initDrag();
 		this.bindScroll();
