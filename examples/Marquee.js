@@ -250,7 +250,7 @@ class Marquee extends gia.Component {
 		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
 		const targetMultiplier = isPaused ? 0 : 1;
 
-		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * 0.1 * timeScale;
+		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - Math.pow(0.9, timeScale));
 
 		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
 			this.speedMultiplier = targetMultiplier;
