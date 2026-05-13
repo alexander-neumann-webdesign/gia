@@ -74,14 +74,20 @@ class ImageHolder extends gia.Component {
 		this.observeResize(document.body, this.handleBodyResize);
 
 		// Initial calculation based on immediate state
-		this.cacheLayout();
-		this.updateParallax();
+		this._needsBoundsUpdate = true;
+		if (!this.ticking) {
+			window.requestAnimationFrame(this.tickUpdate);
+			this.ticking = true;
+		}
 	}
 
 	handleBodyResize() {
-		this.cacheLayout();
+		this._needsBoundsUpdate = true;
 		if (this.state.isVisible) {
 			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
+		} else if (!this.ticking) {
+			window.requestAnimationFrame(this.tickUpdate);
+			this.ticking = true;
 		}
 	}
 
@@ -122,11 +128,11 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		entries.forEach((entry) => {
+		for (const entry of entries) {
 			this.setState({
 				isVisible: entry.isIntersecting
 			});
-		});
+		}
 	}
 
 	handleScroll(e) {
@@ -148,6 +154,10 @@ class ImageHolder extends gia.Component {
 	}
 
 	tickUpdate() {
+		if (this._needsBoundsUpdate) {
+			this.cacheLayout();
+			this._needsBoundsUpdate = false;
+		}
 		this.updateParallax();
 		this.ticking = false;
 	}
@@ -160,9 +170,12 @@ class ImageHolder extends gia.Component {
 					this.bindScroll();
 
 					// Force a recalculation as soon as it becomes visible
-					this.cacheLayout();
+					this._needsBoundsUpdate = true;
 					this.currentScrollY = window.scrollY || window.pageYOffset;
-					this.updateParallax();
+					if (!this.ticking) {
+						window.requestAnimationFrame(this.tickUpdate);
+						this.ticking = true;
+					}
 				}
 			} else {
 				if (this.options.parallaxSpeed !== 0) {
@@ -196,8 +209,11 @@ class ImageHolder extends gia.Component {
 		}
 
 		if (widthChanged) {
-			this.cacheLayout();
-			this.updateParallax();
+			this._needsBoundsUpdate = true;
+			if (!this.ticking) {
+				window.requestAnimationFrame(this.tickUpdate);
+				this.ticking = true;
+			}
 		}
 	}
 
@@ -253,7 +269,10 @@ class ImageHolder extends gia.Component {
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;
-			const offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
+			let offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
+
+			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
+			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
 
 			const transformStr = this.options.parallaxDirection === 'horizontal'
 				? `translate3d(${offsetPercent}%, 0, 0)`
