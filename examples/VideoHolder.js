@@ -145,12 +145,12 @@ class VideoHolder extends gia.Component {
 					this.ref.playPauseButton.setAttribute('aria-label', 'Pause video');
 					this.ref.playPauseButton.classList.remove('is-paused');
 					this.ref.playPauseButton.classList.add('is-playing');
-					this.ref.playPauseButton.innerHTML = '<span class="sr-only">Pause</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+					this.ref.playPauseButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
 				} else {
 					this.ref.playPauseButton.setAttribute('aria-label', 'Play video');
 					this.ref.playPauseButton.classList.remove('is-playing');
 					this.ref.playPauseButton.classList.add('is-paused');
-					this.ref.playPauseButton.innerHTML = '<span class="sr-only">Play</span><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+					this.ref.playPauseButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
 				}
 			}
 		}
