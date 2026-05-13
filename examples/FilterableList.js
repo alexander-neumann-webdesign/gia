@@ -25,6 +25,21 @@ class FilterableList extends gia.Component {
 		this.activeSort = this.options.defaultSort;
 
 		this.applyChangesDebounced = this.debounce(this.applyChanges.bind(this), 300);
+
+		this._pendingOutputs = new Map();
+		this._outputRafId = null;
+		this._syncOutputs = this._syncOutputs.bind(this);
+	}
+
+	_syncOutputs() {
+		for (const [id, value] of this._pendingOutputs.entries()) {
+			const outputEl = document.querySelector(`output[for="${id}"]`);
+			if (outputEl && outputEl.value !== value) {
+				outputEl.value = value;
+			}
+		}
+		this._pendingOutputs.clear();
+		this._outputRafId = null;
 	}
 
 	debounce(func, wait) {
@@ -299,6 +314,13 @@ class FilterableList extends gia.Component {
 		this.activeFilters[filterType] = values;
 
 		if (e.type === 'input') {
+			if (el.type === 'range' && el.id) {
+				this._pendingOutputs.set(el.id, el.value);
+				if (this._outputRafId) {
+					cancelAnimationFrame(this._outputRafId);
+				}
+				this._outputRafId = requestAnimationFrame(this._syncOutputs);
+			}
 			this.applyChangesDebounced();
 		} else {
 			this.applyChanges();
@@ -572,7 +594,7 @@ class FilterableList extends gia.Component {
 					// Update associated output if it exists (for range inputs)
 					if (el.type === 'range' && el.id) {
 						const outputEl = document.querySelector(`output[for="${el.id}"]`);
-						if (outputEl) {
+						if (outputEl && outputEl.value !== el.value) {
 							outputEl.value = el.value;
 						}
 					}
