@@ -26,6 +26,7 @@ class LightboxGallery extends gia.Component {
 			await Promise.all([
 				this.loadScript("photoswipe-lightbox-js", "PhotoSwipeLightbox"),
 				this.loadScript("photoswipe-js", "PhotoSwipe"),
+				this.loadStyle("photoswipe-css")
 			]);
 		}
 	}

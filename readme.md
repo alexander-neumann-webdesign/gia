@@ -464,12 +464,13 @@ class ComponentB extends Component {
 }
 ```
 
-### Dynamic Script Loading
-Avoid blocking the main thread or dealing with race conditions when loading external scripts by using the `loadScript` utility inside the `require` lifecycle. The target script element can be anywhere in the document, such as the `<head>`.
+### Dynamic Script and Style Loading
+Avoid blocking the main thread or dealing with race conditions when loading external scripts and styles by using the `loadScript` and `loadStyle` utilities inside the `require` lifecycle. The target script or link elements can be anywhere in the document, such as the `<head>`.
 
 ```html
 <!-- Usually in the document <head> or at the end of the <body> -->
 <script id="vendor-js" data-src="..."></script>
+<link id="vendor-css" rel="stylesheet" data-href="...">
 
 <!-- The component instance -->
 <div data-component="MyComponent">
@@ -483,7 +484,11 @@ import { Component } from "gia";
 class MyComponent extends Component {
     async require() {
         // Loads the script and waits for the global 'VendorGlobal' to be available
-        await this.loadScript('vendor-js', 'VendorGlobal');
+        // Also lazy-loads the associated stylesheet
+        await Promise.all([
+            this.loadScript('vendor-js', 'VendorGlobal'),
+            this.loadStyle('vendor-css')
+        ]);
     }
 
     mount() {
