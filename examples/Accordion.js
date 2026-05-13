@@ -113,8 +113,9 @@ gia.register(Accordion);
  * details[data-component="Accordion"] {
  *   @supports (interpolate-size: allow-keywords) {
  *     &::details-content {
- *       transition: height 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+ *       transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
  *       height: 0;
+ *       opacity: 0;
  *       overflow: clip;
  *       display: block;
  *     }
@@ -122,6 +123,7 @@ gia.register(Accordion);
  *
  *   &[open]::details-content {
  *     height: auto;
+ *     opacity: 1;
  *   }
  *
  *   summary {
