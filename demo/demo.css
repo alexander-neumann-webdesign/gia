@@ -1,13 +1,14 @@
-@supports (interpolate-size: allow-keywords) {
-  :root {
-    interpolate-size: allow-keywords;
-  }
+:root {
+  interpolate-size: allow-keywords;
 }
+
 /* --- Accordion --- */
-details[data-component=Accordion] ::details-content {
-  transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
-  height: 0;
-  overflow: clip;
+@supports (interpolate-size: allow-keywords) {
+  details[data-component=Accordion] ::details-content {
+    transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+    height: 0;
+    overflow: clip;
+  }
 }
 details[data-component=Accordion][open]::details-content {
   height: auto;
@@ -76,10 +77,6 @@ button[data-component=ClipboardCopy][data-status=error] {
   background-color: #ffebee;
   border-color: #f44336;
   color: #f44336;
-}
-
-:root {
-  interpolate-size: allow-keywords;
 }
 
 /* --- FilterableList --- */
@@ -254,6 +251,31 @@ div[data-component=ImageHolder][data-is-visible=true][data-is-loaded=true] img {
 }
 
 /* --- LightboxGallery --- */
+div[data-component=LightboxGallery] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+div[data-component=LightboxGallery] > a {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+}
+div[data-component=LightboxGallery] > a div[data-component=ImageHolder] {
+  width: 100%;
+  height: 100%;
+}
+div[data-component=LightboxGallery] > a div[data-component=ImageHolder] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease, opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+div[data-component=LightboxGallery] > a:hover div[data-component=ImageHolder] img {
+  transform: scale(1.05);
+}
+
 /* --- Marquee --- */
 div[data-component=Marquee] {
   overflow: hidden;
