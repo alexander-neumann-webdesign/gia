@@ -30,6 +30,7 @@ class CustomCursor extends gia.Component {
 
         // Animation loop control
         this._isRenderingFrame = false;
+        this._needsBoundsUpdate = false;
         this._lastTime = performance.now();
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -88,22 +89,7 @@ class CustomCursor extends gia.Component {
 
         // Re-evaluate magnetic bounds on scroll if active
         if (this.magneticTarget) {
-            // To properly calculate the original bounds during scroll without transform interference
-            const currentTransform = this.magneticTarget.style.transform;
-            this.magneticTarget.style.transform = 'translate3d(0px, 0px, 0px)';
-
-            const rect = this.magneticTarget.getBoundingClientRect();
-            this.magneticBounds = {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2
-            };
-
-            // Restore transform
-            this.magneticTarget.style.transform = currentTransform;
+            this._needsBoundsUpdate = true;
         }
     }
 
@@ -180,6 +166,26 @@ class CustomCursor extends gia.Component {
 
     render(time) {
         if (!this._isRenderingFrame) return;
+
+        if (this._needsBoundsUpdate && this.magneticTarget) {
+            this._needsBoundsUpdate = false;
+            // To properly calculate the original bounds during scroll without transform interference
+            const currentTransform = this.magneticTarget.style.transform;
+            this.magneticTarget.style.transform = 'translate3d(0px, 0px, 0px)';
+
+            const rect = this.magneticTarget.getBoundingClientRect();
+            this.magneticBounds = {
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.left + rect.width / 2,
+                centerY: rect.top + rect.height / 2
+            };
+
+            // Restore transform
+            this.magneticTarget.style.transform = currentTransform;
+        }
 
         // Calculate delta time for frame-rate independent lerp
         // Cap deltaTime to 100ms to avoid huge jumps on tab switch
