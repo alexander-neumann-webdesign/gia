@@ -1065,6 +1065,8 @@ button[data-component=ClipboardCopy][data-status=error] {
   border-radius: 50%;
   background: #007bff;
   cursor: pointer;
+}
+
 /* --- CustomCursor --- */
 @media (pointer: fine) {
   body {
