@@ -5,12 +5,12 @@
 	"files": [
 		"dist"
 	],
-	"main": "./dist/gia.umd.cjs",
-	"module": "./dist/gia.js",
+	"main": "./dist/gia.umd.js",
+	"module": "./dist/gia.mjs",
 	"exports": {
 		".": {
-			"import": "./dist/gia.js",
-			"require": "./dist/gia.umd.cjs"
+			"import": "./dist/gia.mjs",
+			"require": "./dist/gia.umd.js"
 		}
 	},
 	"scripts": {

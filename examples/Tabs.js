@@ -176,10 +176,14 @@ class Tabs extends gia.Component {
 
 			if (document.startViewTransition && panelsContainer) {
 				const activePanel = this.ref.panel[activeIndex];
+				const oldPanel = this.ref.panel.find(p => !p.hidden);
 
 				panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
+				if (oldPanel && oldPanel !== activePanel) {
+					oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
+				}
 				if (activePanel) {
-					activePanel.style.viewTransitionName = `tabs-panel-${this._id}-${activeIndex}`;
+					activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
 				}
 
 				// Disable root transition to prevent full-page crossfade
@@ -191,6 +195,9 @@ class Tabs extends gia.Component {
 					// Ignore AbortError when rapid clicks interrupt an ongoing transition
 				}).finally(() => {
 					panelsContainer.style.viewTransitionName = '';
+					if (oldPanel) {
+						oldPanel.style.viewTransitionName = '';
+					}
 					if (activePanel) {
 						activePanel.style.viewTransitionName = '';
 					}
