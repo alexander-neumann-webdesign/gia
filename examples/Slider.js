@@ -60,9 +60,15 @@ class Slider extends gia.Component {
 		// Setup Buttons
 		if (this.ref.prevBtn) {
 			this.ref.prevBtn.addEventListener('click', this.scrollPrev);
+			if (!this.ref.prevBtn.hasAttribute('aria-label')) {
+				this.ref.prevBtn.setAttribute('aria-label', 'Previous slide');
+			}
 		}
 		if (this.ref.nextBtn) {
 			this.ref.nextBtn.addEventListener('click', this.scrollNext);
+			if (!this.ref.nextBtn.hasAttribute('aria-label')) {
+				this.ref.nextBtn.setAttribute('aria-label', 'Next slide');
+			}
 		}
 
 		// Listen to embla events to update button states
