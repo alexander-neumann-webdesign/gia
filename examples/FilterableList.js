@@ -6,7 +6,13 @@ class FilterableList extends gia.Component {
 			item: [],      // The items to filter and sort
 			container: null, // The wrapper for items. Defaults to this.element if not provided
 			filter: [],    // The filter controls (selects, inputs, buttons)
-			sorter: []     // The sort controls
+			sorter: [],    // The sort controls
+			announcer: null, // Optional aria-live region to announce results count
+			announcerCount: [],
+			announcerSingular: null,
+			announcerPlural: null,
+			announcerEmpty: null,
+			resetBtn: []
 		};
 
 		this.options = {

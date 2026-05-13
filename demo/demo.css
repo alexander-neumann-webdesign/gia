@@ -116,6 +116,25 @@ button[data-component=ClipboardCopy][data-status=error] {
 }
 
 /* --- FilterableList --- */
+div[data-component=FilterableList] .results-announcer {
+  margin-bottom: 1rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #555;
+}
+div[data-component=FilterableList] .results-announcer .reset-filters-btn {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+div[data-component=FilterableList] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableList] .results-announcer .reset-filters-btn:focus-visible {
+  background: #e1e1e1;
+  outline: none;
+}
 div[data-component=FilterableList] .controls {
   margin-bottom: 2rem;
   display: flex;
