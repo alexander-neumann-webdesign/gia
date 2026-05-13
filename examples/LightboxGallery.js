@@ -26,6 +26,7 @@ class LightboxGallery extends gia.Component {
 			await Promise.all([
 				this.loadScript("photoswipe-lightbox-js", "PhotoSwipeLightbox"),
 				this.loadScript("photoswipe-js", "PhotoSwipe"),
+				this.loadStyle("photoswipe-css")
 			]);
 		}
 	}
@@ -159,7 +160,7 @@ Expected HTML Structure:
 	   data-pswp-width="1920"
 	   data-pswp-height="1080"
 	   data-cropped="true"
-	   target="_blank">
+	   target="_blank" rel="noopener noreferrer">
 		<img src="path/to/thumbnail.jpg" alt="" loading="lazy" />
 	</a>
 </div>
@@ -167,7 +168,7 @@ Expected HTML Structure:
 Example PHP (WordPress):
 <div data-component="LightboxGallery">
 	<?php $image_id = 13; $image_src = wp_get_attachment_image_src($image_id, 'full'); ?>
-	<a class="image-holder" data-component="Image" data-parallax data-ref="LightboxGallery:triggers" data-no-swup href="<?= $image_src[0] ?>" data-pswp-width="<?= $image_src[1] ?>" data-pswp-height="<?= $image_src[2] ?>" data-cropped="true" target="_blank" style="">
+	<a class="image-holder" data-component="Image" data-parallax data-ref="LightboxGallery:triggers" data-no-swup href="<?= $image_src[0] ?>" data-pswp-width="<?= $image_src[1] ?>" data-pswp-height="<?= $image_src[2] ?>" data-cropped="true" target="_blank" rel="noopener noreferrer" style="">
 		<?= wp_get_attachment_image($image_id, 'full', false, ['loading' => 'lazy']) ?>
 	</a>
 </div>
