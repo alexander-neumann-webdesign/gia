@@ -311,7 +311,11 @@ class Marquee extends gia.Component {
 		this.currentOffset = offset;
 
 		// Apply transform to the track
-		this.ref.track.style.transform = `translate3d(${this.currentOffset}px, 0, 0)`;
+		const transformStr = `translate3d(${this.currentOffset}px, 0, 0)`;
+		if (this._lastTransform !== transformStr) {
+			this.ref.track.style.transform = transformStr;
+			this._lastTransform = transformStr;
+		}
 	}
 
 	setupClones() {
