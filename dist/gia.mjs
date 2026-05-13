@@ -6,12 +6,12 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
     console.error("Gia: Register failed. Expected a Class, got:", r);
     return;
   }
-  const e = r.name;
+  const e = i.name;
   if (!e) {
     console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
     return;
   }
-  window.gia.components[e] = r;
+  window.gia.components[e] = i;
 });
 class P {
   constructor() {
@@ -43,17 +43,17 @@ function I(r, e, t, n) {
     return console.error(`Failed to create component "${e}".`, s), null;
   }
 }
-function C(r) {
-  return typeof r == "string" && (r = document.getElementById(r), !r) ? null : r.__gia_component__;
+function $(i) {
+  return typeof i == "string" && (i = document.getElementById(i), !i) ? null : i.__gia_component__;
 }
-function _(r, e = document) {
-  return typeof r != "string" ? r : e.querySelectorAll(r);
+function m(i, e = document) {
+  return typeof i != "string" ? i : e.querySelectorAll(i);
 }
-function z(r = {}, e = document.documentElement) {
+function z(i = {}, e = document.documentElement) {
   let t = !0;
-  if (r) {
-    for (const a in r)
-      if (Object.prototype.hasOwnProperty.call(r, a)) {
+  if (i) {
+    for (const c in i)
+      if (Object.prototype.hasOwnProperty.call(i, c)) {
         t = !1;
         break;
       }
@@ -74,8 +74,8 @@ function z(r = {}, e = document.documentElement) {
   for (let a = 0; a < n.length; a++)
     n[a]._load();
 }
-function b(r) {
-  const e = C(r);
+function b(i) {
+  const e = $(i);
   if (e) {
     const t = e._name || "Unknown";
     try {
@@ -83,11 +83,11 @@ function b(r) {
     } catch (n) {
       console.error(`Gia: Error unmounting component "${t}".`, n);
     }
-    r.__gia_component__ = null, e.element && (e.element = null), l.get("log") && console.info(`Removed component "${t}".`);
+    i.__gia_component__ = null, e.element && (e.element = null), l.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function B(r = document.documentElement) {
-  const e = _(`[${l.get("attrPrefix")}-component]`, r);
+function j(i = document.documentElement) {
+  const e = m(`[${l.get("attrPrefix")}-component]`, i);
   for (let t = 0; t < e.length; t++)
     b(e[t]);
 }
@@ -193,8 +193,8 @@ let R = class {
     if (!n) return;
     if (t) {
       n.delete(t);
-      const i = h.get(e);
-      i && i.delete(t);
+      const r = h.get(e);
+      r && r.delete(t);
     } else {
       const i = h.get(e);
       i && n.forEach((o) => i.delete(o)), n.clear();
@@ -258,6 +258,37 @@ let R = class {
       }, !n.src && n.dataset.src ? (n.src = n.dataset.src, delete n.dataset.src) : !n.src && !n.dataset.src && (o(), i(new Error(`Script tag '${e}' has no src or data-src.`)));
     })), n._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
   }
+  /**
+   * Loads a stylesheet that is already defined in the DOM with a data-href attribute.
+   * Prevents double-loading and handles race conditions.
+   * @param {string} styleId - The exact ID of the link tag
+   * @return {Promise}
+   */
+  loadStyle(e) {
+    const t = document.getElementById(e);
+    return t ? t.tagName !== "LINK" ? Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : (t._loadPromise || (t._loadPromise = new Promise((n, s) => {
+      const r = () => {
+        t.onload = null, t.onerror = null;
+      };
+      if (t.onload = () => {
+        r(), n(!0);
+      }, t.onerror = () => {
+        r(), delete t._loadPromise, s(new Error(`Failed to load style: ${e}`));
+      }, !t.href && t.dataset.href)
+        t.href = t.dataset.href, delete t.dataset.href;
+      else if (!t.href && !t.dataset.href)
+        r(), s(new Error(`Link tag '${e}' has no href or data-href.`));
+      else if (t.href && !t.dataset.href) {
+        let o = !1;
+        for (let a = 0; a < document.styleSheets.length; a++)
+          if (document.styleSheets[a].href === t.href) {
+            o = !0;
+            break;
+          }
+        o && (r(), n(!0));
+      }
+    })), t._loadPromise) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
+  }
   mount() {
   }
   unmount() {
@@ -292,7 +323,7 @@ let R = class {
   }
   _autoBindFunctions() {
     const e = Object.getPrototypeOf(this);
-    let t = y.get(e);
+    let t = v.get(e);
     t || (t = Object.getOwnPropertyNames(e).filter((n) => {
       var s;
       return !v.has(n) && !n.startsWith("_") && typeof ((s = Object.getOwnPropertyDescriptor(e, n)) == null ? void 0 : s.value) == "function";
@@ -303,7 +334,7 @@ let R = class {
     }
   }
   _autoBindActions() {
-    const e = _("[data-action]", this.element), t = e.length;
+    const e = m("[data-action]", this.element), t = e.length;
     for (let n = 0; n < t; n++) {
       const s = e[n], i = s.dataset.action;
       let o = 0;
@@ -319,14 +350,14 @@ let R = class {
     }
   }
 };
-class T extends R {
+class D extends R {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class x extends EventTarget {
+class k extends EventTarget {
   emit(e, t = {}) {
     l.get("log") && console.info(`Emitting event '${e}'`);
     const n = new CustomEvent(e, { detail: t });
@@ -343,9 +374,9 @@ class x extends EventTarget {
     t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t), t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const F = new x();
+const F = new k();
 let g = null;
-function N(r) {
+function x(i) {
   const e = `${l.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
   for (let s = 0; s < r.length; s++) {
     const i = r[s];
@@ -366,25 +397,25 @@ function N(r) {
   for (const s of n)
     s.isConnected && z(t, s);
 }
-function $() {
-  typeof document > "u" || (l.get("autoMountComponents") && !g ? (g = new MutationObserver(N), g.observe(document.body, {
+function C() {
+  typeof document > "u" || (l.get("autoMountComponents") && !g ? (g = new MutationObserver(x), g.observe(document.body, {
     childList: !0,
     subtree: !0
   })) : !l.get("autoMountComponents") && g && (g.disconnect(), g = null));
 }
-const k = l.set;
-l.set = function(r, e) {
-  k.call(this, r, e), r === "autoMountComponents" && $();
+const N = l.set;
+l.set = function(i, e) {
+  N.call(this, i, e), i === "autoMountComponents" && C();
 };
-typeof window < "u" && setTimeout($, 0);
+typeof window < "u" && setTimeout(C, 0);
 export {
   R as BaseComponent,
-  T as Component,
+  D as Component,
   l as config,
   I as createInstance,
-  B as destroyInstance,
+  j as destroyInstance,
   F as eventbus,
-  C as getComponentFromElement,
+  $ as getComponentFromElement,
   z as loadComponents,
-  B as removeComponents
+  j as removeComponents
 };

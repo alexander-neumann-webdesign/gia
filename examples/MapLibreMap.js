@@ -14,7 +14,10 @@ class MapLibreMap extends gia.Component {
 	}
 
 	async require() {
-		await this.loadScript('maplibre-js', 'maplibregl');
+		await Promise.all([
+			this.loadScript('maplibre-js', 'maplibregl'),
+			this.loadStyle('maplibre-css')
+		]);
 	}
 
 	mount() {
@@ -80,7 +83,7 @@ gia.register(MapLibreMap);
  *   <!-- Include MapLibre GL JS library script with data-src for lazy loading and specific ID -->
  *   <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
  *   <!-- Include MapLibre GL CSS -->
- *   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+ *   <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
  * </head>
  *
  * <body>

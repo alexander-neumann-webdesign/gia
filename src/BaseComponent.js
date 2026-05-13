@@ -6,7 +6,7 @@ const resizeCallbacks = new Map();
 
 const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
 
-const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]);
+const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]);
 const protoMethodsCache = new WeakMap();
 const globalStateAttributeCache = new Map();
 
@@ -380,6 +380,81 @@ export default class Component {
 		});
 
 		return script._loadPromise;
+	}
+
+	/**
+	 * Loads a stylesheet that is already defined in the DOM with a data-href attribute.
+	 * Prevents double-loading and handles race conditions.
+	 * @param {string} styleId - The exact ID of the link tag
+	 * @return {Promise}
+	 */
+	loadStyle(styleId) {
+		// DOM LOOKUP: Find the existing link tag
+		const link = document.getElementById(styleId);
+		if (!link) {
+			return Promise.reject(new Error(`Link tag with ID '${styleId}' not found.`));
+		}
+
+		// SECURITY: Ensure the found element is actually a link tag
+		if (link.tagName !== 'LINK') {
+			return Promise.reject(new Error(`Element with ID '${styleId}' is not a valid link tag.`));
+		}
+
+		// CACHE CHECK: Did we already start loading this?
+		if (link._loadPromise) {
+			return link._loadPromise;
+		}
+
+		// START LOADING
+		link._loadPromise = new Promise((resolve, reject) => {
+			// Define cleanup to avoid memory leaks
+			const cleanup = () => {
+				link.onload = null;
+				link.onerror = null;
+			};
+
+			link.onload = () => {
+				cleanup();
+				resolve(true);
+			};
+
+			link.onerror = () => {
+				cleanup();
+				// Delete the promise so we can try again later if needed
+				delete link._loadPromise;
+				reject(new Error(`Failed to load style: ${styleId}`));
+			};
+
+			// TRIGGER: Move data-href to href if not already done
+			if (!link.href && link.dataset.href) {
+				link.href = link.dataset.href;
+				// Clean up the data attribute to keep DOM tidy (optional)
+				delete link.dataset.href;
+			} else if (!link.href && !link.dataset.href) {
+				// Edge case: Tag exists but has no source at all
+				cleanup();
+				reject(new Error(`Link tag '${styleId}' has no href or data-href.`));
+			} else if (link.href && !link.dataset.href) {
+				// Already has href (might be pre-loaded)
+				// The onload event might have already fired, but we're attaching it now.
+				// If the stylesheet is already loaded, `onload` will not fire again.
+				// However, if we reach here and it's already loaded, we assume it's done.
+				// We can check if it's already in the styleSheets list.
+				let isLoaded = false;
+				for (let i = 0; i < document.styleSheets.length; i++) {
+					if (document.styleSheets[i].href === link.href) {
+						isLoaded = true;
+						break;
+					}
+				}
+				if (isLoaded) {
+					cleanup();
+					resolve(true);
+				}
+			}
+		});
+
+		return link._loadPromise;
 	}
 
 	mount() {
