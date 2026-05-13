@@ -95,6 +95,13 @@ class MatterPhysicsBackground extends gia.Component {
 
         // add mouse control
         const mouse = Mouse.create(this.render.canvas);
+
+        // Matter.js automatically binds a wheel event listener that calls e.preventDefault(),
+        // which prevents page scrolling. We remove it here because we don't need zoom/scroll physics.
+        this.render.canvas.removeEventListener('wheel', mouse.mousewheel);
+        this.render.canvas.removeEventListener('mousewheel', mouse.mousewheel);
+        this.render.canvas.removeEventListener('DOMMouseScroll', mouse.mousewheel);
+
         this.mouseConstraint = MouseConstraint.create(this.engine, {
             mouse: mouse,
             constraint: {
