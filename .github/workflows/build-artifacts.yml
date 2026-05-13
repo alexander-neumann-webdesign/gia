@@ -19,7 +19,7 @@ jobs:
         with:
           # For PRs we need to checkout the head branch so we can push back to it
           # For pushes we can just rely on the default behavior
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,6 +34,7 @@ jobs:
         run: npm run build
 
       - name: Commit build artifacts
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update build artifacts"
