@@ -317,9 +317,9 @@ class CounterComponent extends Component {
             display: null
         };
         // Define initial state
-        this.state = {
+        this.setState({
             count: 0
-        };
+        });
     }
 
     increment() {
@@ -352,11 +352,11 @@ import { Component } from "gia";
 class StateExampleComponent extends Component {
     constructor(element) {
         super(element);
-        this.state = {
+        this.setState({
             isOpen: false,
             status: 'idle',
             items: []
-        };
+        });
     }
 
     mount() {
@@ -391,7 +391,7 @@ import { getComponentFromElement, Component } from "gia";
 class MyComponent extends Component {
     constructor(element) {
         super(element);
-        this.state = { isOpen: true };
+        this.setState({ isOpen: true });
     }
 }
 
