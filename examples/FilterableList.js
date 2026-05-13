@@ -82,6 +82,7 @@ class FilterableList extends gia.Component {
 		// Cleanup event listeners
 		this.ref.filter.forEach(el => {
 			el.removeEventListener('change', this.handleFilterChange);
+			el.removeEventListener('input', this.handleFilterChange);
 			el.removeEventListener('click', this.handleFilterClick);
 		});
 
@@ -96,8 +97,16 @@ class FilterableList extends gia.Component {
 
 	bindEvents() {
 		this.ref.filter.forEach(el => {
-			if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
+			if (el.tagName === 'SELECT') {
 				el.addEventListener('change', this.handleFilterChange);
+			} else if (el.tagName === 'INPUT') {
+				if (el.type === 'checkbox' || el.type === 'radio') {
+					el.addEventListener('change', this.handleFilterChange);
+				} else {
+					// Use input event for real-time updates on text and range inputs
+					el.addEventListener('input', this.handleFilterChange);
+					el.addEventListener('change', this.handleFilterChange);
+				}
 			} else {
 				el.addEventListener('click', this.handleFilterClick);
 			}
@@ -189,6 +198,9 @@ class FilterableList extends gia.Component {
 			values = Array.from(checkboxes).map(cb => cb.value);
 		} else if (el.tagName === 'INPUT' && el.type === 'radio') {
 			values = el.value ? [el.value] : [];
+		} else if (el.tagName === 'INPUT') {
+			// Handle text, search, range, etc.
+			values = el.value ? [el.value] : [];
 		}
 
 		this.activeFilters[filterType] = values;
@@ -255,7 +267,22 @@ class FilterableList extends gia.Component {
 			for (const type in this.activeFilters) {
 				const activeValues = this.activeFilters[type];
 				if (activeValues && activeValues.length > 0) {
-					const cached = item._dataCache[type];
+					// Handle special suffix operators
+					let baseType = type;
+					let operator = 'eq'; // default is exact match
+
+					if (type.endsWith('-min')) {
+						baseType = type.replace('-min', '');
+						operator = 'min';
+					} else if (type.endsWith('-max')) {
+						baseType = type.replace('-max', '');
+						operator = 'max';
+					} else if (type.endsWith('-includes')) {
+						baseType = type.replace('-includes', '');
+						operator = 'includes';
+					}
+
+					const cached = item._dataCache[baseType];
 
 					if (!cached) {
 						isVisible = false;
@@ -264,9 +291,32 @@ class FilterableList extends gia.Component {
 
 					let hasMatch = false;
 					for (let i = 0; i < activeValues.length; i++) {
-						if (cached.array.includes(activeValues[i])) {
-							hasMatch = true;
-							break;
+						const filterVal = activeValues[i];
+
+						if (operator === 'min') {
+							const numFilterVal = parseFloat(filterVal);
+							if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
+								hasMatch = true;
+								break;
+							}
+						} else if (operator === 'max') {
+							const numFilterVal = parseFloat(filterVal);
+							if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
+								hasMatch = true;
+								break;
+							}
+						} else if (operator === 'includes') {
+							// Case insensitive substring search
+							if (cached.raw.toLowerCase().includes(filterVal.toLowerCase())) {
+								hasMatch = true;
+								break;
+							}
+						} else {
+							// Default exact array match
+							if (cached.array.includes(filterVal)) {
+								hasMatch = true;
+								break;
+							}
 						}
 					}
 
@@ -370,46 +420,70 @@ class FilterableList extends gia.Component {
 
 	stateChange(stateChanges) {
 		if ('filtersUpdated' in stateChanges) {
-			// Update filter buttons
+			// Update filter elements
 			this.ref.filter.forEach(el => {
-				if (el.tagName !== 'BUTTON' && el.tagName !== 'A') return;
-
-				const filterType = el.getAttribute('data-filter-type');
-				const filterValue = el.getAttribute('data-filter-value');
-
+				const filterType = el.name || el.getAttribute('data-filter-type');
 				if (!filterType) return;
 
 				const activeValues = this.activeFilters[filterType] || [];
 
-				let isActive = false;
-				if (filterValue === '*' || filterValue === 'all' || !filterValue) {
-					isActive = activeValues.length === 0;
-				} else {
-					isActive = activeValues.includes(filterValue);
-				}
+				if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+					const filterValue = el.getAttribute('data-filter-value');
+					let isActive = false;
+					if (filterValue === '*' || filterValue === 'all' || !filterValue) {
+						isActive = activeValues.length === 0;
+					} else {
+						isActive = activeValues.includes(filterValue);
+					}
 
-				if (isActive) {
-					el.classList.add(this.options.activeFilterClass);
-					el.setAttribute('aria-pressed', 'true');
-				} else {
-					el.classList.remove(this.options.activeFilterClass);
-					el.setAttribute('aria-pressed', 'false');
+					if (isActive) {
+						el.classList.add(this.options.activeFilterClass);
+						el.setAttribute('aria-pressed', 'true');
+					} else {
+						el.classList.remove(this.options.activeFilterClass);
+						el.setAttribute('aria-pressed', 'false');
+					}
+				} else if (el.tagName === 'SELECT') {
+					if (el.multiple) {
+						Array.from(el.options).forEach(opt => {
+							opt.selected = activeValues.includes(opt.value);
+						});
+					} else {
+						el.value = activeValues.length > 0 ? activeValues[0] : '';
+					}
+				} else if (el.tagName === 'INPUT' && (el.type === 'checkbox' || el.type === 'radio')) {
+					el.checked = activeValues.includes(el.value);
+				} else if (el.tagName === 'INPUT') {
+					// Text, search, range, etc.
+					const newVal = activeValues.length > 0 ? activeValues[0] : '';
+					if (el.value !== newVal) {
+						el.value = newVal;
+					}
+					// Update associated output if it exists (for range inputs)
+					if (el.type === 'range' && el.id) {
+						const outputEl = document.querySelector(`output[for="${el.id}"]`);
+						if (outputEl) {
+							outputEl.value = el.value;
+						}
+					}
 				}
 			});
 
-			// Update sorter buttons
+			// Update sorter elements
 			this.ref.sorter.forEach(el => {
-				if (el.tagName !== 'BUTTON' && el.tagName !== 'A') return;
+				if (el.tagName === 'SELECT') {
+					el.value = this.activeSort;
+				} else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+					const sortValue = el.getAttribute('data-sort-value');
+					const isActive = this.activeSort === sortValue;
 
-				const sortValue = el.getAttribute('data-sort-value');
-				const isActive = this.activeSort === sortValue;
-
-				if (isActive) {
-					el.classList.add(this.options.activeFilterClass);
-					el.setAttribute('aria-selected', 'true');
-				} else {
-					el.classList.remove(this.options.activeFilterClass);
-					el.setAttribute('aria-selected', 'false');
+					if (isActive) {
+						el.classList.add(this.options.activeFilterClass);
+						el.setAttribute('aria-selected', 'true');
+					} else {
+						el.classList.remove(this.options.activeFilterClass);
+						el.setAttribute('aria-selected', 'false');
+					}
 				}
 			});
 		}
