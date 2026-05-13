@@ -141,8 +141,8 @@ gia.register(Slider);
  *     </div>
  *   </div>
  *
- *   <button data-ref="prevBtn">Prev</button>
- *   <button data-ref="nextBtn">Next</button>
+ *   <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
+ *   <button data-ref="nextBtn" aria-label="Next slide">Next</button>
  * </div>
  *
  * Suggested SCSS:

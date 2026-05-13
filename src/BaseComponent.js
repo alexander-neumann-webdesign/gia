@@ -332,6 +332,12 @@ export default class Component {
 			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
 		}
 
+		// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
+		// and unintended execution of malicious payloads (e.g., via iframe data-src).
+		if (script.tagName !== 'SCRIPT') {
+			return Promise.reject(new Error(`Element with ID '${scriptId}' is not a valid script tag.`));
+		}
+
 		// CACHE CHECK: Did we already start loading this?
 		// If another component triggered this 5ms ago, return that same running promise.
 		if (script._loadPromise) {

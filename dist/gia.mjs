@@ -97,7 +97,7 @@ function M(r) {
   const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", n = r.threshold || 0, o = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${o}`;
 }
-let x = class {
+let R = class {
   constructor(e, t) {
     this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._autoBindFunctions(), l.get("autoBindActions") && this._autoBindActions();
   }
@@ -318,14 +318,14 @@ let x = class {
     }
   }
 };
-class F extends x {
+class T extends R {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class R extends EventTarget {
+class x extends EventTarget {
   emit(e, t = {}) {
     l.get("log") && console.info(`Emitting event '${e}'`);
     const n = new CustomEvent(e, { detail: t });
@@ -342,7 +342,7 @@ class R extends EventTarget {
     t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t), t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const T = new R();
+const F = new x();
 let g = null;
 function N(r) {
   const e = `${l.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
@@ -377,8 +377,8 @@ l.set = function(r, e) {
 };
 typeof window < "u" && setTimeout($, 0);
 export {
-  x as BaseComponent,
-  F as Component,
+  R as BaseComponent,
+  T as Component,
   l as config,
   P as createInstance,
   j as destroyInstance,
