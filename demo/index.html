@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script id="matter-js-script" data-src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <!-- MapLibre -->
+    <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
 </head>
 <body>
     <h1>Gia Components Demo</h1>
@@ -300,16 +303,28 @@
 
     <section id="Marquee">
         <h2>Marquee</h2>
-        <div class="demo-block">
-            <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
-  <div data-ref="track" class="marquee-track">
-    <div class="marquee-item">Item 1</div>
-    <div class="marquee-item">Item 2</div>
-    <div class="marquee-item">Item 3</div>
-  </div>
-</div>
+        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
+            <div>
+                <h3>Left Direction</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+                  <div data-ref="track" class="marquee-track">
+                    <div class="marquee-item">Item 1</div>
+                    <div class="marquee-item">Item 2</div>
+                    <div class="marquee-item">Item 3</div>
+                  </div>
+                </div>
+            </div>
 
-
+            <div>
+                <h3>Right Direction</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
+                  <div data-ref="track" class="marquee-track">
+                    <div class="marquee-item">Item A</div>
+                    <div class="marquee-item">Item B</div>
+                    <div class="marquee-item">Item C</div>
+                  </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -405,23 +420,41 @@
 
     <section id="Slider">
         <h2>Slider</h2>
-        <div class="demo-block">
+        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
             <!-- Remember to add the vendor script at the bottom of the body: -->
 <!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
 
-<div class="slider-wrapper" data-component="Slider">
-  <div class="embla" data-ref="viewport">
-    <div class="embla__container" data-ref="container">
-      <div class="embla__slide" data-ref="slide">Slide 1</div>
-      <div class="embla__slide" data-ref="slide">Slide 2</div>
-      <div class="embla__slide" data-ref="slide">Slide 3</div>
-    </div>
-  </div>
+            <div>
+                <h3>Default Slider (Loop: true, Align: center)</h3>
+                <div class="slider-wrapper" data-component="Slider">
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">Slide 1</div>
+                      <div class="embla__slide" data-ref="slide">Slide 2</div>
+                      <div class="embla__slide" data-ref="slide">Slide 3</div>
+                    </div>
+                  </div>
 
-  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
-  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
-</div>
+                  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
+                  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
+                </div>
+            </div>
 
+            <div>
+                <h3>Custom Slider (Loop: false, Align: start)</h3>
+                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": false, "align": "start"}'>
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">Slide A</div>
+                      <div class="embla__slide" data-ref="slide">Slide B</div>
+                      <div class="embla__slide" data-ref="slide">Slide C</div>
+                    </div>
+                  </div>
+
+                  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
+                  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
+                </div>
+            </div>
 
         </div>
     </section>
@@ -433,6 +466,16 @@
               data-component="OpenStreetMap"
               data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12}'
               style="height: 400px; width: 100%;">
+            </div>
+        </div>
+    </section>
+
+    <section id="MapLibreMap">
+        <h2>MapLibreMap</h2>
+        <div class="demo-block">
+            <div data-component="MapLibreMap"
+                 data-options='{"centerCoords": [12.550343, 55.665957], "initialZoomLevel": 6, "locations": [[12.550343, 55.665957], [12.56, 55.67]]}'
+                 style="width: 100%; height: 500px;">
             </div>
         </div>
     </section>
@@ -582,6 +625,7 @@
     <script src="../examples/Tooltip.js"></script>
     <script src="../examples/VideoHolder.js"></script>
     <script src="../examples/OpenStreetMap.js"></script>
+    <script src="../examples/MapLibreMap.js"></script>
 
     <script src="./demo.js"></script>
 
