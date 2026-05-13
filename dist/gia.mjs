@@ -74,7 +74,7 @@ function z(r = {}, e = document.documentElement) {
   for (let c = 0; c < s.length; c++)
     s[c]._load();
 }
-function m(r) {
+function b(r) {
   const e = C(r);
   if (e) {
     const t = e._name || "Unknown";
@@ -89,15 +89,15 @@ function m(r) {
 function B(r = document.documentElement) {
   const e = _(`[${l.get("attrPrefix")}-component]`, r);
   for (let t = 0; t < e.length; t++)
-    m(e[t]);
+    b(e[t]);
 }
 let p = null;
-const h = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), y = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new Map();
+const h = /* @__PURE__ */ new Map(), m = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript"]), y = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new Map();
 function M(r) {
   const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", s = r.threshold || 0, n = Array.isArray(s) ? s.join(",") : s.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${n}`;
 }
-let x = class {
+let R = class {
   constructor(e, t) {
     this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._autoBindFunctions(), l.get("autoBindActions") && this._autoBindActions();
   }
@@ -206,13 +206,13 @@ let x = class {
   observeIntersection(e, t, s = {}) {
     if (typeof window > "u" || !window.IntersectionObserver) return;
     const n = M(s);
-    let i = b.get(n);
+    let i = m.get(n);
     i || (i = { observer: new IntersectionObserver((c) => {
       for (const f of c) {
         const d = i.callbacks.get(f.target);
         d && d.forEach((u) => u([f]));
       }
-    }, s), callbacks: /* @__PURE__ */ new Map() }, b.set(n, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
+    }, s), callbacks: /* @__PURE__ */ new Map() }, m.set(n, i)), i.callbacks.has(e) || (i.callbacks.set(e, /* @__PURE__ */ new Set()), i.observer.observe(e)), i.callbacks.get(e).add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map()), this._observedIntersectionElements.has(e) || this._observedIntersectionElements.set(e, /* @__PURE__ */ new Map());
     const o = this._observedIntersectionElements.get(e);
     o.has(n) || o.set(n, /* @__PURE__ */ new Set()), o.get(n).add(t);
   }
@@ -220,7 +220,7 @@ let x = class {
     if (!this._observedIntersectionElements) return;
     const s = this._observedIntersectionElements.get(e);
     s && (s.forEach((n, i) => {
-      const o = b.get(i);
+      const o = m.get(i);
       if (t)
         n.has(t) && (n.delete(t), o && o.callbacks.has(e) && o.callbacks.get(e).delete(t));
       else {
@@ -232,7 +232,7 @@ let x = class {
       }
       if (n.size === 0 && s.delete(i), o) {
         const a = o.callbacks.get(e);
-        a && a.size === 0 && (o.callbacks.delete(e), o.observer.unobserve(e)), o.callbacks.size === 0 && (o.observer.disconnect(), b.delete(i));
+        a && a.size === 0 && (o.callbacks.delete(e), o.observer.unobserve(e)), o.callbacks.size === 0 && (o.observer.disconnect(), m.delete(i));
       }
     }), s.size === 0 && this._observedIntersectionElements.delete(e));
   }
@@ -247,7 +247,7 @@ let x = class {
     if (t && window[t])
       return Promise.resolve(window[t]);
     const s = document.getElementById(e);
-    return s ? (s._loadPromise || (s._loadPromise = new Promise((n, i) => {
+    return s ? s.tagName !== "SCRIPT" ? Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : (s._loadPromise || (s._loadPromise = new Promise((n, i) => {
       const o = () => {
         s.onload = null, s.onerror = null;
       };
@@ -322,14 +322,14 @@ let x = class {
     }
   }
 };
-class F extends x {
+class T extends R {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class R extends EventTarget {
+class x extends EventTarget {
   emit(e, t = {}) {
     l.get("log") && console.info(`Emitting event '${e}'`);
     const s = new CustomEvent(e, { detail: t });
@@ -346,19 +346,19 @@ class R extends EventTarget {
     t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t), t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const T = new R();
+const F = new x();
 let g = null;
-function k(r) {
+function N(r) {
   const e = `${l.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, s = /* @__PURE__ */ new Set();
   for (let n = 0; n < r.length; n++) {
     const i = r[n];
     for (let o = 0; o < i.removedNodes.length; o++) {
       const a = i.removedNodes[o];
       if (a.nodeType === Node.ELEMENT_NODE) {
-        a.hasAttribute(e) && m(a);
+        a.hasAttribute(e) && b(a);
         const c = _(`[${e}]`, a);
         for (let f = 0; f < c.length; f++)
-          m(c[f]);
+          b(c[f]);
       }
     }
     for (let o = 0; o < i.addedNodes.length; o++) {
@@ -370,23 +370,23 @@ function k(r) {
     n.isConnected && z(t, n);
 }
 function O() {
-  typeof document > "u" || (l.get("autoMountComponents") && !g ? (g = new MutationObserver(k), g.observe(document.body, {
+  typeof document > "u" || (l.get("autoMountComponents") && !g ? (g = new MutationObserver(N), g.observe(document.body, {
     childList: !0,
     subtree: !0
   })) : !l.get("autoMountComponents") && g && (g.disconnect(), g = null));
 }
-const N = l.set;
+const k = l.set;
 l.set = function(r, e) {
-  N.call(this, r, e), r === "autoMountComponents" && O();
+  k.call(this, r, e), r === "autoMountComponents" && O();
 };
 typeof window < "u" && setTimeout(O, 0);
 export {
-  x as BaseComponent,
-  F as Component,
+  R as BaseComponent,
+  T as Component,
   l as config,
   I as createInstance,
   B as destroyInstance,
-  T as eventbus,
+  F as eventbus,
   C as getComponentFromElement,
   z as loadComponents,
   B as removeComponents
