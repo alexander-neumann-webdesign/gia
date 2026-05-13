@@ -341,6 +341,10 @@ gia.register(Marquee);
  *   display: flex;
  *   user-select: none;
  *
+ *   &.masked {
+ *     mask: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
+ *   }
+ *
  *   .marquee-track {
  *     display: flex;
  *     flex-wrap: nowrap;
