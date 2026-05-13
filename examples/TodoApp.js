@@ -161,7 +161,10 @@ class TodoApp extends gia.Component {
 						}
 					});
 
-					transition.finished.finally(() => {
+					transition.ready.catch(() => {});
+					transition.finished.catch(() => {
+						// Ignore AbortError when transition is skipped
+					}).finally(() => {
 						if (this.ref.list) {
 							const items = this.ref.list.querySelectorAll('li');
 							for (let i = 0; i < items.length; i++) {

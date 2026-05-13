@@ -2,9 +2,44 @@
   interpolate-size: allow-keywords;
 }
 
+/* --- CSS Reset & Base Styles --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color, #ffffff);
+  color: var(--text-color, #000000);
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
 /* --- Accordion --- */
 @supports (interpolate-size: allow-keywords) {
-  details[data-component=Accordion] ::details-content {
+  details[data-component=Accordion]::details-content {
     transition: height 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
     height: 0;
     overflow: clip;
@@ -622,8 +657,6 @@ div[data-component=Tabs] [role=tabpanel][hidden] {
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -893,4 +926,3 @@ button[data-component=ClipboardCopy][data-status=error] {
   color: #f44336;
 }
 
-/*# sourceMappingURL=demo.css.map */
