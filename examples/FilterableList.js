@@ -126,8 +126,11 @@ class FilterableList extends gia.Component {
 		});
 
 		for (const [key, value] of params.entries()) {
-			if (possibleFilterTypes.has(key)) {
-				this.activeFilters[key] = value.split(',').filter(Boolean);
+			if (key.startsWith('filter-')) {
+				const filterType = key.replace('filter-', '');
+				if (possibleFilterTypes.has(filterType)) {
+					this.activeFilters[filterType] = value.split(',').filter(Boolean);
+				}
 			}
 		}
 	}
@@ -135,31 +138,19 @@ class FilterableList extends gia.Component {
 	updateURL() {
 		const params = new URLSearchParams(window.location.search);
 
-		// Clear existing filter params except 'sort' and others not handled by this component
-		// To be safe, we'll recreate the params object with existing non-filter/sort params
-		// But in a simple case, we just modify the current ones
-
-		// Collect all current filter keys
-
-		// Clear ONLY the filter parameters that this component manages,
-		// but since we don't know all possible filter types from the URL alone,
-		// we should actually just clear the ones that are currently in our activeFilters object.
-		// Wait, if a filter is removed, it won't be in activeFilters.
-		// Instead, let's collect all possible filter types from the DOM.
-		const possibleFilterTypes = new Set();
-		this.ref.filter.forEach(el => {
-			const type = el.name || el.getAttribute('data-filter-type');
-			if (type) possibleFilterTypes.add(type);
-		});
-
-		// Remove all query params that match our component's known filter types
-		possibleFilterTypes.forEach(type => params.delete(type));
-
+		// Remove all existing filter query params (any starting with 'filter-')
+		const keysToDelete = [];
+		for (const key of params.keys()) {
+			if (key.startsWith('filter-')) {
+				keysToDelete.push(key);
+			}
+		}
+		keysToDelete.forEach(key => params.delete(key));
 
 		// Set new filters
 		for (const [key, values] of Object.entries(this.activeFilters)) {
 			if (values && values.length > 0) {
-				params.set(key, values.join(','));
+				params.set(`filter-${key}`, values.join(','));
 			}
 		}
 
@@ -461,6 +452,38 @@ gia.register(FilterableList);
  *     <!-- Add more items as needed (min 12 for good demo) -->
  *   </div>
  * </div>
+ *
+ * Preventing Layout Shift on Initial Load:
+ * When the component loads with URL parameters, the browser will initially paint all items,
+ * and then the JS will hide the mismatched items, causing a layout shift.
+ * To prevent this, you should pre-filter the items on the server before rendering the HTML.
+ *
+ * Example PHP (WordPress) Server-Side Pre-filtering:
+ * <?php
+ * // Parse active filters dynamically based on the 'filter-' prefix
+ * $active_filters = [];
+ * foreach ($_GET as $key => $value) {
+ *   if (strpos($key, 'filter-') === 0 && !empty($value)) {
+ *     $filter_type = str_replace('filter-', '', $key);
+ *     $active_filters[$filter_type] = explode(',', $value);
+ *   }
+ * }
+ * ?>
+ * <!-- Inside your loop -->
+ * <?php
+ * $is_hidden = false;
+ * foreach ($active_filters as $type => $values) {
+ *   $item_value = get_field($type); // Or however you retrieve item attributes
+ *   if (!in_array($item_value, $values)) {
+ *     $is_hidden = true;
+ *     break;
+ *   }
+ * }
+ * ?>
+ * <div class="item" <?php if ($is_hidden) echo 'hidden'; ?> data-shape="<?php echo get_field('shape'); ?>">...</div>
+ *
+ * Alternatively, if server-side filtering is not possible, place a blocking inline <script>
+ * right before the component to inject a <style> tag that hides mismatched items.
  *
  * Suggested SCSS:
  *

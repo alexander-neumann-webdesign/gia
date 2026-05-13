@@ -199,6 +199,42 @@
       </div>
     </div>
   </div>
+
+  <!-- Inline script to prevent layout shift on initial load when URL params are present -->
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var items = document.querySelectorAll('#FilterableList .item');
+
+      var activeFilters = {};
+      for (var key of params.keys()) {
+        if (key.startsWith('filter-')) {
+          var type = key.replace('filter-', '');
+          var vals = params.get(key).split(',').filter(Boolean);
+          if (vals.length > 0) {
+            activeFilters[type] = vals;
+          }
+        }
+      }
+
+      if (Object.keys(activeFilters).length > 0) {
+        items.forEach(function(item) {
+          var isVisible = true;
+          for (var type in activeFilters) {
+            var activeValues = activeFilters[type];
+            var itemVal = item.getAttribute('data-' + type);
+            if (!itemVal || activeValues.indexOf(itemVal) === -1) {
+              isVisible = false;
+              break;
+            }
+          }
+          if (!isVisible) {
+            item.hidden = true;
+          }
+        });
+      }
+    })();
+  </script>
 </div>
 
 
