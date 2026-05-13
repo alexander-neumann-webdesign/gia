@@ -331,7 +331,7 @@ class FilterableList extends gia.Component {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
 				// Clean up to avoid global namespace pollution
-				visibleItems.forEach(item => {
+				visibleItems.concat(hiddenItems).forEach(item => {
 					item.style.viewTransitionName = '';
 				});
 				this.ref.container.style.viewTransitionName = '';
@@ -347,8 +347,6 @@ class FilterableList extends gia.Component {
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
 		// Update hidden state
 		hiddenItems.forEach(item => {
-			// Clear view transition name early to prevent flash when cleared later
-			item.style.viewTransitionName = '';
 			item.hidden = true;
 		});
 
