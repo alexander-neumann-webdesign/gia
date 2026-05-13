@@ -547,6 +547,7 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 ### UI & Interactive Elements
 *   **Accordion**: A semantic and accessible accordion component utilizing native `<details>` and `<summary>` elements. It manages state reactively to ensure only one panel remains open at a time if desired, and syncs open states with the URL hash.
 *   **ClipboardCopy**: A simple utility component that copies text from a referenced element to the user's clipboard. It showcases how to use `this.setState` to provide temporary visual feedback after a successful action.
+*   **CustomCursor**: A performant custom cursor component that replaces the native cursor. It features frame-rate independent exponential smoothing for magnetic snapping to interactive elements and supports dynamic text hover states.
 *   **FilterableList**: A robust filtering and sorting component for collections of items. It intelligently manages state via URL parameters for deep linking and utilizes the View Transitions API for seamless, hardware-accelerated DOM reordering and filtering animations.
 *   **Modal**: An accessible dialog window component that utilizes the native `<dialog>` element. It supports triggering via external targets and manages URL hash syncing for easy direct linking to open modals.
 *   **OffCanvasMenu**: A slide-out navigation menu component triggered by user interaction. It demonstrates state-based class toggling and how to handle clicks outside the component to close the menu.
