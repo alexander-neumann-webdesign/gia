@@ -32,6 +32,8 @@ class CustomCursor extends gia.Component {
         this._isRenderingFrame = false;
         this._needsBoundsUpdate = false;
         this._lastTime = performance.now();
+        this._lastDotTransform = '';
+        this._lastMagneticTransform = '';
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
@@ -59,6 +61,7 @@ class CustomCursor extends gia.Component {
         // Reset any currently active magnetic element
         if (this.magneticTarget) {
             this.magneticTarget.style.transform = '';
+            this._lastMagneticTransform = '';
             this.magneticTarget.classList.remove('is-magnetic-active');
             this.magneticTarget = null;
         }
@@ -123,6 +126,7 @@ class CustomCursor extends gia.Component {
             if (this.magneticTarget) {
                 // Cleanup previous
                 this.magneticTarget.style.transform = '';
+                this._lastMagneticTransform = '';
                 this.magneticTarget.classList.remove('is-magnetic-active');
             }
 
@@ -153,6 +157,7 @@ class CustomCursor extends gia.Component {
         } else if (!magneticEl && this.magneticTarget) {
             // Exit magnetic element
             this.magneticTarget.style.transform = '';
+            this._lastMagneticTransform = '';
             this.magneticTarget.classList.remove('is-magnetic-active');
             this.magneticTarget = null;
             this.magneticBounds = null;
@@ -207,7 +212,11 @@ class CustomCursor extends gia.Component {
             targetY = this.magneticBounds.centerY + pullY;
 
             // Also move the magnetic element itself slightly towards the mouse
-            this.magneticTarget.style.transform = `translate3d(${pullX}px, ${pullY}px, 0px)`;
+            const magneticTransformStr = `translate3d(${pullX}px, ${pullY}px, 0px)`;
+            if (this._lastMagneticTransform !== magneticTransformStr) {
+                this.magneticTarget.style.transform = magneticTransformStr;
+                this._lastMagneticTransform = magneticTransformStr;
+            }
         }
 
         // Frame-rate independent exponential smoothing
@@ -219,7 +228,11 @@ class CustomCursor extends gia.Component {
 
         // Apply to DOM
         if (this.ref.dot) {
-            this.ref.dot.style.transform = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+            const dotTransformStr = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+            if (this._lastDotTransform !== dotTransformStr) {
+                this.ref.dot.style.transform = dotTransformStr;
+                this._lastDotTransform = dotTransformStr;
+            }
         }
 
         // Check if cursor has essentially reached the mouse to put loop to sleep
@@ -234,7 +247,11 @@ class CustomCursor extends gia.Component {
             this.cursor.x = targetX;
             this.cursor.y = targetY;
             if (this.ref.dot) {
-                this.ref.dot.style.transform = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+                const dotTransformStr = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+                if (this._lastDotTransform !== dotTransformStr) {
+                    this.ref.dot.style.transform = dotTransformStr;
+                    this._lastDotTransform = dotTransformStr;
+                }
             }
             this._isRenderingFrame = false;
         } else {
