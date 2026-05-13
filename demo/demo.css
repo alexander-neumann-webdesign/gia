@@ -49,6 +49,15 @@ p, h1, h2, h3, h4, h5, h6 {
 details[data-component=Accordion][open]::details-content {
   height: auto;
 }
+details[data-component=Accordion] .content {
+  padding: 1rem 0;
+}
+details[data-component=Accordion] .content > :first-child {
+  margin-top: 0;
+}
+details[data-component=Accordion] .content > :last-child {
+  margin-bottom: 0;
+}
 details[data-component=Accordion] summary {
   cursor: pointer;
   user-select: none;
@@ -945,3 +954,4 @@ button[data-component=ClipboardCopy][data-status=error] {
   color: #f44336;
 }
 
+/*# sourceMappingURL=demo.css.map */
