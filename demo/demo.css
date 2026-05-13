@@ -333,6 +333,13 @@ dialog[data-component=Modal][open]::backdrop {
     opacity: 0;
   }
 }
+dialog[data-component=Modal][data-is-closing=true] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+dialog[data-component=Modal][data-is-closing=true]::backdrop {
+  opacity: 0;
+}
 
 /* --- OffCanvasMenu --- */
 dialog[data-component=OffCanvasMenu] {
@@ -373,6 +380,13 @@ dialog[data-component=OffCanvasMenu][open]::backdrop {
   dialog[data-component=OffCanvasMenu][open]::backdrop {
     opacity: 0;
   }
+}
+dialog[data-component=OffCanvasMenu][data-is-closing=true] {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+dialog[data-component=OffCanvasMenu][data-is-closing=true]::backdrop {
+  opacity: 0;
 }
 dialog[data-component=OffCanvasMenu] .offcanvas-content {
   padding: 2rem;
