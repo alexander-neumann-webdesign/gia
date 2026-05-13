@@ -1,5 +1,8 @@
 # Gia
 
+[![npm version](https://img.shields.io/npm/v/gia.svg?style=flat-square)](https://www.npmjs.com/package/gia)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+
 A high-performance, minimalistic JavaScript framework designed for progressively enhancing server-rendered websites.
 
 Gia provides a robust architectural foundation with a minimal footprint: **~3.53 Kb minified and gzipped** for the complete UMD build, and **~4.05 Kb** for the ESM build.
@@ -27,7 +30,9 @@ Gia provides a robust architectural foundation with a minimal footprint: **~3.53
 - [State Management & Reactivity](#state-management--reactivity)
 - [Helper Functions](#helper-functions)
 - [Examples](#examples)
+- [Development & Contributing](#development--contributing)
 - [Bonus Tip: Gia and Swup](#bonus-tip-gia-and-swup)
+- [License](#license)
 
 ## Installation
 
@@ -571,6 +576,33 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **TodoApp**: A full todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
 *   **PongGame**: A complete Pong game built inside a Gia component to demonstrate a complex game loop running within `requestAnimationFrame`, keyboard input handling, scoring state, and canvas drawing.
 
+## Development & Contributing
+
+To contribute to Gia or run the documentation/examples locally, follow these steps:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/alexander-neumann-webdesign/gia.git
+   cd gia
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the development server:**
+   This will start Vite, allowing you to preview the local `demo/index.html` file and examples.
+   ```bash
+   npm run dev
+   ```
+
+4. **Build the project:**
+   This generates the production-ready UMD and ESM bundles in the `dist/` folder.
+   ```bash
+   npm run build
+   ```
+
 ## Bonus Tip: Gia and Swup
 
 Gia pairs exceptionally well with page transition libraries like [Swup](https://swup.js.org/). Because Gia relies on standard DOM manipulation and clearly defined `mount()` and `unmount()` lifecycles, it perfectly complements Swup's approach to replacing only specific containers.
@@ -632,3 +664,6 @@ class OffCanvasMenu extends Component {
     }
 }
 ```
+## License
+
+Gia is open source and released under the [ISC License](LICENSE).
