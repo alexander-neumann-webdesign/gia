@@ -556,10 +556,13 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **ImageHolder**: A highly optimized image component that provides a smooth parallax implementation and tracks viewport entrance to lazy load sources. It automatically calculates and sets the `sizes` attribute dynamically based on the image's layout dimensions for perfect responsive loading.
 *   **LightboxGallery**: A fully featured gallery component demonstrating dynamic script loading by pulling in a vendor library only when required. It handles complex DOM structures and global event bindings.
 *   **Marquee**: An infinite scrolling marquee component cloning elements and handling continuous requestAnimationFrame updates with Lenis scroll velocity integration.
+*   **MatterPhysicsBackground**: An interactive physics-based background component utilizing Matter.js, complete with responsive resizing, automatic pausing via IntersectionObserver to save resources, and `prefers-reduced-motion` support.
 *   **Reveal**: A highly optimized scroll-reveal component that fades and translates elements into view as they enter the viewport. It leverages the global `observeIntersection` API to handle potentially hundreds of elements without performance degradation.
 *   **VideoHolder**: A lazy-loading video component that pauses playback when scrolled out of view to save system resources. It uses intersection observers to handle complex playback logic asynchronously.
 
 ### Advanced Apps & Logic
+*   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the library and dynamically calculates bounding boxes for location markers.
+*   **OpenStreetMap**: A Leaflet-based interactive map component that asynchronously loads its dependencies and maps markers with popups.
 *   **TodoApp**: A full todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
 *   **PongGame**: A complete Pong game built inside a Gia component to demonstrate a complex game loop running within `requestAnimationFrame`, keyboard input handling, scoring state, and canvas drawing.
 
