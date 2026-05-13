@@ -90,8 +90,8 @@ gia.register(ThemeToggle);
  * Expected HTML Structure:
  *
  * <button data-component="ThemeToggle" aria-label="Toggle dark mode">
- *   <span class="icon-light">☀️</span>
- *   <span class="icon-dark">🌙</span>
+ *   <span class="icon-light" aria-hidden="true">☀️</span>
+ *   <span class="icon-dark" aria-hidden="true">🌙</span>
  * </button>
  *
  * Suggested SCSS (For the whole site):
