@@ -53,6 +53,17 @@ details[data-component="Accordion"] {
     height: auto;
   }
 
+  .content {
+    padding: 1rem 0;
+
+    > :first-child {
+      margin-top: 0;
+    }
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
   summary {
     cursor: pointer;
     user-select: none;
