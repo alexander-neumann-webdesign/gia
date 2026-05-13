@@ -256,8 +256,33 @@ div[data-component="ImageHolder"] {
 
 
 /* --- LightboxGallery --- */
+div[data-component="LightboxGallery"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
 
+  > a {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
 
+    div[data-component="ImageHolder"] {
+      width: 100%;
+      height: 100%;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease, opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+    }
+
+    &:hover div[data-component="ImageHolder"] img {
+      transform: scale(1.05);
+    }
+  }
+}
 /* --- Marquee --- */
 div[data-component="Marquee"] {
   overflow: hidden;
