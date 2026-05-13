@@ -389,46 +389,46 @@ export default class Component {
 	}
 
 	setState(changes) {
-		const stateChanges = {};
 		let hasChanges = false;
+		// ⚡ BOLT OPTIMIZATION: Avoid creating intermediate `stateChanges` objects.
+		// Build `_pendingStateChanges` and `_pendingAttributeChanges` directly in the validation loop.
+		let pendingStateChanges = this._pendingStateChanges;
+		let pendingAttributeChanges = this._pendingAttributeChanges;
 
 		for (const key in changes) {
 			if (Object.prototype.hasOwnProperty.call(changes, key)) {
-				if (this._state[key] !== changes[key]) {
-					stateChanges[key] = changes[key];
-					this._state[key] = changes[key];
-					hasChanges = true;
-				}
-			}
-		}
+				const value = changes[key];
+				if (this._state[key] !== value) {
+					if (!hasChanges) {
+						hasChanges = true;
+						if (!pendingStateChanges) {
+							pendingStateChanges = {};
+							pendingAttributeChanges = {};
+							this._pendingStateChanges = pendingStateChanges;
+							this._pendingAttributeChanges = pendingAttributeChanges;
 
-		if (hasChanges) {
-			if (!this._pendingStateChanges) {
-				this._pendingStateChanges = {};
-				this._pendingAttributeChanges = {};
-				requestAnimationFrame(() => {
-					// Apply batched attribute changes
-					for (const attrName in this._pendingAttributeChanges) {
-						if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
-							const value = this._pendingAttributeChanges[attrName];
-							if (this.element.getAttribute(attrName) !== value) {
-								this.element.setAttribute(attrName, value);
-							}
+							requestAnimationFrame(() => {
+								// Apply batched attribute changes
+								for (const attrName in this._pendingAttributeChanges) {
+									if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
+										const attrValue = this._pendingAttributeChanges[attrName];
+										if (this.element.getAttribute(attrName) !== attrValue) {
+											this.element.setAttribute(attrName, attrValue);
+										}
+									}
+								}
+
+								this.stateChange(this._pendingStateChanges);
+								this._pendingStateChanges = null;
+								this._pendingAttributeChanges = null;
+							});
 						}
 					}
 
-					this.stateChange(this._pendingStateChanges);
-					this._pendingStateChanges = null;
-					this._pendingAttributeChanges = null;
-				});
-			}
+					this._state[key] = value;
+					pendingStateChanges[key] = value;
 
-			// Process state changes for attributes
-			for (const key in stateChanges) {
-				if (Object.prototype.hasOwnProperty.call(stateChanges, key)) {
-					const value = stateChanges[key];
 					const type = typeof value;
-
 					if (type === "boolean" || type === "string") {
 						let attrName = globalStateAttributeCache.get(key);
 						if (!attrName) {
@@ -438,12 +438,10 @@ export default class Component {
 							globalStateAttributeCache.set(key, attrName);
 						}
 
-						this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
+						pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
 					}
 				}
 			}
-
-			Object.assign(this._pendingStateChanges, stateChanges);
 		}
 	}
 
