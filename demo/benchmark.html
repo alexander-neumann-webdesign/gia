@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Benchmark: OpenStreetMap vs MapLibreMap</title>
+    <link rel="stylesheet" href="./demo.css">
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; margin-bottom: 2rem; }
+        .maps-container { display: flex; gap: 2rem; margin-bottom: 2rem; }
+        .map-wrapper { flex: 1; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; }
+        .map-container { height: 500px; width: 100%; background: #eee; }
+        .results-container { margin-top: 2rem; border-top: 2px solid #ccc; padding-top: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+
+    <!-- Axe Core for accessibility testing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.8.2/axe.min.js"></script>
+</head>
+<body>
+    <h1>Map Benchmark: OpenStreetMap (Leaflet) vs MapLibreMap</h1>
+
+    <div class="maps-container">
+        <div class="map-wrapper">
+            <h2>OpenStreetMap (Leaflet)</h2>
+            <!-- Note: locations for OpenStreetMap expect {lat, lng} objects -->
+            <div id="osm-map" class="map-container"
+              data-component="OpenStreetMap"
+              data-options='{
+                "locations": [
+                    {"lat": 48.2082, "lng": 16.3738, "title": "Vienna"},
+                    {"lat": 47.8095, "lng": 13.0432, "title": "Salzburg"},
+                    {"lat": 47.2692, "lng": 11.4041, "title": "Innsbruck"},
+                    {"lat": 47.0707, "lng": 15.4395, "title": "Graz"},
+                    {"lat": 48.3069, "lng": 14.2858, "title": "Linz"},
+                    {"lat": 46.6247, "lng": 14.3053, "title": "Klagenfurt"}
+                ],
+                "centerCoords": {"lat": 47.5162, "lng": 14.5501},
+                "initialZoomLevel": 7,
+                "useAnimatedDot": true
+              }'>
+            </div>
+        </div>
+
+        <div class="map-wrapper">
+            <h2>MapLibreMap</h2>
+            <!-- Note: locations for MapLibreMap expect {lng, lat} objects or [lng, lat] arrays -->
+            <div id="maplibre-map" class="map-container"
+                 data-component="MapLibreMap"
+                 data-options='{
+                    "centerCoords": [14.5501, 47.5162],
+                    "initialZoomLevel": 7,
+                    "locations": [
+                        {"lng": 16.3738, "lat": 48.2082, "title": "Vienna"},
+                        {"lng": 13.0432, "lat": 47.8095, "title": "Salzburg"},
+                        {"lng": 11.4041, "lat": 47.2692, "title": "Innsbruck"},
+                        {"lng": 15.4395, "lat": 47.0707, "title": "Graz"},
+                        {"lng": 14.2858, "lat": 48.3069, "title": "Linz"},
+                        {"lng": 14.3053, "lat": 46.6247, "title": "Klagenfurt"}
+                    ]
+                 }'>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <h2>Benchmark Results</h2>
+        <button id="run-benchmark" style="padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer;">Run Benchmark Now</button>
+        <table id="results-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>OpenStreetMap (Leaflet)</th>
+                    <th>MapLibreMap</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="row-load">
+                    <td>Initial Load Time (ms)</td>
+                    <td id="osm-load">...</td>
+                    <td id="ml-load">...</td>
+                </tr>
+                <tr id="row-memory">
+                    <td>Memory Used (MB) (approx)</td>
+                    <td id="osm-memory">...</td>
+                    <td id="ml-memory">...</td>
+                </tr>
+                <tr id="row-fps">
+                    <td>Avg Rendering FPS (simulated pan)</td>
+                    <td id="osm-fps">...</td>
+                    <td id="ml-fps">...</td>
+                </tr>
+                <tr id="row-a11y">
+                    <td>Accessibility (a11y) Violations</td>
+                    <td id="osm-a11y">...</td>
+                    <td id="ml-a11y">...</td>
+                </tr>
+                <tr id="row-size">
+                    <td>Library Network Size (JS + CSS)</td>
+                    <td id="osm-size">...</td>
+                    <td id="ml-size">...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="../dist/gia.umd.js"></script>
+    <script>
+        // Setup gia configuration
+        gia.config.set('log', true);
+        gia.config.set('attrPrefix', 'data');
+        gia.config.set('autoBindActions', true);
+
+        // We will mount them manually during the benchmark to measure load times accurately
+        gia.config.set('autoMountComponents', false);
+    </script>
+
+    <!-- Include component scripts -->
+    <script src="../examples/OpenStreetMap.js"></script>
+    <script src="../examples/MapLibreMap.js"></script>
+
+    <!-- Register components manually if needed by gia in non-autoMount mode -->
+    <script>
+        // Depending on how gia auto-registers, we might need to make sure
+        // the app actually knows about the components before we try to mount them.
+    </script>
+
+    <!-- Required script tags for components to load dependencies -->
+    <!-- Leaflet -->
+    <script id="leaflet-js" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <!-- MapLibre -->
+    <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+    <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+
+    <script>
+        // Benchmarking Logic
+        document.getElementById('run-benchmark').addEventListener('click', async () => {
+            document.getElementById('run-benchmark').disabled = true;
+            document.getElementById('run-benchmark').innerText = 'Benchmarking...';
+
+            const osmEl = document.getElementById('osm-map');
+            const mlEl = document.getElementById('maplibre-map');
+
+            const results = {
+                osm: {},
+                ml: {}
+            };
+
+            // Helper to get memory difference
+            const getMemory = () => {
+                if (performance.memory) {
+                    return performance.memory.usedJSHeapSize;
+                }
+                return 0;
+            };
+
+            const formatBytes = (bytes) => {
+                if (bytes === 0) return 'N/A (unsupported browser)';
+                return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+            };
+
+            // 1. Benchmark OpenStreetMap (Leaflet)
+            performance.mark('osm-start');
+            const memStartOsm = getMemory();
+
+            // Mount the component
+            const osmCompInstance = new OpenStreetMap(osmEl);
+            osmCompInstance._load();
+
+            // Wait for map to be available
+            await new Promise(resolve => {
+                const check = setInterval(() => {
+                    const component = osmCompInstance;
+                    // Leaflet map might take a moment
+                    if (component && component.map) {
+                        component.map.whenReady(() => {
+                            clearInterval(check);
+                            setTimeout(resolve, 500); // Give it a bit to settle
+                        });
+                    }
+                }, 100);
+            });
+
+            performance.mark('osm-end');
+            performance.measure('osm-load', 'osm-start', 'osm-end');
+            results.osm.loadTime = performance.getEntriesByName('osm-load')[0].duration;
+            results.osm.memory = getMemory() - memStartOsm;
+
+            // 2. Benchmark MapLibreMap
+            performance.mark('ml-start');
+            const memStartMl = getMemory();
+
+            const mlCompInstance = new MapLibreMap(mlEl);
+            mlCompInstance._load();
+
+            await new Promise(resolve => {
+                const check = setInterval(() => {
+                    const component = mlCompInstance;
+                    if (component && component.map) {
+                        component.map.once('idle', () => {
+                            clearInterval(check);
+                            setTimeout(resolve, 500); // Give it a bit to settle
+                        });
+                    }
+                }, 100);
+            });
+
+            performance.mark('ml-end');
+            performance.measure('ml-load', 'ml-start', 'ml-end');
+            results.ml.loadTime = performance.getEntriesByName('ml-load')[0].duration;
+            results.ml.memory = getMemory() - memStartMl;
+
+            // 3. Measure FPS during interaction
+            const measureFPS = async (map, panFn) => {
+                return new Promise(resolve => {
+                    let frames = 0;
+                    let lastTime = performance.now();
+                    let active = true;
+
+                    const loop = () => {
+                        if (!active) return;
+                        frames++;
+                        requestAnimationFrame(loop);
+                    };
+                    requestAnimationFrame(loop);
+
+                    panFn(); // Trigger the pan
+
+                    setTimeout(() => {
+                        active = false;
+                        const duration = performance.now() - lastTime;
+                        const fps = (frames / duration) * 1000;
+                        resolve(fps);
+                    }, 2000); // Measure over 2 seconds
+                });
+            };
+
+            const osmComponent = osmCompInstance;
+            if (osmComponent && osmComponent.map) {
+                results.osm.fps = await measureFPS(osmComponent.map, () => {
+                    osmComponent.map.panBy([200, 200], {animate: true, duration: 2});
+                });
+            }
+
+            const mlComponent = mlCompInstance;
+            if (mlComponent && mlComponent.map) {
+                results.ml.fps = await measureFPS(mlComponent.map, () => {
+                    mlComponent.map.panBy([200, 200], {duration: 2000});
+                });
+            }
+
+            // 4. Accessibility Score (axe-core)
+            const osmAxe = await axe.run(osmEl);
+            results.osm.a11y = osmAxe.violations.length;
+
+            const mlAxe = await axe.run(mlEl);
+            results.ml.a11y = mlAxe.violations.length;
+
+            // 5. Library Network Size
+            const resources = performance.getEntriesByType('resource');
+
+            let osmSize = 0;
+            resources.forEach(r => {
+                if (r.name.includes('leaflet.js') || r.name.includes('leaflet.css')) {
+                    osmSize += (r.transferSize || r.decodedBodySize || 0);
+                }
+            });
+            results.osm.size = osmSize;
+
+            let mlSize = 0;
+            resources.forEach(r => {
+                if (r.name.includes('maplibre-gl.js') || r.name.includes('maplibre-gl.css')) {
+                    mlSize += (r.transferSize || r.decodedBodySize || 0);
+                }
+            });
+            results.ml.size = mlSize;
+
+            // Update DOM
+            document.getElementById('osm-load').innerText = results.osm.loadTime.toFixed(2) + ' ms';
+            document.getElementById('ml-load').innerText = results.ml.loadTime.toFixed(2) + ' ms';
+
+            document.getElementById('osm-memory').innerText = formatBytes(results.osm.memory);
+            document.getElementById('ml-memory').innerText = formatBytes(results.ml.memory);
+
+            document.getElementById('osm-fps').innerText = results.osm.fps ? results.osm.fps.toFixed(1) : 'N/A';
+            document.getElementById('ml-fps').innerText = results.ml.fps ? results.ml.fps.toFixed(1) : 'N/A';
+
+            document.getElementById('osm-a11y').innerText = results.osm.a11y + ' violations';
+            document.getElementById('ml-a11y').innerText = results.ml.a11y + ' violations';
+
+            // Function to format network size
+            const formatKB = (bytes) => {
+                if (bytes === 0) return 'Cached / Hidden via CORS';
+                return (bytes / 1024).toFixed(2) + ' KB';
+            };
+
+            document.getElementById('osm-size').innerText = formatKB(results.osm.size);
+            document.getElementById('ml-size').innerText = formatKB(results.ml.size);
+
+            document.getElementById('run-benchmark').innerText = 'Benchmark Complete';
+        });
+
+        // Automatically run benchmark on load since the user requested it to run automatically on the HTML page
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('run-benchmark').click();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
