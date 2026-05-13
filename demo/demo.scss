@@ -1,16 +1,16 @@
-// Browser supports interpolate-size
-@supports (interpolate-size: allow-keywords) {
-  :root {
-    interpolate-size: allow-keywords;
-  }
+// Ensure interpolate-size is available globally for parsers
+:root {
+  interpolate-size: allow-keywords;
 }
 
 /* --- Accordion --- */
 details[data-component="Accordion"] {
-  ::details-content {
-    transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
-    height: 0;
-    overflow: clip;
+  @supports (interpolate-size: allow-keywords) {
+    ::details-content {
+      transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+      height: 0;
+      overflow: clip;
+    }
   }
 
   &[open]::details-content {
@@ -29,22 +29,73 @@ details[data-component="Accordion"] {
 
 /* --- ClipboardCopy --- */
 button[data-component="ClipboardCopy"] {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  justify-content: center;
+
+  .stack-children {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+
+    > * {
+      grid-row-start: 1;
+      grid-column-start: 1;
+    }
+
+    .sizer {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  svg {
+    width: 1.25em;
+    height: 1.25em;
+  }
+
+  .copy-icon {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  .check-icon {
+    transition: stroke-dashoffset 0.4s ease;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    stroke: #4caf50;
+  }
 
   &[data-status="copied"] {
-    background-color: #4caf50;
-    color: white;
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #4caf50;
+
+    .copy-icon {
+      opacity: 0;
+    }
+
+    .check-icon {
+      stroke-dashoffset: 0;
+    }
   }
 
   &[data-status="error"] {
-    background-color: #f44336;
-    color: white;
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #f44336;
   }
-}
-
-
-:root {
-  interpolate-size: allow-keywords;
 }
 
 /* --- FilterableList --- */
@@ -157,19 +208,20 @@ div[data-component="FilterableList"] {
     }
   }
 
-  // View transitions styles
-  ::view-transition-group(*) {
-    animation-duration: 0.4s;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
+}
 
-  ::view-transition-new(*):only-child {
-    animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+// View transitions styles
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
-  ::view-transition-old(*):only-child {
-    animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+::view-transition-new(*):only-child {
+  animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(*):only-child {
+  animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes enter-scale-up {
@@ -261,8 +313,33 @@ div[data-component="ImageHolder"] {
 
 
 /* --- LightboxGallery --- */
+div[data-component="LightboxGallery"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
 
+  > a {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
 
+    div[data-component="ImageHolder"] {
+      width: 100%;
+      height: 100%;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease, opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+    }
+
+    &:hover div[data-component="ImageHolder"] img {
+      transform: scale(1.05);
+    }
+  }
+}
 /* --- Marquee --- */
 div[data-component="Marquee"] {
   overflow: hidden;
@@ -326,6 +403,15 @@ dialog[data-component="Modal"] {
       }
     }
   }
+
+  &[data-is-closing="true"] {
+    opacity: 0;
+    transform: translateY(10px);
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
 }
 
 
@@ -373,6 +459,15 @@ dialog[data-component="OffCanvasMenu"] {
       &::backdrop {
         opacity: 0;
       }
+    }
+  }
+
+  &[data-is-closing="true"] {
+    opacity: 0;
+    transform: translateX(-100%);
+
+    &::backdrop {
+      opacity: 0;
     }
   }
 
@@ -878,6 +973,8 @@ div[data-component="VideoHolder"] {
     * {
         pointer-events: auto;
     }
+}
+
 /* --- ClipboardCopy --- */
 button[data-component="ClipboardCopy"] {
   display: inline-flex;

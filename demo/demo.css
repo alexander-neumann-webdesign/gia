@@ -1,13 +1,14 @@
-@supports (interpolate-size: allow-keywords) {
-  :root {
-    interpolate-size: allow-keywords;
-  }
+:root {
+  interpolate-size: allow-keywords;
 }
+
 /* --- Accordion --- */
-details[data-component=Accordion] ::details-content {
-  transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
-  height: 0;
-  overflow: clip;
+@supports (interpolate-size: allow-keywords) {
+  details[data-component=Accordion] ::details-content {
+    transition: height 0.5s ease, content-visibility 0.5s ease allow-discrete;
+    height: 0;
+    overflow: clip;
+  }
 }
 details[data-component=Accordion][open]::details-content {
   height: auto;
@@ -19,19 +20,63 @@ details[data-component=Accordion] summary {
 
 /* --- ClipboardCopy --- */
 button[data-component=ClipboardCopy] {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  justify-content: center;
+}
+button[data-component=ClipboardCopy] .stack-children {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+button[data-component=ClipboardCopy] .stack-children > * {
+  grid-row-start: 1;
+  grid-column-start: 1;
+}
+button[data-component=ClipboardCopy] .stack-children .sizer {
+  visibility: hidden;
+  pointer-events: none;
+}
+button[data-component=ClipboardCopy] svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+button[data-component=ClipboardCopy] .copy-icon {
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+button[data-component=ClipboardCopy] .check-icon {
+  transition: stroke-dashoffset 0.4s ease;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  stroke: #4caf50;
 }
 button[data-component=ClipboardCopy][data-status=copied] {
-  background-color: #4caf50;
-  color: white;
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+  color: #4caf50;
+}
+button[data-component=ClipboardCopy][data-status=copied] .copy-icon {
+  opacity: 0;
+}
+button[data-component=ClipboardCopy][data-status=copied] .check-icon {
+  stroke-dashoffset: 0;
 }
 button[data-component=ClipboardCopy][data-status=error] {
-  background-color: #f44336;
-  color: white;
-}
-
-:root {
-  interpolate-size: allow-keywords;
+  background-color: #ffebee;
+  border-color: #f44336;
+  color: #f44336;
 }
 
 /* --- FilterableList --- */
@@ -130,14 +175,17 @@ div[data-component=FilterableList] .item .item-details .price-tag {
   border-radius: 4px;
   font-size: 0.9rem;
 }
-div[data-component=FilterableList] ::view-transition-group(*) {
+
+::view-transition-group(*) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
-div[data-component=FilterableList] ::view-transition-new(*):only-child {
+
+::view-transition-new(*):only-child {
   animation: enter-scale-up 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
-div[data-component=FilterableList] ::view-transition-old(*):only-child {
+
+::view-transition-old(*):only-child {
   animation: exit-scale-down 0.4s cubic-bezier(0.22, 1, 0.36, 1), fade-out 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -206,6 +254,31 @@ div[data-component=ImageHolder][data-is-visible=true][data-is-loaded=true] img {
 }
 
 /* --- LightboxGallery --- */
+div[data-component=LightboxGallery] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+div[data-component=LightboxGallery] > a {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+}
+div[data-component=LightboxGallery] > a div[data-component=ImageHolder] {
+  width: 100%;
+  height: 100%;
+}
+div[data-component=LightboxGallery] > a div[data-component=ImageHolder] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease, opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+div[data-component=LightboxGallery] > a:hover div[data-component=ImageHolder] img {
+  transform: scale(1.05);
+}
+
 /* --- Marquee --- */
 div[data-component=Marquee] {
   overflow: hidden;
@@ -260,6 +333,13 @@ dialog[data-component=Modal][open]::backdrop {
     opacity: 0;
   }
 }
+dialog[data-component=Modal][data-is-closing=true] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+dialog[data-component=Modal][data-is-closing=true]::backdrop {
+  opacity: 0;
+}
 
 /* --- OffCanvasMenu --- */
 dialog[data-component=OffCanvasMenu] {
@@ -300,6 +380,13 @@ dialog[data-component=OffCanvasMenu][open]::backdrop {
   dialog[data-component=OffCanvasMenu][open]::backdrop {
     opacity: 0;
   }
+}
+dialog[data-component=OffCanvasMenu][data-is-closing=true] {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+dialog[data-component=OffCanvasMenu][data-is-closing=true]::backdrop {
+  opacity: 0;
 }
 dialog[data-component=OffCanvasMenu] .offcanvas-content {
   padding: 2rem;
@@ -718,6 +805,8 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
 }
 .physics-content * {
   pointer-events: auto;
+}
+
 /* --- ClipboardCopy --- */
 button[data-component=ClipboardCopy] {
   display: inline-flex;
