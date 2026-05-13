@@ -175,28 +175,36 @@ class MatterPhysicsBackground extends gia.Component {
     }
 
     _addRandomShape(x, y) {
-        const { Bodies, Composite } = window.Matter;
+        const { Bodies, Body, Composite } = window.Matter;
         const s = this.options.shapeSize;
-        const isCircle = Math.random() > 0.5;
+        const rand = Math.random();
 
         // Random pastel colors
         const hue = Math.floor(Math.random() * 360);
         const fillStyle = `hsl(${hue}, 70%, 60%)`;
 
+        const options = {
+            restitution: this.options.restitution,
+            density: this.options.density,
+            render: { fillStyle }
+        };
+
         let body;
-        if (isCircle) {
-            body = Bodies.circle(x, y, s / 2 + Math.random() * 10, {
-                restitution: this.options.restitution,
-                density: this.options.density,
-                render: { fillStyle }
-            });
+        if (rand < 0.33) {
+            body = Bodies.circle(x, y, s / 2 + Math.random() * 10, options);
+        } else if (rand < 0.66) {
+            body = Bodies.rectangle(x, y, s + Math.random() * 20, s + Math.random() * 20, options);
         } else {
-            body = Bodies.rectangle(x, y, s + Math.random() * 20, s + Math.random() * 20, {
-                restitution: this.options.restitution,
-                density: this.options.density,
-                render: { fillStyle }
-            });
+            const sides = Math.floor(Math.random() * 4) + 3; // 3 to 6 sides
+            body = Bodies.polygon(x, y, sides, s / 2 + Math.random() * 10, options);
         }
+
+        // Add random initial velocity and angular velocity for a burst effect
+        Body.setVelocity(body, {
+            x: (Math.random() - 0.5) * 20,
+            y: (Math.random() - 0.5) * 20
+        });
+        Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.5);
 
         Composite.add(this.engine.world, body);
     }
@@ -231,6 +239,8 @@ class MatterPhysicsBackground extends gia.Component {
         if (this.render) {
             this.render.canvas.width = this.width * window.devicePixelRatio;
             this.render.canvas.height = this.height * window.devicePixelRatio;
+            this.render.canvas.style.width = this.width + 'px';
+            this.render.canvas.style.height = this.height + 'px';
             this.render.options.width = this.width;
             this.render.options.height = this.height;
             this.render.bounds.max.x = this.width;
