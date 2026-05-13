@@ -12,10 +12,10 @@ class Marquee extends gia.Component {
 			track: null
 		};
 
-		this.state = {
+		this.setState({
 			isDragging: false,
 			isHovered: false
-		};
+		});
 
 		this.originalItems = [];
 		this.clones = [];

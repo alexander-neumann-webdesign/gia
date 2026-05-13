@@ -13,9 +13,9 @@ class MatterPhysicsBackground extends gia.Component {
             restitution: 0.8
         };
 
-        this.state = {
+        this.setState({
             isPaused: false
-        };
+        });
 
         // Matter.js references
         this.engine = null;

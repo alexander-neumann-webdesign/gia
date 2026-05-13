@@ -20,11 +20,11 @@ class PongGame extends gia.Component {
             paddlePadding: 20
         };
 
-        this.state = {
+        this.setState({
             playerScore: 0,
             aiScore: 0,
             isPaused: false
-        };
+        });
 
         // Game state
         this.ctx = null;
