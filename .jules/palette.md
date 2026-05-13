@@ -31,3 +31,7 @@
 ## 2024-05-18 - View Transitions Pointer Events Fix
 **Learning:** During a View Transition, a `::view-transition` pseudo-element overlays the entire page. By default, this overlay can intercept pointer events (like clicks or hovering), causing interactive elements underneath (like buttons or links) to lose their pointer cursor and become unclickable until the transition finishes.
 **Action:** Always add `pointer-events: none;` to the global `::view-transition` pseudo-element. This allows pointer interactions to pass through the transition overlay and reliably reach the interactive elements underneath during the animation.
+
+## 2024-05-18 - Redundant Screen Reader Text in Dynamic Buttons
+**Learning:** When an icon-only button dynamically changes state and updates its `aria-label` (e.g., "Play video" -> "Pause video"), including visually hidden text (`.sr-only`) inside the button creates duplicate and confusing announcements for screen reader users (e.g., "Pause video Pause button").
+**Action:** Rely solely on the dynamically updated `aria-label` on the button itself. Ensure that any injected decorative SVG icons have `aria-hidden="true"` so they are completely ignored by screen readers.
