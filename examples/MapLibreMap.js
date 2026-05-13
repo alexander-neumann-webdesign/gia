@@ -12,6 +12,7 @@ class MapLibreMap extends gia.Component {
 						type: 'raster',
 						tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
 						tileSize: 256,
+						maxzoom: 19,
 						attribution: '&copy; OpenStreetMap Contributors'
 					}
 				},
@@ -19,11 +20,10 @@ class MapLibreMap extends gia.Component {
 					id: 'osm',
 					type: 'raster',
 					source: 'osm',
-					minzoom: 0,
-					maxzoom: 19
+					minzoom: 0
 				}]
 			},
-			locations: [] // Array of [lng, lat]
+			locations: [] // Array of [lng, lat] or {lng: 12.55, lat: 55.66, title: "Title"}
 		};
 
 		this.map = null;
@@ -46,7 +46,14 @@ class MapLibreMap extends gia.Component {
 			let minLat = Infinity, maxLat = -Infinity;
 
 			for (const location of this.options.locations) {
-				const [lng, lat] = location;
+				let lng, lat;
+				if (Array.isArray(location)) {
+					[lng, lat] = location;
+				} else {
+					lng = location.lng;
+					lat = location.lat;
+				}
+
 				if (lng < minLng) minLng = lng;
 				if (lng > maxLng) maxLng = lng;
 				if (lat < minLat) minLat = lat;
@@ -66,11 +73,28 @@ class MapLibreMap extends gia.Component {
 			zoom: this.options.initialZoomLevel
 		});
 
+		this.map.addControl(new maplibregl.NavigationControl());
+
 		if (this.options.locations) {
 			for (const location of this.options.locations) {
+				let lngLat, title;
+
+				if (Array.isArray(location)) {
+					lngLat = location;
+				} else {
+					lngLat = [location.lng, location.lat];
+					title = location.title;
+				}
+
 				const marker = new maplibregl.Marker()
-					.setLngLat(location)
-					.addTo(this.map);
+					.setLngLat(lngLat);
+
+				if (title) {
+					const popup = new maplibregl.Popup({ offset: 25 }).setText(title);
+					marker.setPopup(popup);
+				}
+
+				marker.addTo(this.map);
 				this.markers.push(marker);
 			}
 		}
@@ -106,7 +130,7 @@ gia.register(MapLibreMap);
  * <body>
  *   <!-- Note: the options attribute value must be valid JSON, so strictly use double quotes for strings and keys -->
  *   <div data-component="MapLibreMap"
- *        data-options='{"centerCoords": [12.550343, 55.665957], "initialZoomLevel": 6, "locations": [[12.550343, 55.665957], [12.56, 55.67]]}'
+ *        data-options='{"centerCoords": [12.550343, 55.665957], "initialZoomLevel": 6, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
  *        style="width: 100%; height: 500px;">
  *   </div>
  * </body>
