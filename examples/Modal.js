@@ -52,6 +52,7 @@ class Modal extends gia.Component {
 
 		// Listen for native close event
 		this.element.addEventListener('close', this.handleNativeClose);
+		this.element.addEventListener('cancel', this.handleNativeCancel);
 
 		// Swup integration: Force close on page transition to avoid dangling modals
 		if (window.swup) {
@@ -90,6 +91,7 @@ class Modal extends gia.Component {
 
 		this.element.removeEventListener('click', this.handleBackdropClick);
 		this.element.removeEventListener('close', this.handleNativeClose);
+		this.element.removeEventListener('cancel', this.handleNativeCancel);
 
 		if (this.options.preventScroll && this.element.open) {
 			document.body.style.overflow = '';
@@ -108,6 +110,13 @@ class Modal extends gia.Component {
 
 	handleNativeClose() {
 		if (this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
+	}
+
+	handleNativeCancel(e) {
+		if (!CSS.supports('transition-behavior', 'allow-discrete')) {
+			e.preventDefault();
 			this.setState({ isOpen: false });
 		}
 	}
@@ -153,7 +162,19 @@ class Modal extends gia.Component {
 				}
 			} else {
 				if (this.element.open) {
-					this.element.close();
+					if (CSS.supports('transition-behavior', 'allow-discrete')) {
+						this.element.close();
+					} else {
+						this.element.setAttribute('data-is-closing', 'true');
+						const handleTransitionEnd = () => {
+							this.element.removeAttribute('data-is-closing');
+							this.element.close();
+							this.element.removeEventListener('transitionend', handleTransitionEnd);
+							clearTimeout(timeout);
+						};
+						const timeout = setTimeout(handleTransitionEnd, 500);
+						this.element.addEventListener('transitionend', handleTransitionEnd);
+					}
 				}
 
 				if (this.options.preventScroll) {
@@ -232,6 +253,15 @@ gia.register(Modal);
  *       &::backdrop {
  *         opacity: 0;
  *       }
+ *     }
+ *   }
+ *
+ *   &[data-is-closing="true"] {
+ *     opacity: 0;
+ *     transform: translateY(10px);
+ *
+ *     &::backdrop {
+ *       opacity: 0;
  *     }
  *   }
  * }

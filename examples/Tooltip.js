@@ -273,7 +273,7 @@ gia.register(Tooltip);
  *   border: none;
  *
  *   // Modern discrete animation logic
- *   transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), overlay 0.3s allow-discrete, display 0.3s allow-discrete;
+ *   transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), overlay 0.15s allow-discrete, display 0.15s allow-discrete;
  *   opacity: 0;
  *   transform: scale(0.9);
  *
