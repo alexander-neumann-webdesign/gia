@@ -49,6 +49,15 @@ p, h1, h2, h3, h4, h5, h6 {
 details[data-component=Accordion][open]::details-content {
   height: auto;
 }
+details[data-component=Accordion] .content {
+  padding: 1rem 0;
+}
+details[data-component=Accordion] .content > :first-child {
+  margin-top: 0;
+}
+details[data-component=Accordion] .content > :last-child {
+  margin-bottom: 0;
+}
 details[data-component=Accordion] summary {
   cursor: pointer;
   user-select: none;
@@ -554,6 +563,64 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   transform: scale(0.95);
 }
 
+/* --- OpenStreetMap --- */
+[data-component=OpenStreetMap] {
+  min-height: 400px;
+  background: #eee;
+}
+
+.animated-dot {
+  width: 1em;
+  height: 1em;
+  font-size: 20px;
+  position: relative;
+}
+.animated-dot .middle-dot {
+  width: 0.8em;
+  height: 0.8em;
+  background-color: #007bff;
+  border-radius: 50%;
+  position: absolute;
+  left: 0.1em;
+  top: 0.1em;
+  z-index: 2;
+}
+.animated-dot .signal, .animated-dot .signal2 {
+  width: 3em;
+  height: 3em;
+  background-color: #007bff;
+  border-radius: 50%;
+  position: absolute;
+  left: -1em;
+  top: -1em;
+  opacity: 0;
+  animation: animationSignal cubic-bezier(0, 0.55, 0.55, 1) 2s infinite forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+.animated-dot .signal {
+  animation-delay: 0.78s;
+}
+.animated-dot .signal2 {
+  animation-delay: 1s;
+}
+
+@keyframes animationSignal {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  1% {
+    opacity: 0.25;
+  }
+  20% {
+    opacity: 0.25;
+  }
+  60% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
 /* --- Reveal --- */
 [data-component=Reveal] .reveal-item {
   opacity: 0;

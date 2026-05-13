@@ -6,6 +6,7 @@ class OpenStreetMap extends gia.Component {
 			locations: [], // Array of objects like: { lat: 51.505, lng: -0.09, title: "London" }
 			centerCoords: null, // { lat: 51.505, lng: -0.09 }
 			initialZoomLevel: 13,
+			useAnimatedDot: false,
 		};
 	}
 
@@ -61,7 +62,21 @@ class OpenStreetMap extends gia.Component {
 		if (this.options.locations && this.options.locations.length > 0) {
 			for (let i = 0; i < this.options.locations.length; i++) {
 				const loc = this.options.locations[i];
-				const marker = L.marker([loc.lat, loc.lng]).addTo(this.map);
+				let marker;
+
+				if (this.options.useAnimatedDot) {
+					const animatedIcon = L.divIcon({
+						className: 'custom-animated-dot-icon',
+						html: '<div class="animated-dot"><div class="middle-dot"></div><div class="signal"></div><div class="signal2"></div></div>',
+						iconSize: [20, 20],
+						iconAnchor: [10, 10],
+						popupAnchor: [0, -10]
+					});
+					marker = L.marker([loc.lat, loc.lng], { icon: animatedIcon }).addTo(this.map);
+				} else {
+					marker = L.marker([loc.lat, loc.lng]).addTo(this.map);
+				}
+
 				if (loc.title) {
 					marker.bindPopup(loc.title);
 				}
@@ -100,5 +115,48 @@ gia.register(OpenStreetMap);
  *   // Ensure the map container has a height, otherwise Leaflet won't render properly.
  *   min-height: 400px;
  *   background: #eee;
+ * }
+ *
+ * // Animated Dot Styles
+ * .animated-dot {
+ *   width: 1em;
+ *   height: 1em;
+ *   font-size: 20px;
+ *   position: relative;
+ *
+ *   .middle-dot {
+ *     width: 0.8em;
+ *     height: 0.8em;
+ *     background-color: #007bff;
+ *     border-radius: 50%;
+ *     position: absolute;
+ *     left: 0.1em;
+ *     top: 0.1em;
+ *     z-index: 2;
+ *   }
+ *
+ *   .signal, .signal2 {
+ *     width: 3em;
+ *     height: 3em;
+ *     background-color: #007bff;
+ *     border-radius: 50%;
+ *     position: absolute;
+ *     left: -1em;
+ *     top: -1em;
+ *     opacity: 0;
+ *     animation: animationSignal cubic-bezier(0, .55, .55, 1) 2s infinite forwards;
+ *     pointer-events: none;
+ *     z-index: 1;
+ *   }
+ *
+ *   .signal { animation-delay: 0.78s; }
+ *   .signal2 { animation-delay: 1s; }
+ * }
+ *
+ * @keyframes animationSignal {
+ *   0% { opacity: 0; transform: scale(0); }
+ *   1% { opacity: 0.25; }
+ *   20% { opacity: 0.25; }
+ *   60% { transform: scale(1); opacity: 0; }
  * }
  */
