@@ -93,20 +93,44 @@
         <h2>FilterableList</h2>
         <div class="demo-block">
             <div data-component="FilterableList" data-options='{"defaultSort": "name:asc"}'>
-  <div class="controls">
+  <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
     <!-- Filter Controls -->
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true" class="is-active">All Shapes</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="circle" aria-pressed="false">Circle</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="square" aria-pressed="false">Square</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle" aria-pressed="false">Triangle</button>
+    <div>
+      <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true" class="is-active">All Shapes</button>
+      <button data-ref="filter" data-filter-type="shape" data-filter-value="circle" aria-pressed="false">Circle</button>
+      <button data-ref="filter" data-filter-type="shape" data-filter-value="square" aria-pressed="false">Square</button>
+      <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle" aria-pressed="false">Triangle</button>
+    </div>
 
-    <button data-ref="filter" data-filter-type="color" data-filter-value="red" aria-pressed="false">Red</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="blue" aria-pressed="false">Blue</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="green" aria-pressed="false">Green</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="yellow" aria-pressed="false">Yellow</button>
+    <div>
+      <label for="color-select" class="sr-only">Color Filter</label>
+      <select id="color-select" data-ref="filter" data-filter-type="color">
+        <option value="">All Colors</option>
+        <option value="red">Red</option>
+        <option value="blue">Blue</option>
+        <option value="green">Green</option>
+        <option value="yellow">Yellow</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="search-name" class="sr-only">Search by name</label>
+      <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes" placeholder="Search by name...">
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <div>
+        <label for="price-min" style="display:block; font-size:0.8rem;">Min Price: $<output for="price-min">0</output></label>
+        <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0">
+      </div>
+      <div>
+        <label for="price-max" style="display:block; font-size:0.8rem;">Max Price: $<output for="price-max">50</output></label>
+        <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50">
+      </div>
+    </div>
 
     <!-- Sorter Controls -->
-    <select data-ref="sorter" aria-label="Sort options">
+    <select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;">
       <option value="name:asc">Name (A-Z)</option>
       <option value="name:desc">Name (Z-A)</option>
       <option value="price:asc">Price (Low-High)</option>
