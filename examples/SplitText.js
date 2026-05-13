@@ -21,7 +21,6 @@ class SplitText extends gia.Component {
 
 		// Pre-bind methods for high-frequency callbacks to avoid GC overhead
 		this.handleResize = this.handleResize.bind(this);
-		this._debouncedSplit = this._debouncedSplit.bind(this);
 		this._applyLineStyles = this._applyLineStyles.bind(this);
 
 		// Initialize/Cache Segmenters once for performance
@@ -55,21 +54,9 @@ class SplitText extends gia.Component {
 	}
 
 	handleResize() {
-		// Only re-split lines if line splitting is active
 		if (this.options.split.indexOf("lines") !== -1) {
-			// A naive debounce to avoid firing split too rapidly during resize
-			if (this.resizeTimeout) {
-				clearTimeout(this.resizeTimeout);
-			}
-			this.resizeTimeout = setTimeout(this._debouncedSplit, 100);
+			this.calculateLines();
 		}
-	}
-
-	_debouncedSplit() {
-		// We only need to recalculate lines, not re-parse the entire DOM tree
-		// But to do that cleanly without re-parsing, we need to unwrap old lines first.
-		// Since unwrapping is complex, re-running split is safer and usually fast enough for debounced resize.
-		this.split();
 	}
 
 	split() {
@@ -106,7 +93,10 @@ class SplitText extends gia.Component {
 	}
 
 	_walkAndSplit(node) {
-		const childNodes = Array.from(node.childNodes);
+		const childNodes = [];
+		for (let i = 0; i < node.childNodes.length; i++) {
+			childNodes.push(node.childNodes[i]);
+		}
 
 		for (let i = 0; i < childNodes.length; i++) {
 			const child = childNodes[i];
@@ -265,14 +255,22 @@ class SplitText extends gia.Component {
 
 			for (let j = 0; j < lineWords.length; j++) {
 				const wordEl = lineWords[j];
-				wordEl.style.setProperty("--line-index", i);
+
+				if (wordEl._currentLineIndex !== i) {
+					wordEl.style.setProperty("--line-index", i);
+					wordEl._currentLineIndex = i;
+				}
 
 				// Instead of querySelectorAll (which is a read operation), we iterate children directly
 				// if they exist, since we know we appended .split-char spans as direct children.
 				const children = wordEl.children;
 				for(let k = 0; k < children.length; k++) {
-					if (children[k].classList.contains("split-char")) {
-						children[k].style.setProperty("--line-index", i);
+					const child = children[k];
+					if (child.classList.contains("split-char")) {
+						if (child._currentLineIndex !== i) {
+							child.style.setProperty("--line-index", i);
+							child._currentLineIndex = i;
+						}
 					}
 				}
 			}
@@ -283,9 +281,6 @@ class SplitText extends gia.Component {
 	}
 
 	unmount() {
-		if (this.resizeTimeout) {
-			clearTimeout(this.resizeTimeout);
-		}
 		if (this._rafId) {
 			cancelAnimationFrame(this._rafId);
 		}
