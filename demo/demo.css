@@ -231,6 +231,10 @@ div[data-component=FilterableList] .item .item-details .price-tag {
   font-size: 0.9rem;
 }
 
+::view-transition {
+  pointer-events: none;
+}
+
 ::view-transition-group(*) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
@@ -945,3 +949,4 @@ button[data-component=ClipboardCopy][data-status=error] {
   color: #f44336;
 }
 
+/*# sourceMappingURL=demo.css.map */

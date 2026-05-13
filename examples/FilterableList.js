@@ -513,6 +513,10 @@ gia.register(FilterableList);
  *   }
  *
  *   // View transitions styles
+ *   ::view-transition {
+ *     pointer-events: none;
+ *   }
+ *
  *   ::view-transition-group(*) {
  *     animation-duration: 0.4s;
  *     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
