@@ -462,6 +462,25 @@ gia.register(FilterableList);
  *   </div>
  * </div>
  *
+ * Preventing Layout Shift on Initial Load:
+ * When the component loads with URL parameters, the browser will initially paint all items,
+ * and then the JS will hide the mismatched items, causing a layout shift.
+ * To prevent this, you should pre-filter the items on the server before rendering the HTML.
+ *
+ * Example PHP (WordPress) Server-Side Pre-filtering:
+ * <?php
+ * $active_shape = isset($_GET['shape']) ? explode(',', $_GET['shape']) : [];
+ * ?>
+ * <!-- Inside your loop -->
+ * <?php
+ * $item_shape = get_field('shape');
+ * $is_hidden = !empty($active_shape) && !in_array($item_shape, $active_shape);
+ * ?>
+ * <div class="item" <?php if ($is_hidden) echo 'hidden'; ?> data-shape="<?php echo $item_shape; ?>">...</div>
+ *
+ * Alternatively, if server-side filtering is not possible, place a blocking inline <script>
+ * right before the component to inject a <style> tag that hides mismatched items.
+ *
  * Suggested SCSS:
  *
  * :root {
