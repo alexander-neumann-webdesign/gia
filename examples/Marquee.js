@@ -43,6 +43,8 @@ class Marquee extends gia.Component {
 
 		// Smooth deceleration multiplier
 		this.speedMultiplier = 1;
+
+		this._isRenderingFrame = false;
 	}
 
 	mount() {
@@ -56,10 +58,16 @@ class Marquee extends gia.Component {
 		// Observe resize to adjust clones and bounds
 		this.observeResize(this.element, this.handleResize);
 
-		// Start autoplay loop
-		if (!this.prefersReducedMotion) {
-			this.play();
-		}
+		// Start autoplay loop when in viewport
+		this.observeIntersection(this.element, ([entry]) => {
+			if (entry.isIntersecting) {
+				if (!this.prefersReducedMotion) {
+					this.play();
+				}
+			} else {
+				this.pause();
+			}
+		});
 
 		this.initDrag();
 		this.bindScroll();
@@ -136,7 +144,10 @@ class Marquee extends gia.Component {
 			// If motion is disabled, we might need to manually call renderPosition if tick is paused
 			if (!this.ticking) {
 				this.currentOffset += this.scrollVelocity;
-				this.renderPosition();
+				if (!this._isRenderingFrame) {
+					this._isRenderingFrame = true;
+					window.requestAnimationFrame(this.renderFrame);
+				}
 			}
 		}
 	}
@@ -180,7 +191,10 @@ class Marquee extends gia.Component {
 		// We handle rendering directly here or in the tick loop.
 		// If motion is disabled, we might need to manually call renderPosition if tick is paused
 		if (!this.ticking) {
-			this.renderPosition();
+			if (!this._isRenderingFrame) {
+				this._isRenderingFrame = true;
+				window.requestAnimationFrame(this.renderFrame);
+			}
 		}
 	}
 
@@ -275,6 +289,11 @@ class Marquee extends gia.Component {
 		window.requestAnimationFrame(this.tick);
 	}
 
+	renderFrame() {
+		this.renderPosition();
+		this._isRenderingFrame = false;
+	}
+
 	renderPosition() {
 		if (this.contentWidth === 0) return;
 
@@ -340,6 +359,10 @@ gia.register(Marquee);
  *   width: 100%;
  *   display: flex;
  *   user-select: none;
+ *
+ *   &.masked {
+ *     mask: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
+ *   }
  *
  *   .marquee-track {
  *     display: flex;
