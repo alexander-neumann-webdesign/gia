@@ -36,6 +36,7 @@ export default class Component {
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
+		this._flushStateChanges = this._flushStateChanges.bind(this);
 		this._autoBindFunctions();
 		if (config.get("autoBindActions")) {
 			this._autoBindActions();
@@ -482,21 +483,7 @@ export default class Component {
 					if (!this._pendingStateChanges) {
 						this._pendingStateChanges = {};
 						this._pendingAttributeChanges = {};
-						requestAnimationFrame(() => {
-							// Apply batched attribute changes
-							for (const attrName in this._pendingAttributeChanges) {
-								if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
-									const value = this._pendingAttributeChanges[attrName];
-									if (this.element.getAttribute(attrName) !== value) {
-										this.element.setAttribute(attrName, value);
-									}
-								}
-							}
-
-							this.stateChange(this._pendingStateChanges);
-							this._pendingStateChanges = null;
-							this._pendingAttributeChanges = null;
-						});
+						requestAnimationFrame(this._flushStateChanges);
 					}
 
 					// Build batched state change payload
@@ -518,6 +505,22 @@ export default class Component {
 				}
 			}
 		}
+	}
+
+	_flushStateChanges() {
+		// Apply batched attribute changes
+		for (const attrName in this._pendingAttributeChanges) {
+			if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
+				const value = this._pendingAttributeChanges[attrName];
+				if (this.element.getAttribute(attrName) !== value) {
+					this.element.setAttribute(attrName, value);
+				}
+			}
+		}
+
+		this.stateChange(this._pendingStateChanges);
+		this._pendingStateChanges = null;
+		this._pendingAttributeChanges = null;
 	}
 
 	stateChange(stateChanges) {
