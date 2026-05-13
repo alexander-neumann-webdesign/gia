@@ -160,6 +160,9 @@ class Marquee extends gia.Component {
 
 		// Prevent default drag behaviors on images and links within track
 		this.ref.track.addEventListener('dragstart', (e) => e.preventDefault());
+
+		// Ensure native touch actions don't interfere with horizontal drag
+		this.element.style.touchAction = 'pan-y';
 	}
 
 	onPointerDown(e) {
@@ -363,6 +366,7 @@ gia.register(Marquee);
  *   width: 100%;
  *   display: flex;
  *   user-select: none;
+ *   touch-action: pan-y;
  *
  *   &.masked {
  *     mask: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
