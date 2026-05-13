@@ -332,6 +332,12 @@ export default class Component {
 			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
 		}
 
+		// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
+		// and unintended execution of malicious payloads (e.g., via iframe data-src).
+		if (script.tagName !== 'SCRIPT') {
+			return Promise.reject(new Error(`Element with ID '${scriptId}' is not a valid script tag.`));
+		}
+
 		// CACHE CHECK: Did we already start loading this?
 		// If another component triggered this 5ms ago, return that same running promise.
 		if (script._loadPromise) {
@@ -389,46 +395,40 @@ export default class Component {
 	}
 
 	setState(changes) {
-		const stateChanges = {};
-		let hasChanges = false;
-
+		// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
+		// inside the primary validation loop to avoid allocating an intermediate `stateChanges`
+		// object and iterating twice over the keys.
 		for (const key in changes) {
 			if (Object.prototype.hasOwnProperty.call(changes, key)) {
-				if (this._state[key] !== changes[key]) {
-					stateChanges[key] = changes[key];
-					this._state[key] = changes[key];
-					hasChanges = true;
-				}
-			}
-		}
+				const newValue = changes[key];
+				if (this._state[key] !== newValue) {
+					this._state[key] = newValue;
 
-		if (hasChanges) {
-			if (!this._pendingStateChanges) {
-				this._pendingStateChanges = {};
-				this._pendingAttributeChanges = {};
-				requestAnimationFrame(() => {
-					// Apply batched attribute changes
-					for (const attrName in this._pendingAttributeChanges) {
-						if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
-							const value = this._pendingAttributeChanges[attrName];
-							if (this.element.getAttribute(attrName) !== value) {
-								this.element.setAttribute(attrName, value);
+					if (!this._pendingStateChanges) {
+						this._pendingStateChanges = {};
+						this._pendingAttributeChanges = {};
+						requestAnimationFrame(() => {
+							// Apply batched attribute changes
+							for (const attrName in this._pendingAttributeChanges) {
+								if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
+									const value = this._pendingAttributeChanges[attrName];
+									if (this.element.getAttribute(attrName) !== value) {
+										this.element.setAttribute(attrName, value);
+									}
+								}
 							}
-						}
+
+							this.stateChange(this._pendingStateChanges);
+							this._pendingStateChanges = null;
+							this._pendingAttributeChanges = null;
+						});
 					}
 
-					this.stateChange(this._pendingStateChanges);
-					this._pendingStateChanges = null;
-					this._pendingAttributeChanges = null;
-				});
-			}
+					// Build batched state change payload
+					this._pendingStateChanges[key] = newValue;
 
-			// Process state changes for attributes
-			for (const key in stateChanges) {
-				if (Object.prototype.hasOwnProperty.call(stateChanges, key)) {
-					const value = stateChanges[key];
-					const type = typeof value;
-
+					// Process state changes for attributes
+					const type = typeof newValue;
 					if (type === "boolean" || type === "string") {
 						let attrName = globalStateAttributeCache.get(key);
 						if (!attrName) {
@@ -438,12 +438,10 @@ export default class Component {
 							globalStateAttributeCache.set(key, attrName);
 						}
 
-						this._pendingAttributeChanges[attrName] = type === "boolean" ? (value ? "true" : "false") : value;
+						this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
 					}
 				}
 			}
-
-			Object.assign(this._pendingStateChanges, stateChanges);
 		}
 	}
 
