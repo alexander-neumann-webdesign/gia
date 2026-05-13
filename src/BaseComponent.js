@@ -172,10 +172,15 @@ export default class Component {
 
 		if (!globalResizeObserver) {
 			globalResizeObserver = new ResizeObserver((entries) => {
-				for (const entry of entries) {
+				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
+				for (let i = 0; i < entries.length; i++) {
+					const entry = entries[i];
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
-						callbacks.forEach((cb) => cb([entry]));
+						const entryArr = [entry];
+						for (const cb of callbacks) {
+							cb(entryArr);
+						}
 					}
 				}
 			});
@@ -209,7 +214,9 @@ export default class Component {
 		} else {
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) {
-				componentCallbacks.forEach((cb) => globalCbs.delete(cb));
+				for (const cb of componentCallbacks) {
+					globalCbs.delete(cb);
+				}
 			}
 			componentCallbacks.clear();
 		}
@@ -235,10 +242,15 @@ export default class Component {
 
 		if (!observerData) {
 			const observer = new IntersectionObserver((entries) => {
-				for (const entry of entries) {
+				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
+				for (let i = 0; i < entries.length; i++) {
+					const entry = entries[i];
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
-						callbacks.forEach((cb) => cb([entry]));
+						const entryArr = [entry];
+						for (const cb of callbacks) {
+							cb(entryArr);
+						}
 					}
 				}
 			}, options);
@@ -272,7 +284,7 @@ export default class Component {
 		const componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) return;
 
-		componentElementMap.forEach((componentCallbacks, hash) => {
+		for (const [hash, componentCallbacks] of componentElementMap) {
 			const observerData = intersectionObservers.get(hash);
 
 			if (callback) {
@@ -285,7 +297,9 @@ export default class Component {
 			} else {
 				if (observerData && observerData.callbacks.has(element)) {
 					const globalCbs = observerData.callbacks.get(element);
-					componentCallbacks.forEach((cb) => globalCbs.delete(cb));
+					for (const cb of componentCallbacks) {
+						globalCbs.delete(cb);
+					}
 				}
 				componentCallbacks.clear();
 			}
@@ -306,7 +320,7 @@ export default class Component {
 					intersectionObservers.delete(hash);
 				}
 			}
-		});
+		}
 
 		if (componentElementMap.size === 0) {
 			this._observedIntersectionElements.delete(element);
@@ -588,8 +602,9 @@ export default class Component {
 						!method.startsWith("_") &&
 						!globalExcludedMethods.has(method)
 					) {
-						// Bind the event and ensure 'this' refers to the component instance
-						el.addEventListener(event, (e) => this[method](e));
+						// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
+						// an inline closure (e => this[method](e)) for every single bound action.
+						el.addEventListener(event, this[method]);
 					} else {
 						console.warn(`Method "${method}" not found, is restricted, or is not a function in component.`);
 					}
