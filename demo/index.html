@@ -118,14 +118,14 @@
       <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes" placeholder="Search by name...">
     </div>
 
-    <div style="display: flex; gap: 1rem; align-items: center;">
-      <div>
-        <label for="price-min" style="display:block; font-size:0.8rem;">Min Price: $<output for="price-min">0</output></label>
-        <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0">
+    <div style="display: flex; flex-direction: column; width: 200px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+        <label for="price-min">Min Price: $<output for="price-min">0</output></label>
+        <label for="price-max">Max Price: $<output for="price-max">50</output></label>
       </div>
-      <div>
-        <label for="price-max" style="display:block; font-size:0.8rem;">Max Price: $<output for="price-max">50</output></label>
-        <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50">
+      <div class="dual-range-slider" style="position: relative; height: 30px;">
+        <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0" style="position: absolute; width: 100%; top: 5px;" oninput="this.value = Math.min(this.value, document.getElementById('price-max').value - 1)">
+        <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50" style="position: absolute; width: 100%; top: 5px;" oninput="this.value = Math.max(this.value, document.getElementById('price-min').value - -1)">
       </div>
     </div>
 
