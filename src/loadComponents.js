@@ -1,7 +1,7 @@
-import config from "./config";
-import createInstance from "./createInstance";
-import getComponentFromElement from "./getComponentFromElement";
-import { queryAll } from "./utils";
+import config from "./config.js";
+import createInstance from "./createInstance.js";
+import getComponentFromElement from "./getComponentFromElement.js";
+import { queryAll } from "./utils.js";
 
 /**
  * Creates instances of components without creating duplicates on elements within the context
