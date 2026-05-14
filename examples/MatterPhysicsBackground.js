@@ -31,6 +31,7 @@ class MatterPhysicsBackground extends gia.Component {
 
         this.handlePointerDown = this.handlePointerDown.bind(this);
         this.handlePointerMove = this.handlePointerMove.bind(this);
+        this.handlePointerLeave = this.handlePointerLeave.bind(this);
     }
 
     async require() {
@@ -99,6 +100,12 @@ class MatterPhysicsBackground extends gia.Component {
         // add mouse control
         const mouse = Mouse.create(this.render.canvas);
 
+        this.cursorBody = Bodies.circle(-1000, -1000, 60, {
+            isStatic: true,
+            render: { visible: false }
+        });
+        Composite.add(this.engine.world, this.cursorBody);
+
         // Matter.js automatically binds a wheel event listener that calls e.preventDefault(),
         // which prevents page scrolling. We remove it here because we don't need zoom/scroll physics.
         this.render.canvas.removeEventListener('wheel', mouse.mousewheel);
@@ -127,6 +134,9 @@ class MatterPhysicsBackground extends gia.Component {
         // Add hover to repel shapes
         this.ref.canvas.addEventListener('mousemove', this.handlePointerMove);
         this.ref.canvas.addEventListener('touchmove', this.handlePointerMove, { passive: true });
+        this.ref.canvas.addEventListener('mouseleave', this.handlePointerLeave);
+        this.ref.canvas.addEventListener('touchend', this.handlePointerLeave);
+        this.ref.canvas.addEventListener('touchcancel', this.handlePointerLeave);
 
         // Observers
         this.observeResize(this.element, this.handleResize);
@@ -141,6 +151,9 @@ class MatterPhysicsBackground extends gia.Component {
             this.ref.canvas.removeEventListener('touchstart', this.handlePointerDown);
             this.ref.canvas.removeEventListener('mousemove', this.handlePointerMove);
             this.ref.canvas.removeEventListener('touchmove', this.handlePointerMove);
+            this.ref.canvas.removeEventListener('mouseleave', this.handlePointerLeave);
+            this.ref.canvas.removeEventListener('touchend', this.handlePointerLeave);
+            this.ref.canvas.removeEventListener('touchcancel', this.handlePointerLeave);
         }
 
         if (this.render) {
@@ -259,29 +272,14 @@ class MatterPhysicsBackground extends gia.Component {
         const mouseX = clientX - rect.left;
         const mouseY = clientY - rect.top;
 
-        const bodies = window.Matter.Composite.allBodies(this.engine.world);
-        const repelRadius = 150;
-        const maxForce = 0.05;
+        if (this.cursorBody) {
+            window.Matter.Body.setPosition(this.cursorBody, { x: mouseX, y: mouseY });
+        }
+    }
 
-        for (const body of bodies) {
-            if (body.isStatic) continue;
-
-            const dx = body.position.x - mouseX;
-            const dy = body.position.y - mouseY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < repelRadius) {
-                // Calculate force magnitude: closer = stronger
-                const forceMagnitude = (1 - distance / repelRadius) * maxForce;
-
-                // Apply force outwards from the mouse
-                const force = {
-                    x: (dx / distance) * forceMagnitude,
-                    y: (dy / distance) * forceMagnitude
-                };
-
-                window.Matter.Body.applyForce(body, body.position, force);
-            }
+    handlePointerLeave() {
+        if (this.cursorBody) {
+            window.Matter.Body.setPosition(this.cursorBody, { x: -1000, y: -1000 });
         }
     }
 
