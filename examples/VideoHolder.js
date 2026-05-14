@@ -141,16 +141,31 @@ class VideoHolder extends gia.Component {
 			}
 
 			if (this.ref.playPauseButton) {
-				if (this.state.isPlaying) {
-					this.ref.playPauseButton.setAttribute('aria-label', 'Pause video');
-					this.ref.playPauseButton.classList.remove('is-paused');
-					this.ref.playPauseButton.classList.add('is-playing');
-					this.ref.playPauseButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+				const isPlaying = this.state.isPlaying;
+				const playPauseBtn = this.ref.playPauseButton;
+
+				playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
+
+				if (isPlaying) {
+					playPauseBtn.classList.remove('is-paused');
+					playPauseBtn.classList.add('is-playing');
 				} else {
-					this.ref.playPauseButton.setAttribute('aria-label', 'Play video');
-					this.ref.playPauseButton.classList.remove('is-playing');
-					this.ref.playPauseButton.classList.add('is-paused');
-					this.ref.playPauseButton.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+					playPauseBtn.classList.remove('is-playing');
+					playPauseBtn.classList.add('is-paused');
+				}
+
+				let iconShape = playPauseBtn.querySelector('.icon-shape');
+				if (!iconShape) {
+					playPauseBtn.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>';
+					iconShape = playPauseBtn.querySelector('.icon-shape');
+				}
+
+				if (iconShape) {
+					if (isPlaying) {
+						iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
+					} else {
+						iconShape.setAttribute('d', 'M 5 3 L 19 12 L 19 12 L 5 21 Z M 5 3 L 19 12 L 19 12 L 5 21 Z');
+					}
 				}
 			}
 		}
@@ -197,6 +212,10 @@ gia.register(VideoHolder);
  *     opacity: 0;
  *     pointer-events: none;
  *     transition: opacity 0.3s ease, background-color 0.3s ease;
+ *
+ *     svg path.icon-shape {
+ *       transition: d 0.3s ease;
+ *     }
  *
  *     &:hover {
  *       background: rgba(0,0,0,0.8);

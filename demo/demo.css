@@ -1027,6 +1027,9 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton] {
   pointer-events: none;
   transition: opacity 0.3s ease, background-color 0.3s ease;
 }
+div[data-component=VideoHolder] button[data-ref=playPauseButton] svg path.icon-shape {
+  transition: d 0.3s ease;
+}
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
   background: rgba(0, 0, 0, 0.8);
 }

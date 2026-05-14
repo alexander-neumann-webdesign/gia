@@ -1197,6 +1197,10 @@ div[data-component="VideoHolder"] {
     pointer-events: none;
     transition: opacity 0.3s ease, background-color 0.3s ease;
 
+    svg path.icon-shape {
+      transition: d 0.3s ease;
+    }
+
     &:hover {
       background: rgba(0,0,0,0.8);
     }
