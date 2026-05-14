@@ -1,5 +1,5 @@
-import config from "./config";
-import getComponentFromElement from "./getComponentFromElement";
+import config from "./config.js";
+import getComponentFromElement from "./getComponentFromElement.js";
 
 /**
  * Destroys and removes instance from DOM element

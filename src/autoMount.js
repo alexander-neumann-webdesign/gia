@@ -1,7 +1,7 @@
-import config from "./config";
-import loadComponents from "./loadComponents";
-import destroyInstance from "./destroyInstance";
-import { queryAll } from "./utils";
+import config from "./config.js";
+import loadComponents from "./loadComponents.js";
+import destroyInstance from "./destroyInstance.js";
+import { queryAll } from "./utils.js";
 
 let observer = null;
 
