@@ -12,18 +12,21 @@ class Form extends gia.Component {
 			submitBtn: null,
 			successMessage: null,
 			errorMessage: null,
+			requiredInputs: [],
 		};
 
 		this.setState({
 			isSubmitting: false,
 			isSuccess: false,
 			isError: false,
+			requiredInputsFilled: false,
 		});
 
 		this.originalSubmitBtnHTML = '';
 		this.spinnerAnimation = null;
 
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.handleInputChange = this.handleInputChange.bind(this);
 	}
 
 	mount() {
@@ -38,6 +41,14 @@ class Form extends gia.Component {
 
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
+
+			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
+			this.ref.requiredInputs.forEach((input) => {
+				input.addEventListener('change', this.handleInputChange);
+				input.addEventListener('input', this.handleInputChange);
+			});
+
+			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
 		}
@@ -51,6 +62,35 @@ class Form extends gia.Component {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
 		}
+		this.ref.requiredInputs.forEach((input) => {
+			input.removeEventListener('change', this.handleInputChange);
+			input.removeEventListener('input', this.handleInputChange);
+		});
+	}
+
+	handleInputChange() {
+		let requiredInputMissing = false;
+		this.ref.requiredInputs.forEach((input) => {
+			if (input.type === "checkbox") {
+				if (!input.checked || input.value === "") {
+					requiredInputMissing = true;
+					input.classList.add("input-missing");
+				} else {
+					input.classList.remove("input-missing");
+				}
+			} else {
+				if (!input.value || input.value === "") {
+					requiredInputMissing = true;
+					input.classList.add("input-missing");
+				} else {
+					input.classList.remove("input-missing");
+				}
+			}
+		});
+
+		this.setState({
+			requiredInputsFilled: !requiredInputMissing,
+		});
 	}
 
 	async handleSubmit(event) {
@@ -70,11 +110,57 @@ class Form extends gia.Component {
 			isError: false
 		});
 
-		const formData = new FormData(this.formElement);
+		let rawData = new FormData(this.formElement);
+		let data = new FormData();
+
+		// 1. Automatically fix duplicate field names
+		let uniqueKeys = [...new Set(rawData.keys())];
+
+		uniqueKeys.forEach((key) => {
+			let values = rawData.getAll(key);
+
+			if (values.length > 1 && !key.endsWith("[]")) {
+				values.forEach((value) => {
+					data.append(key + "[]", value);
+				});
+			} else {
+				values.forEach((value) => {
+					data.append(key, value);
+				});
+			}
+		});
+
+		// 2. Smart Detection Logic for Name and Email
+		let detectedName = "";
+		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
+		if (nameInput && nameInput.value.trim() !== "") {
+			detectedName = nameInput.value;
+		} else {
+			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
+			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
+			let parts = [];
+			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
+			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
+			if (parts.length > 0) detectedName = parts.join(" ");
+		}
+
+		let detectedEmail = "";
+		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
+		if (emailInput && emailInput.value.trim() !== "") {
+			detectedEmail = emailInput.value;
+		} else {
+			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
+			if (fallbackEmail && fallbackEmail.value) {
+				detectedEmail = fallbackEmail.value;
+			}
+		}
+
+		if (detectedName) data.append("detected-name", detectedName);
+		if (detectedEmail) data.append("detected-email", detectedEmail);
 
 		// If an action is provided in options, append it for WordPress AJAX compatibility
 		if (this.options.action) {
-			formData.append('action', this.options.action);
+			data.append('action', this.options.action);
 		}
 
 		// Use the option URL, or fallback to the form's action attribute
@@ -96,9 +182,10 @@ class Form extends gia.Component {
 
 			const response = await fetch(url, {
 				method: method,
-				body: formData,
+				body: data,
 				headers: {
-					'Accept': 'application/json'
+					'Accept': 'application/json',
+					'Cache-Control': 'no-cache'
 				}
 			});
 
@@ -178,12 +265,22 @@ class Form extends gia.Component {
 		if ('isSuccess' in stateChanges) {
 			if (this.ref.successMessage) {
 				this.ref.successMessage.hidden = !stateChanges.isSuccess;
+				if (stateChanges.isSuccess) {
+					window.setTimeout(() => {
+						this.ref.successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+					}, 300);
+				}
 			}
 		}
 
 		if ('isError' in stateChanges) {
 			if (this.ref.errorMessage) {
 				this.ref.errorMessage.hidden = !stateChanges.isError;
+				if (stateChanges.isError) {
+					window.setTimeout(() => {
+						this.ref.errorMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+					}, 300);
+				}
 			}
 		}
 	}
@@ -243,6 +340,10 @@ gia.register(Form);
  * .form-spinner-icon {
  *   margin-right: 0.5rem;
  *   vertical-align: middle;
+ * }
+ *
+ * .input-missing {
+ *   border-color: red;
  * }
  *
  * [hidden] {
