@@ -12,6 +12,10 @@ class TextFit extends gia.Component {
 		this.handleResize = this.handleResize.bind(this);
 	}
 
+	async require() {
+		await this.loadScript('fitty-js', 'fitty');
+	}
+
 	mount() {
 		if (typeof fitty === 'function') {
 			this.fittyInstances = fitty(this.element, this.options);
