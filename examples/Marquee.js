@@ -258,7 +258,17 @@ class Marquee extends gia.Component {
 	updateBounds() {
 		// Measure content
 		if (this.originalWrapper) {
-			this.contentWidth = this.originalWrapper.getBoundingClientRect().width;
+			// Round the width up to ensure the layout wrapper forces integer bounds,
+			// preventing sub-pixel misalignment stutters on wrap boundaries.
+			// Clear inline width before measuring to allow natural flex sizing
+			this.originalWrapper.style.width = '';
+			this.contentWidth = Math.ceil(this.originalWrapper.getBoundingClientRect().width);
+			this.originalWrapper.style.width = this.contentWidth + 'px';
+
+			// Ensure existing clones also update their width
+			for (let i = 0; i < this.clones.length; i++) {
+				this.clones[i].style.width = this.contentWidth + 'px';
+			}
 		}
 
 		if (this.contentWidth === 0) return;
