@@ -45,6 +45,10 @@ class Marquee extends gia.Component {
 		this.speedMultiplier = 1;
 
 		this._isRenderingFrame = false;
+		this._needsBoundsUpdate = true;
+
+		this.handleIntersection = this.handleIntersection.bind(this);
+		this.preventDrag = this.preventDrag.bind(this);
 	}
 
 	mount() {
@@ -59,15 +63,7 @@ class Marquee extends gia.Component {
 		this.observeResize(this.element, this.handleResize);
 
 		// Start autoplay loop when in viewport
-		this.observeIntersection(this.element, ([entry]) => {
-			if (entry.isIntersecting) {
-				if (!this.prefersReducedMotion) {
-					this.play();
-				}
-			} else {
-				this.pause();
-			}
-		});
+		this.observeIntersection(this.element, this.handleIntersection);
 
 		this.initDrag();
 		this.bindScroll();
@@ -78,6 +74,17 @@ class Marquee extends gia.Component {
 		this.pause();
 		this.unbindScroll();
 		this.destroyHover();
+		this.destroyDrag();
+	}
+
+	handleIntersection([entry]) {
+		if (entry.isIntersecting) {
+			if (!this.prefersReducedMotion) {
+				this.play();
+			}
+		} else {
+			this.pause();
+		}
 	}
 
 	play() {
@@ -159,7 +166,22 @@ class Marquee extends gia.Component {
 		window.addEventListener('pointercancel', this.onPointerUp);
 
 		// Prevent default drag behaviors on images and links within track
-		this.ref.track.addEventListener('dragstart', (e) => e.preventDefault());
+		this.ref.track.addEventListener('dragstart', this.preventDrag);
+	}
+
+	destroyDrag() {
+		this.element.removeEventListener('pointerdown', this.onPointerDown);
+		window.removeEventListener('pointermove', this.onPointerMove);
+		window.removeEventListener('pointerup', this.onPointerUp);
+		window.removeEventListener('pointercancel', this.onPointerUp);
+
+		if (this.ref.track) {
+			this.ref.track.removeEventListener('dragstart', this.preventDrag);
+		}
+	}
+
+	preventDrag(e) {
+		e.preventDefault();
 	}
 
 	onPointerDown(e) {
@@ -214,7 +236,10 @@ class Marquee extends gia.Component {
 
 	handleResize([entry]) {
 		this.containerWidth = entry.contentRect.width;
+		this._needsBoundsUpdate = true;
+	}
 
+	updateBounds() {
 		// Measure content
 		if (this.originalWrapper) {
 			this.contentWidth = this.originalWrapper.getBoundingClientRect().width;
@@ -247,10 +272,16 @@ class Marquee extends gia.Component {
 				this.ref.track.appendChild(cloneWrapper);
 			}
 		}
+
+		this._needsBoundsUpdate = false;
 	}
 
 	tick(time) {
 		if (!this.ticking) return;
+
+		if (this._needsBoundsUpdate) {
+			this.updateBounds();
+		}
 
 		// Calculate delta time for consistent speed across refresh rates (e.g., 60hz vs 144hz)
 		// Normalize against a standard 60fps frame (~16.67ms)
