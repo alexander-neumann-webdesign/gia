@@ -57,9 +57,11 @@ class Accordion extends gia.Component {
 			window.addEventListener('accordion:open', this.handleAccordionOpen);
 		}
 
+		this.maybeStartOpened = this.maybeStartOpened.bind(this);
+
 		// Initial state based on URL hash or DOM
-		const hash = window.location.hash;
 		let shouldBeOpen = this.element.open;
+		const hash = window.location.hash;
 
 		if (hash && this.element.id && hash === `#${this.element.id}`) {
 			shouldBeOpen = true;
@@ -70,10 +72,30 @@ class Accordion extends gia.Component {
 			}, 100);
 		}
 
+		if (this.element.id && window.swup) {
+			window.swup.hooks.on("scroll:end", this.maybeStartOpened);
+		}
+
 		this.setState({ isOpen: shouldBeOpen });
 	}
 
+	maybeStartOpened() {
+		if (window.location.hash && this.element.id === window.location.hash.substring(1)) {
+			if (!this.state.isOpen) {
+				this.setState({ isOpen: true });
+
+				setTimeout(() => {
+					this.element.scrollIntoView({ behavior: 'smooth' });
+				}, 100);
+			}
+		}
+	}
+
 	unmount() {
+		if (this.element.id && window.swup) {
+			window.swup.hooks.off("scroll:end", this.maybeStartOpened);
+		}
+
 		if (this.isDetails) {
 			this.element.removeEventListener('toggle', this.handleToggle);
 		}
@@ -88,6 +110,14 @@ class Accordion extends gia.Component {
 		// This prevents infinite loops since stateChange might alter element.open
 		if (this.state.isOpen !== this.element.open) {
 			this.setState({ isOpen: this.element.open });
+
+			// Refresh ScrollTrigger after the transition is expected to complete
+			// A 500ms timeout roughly matches the suggested CSS transition duration
+			if (window.ScrollTrigger) {
+				setTimeout(() => {
+					window.ScrollTrigger.refresh();
+				}, 500);
+			}
 		}
 	}
 
@@ -115,6 +145,10 @@ class Accordion extends gia.Component {
 				});
 				window.dispatchEvent(customEvent);
 			}
+
+			// Dispatch a window resize event to trigger layout updates
+			// (e.g., for embla-carousel or other scripts that rely on window resizing)
+			window.dispatchEvent(new Event('resize'));
 		}
 	}
 }
