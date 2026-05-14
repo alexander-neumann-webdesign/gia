@@ -800,23 +800,51 @@
         </div>
     </section>
 
+    <!-- Invisible SVG definitions for Icons -->
+    <svg style="display: none;">
+        <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </symbol>
+    </svg>
+
     <section id="CustomCursor">
         <h2>CustomCursor</h2>
         <div class="demo-block">
             <div style="padding: 2rem; border: 1px solid #ccc; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
-                <article class="news-card" data-hover-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer;">
-                    <h3>Hover me for text cursor</h3>
-                    <p>When you hover this block, the cursor will expand and show the text "Read more".</p>
-                </article>
 
-                <nav style="display: flex; gap: 1rem;">
-                    <button type="button" data-magnetic style="padding: 1rem; background: #eee; border: none; border-radius: 8px;">
-                        Magnetic Button
-                    </button>
-                    <a href="#" class="social-icon" data-magnetic aria-label="Social media" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #eee; border-radius: 50%;">
-                        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                    </a>
-                </nav>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <article class="news-card" data-cursor-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Text Cursor</h3>
+                        <p>Hover me for a text cursor state.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Image Cursor</h3>
+                        <p>Hover me to see an image inside the cursor.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-icon="icon-play" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Icon Cursor</h3>
+                        <p>Hover me to see an SVG icon inside the cursor.</p>
+                    </article>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                    <div data-cursor-stick style="padding: 3rem; background: #f0f0f0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <span>data-cursor-stick</span>
+                    </div>
+
+                    <div style="padding: 3rem; background: #e0e0e0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <button type="button" data-magnetic style="padding: 1rem 2rem; background: #333; color: #fff; border: none; border-radius: 30px;">
+                            data-magnetic
+                        </button>
+                    </div>
+                </div>
+
+                <div style="width: 100%; text-align: center; font-style: italic;">
+                    <p>Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
+                </div>
+
             </div>
         </div>
     </section>
@@ -825,6 +853,8 @@
     <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
         <div class="custom-cursor__dot" data-ref="CustomCursor:dot">
             <span class="custom-cursor__text" data-ref="CustomCursor:text"></span>
+            <div class="custom-cursor__media-box" data-ref="CustomCursor:mediaBox"></div>
+            <div class="custom-cursor__icon" data-ref="CustomCursor:icon"></div>
         </div>
     </div>
 
