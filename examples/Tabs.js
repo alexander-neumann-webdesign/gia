@@ -250,18 +250,29 @@ class Tabs extends gia.Component {
 				// Apply new state to measure
 				const previousHiddenStates = this.ref.panel.map(p => p.hidden);
 				
+				// Temporarily disable transitions to get pure target height
+				this.ref.panel.forEach(p => {
+					p.style.transition = 'none';
+				});
+
 				// Update DOM without view transition just to measure
 				updateDOM();
 				
 				// The height might be affected by CSS transitions if display goes from block to none,
 				// but since display: none removes it from flow, the grid height should shrink. 
 				// However, if the old panel is still transitioning, its height might keep the grid tall.
-				// To get pure target height, we could temporarily disable transitions, or just read offsetHeight
-				// if transitions haven't started (they start in the next tick usually).
+				// To get pure target height, we temporarily disable transitions to read the real offsetHeight.
 				const endHeight = panelsContainer.offsetHeight;
 
 				// Revert state
 				this.ref.panel.forEach((p, i) => p.hidden = previousHiddenStates[i]);
+
+				// Force a reflow before restoring transitions so the browser registers the revert
+				void panelsContainer.offsetHeight;
+
+				this.ref.panel.forEach(p => {
+					p.style.transition = '';
+				});
 
 				// Now apply state properly (with view transition)
 				doViewTransition();
