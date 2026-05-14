@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.custom-attribution-details {
+  display: inline-block;
+  direction: rtl; /* to make summary icon stay on the right */
+}
+.custom-attribution-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  cursor: pointer;
+  list-style: none; /* remove default arrow */
+}
+.custom-attribution-summary::after {
+  content: "i";
+  font-family: serif;
+  font-style: italic;
+  font-weight: bold;
+  color: #333;
+}
+.custom-attribution-summary::-webkit-details-marker {
+  display: none;
+}
+.custom-attribution-content {
+  display: inline-block;
+  direction: ltr;
+  background: white;
+  padding: 2px 5px;
+  margin-right: 5px;
+  border-radius: 3px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  vertical-align: middle;
+}
+details[open] .custom-attribution-summary {
+  background: #eee;
+}
+</style>
+</head>
+<body>
+  <details class="custom-attribution-details">
+    <summary class="custom-attribution-summary"></summary>
+    <div class="custom-attribution-content">© OpenStreetMap contributors</div>
+  </details>
+</body>
+</html>
