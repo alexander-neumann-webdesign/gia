@@ -328,8 +328,18 @@ class CustomCursor extends gia.Component {
 
         // If hovering magnetic element, pull the target to its center
         if (this.magneticTarget && this.magneticBounds) {
-            const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength;
-            const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength;
+            // Compute distance from mouse to the actual element's edges
+            const dxToEdge = Math.max(0, Math.abs(this.mouse.x - this.magneticBounds.centerX) - this.magneticBounds.width / 2);
+            const dyToEdge = Math.max(0, Math.abs(this.mouse.y - this.magneticBounds.centerY) - this.magneticBounds.height / 2);
+
+            const maxDistToEdge = Math.max(dxToEdge, dyToEdge);
+
+            // Intensity is 1 when inside the element bounds (maxDistToEdge = 0),
+            // and approaches 0 as we reach the padding boundary
+            const intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
+
+            const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength * intensity;
+            const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength * intensity;
 
             // Only snap the cursor target to the element if actually snapped
             if (this.currentState === 'magnetic') {
