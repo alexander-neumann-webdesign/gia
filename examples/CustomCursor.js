@@ -168,7 +168,7 @@ class CustomCursor extends gia.Component {
         // Magnetic Hover logic
         // We find the closest magnetic element from the cached bounds
         let closestMagneticEl = null;
-
+        let isSnapped = false;
         let minDistanceSq = Infinity;
 
         for (const item of this.cachedMagneticElements) {
@@ -190,26 +190,46 @@ class CustomCursor extends gia.Component {
                     minDistanceSq = distSq;
                     closestMagneticEl = el;
                     this.magneticBounds = bounds;
+
+                    // Check if directly over or very near the element itself
+                    isSnapped = (
+                        this.mouse.x >= bounds.left - 5 &&
+                        this.mouse.x <= bounds.right + 5 &&
+                        this.mouse.y >= bounds.top - 5 &&
+                        this.mouse.y <= bounds.bottom + 5
+                    );
                 }
             }
         }
 
+        // Handle entering/changing magnetic element pull zone
         if (closestMagneticEl && this.magneticTarget !== closestMagneticEl) {
-            // Enter new magnetic element
             if (this.magneticTarget) {
-                // Cleanup previous
                 this.magneticTarget.style.transform = '';
                 this._lastMagneticTransform = '';
                 this.magneticTarget.classList.remove('is-magnetic-active');
             }
-
             this.magneticTarget = closestMagneticEl;
             this.magneticTarget.classList.add('is-magnetic-active');
             this._currentPullX = 0;
             this._currentPullY = 0;
+        } else if (!closestMagneticEl && this.magneticTarget) {
+            // Exit magnetic element completely
+            this.magneticTarget.style.transform = '';
+            this._lastMagneticTransform = '';
+            this.magneticTarget.classList.remove('is-magnetic-active');
+            this.magneticTarget = null;
+            this.magneticBounds = null;
+        }
 
-            if (this.currentState !== 'magnetic') {
+        // Handle Snapping Visual State
+        if (isSnapped) {
+            // If we are snapping onto a new element, update the bounds!
+            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+
+            if (this.currentState !== 'magnetic' || isNewSnapTarget) {
                 this.currentState = 'magnetic';
+                this._snappedTarget = closestMagneticEl;
                 this.element.setAttribute('data-cursor-state', 'magnetic');
 
                 // Set inline styles to "embrace" the element
@@ -224,18 +244,20 @@ class CustomCursor extends gia.Component {
                     this.ref.dot.style.borderRadius = borderRadius;
                 }
             }
-
-        } else if (!closestMagneticEl && this.magneticTarget) {
-            // Exit magnetic element
-            this.magneticTarget.style.transform = '';
-            this._lastMagneticTransform = '';
-            this.magneticTarget.classList.remove('is-magnetic-active');
-            this.magneticTarget = null;
-            this.magneticBounds = null;
-
+        } else {
+            // Not snapped
             if (this.currentState === 'magnetic') {
-                this.currentState = 'default';
-                this.element.setAttribute('data-cursor-state', 'default');
+                // Revert to default or text
+                this._snappedTarget = null;
+
+                // If we have a hover text, revert to that, otherwise default
+                if (textHoverEl) {
+                    this.currentState = 'text';
+                    this.element.setAttribute('data-cursor-state', 'text');
+                } else {
+                    this.currentState = 'default';
+                    this.element.setAttribute('data-cursor-state', 'default');
+                }
 
                 // Clear inline styles
                 if (this.ref.dot) {
@@ -309,8 +331,11 @@ class CustomCursor extends gia.Component {
             const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength;
             const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength;
 
-            targetX = this.magneticBounds.centerX + pullX;
-            targetY = this.magneticBounds.centerY + pullY;
+            // Only snap the cursor target to the element if actually snapped
+            if (this.currentState === 'magnetic') {
+                targetX = this.magneticBounds.centerX + pullX;
+                targetY = this.magneticBounds.centerY + pullY;
+            }
 
             this._currentPullX = pullX;
             this._currentPullY = pullY;
