@@ -1,5 +1,5 @@
 // import 'babel-regenerator-runtime';
-import BaseComponent from "./BaseComponent";
+import BaseComponent from "./BaseComponent.js";
 
 /**
  * Component with code splitting support

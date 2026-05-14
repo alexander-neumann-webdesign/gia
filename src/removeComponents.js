@@ -1,6 +1,6 @@
-import config from "./config";
-import destroyInstance from "./destroyInstance";
-import { queryAll } from "./utils";
+import config from "./config.js";
+import destroyInstance from "./destroyInstance.js";
+import { queryAll } from "./utils.js";
 
 /**
  * Removes instances of components on elements within the context

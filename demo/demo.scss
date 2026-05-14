@@ -69,9 +69,39 @@ details[data-component="Accordion"] {
   summary {
     cursor: pointer;
     user-select: none;
-    // Remove default marker if desired
-    // list-style: none;
-    // &::-webkit-details-marker { display: none; }
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .accordion-icon {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+
+    &.accordion-icon--plus {
+      .vertical-line {
+        transition: transform 0.3s ease;
+        transform-origin: center;
+      }
+    }
+  }
+
+  &[open] {
+    .accordion-icon--arrow {
+      transform: rotate(180deg);
+    }
+
+    .accordion-icon--plus {
+      .vertical-line {
+        transform: rotate(90deg);
+      }
+    }
   }
 }
 
@@ -668,6 +698,50 @@ dialog[data-component="OffCanvasMenu"] {
 [data-component="OpenStreetMap"] {
   min-height: 400px;
   background: #eee;
+}
+
+// Attribution Styles
+.leaflet-control-attribution.leaflet-control {
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+.osm-attribution-details {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+
+  &[open] {
+    padding: 0 5px;
+
+    .osm-attribution-text {
+      display: inline;
+    }
+  }
+}
+
+.osm-attribution-summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.osm-attribution-text {
+  margin-left: 4px;
+  display: none;
 }
 
 // Animated Dot Styles

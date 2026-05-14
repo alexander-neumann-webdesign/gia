@@ -22,22 +22,21 @@ export function toggleClass(element, className, condition = null) {
 	}
 }
 
-export function removeClass(nodes, className) {
+function modifyClass(nodes, className, action) {
 	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
 	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
 	for (let i = 0; i < iterable.length; i++) {
-		iterable[i].classList.remove(className);
+		iterable[i].classList[action](className);
 	}
 	return nodes;
 }
 
+export function removeClass(nodes, className) {
+	return modifyClass(nodes, className, "remove");
+}
+
 export function addClass(nodes, className) {
-	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
-	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
-	for (let i = 0; i < iterable.length; i++) {
-		iterable[i].classList.add(className);
-	}
-	return nodes;
+	return modifyClass(nodes, className, "add");
 }
 
 export function triggerEvent(
