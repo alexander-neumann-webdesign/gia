@@ -24,9 +24,6 @@ class Form extends gia.Component {
 
 		this.originalSubmitBtnHTML = '';
 		this.spinnerAnimation = null;
-
-		this.handleSubmit = this.handleSubmit.bind(this);
-		this.handleInputChange = this.handleInputChange.bind(this);
 	}
 
 	mount() {
