@@ -118,6 +118,8 @@ class PongGame extends gia.Component {
     handlePointerMove(e) {
         let y = e.pageY - this.offsetTop;
 
+        y = y - (this.options.paddleHeight / 2);
+
         // Clamp to screen bounds
         y = Math.max(0, Math.min(y, this.height - this.options.paddleHeight));
         this.playerY = y;
