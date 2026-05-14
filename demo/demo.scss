@@ -69,9 +69,39 @@ details[data-component="Accordion"] {
   summary {
     cursor: pointer;
     user-select: none;
-    // Remove default marker if desired
-    // list-style: none;
-    // &::-webkit-details-marker { display: none; }
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .accordion-icon {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+
+    &.accordion-icon--plus {
+      .vertical-line {
+        transition: transform 0.3s ease;
+        transform-origin: center;
+      }
+    }
+  }
+
+  &[open] {
+    .accordion-icon--arrow {
+      transform: rotate(180deg);
+    }
+
+    .accordion-icon--plus {
+      .vertical-line {
+        transform: rotate(90deg);
+      }
+    }
   }
 }
 
