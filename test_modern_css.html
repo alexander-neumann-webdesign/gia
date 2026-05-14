@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  .container {
+    view-transition-name: my-container;
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid black;
+    width: 300px;
+    background: #eee;
+  }
+  .container > * {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .panel {
+    background: white;
+  }
+  .panel[hidden] {
+    display: none;
+  }
+  ::view-transition-group(my-container) {
+    animation-duration: 2s;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <div class="panel" id="p1">Panel 1<br>line 2<br>line 3<br>line 4</div>
+  <div class="panel" id="p2" hidden>Panel 2<br>line 2</div>
+</div>
+<button onclick="toggle()">Toggle</button>
+<script>
+  function toggle() {
+    document.startViewTransition(() => {
+      let p1 = document.getElementById('p1');
+      let p2 = document.getElementById('p2');
+      p1.hidden = !p1.hidden;
+      p2.hidden = !p2.hidden;
+    });
+  }
+</script>
+</body>
+</html>

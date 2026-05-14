@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid black;
+    width: 300px;
+    background: #eee;
+    transition: height 0.4s ease;
+  }
+  .container > * {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .panel {
+    background: white;
+    transition: opacity 0.4s ease, display 0.4s allow-discrete;
+    opacity: 1;
+  }
+  .panel[hidden] {
+    opacity: 0;
+    display: none;
+  }
+  @starting-style {
+    .panel:not([hidden]) {
+      opacity: 0;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <div class="panel" id="p1" style="height: 100px;">Panel 1</div>
+  <div class="panel" id="p2" hidden style="height: 50px;">Panel 2</div>
+</div>
+<button onclick="toggle()">Toggle</button>
+<script>
+  function toggle() {
+    let p1 = document.getElementById('p1');
+    let p2 = document.getElementById('p2');
+
+    let isP1Hidden = p1.hidden;
+
+    let panelsContainer = document.getElementById('container');
+    const startHeight = panelsContainer.offsetHeight;
+
+    const previousHiddenStates = [p1.hidden, p2.hidden];
+
+    p1.style.transition = 'none';
+    p2.style.transition = 'none';
+
+    p1.hidden = !isP1Hidden;
+    p2.hidden = isP1Hidden;
+
+    const endHeight = panelsContainer.offsetHeight;
+
+    p1.hidden = previousHiddenStates[0];
+    p2.hidden = previousHiddenStates[1];
+
+    void panelsContainer.offsetHeight;
+
+    p1.style.transition = '';
+    p2.style.transition = '';
+
+    const doViewTransition = () => {
+      if (document.startViewTransition) {
+        document.documentElement.style.viewTransitionName = 'none';
+        const transition = document.startViewTransition(() => {
+          p1.hidden = !isP1Hidden;
+          p2.hidden = isP1Hidden;
+        });
+        return transition.finished.finally(() => {
+          document.documentElement.style.viewTransitionName = '';
+        });
+      } else {
+        p1.hidden = !isP1Hidden;
+        p2.hidden = isP1Hidden;
+        return Promise.resolve();
+      }
+    };
+
+    panelsContainer.style.height = `${startHeight}px`;
+    panelsContainer.style.overflow = 'hidden';
+
+    const vtPromise = doViewTransition();
+
+    if (startHeight !== endHeight) {
+      void panelsContainer.offsetHeight;
+      panelsContainer.style.height = `${endHeight}px`;
+
+      vtPromise.then(() => {
+          panelsContainer.style.height = '';
+          panelsContainer.style.overflow = '';
+      });
+    } else {
+      panelsContainer.style.height = '';
+      panelsContainer.style.overflow = '';
+    }
+  }
+</script>
+</body>
+</html>
