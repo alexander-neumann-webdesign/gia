@@ -28,6 +28,9 @@ class MatterPhysicsBackground extends gia.Component {
         this.isVisible = false;
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        this.handlePointerDown = this.handlePointerDown.bind(this);
+        this.handlePointerMove = this.handlePointerMove.bind(this);
     }
 
     async require() {
@@ -121,6 +124,10 @@ class MatterPhysicsBackground extends gia.Component {
         this.ref.canvas.addEventListener('mousedown', this.handlePointerDown);
         this.ref.canvas.addEventListener('touchstart', this.handlePointerDown, { passive: true });
 
+        // Add hover to repel shapes
+        this.ref.canvas.addEventListener('mousemove', this.handlePointerMove);
+        this.ref.canvas.addEventListener('touchmove', this.handlePointerMove, { passive: true });
+
         // Observers
         this.observeResize(this.element, this.handleResize);
         this.observeIntersection(this.element, this.handleIntersection, { threshold: 0 });
@@ -132,6 +139,8 @@ class MatterPhysicsBackground extends gia.Component {
         if (this.ref.canvas) {
             this.ref.canvas.removeEventListener('mousedown', this.handlePointerDown);
             this.ref.canvas.removeEventListener('touchstart', this.handlePointerDown);
+            this.ref.canvas.removeEventListener('mousemove', this.handlePointerMove);
+            this.ref.canvas.removeEventListener('touchmove', this.handlePointerMove);
         }
 
         if (this.render) {
@@ -229,6 +238,51 @@ class MatterPhysicsBackground extends gia.Component {
         const y = clientY - rect.top;
 
         this._addRandomShape(x, y);
+    }
+
+    handlePointerMove(e) {
+        // Skip if physics is paused or no engine
+        if (!this.engine || this.state.isPaused) return;
+
+        // Get relative coordinates
+        const rect = this.ref.canvas.getBoundingClientRect();
+        let clientX, clientY;
+
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const mouseX = clientX - rect.left;
+        const mouseY = clientY - rect.top;
+
+        const bodies = window.Matter.Composite.allBodies(this.engine.world);
+        const repelRadius = 150;
+        const maxForce = 0.05;
+
+        for (const body of bodies) {
+            if (body.isStatic) continue;
+
+            const dx = body.position.x - mouseX;
+            const dy = body.position.y - mouseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < repelRadius) {
+                // Calculate force magnitude: closer = stronger
+                const forceMagnitude = (1 - distance / repelRadius) * maxForce;
+
+                // Apply force outwards from the mouse
+                const force = {
+                    x: (dx / distance) * forceMagnitude,
+                    y: (dy / distance) * forceMagnitude
+                };
+
+                window.Matter.Body.applyForce(body, body.position, force);
+            }
+        }
     }
 
     handleResize(entries) {
