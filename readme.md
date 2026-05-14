@@ -17,11 +17,7 @@ Gia provides several developer experience (DX) improvements that usually require
 ### 4. Built for Code-Splitting
 The addition of the `require()` lifecycle method allows you to dynamically import heavy third-party libraries (like map wrappers or physics engines) only if the component actually exists on the page, keeping your initial bundle size tiny.
 
-## Summary
-Gia is built for "Islands of Interactivity." If you are building a traditional server-rendered website using Django, Laravel, Ruby on Rails, Astro, or purely static HTML, and you just want to sprinkle in some interactive components (sliders, modals, maps, AJAX forms) without shipping a massive JavaScript payload, Gia is designed for this use case. It gives you the structure of modern component-based UI without abandoning the simplicity of Vanilla JS.
-
 ## Table of Contents
-- [Summary](#summary)
 - [Installation](#installation)
 - [Architecture & Usage](#architecture--usage)
 - [Global Configuration (`gia.config`)](#global-configuration-giaconfig)
@@ -33,6 +29,7 @@ Gia is built for "Islands of Interactivity." If you are building a traditional s
 - [Helper Functions](#helper-functions)
 - [Examples](#examples)
 - [Bonus Tip: Gia and Swup](#bonus-tip-gia-and-swup)
+- [Summary](#summary)
 
 ## Installation
 
@@ -654,3 +651,5 @@ class OffCanvasMenu extends Component {
     }
 }
 ```
+## Summary
+Gia is built for "Islands of Interactivity." If you are building a traditional server-rendered website using Django, Laravel, Ruby on Rails, Astro, or purely static HTML, and you just want to sprinkle in some interactive components (sliders, modals, maps, AJAX forms) without shipping a massive JavaScript payload, Gia is designed for this use case. It gives you the structure of modern component-based UI without abandoning the simplicity of Vanilla JS.
