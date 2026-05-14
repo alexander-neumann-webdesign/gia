@@ -35,6 +35,13 @@ class Tabs extends gia.Component {
 			return;
 		}
 
+		// Ensure tabpanels are focusable if they don't already have a tabindex
+		this.ref.panel.forEach(panel => {
+			if (!panel.hasAttribute('tabindex')) {
+				panel.setAttribute('tabindex', '0');
+			}
+		});
+
 		// Initialize state based on DOM and URL hash.
 		const hash = window.location.hash;
 		let initialIndex = 0;
@@ -135,6 +142,11 @@ class Tabs extends gia.Component {
 				event.preventDefault();
 				newIndex = tabCount - 1;
 				break;
+			case 'Enter':
+			case ' ':
+				event.preventDefault();
+				this.setState({ activeTabIndex: currentIndex });
+				return;
 		}
 
 		if (newIndex !== currentIndex) {
@@ -179,7 +191,7 @@ class Tabs extends gia.Component {
 					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
 					if (isSelected) {
-						tab.removeAttribute('tabindex');
+						tab.setAttribute('tabindex', '0');
 					} else {
 						tab.setAttribute('tabindex', '-1');
 					}
