@@ -12,7 +12,9 @@ class FilterableList extends gia.Component {
 			announcerSingular: null,
 			announcerPlural: null,
 			announcerEmpty: null,
-			resetBtn: []
+			resetBtn: [],
+			showMoreBtn: null,
+			showMoreBtnCount: null
 		};
 
 		this.options = {
@@ -20,6 +22,7 @@ class FilterableList extends gia.Component {
 			activeFilterClass: 'is-active', // Class to apply to active filter buttons
 			staggerDelay: 20, // ms delay per item for the shuffle animation
 			maxStaggerDelay: null, // max delay in ms (defaults to staggerDelay * 12)
+			maxItemCount: -1, // max items to show initially, -1 for all
 		};
 
 		// Define internal state variables that don't trigger batched DOM updates automatically
@@ -32,6 +35,7 @@ class FilterableList extends gia.Component {
 		this._outputRafId = null;
 		this._syncOutputs = this._syncOutputs.bind(this);
 		this.handleResetClick = this.handleResetClick.bind(this);
+		this.handleShowMoreClick = this.handleShowMoreClick.bind(this);
 	}
 
 	_syncOutputs() {
@@ -61,9 +65,22 @@ class FilterableList extends gia.Component {
 		};
 	}
 
+
+	normalizeSearch(str) {
+		if (!str) return "";
+		return (
+			str
+				.toLowerCase()
+				// Adds a space between a letter and a number (e.g., "box85" -> "box 85")
+				.replace(/([a-z])(\d)/g, "$1 $2")
+				// Adds a space between a number and a letter (e.g., "85box" -> "85 box")
+				.replace(/(\d)([a-z])/g, "$1 $2")
+		);
+	}
+
 	fuzzyMatch(str, pattern) {
-		str = str.toLowerCase();
-		pattern = pattern.toLowerCase();
+		str = this.normalizeSearch(str);
+		pattern = this.normalizeSearch(pattern);
 
 		// Exact substring match check first (fastest)
 		if (str.includes(pattern)) return true;
@@ -198,6 +215,10 @@ class FilterableList extends gia.Component {
 			this.ref.resetBtn[i].removeEventListener('click', this.handleResetClick);
 		}
 
+		if (this.ref.showMoreBtn) {
+			this.ref.showMoreBtn.removeEventListener('click', this.handleShowMoreClick);
+		}
+
 		window.removeEventListener('popstate', this.handlePopState);
 
 		if (this._outputRafId) {
@@ -237,6 +258,10 @@ class FilterableList extends gia.Component {
 			this.ref.resetBtn[i].addEventListener('click', this.handleResetClick);
 		}
 
+		if (this.ref.showMoreBtn) {
+			this.ref.showMoreBtn.addEventListener('click', this.handleShowMoreClick);
+		}
+
 		window.addEventListener('popstate', this.handlePopState);
 	}
 
@@ -256,6 +281,10 @@ class FilterableList extends gia.Component {
 			const el = this.ref.filter[i];
 			const type = el.name || el.getAttribute('data-filter-type');
 			if (type) possibleFilterTypes.add(type);
+		}
+
+		if (params.get('all') === 'true') {
+			this.options.maxItemCount = -1;
 		}
 
 		for (const [key, value] of params.entries()) {
@@ -293,6 +322,12 @@ class FilterableList extends gia.Component {
 			params.set('sort', this.activeSort);
 		} else {
 			params.delete('sort');
+		}
+
+		if (this.options.maxItemCount === -1 && this.ref.showMoreBtn) {
+			params.set('all', 'true');
+		} else {
+			params.delete('all');
 		}
 
 		const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}${window.location.hash}`;
@@ -392,6 +427,36 @@ class FilterableList extends gia.Component {
 		this.applyChanges();
 	}
 
+	handleShowMoreClick(e) {
+		e.preventDefault();
+		const maxItemCountBefore = this.options.maxItemCount;
+		this.options.maxItemCount = -1;
+
+		if (this.ref.showMoreBtn) {
+			this.ref.showMoreBtn.style.display = "none";
+			this.ref.showMoreBtn.tabIndex = -1;
+		}
+
+		this.applyChanges();
+
+		window.setTimeout(() => {
+			// Find the first visible item that was previously hidden
+			let visibleIndex = 0;
+			for (let i = 0; i < this.ref.item.length; i++) {
+				if (!this.ref.item[i].hidden) {
+					if (visibleIndex === maxItemCountBefore) {
+						const focusableElement = this.ref.item[i].querySelector("a, button, input, [tabindex]");
+						if (focusableElement) {
+							focusableElement.focus();
+						}
+						break;
+					}
+					visibleIndex++;
+				}
+			}
+		}, 250);
+	}
+
 	applyChanges() {
 		this.updateURL();
 		this.updateList(true);
@@ -402,6 +467,9 @@ class FilterableList extends gia.Component {
 		const items = this.ref.item;
 		const visibleItems = [];
 		const hiddenItems = [];
+
+		let currentItemsVisibleCount = 0;
+		let currentItemsHiddenBehindMoreButtonCount = 0;
 
 		for (let index = 0; index < items.length; index++) {
 			const item = items[index];
@@ -472,9 +540,29 @@ class FilterableList extends gia.Component {
 			}
 
 			if (isVisible) {
-				visibleItems.push(item);
+				if (this.options.maxItemCount > 0 && currentItemsVisibleCount >= this.options.maxItemCount) {
+					currentItemsHiddenBehindMoreButtonCount++;
+					hiddenItems.push(item);
+				} else {
+					currentItemsVisibleCount++;
+					visibleItems.push(item);
+				}
 			} else {
 				hiddenItems.push(item);
+			}
+		}
+
+		// Update show more UI visibility
+		if (this.ref.showMoreBtn) {
+			if (this.options.maxItemCount === -1) {
+				this.ref.showMoreBtn.classList.remove("visible");
+			} else if (currentItemsHiddenBehindMoreButtonCount > 0) {
+				this.ref.showMoreBtn.classList.add("visible");
+				if (this.ref.showMoreBtnCount) {
+					this.ref.showMoreBtnCount.textContent = currentItemsHiddenBehindMoreButtonCount;
+				}
+			} else {
+				this.ref.showMoreBtn.classList.remove("visible");
 			}
 		}
 
