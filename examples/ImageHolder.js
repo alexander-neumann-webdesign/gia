@@ -66,21 +66,17 @@ class ImageHolder extends gia.Component {
 		this.isScrollBound = false;
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
-		// Calculate extra space needed to cover the parallax translation.
-		// The animation translates by: mappedProgress * speed * 100.
-		// Max translation is 0.5 * speed * ImageSize.
-		// We need ExtraSpace (E) such that E = 0.5 * speed * (1 + 2 * E).
-		// Solving for E: E = (0.5 * speed) / (1 - speed).
+		// Calculate exactly the extra space needed to cover the parallax translation.
+		// A parallaxSpeed of 0.2 means the image covers an extra 20% of the container.
 		const speed = Math.abs(this.options.parallaxSpeed);
-		const safeSpeed = Math.min(speed, 0.99); // Prevent division by zero
-		const extraSpacePercent = ((0.5 * safeSpeed) / (1 - safeSpeed)) * 100;
+		const extraSpacePercent = speed * 100;
 
 		if (this.options.parallaxDirection === 'vertical') {
-			this.ref.img.style.height = `calc(100% + ${extraSpacePercent * 2}%)`;
-			this.ref.img.style.top = `-${extraSpacePercent}%`;
+			this.ref.img.style.height = `calc(100% + ${extraSpacePercent}%)`;
+			this.ref.img.style.top = `-${extraSpacePercent / 2}%`;
 		} else {
-			this.ref.img.style.width = `calc(100% + ${extraSpacePercent * 2}%)`;
-			this.ref.img.style.left = `-${extraSpacePercent}%`;
+			this.ref.img.style.width = `calc(100% + ${extraSpacePercent}%)`;
+			this.ref.img.style.left = `-${extraSpacePercent / 2}%`;
 		}
 
 		// Cache the header element once if needed
@@ -290,7 +286,12 @@ class ImageHolder extends gia.Component {
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;
-			let offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
+
+			// translate3d percentages are relative to the image size (H_img).
+			// Since H_img = H_container * (1 + speed), we must divide the offset by (1 + speed)
+			// to ensure the translation perfectly covers the extra space we added.
+			const speedCalc = this.options.parallaxSpeed / (1 + Math.abs(this.options.parallaxSpeed));
+			let offsetPercent = mappedProgress * speedCalc * 100;
 
 			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
 			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
