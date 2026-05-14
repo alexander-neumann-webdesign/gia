@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      fitty:
+        specifier: ^2.4.2
+        version: 2.4.2
     devDependencies:
       '@playwright/test':
         specifier: ^1.60.0
@@ -408,6 +412,9 @@ packages:
     engines: {node: '>=12'}
     hasBin: true
 
+  fitty@2.4.2:
+    resolution: {integrity: sha512-GNhWgImK4+wEkgEZjBkQMyu5NLSmmryg/CaRP7zYby+TWzCrUou6BHL+iqbjKzJRXMyzuJkH+LBB1+lh4oO77g==}
+
   fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -760,6 +767,8 @@ snapshots:
       '@esbuild/win32-arm64': 0.21.5
       '@esbuild/win32-ia32': 0.21.5
       '@esbuild/win32-x64': 0.21.5
+
+  fitty@2.4.2: {}
 
   fsevents@2.3.2:
     optional: true
