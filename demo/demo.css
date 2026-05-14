@@ -571,6 +571,46 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   background: #eee;
 }
 
+.leaflet-control-attribution.leaflet-control {
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+.osm-attribution-details {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+.osm-attribution-details[open] {
+  padding: 0 5px;
+}
+.osm-attribution-details[open] .osm-attribution-text {
+  display: inline;
+}
+
+.osm-attribution-summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+}
+.osm-attribution-summary::-webkit-details-marker {
+  display: none;
+}
+
+.osm-attribution-text {
+  margin-left: 4px;
+  display: none;
+}
+
 .animated-dot {
   width: 1em;
   height: 1em;
