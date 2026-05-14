@@ -192,6 +192,11 @@ class FilterableList extends gia.Component {
 
 		// Remove popstate listener
 		window.removeEventListener('popstate', this.handlePopState);
+
+		if (this._outputRafId) {
+			cancelAnimationFrame(this._outputRafId);
+			this._outputRafId = null;
+		}
 	}
 
 	bindEvents() {
@@ -316,10 +321,9 @@ class FilterableList extends gia.Component {
 		if (e.type === 'input') {
 			if (el.type === 'range' && el.id) {
 				this._pendingOutputs.set(el.id, el.value);
-				if (this._outputRafId) {
-					cancelAnimationFrame(this._outputRafId);
+				if (!this._outputRafId) {
+					this._outputRafId = requestAnimationFrame(this._syncOutputs);
 				}
-				this._outputRafId = requestAnimationFrame(this._syncOutputs);
 			}
 			this.applyChangesDebounced();
 		} else {
