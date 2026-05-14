@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>QR Code Demo</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			padding: 2rem;
+		}
+		.qr-container {
+			display: inline-block;
+			padding: 1rem;
+			background: white;
+			border: 1px solid #ccc;
+			border-radius: 8px;
+		}
+		.qr-container svg {
+			width: 200px;
+			height: 200px;
+		}
+	</style>
+</head>
+<body>
+	<h1>QR Code Example</h1>
+	<p>This is a pure JavaScript QR Code generator component extending <code>gia.Component</code>.</p>
+
+	<div class="qr-container" data-component="QRCode" data-contents="https://github.com/web-padawan/awesome-web-components" data-type-number="4" data-error-correction-level="L">
+	</div>
+
+	<!-- load the library -->
+	<script src="../node_modules/qrcode-generator/dist/qrcode.js"></script>
+
+	<!-- load gia -->
+	<script src="../dist/gia.umd.js"></script>
+
+	<!-- load component -->
+	<script src="../examples/QRCode.js"></script>
+
+	<script>
+		gia.config.set('attrPrefix', 'data');
+		gia.loadComponents({
+			"QRCode": QRCode
+		});
+	</script>
+</body>
+</html>
