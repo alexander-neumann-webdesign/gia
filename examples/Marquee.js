@@ -54,7 +54,11 @@ class Marquee extends gia.Component {
 	mount() {
 		if (!this.ref.track) return;
 
-		this.originalItems = Array.from(this.ref.track.children);
+		this.originalItems = [];
+		const children = this.ref.track.children;
+		for (let i = 0; i < children.length; i++) {
+			this.originalItems.push(children[i]);
+		}
 		if (this.originalItems.length === 0) return;
 
 		this.setupClones();
@@ -75,9 +79,17 @@ class Marquee extends gia.Component {
 		this.unbindScroll();
 		this.destroyHover();
 		this.destroyDrag();
+
+		if (this.frameId) {
+			window.cancelAnimationFrame(this.frameId);
+		}
+		if (this.renderFrameId) {
+			window.cancelAnimationFrame(this.renderFrameId);
+		}
 	}
 
-	handleIntersection([entry]) {
+	handleIntersection(entries) {
+		const entry = entries[entries.length - 1];
 		if (entry.isIntersecting) {
 			if (!this.prefersReducedMotion) {
 				this.play();
@@ -153,7 +165,7 @@ class Marquee extends gia.Component {
 				this.currentOffset += this.scrollVelocity;
 				if (!this._isRenderingFrame) {
 					this._isRenderingFrame = true;
-					window.requestAnimationFrame(this.renderFrame);
+					this.renderFrameId = window.requestAnimationFrame(this.renderFrame);
 				}
 			}
 		}
@@ -182,7 +194,6 @@ class Marquee extends gia.Component {
 
 	preventDrag(e) {
 		e.preventDefault();
-		this.ref.track.addEventListener('dragstart', (e) => e.preventDefault());
 
 		// Ensure native touch actions don't interfere with horizontal drag
 		this.element.style.touchAction = 'pan-y';
@@ -219,7 +230,7 @@ class Marquee extends gia.Component {
 		if (!this.ticking) {
 			if (!this._isRenderingFrame) {
 				this._isRenderingFrame = true;
-				window.requestAnimationFrame(this.renderFrame);
+				this.renderFrameId = window.requestAnimationFrame(this.renderFrame);
 			}
 		}
 	}
@@ -238,7 +249,8 @@ class Marquee extends gia.Component {
 		}
 	}
 
-	handleResize([entry]) {
+	handleResize(entries) {
+		const entry = entries[entries.length - 1];
 		this.containerWidth = entry.contentRect.width;
 		this._needsBoundsUpdate = true;
 	}
@@ -267,10 +279,11 @@ class Marquee extends gia.Component {
 				cloneWrapper.setAttribute('data-nosnippet', '');
 
 				// Make inner items also hidden for safety
-				Array.from(cloneWrapper.children).forEach(child => {
-					child.setAttribute('aria-hidden', 'true');
-					child.setAttribute('data-nosnippet', '');
-				});
+				const children = cloneWrapper.children;
+				for (let j = 0; j < children.length; j++) {
+					children[j].setAttribute('aria-hidden', 'true');
+					children[j].setAttribute('data-nosnippet', '');
+				}
 
 				this.clones.push(cloneWrapper);
 				this.ref.track.appendChild(cloneWrapper);
@@ -321,7 +334,7 @@ class Marquee extends gia.Component {
 
 		this.renderPosition();
 
-		window.requestAnimationFrame(this.tick);
+		this.frameId = window.requestAnimationFrame(this.tick);
 	}
 
 	renderFrame() {
@@ -356,7 +369,9 @@ class Marquee extends gia.Component {
 
 	setupClones() {
 		// Clean up existing clones if any
-		this.clones.forEach(clone => clone.remove());
+		for (let i = 0; i < this.clones.length; i++) {
+			this.clones[i].remove();
+		}
 		this.clones = [];
 
 		// We need to calculate how many clones are needed.
@@ -369,9 +384,9 @@ class Marquee extends gia.Component {
 		originalWrapper.style.display = 'flex'; // Ensure it's inline
 		originalWrapper.style.flexShrink = '0'; // Prevent shrinking
 
-		this.originalItems.forEach(item => {
-			originalWrapper.appendChild(item);
-		});
+		for (let i = 0; i < this.originalItems.length; i++) {
+			originalWrapper.appendChild(this.originalItems[i]);
+		}
 
 		this.ref.track.appendChild(originalWrapper);
 		this.originalWrapper = originalWrapper;
