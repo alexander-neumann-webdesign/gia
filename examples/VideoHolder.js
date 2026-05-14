@@ -14,8 +14,7 @@ class VideoHolder extends gia.Component {
 		this.setState({
 			isPlaying: false,
 			isManuallyPaused: false,
-			isInViewport: false,
-			isHovered: false
+			isInViewport: false
 		});
 	}
 
@@ -36,16 +35,11 @@ class VideoHolder extends gia.Component {
 			this.ref.video.addEventListener('play', this.handleNativePlay);
 			this.ref.video.addEventListener('pause', this.handleNativePause);
 
-			// set initial hover state styles
-			this.ref.playPauseButton.style.opacity = '0';
-			this.ref.playPauseButton.style.pointerEvents = 'none';
-			this.ref.playPauseButton.style.transition = 'opacity 0.2s ease-in-out';
-
 			// Initialize state from DOM
 			this.setState({ isPlaying: !this.ref.video.paused });
 		}
 
-		if (this.options.playOnHover || this.ref.playPauseButton) {
+		if (this.options.playOnHover) {
 			this.element.addEventListener('mouseenter', this.handleMouseEnter);
 			this.element.addEventListener('mouseleave', this.handleMouseLeave);
 		}
@@ -68,31 +62,26 @@ class VideoHolder extends gia.Component {
 			this.ref.video.removeEventListener('pause', this.handleNativePause);
 		}
 
-		if (this.options.playOnHover || this.ref.playPauseButton) {
+		if (this.options.playOnHover) {
 			this.element.removeEventListener('mouseenter', this.handleMouseEnter);
 			this.element.removeEventListener('mouseleave', this.handleMouseLeave);
 		}
 	}
 
 	handleIntersect(entries) {
-		const entry = entries[entries.length - 1];
-		this.setState({ isInViewport: entry.isIntersecting });
+		entries.forEach((entry) => {
+			this.setState({ isInViewport: entry.isIntersecting });
+		});
 	}
 
 	handleMouseEnter() {
-		const stateUpdates = { isHovered: true };
-		if (this.options.playOnHover && !this.state.isManuallyPaused) {
-			stateUpdates.isPlaying = true;
+		if (!this.state.isManuallyPaused) {
+			this.setState({ isPlaying: true });
 		}
-		this.setState(stateUpdates);
 	}
 
 	handleMouseLeave() {
-		const stateUpdates = { isHovered: false };
-		if (this.options.playOnHover) {
-			stateUpdates.isPlaying = false;
-		}
-		this.setState(stateUpdates);
+		this.setState({ isPlaying: false });
 	}
 
 	handleNativePlay() {
@@ -131,18 +120,6 @@ class VideoHolder extends gia.Component {
 				this.setState({ isPlaying: true });
 			} else if (!this.state.isInViewport) {
 				this.setState({ isPlaying: false });
-			}
-		}
-
-		if ('isHovered' in stateChanges) {
-			if (this.ref.playPauseButton) {
-				if (this.state.isHovered) {
-					this.ref.playPauseButton.style.opacity = '1';
-					this.ref.playPauseButton.style.pointerEvents = 'auto';
-				} else {
-					this.ref.playPauseButton.style.opacity = '0';
-					this.ref.playPauseButton.style.pointerEvents = 'none';
-				}
 			}
 		}
 
@@ -217,11 +194,18 @@ gia.register(VideoHolder);
  *     display: flex;
  *     align-items: center;
  *     justify-content: center;
- *     transition: background-color 0.3s ease;
+ *     opacity: 0;
+ *     pointer-events: none;
+ *     transition: opacity 0.3s ease, background-color 0.3s ease;
  *
  *     &:hover {
  *       background: rgba(0,0,0,0.8);
  *     }
+ *   }
+ *
+ *   &:hover button[data-ref="playPauseButton"] {
+ *     opacity: 1;
+ *     pointer-events: auto;
  *   }
  * }
  */
