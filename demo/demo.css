@@ -1104,7 +1104,7 @@ button[data-component=ClipboardCopy][data-status=error] {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s ease, margin 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s ease, margin 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-radius 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, width, height;
 }
 
@@ -1130,10 +1130,6 @@ button[data-component=ClipboardCopy][data-status=error] {
 }
 
 [data-cursor-state=magnetic] .custom-cursor__dot {
-  width: 40px;
-  height: 40px;
-  margin-left: -20px;
-  margin-top: -20px;
   background-color: transparent;
   border: 2px solid var(--color-primary, #000);
 }
