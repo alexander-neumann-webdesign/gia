@@ -29,6 +29,7 @@ class FilterableList extends gia.Component {
 		this._pendingOutputs = new Map();
 		this._outputRafId = null;
 		this._syncOutputs = this._syncOutputs.bind(this);
+		this.handleResetClick = this.handleResetClick.bind(this);
 	}
 
 	_syncOutputs() {
@@ -191,6 +192,10 @@ class FilterableList extends gia.Component {
 		}
 
 		// Remove popstate listener
+		for (let i = 0; i < this.ref.resetBtn.length; i++) {
+			this.ref.resetBtn[i].removeEventListener('click', this.handleResetClick);
+		}
+
 		window.removeEventListener('popstate', this.handlePopState);
 	}
 
@@ -219,6 +224,10 @@ class FilterableList extends gia.Component {
 			} else {
 				el.addEventListener('click', this.handleSorterClick);
 			}
+		}
+
+		for (let i = 0; i < this.ref.resetBtn.length; i++) {
+			this.ref.resetBtn[i].addEventListener('click', this.handleResetClick);
 		}
 
 		window.addEventListener('popstate', this.handlePopState);
@@ -366,6 +375,12 @@ class FilterableList extends gia.Component {
 			this.activeSort = sortValue;
 			this.applyChanges();
 		}
+	}
+
+	handleResetClick(e) {
+		e.preventDefault();
+		this.activeFilters = {};
+		this.applyChanges();
 	}
 
 	applyChanges() {
@@ -521,7 +536,7 @@ class FilterableList extends gia.Component {
 		}
 
 		// Trigger setState for batched attributes (like active classes on buttons)
-		this.updateControlStates();
+		this.updateControlStates(visibleItems.length);
 	}
 
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
@@ -541,14 +556,35 @@ class FilterableList extends gia.Component {
 		}
 	}
 
-	updateControlStates() {
+	updateControlStates(visibleCount) {
 		// Let's use setState to trigger stateChange for UI updates
 		this.setState({
-			filtersUpdated: Date.now() // Dummy state to trigger stateChange
+			filtersUpdated: Date.now(), // Dummy state to trigger stateChange
+			resultsCount: visibleCount
 		});
 	}
 
 	stateChange(stateChanges) {
+		if ('resultsCount' in stateChanges) {
+			const count = stateChanges.resultsCount;
+
+			for (let i = 0; i < this.ref.announcerCount.length; i++) {
+				this.ref.announcerCount[i].textContent = count;
+			}
+
+			if (this.ref.announcerSingular) {
+				this.ref.announcerSingular.hidden = count !== 1;
+			}
+
+			if (this.ref.announcerPlural) {
+				this.ref.announcerPlural.hidden = count === 1 || count === 0;
+			}
+
+			if (this.ref.announcerEmpty) {
+				this.ref.announcerEmpty.hidden = count > 0;
+			}
+		}
+
 		if ('filtersUpdated' in stateChanges) {
 			// Update filter elements
 			for (let i = 0; i < this.ref.filter.length; i++) {
