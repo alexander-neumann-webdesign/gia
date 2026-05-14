@@ -8,8 +8,6 @@ class TextFit extends gia.Component {
 			multiLine: true,
 			...this.options
 		};
-
-		this.handleResize = this.handleResize.bind(this);
 	}
 
 	async require() {
@@ -19,26 +17,12 @@ class TextFit extends gia.Component {
 	mount() {
 		if (typeof fitty === 'function') {
 			this.fittyInstances = fitty(this.element, this.options);
-			this.observeResize(this.element.parentElement, this.handleResize);
 		} else {
 			console.warn("TextFit: fitty is not defined. Make sure to include the fitty library.");
 		}
 	}
 
-	handleResize() {
-		if (this.fittyInstances) {
-			const instances = Array.isArray(this.fittyInstances) ? this.fittyInstances : [this.fittyInstances];
-			instances.forEach(instance => {
-				if (instance && typeof instance.fit === 'function') {
-					instance.fit();
-				}
-			});
-		}
-	}
-
 	unmount() {
-		this.unobserveResize(this.element.parentElement);
-
 		// Clean up fitty instances if they exist and have an unsubscribe method
 		if (this.fittyInstances) {
 			const instances = Array.isArray(this.fittyInstances) ? this.fittyInstances : [this.fittyInstances];
