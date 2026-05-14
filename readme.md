@@ -552,10 +552,9 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **Tabs**: A classic tabbed interface component relying on Gia's state management to toggle active views and ARIA attributes. Also supports URL hash syncing for bookmarkable tabs.
 *   **Accordion**: A semantic, highly-accessible accordion utilizing native `<details>` and `<summary>` tags. Manages state reactively to auto-close sibling panels and syncs active open states with the URL hash for deep linking.
 
-### UI Components & Forms
+### UI Components
 *   **Modal**: An accessible dialog window leveraging the native `<dialog>` element. It supports complex triggering via external targets, click-outside-to-close logic, and manages URL hash syncing.
 *   **Tooltip**: A robust tooltip component asynchronously importing the Floating UI library via `require()` to calculate precise, collision-aware absolute positioning.
-*   **Form**: An AJAX-powered form component with built-in HTML5 validation handling, animated SVG loading spinners, and state-driven success/error messaging.
 *   **ThemeToggle**: A dark/light mode toggle switch that interacts with `localStorage` and optionally mutates global root state to persist user visual preferences.
 *   **ClipboardCopy**: A minimal utility component that seamlessly copies text to the user's clipboard, demonstrating how to use `this.setState` to provide temporary visual UI feedback (e.g., "Copied!") after a successful action.
 *   **CustomCursor**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for smooth magnetic snapping and morphing over interactive elements.
@@ -570,15 +569,20 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **Reveal**: A highly optimized, stagger-ready scroll-reveal component that fades and translates elements into view. It leverages the globally shared `observeIntersection` API to handle hundreds of elements without memory leaks or performance degradation.
 *   **Marquee**: An infinite-scrolling marquee component that automatically clones elements and handles continuous, sub-pixel perfect `requestAnimationFrame` updates, complete with Lenis smooth-scroll velocity integration.
 *   **SplitText**: A specialized typography component for complex text animations. It intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API while perfectly preserving screen reader accessibility.
-*   **MatterPhysicsBackground**: An interactive physics-based background canvas utilizing Matter.js. Complete with responsive resizing, automatic pausing via IntersectionObserver to save CPU resources, and `prefers-reduced-motion` support.
 
 ### Data & State Management
 *   **FilterableList**: A powerful filtering and sorting component for item collections. It synchronizes state with URL search parameters and utilizes the modern View Transitions API for buttery-smooth, hardware-accelerated DOM reordering.
-*   **TodoApp**: A fully-featured todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
 
-### Maps & Complex Apps
+### Forms
+*   **Form**: An AJAX-powered form component with built-in HTML5 validation handling, animated SVG loading spinners, and state-driven success/error messaging.
+
+### Maps
 *   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the massive mapping library and styles on-demand, dynamically calculating and framing bounding boxes for location markers.
 *   **OpenStreetMap**: A Leaflet-based interactive map component that asynchronously loads its dependencies and styles, plots markers with popups, and minimizes attribution noise.
+
+### Complex Apps
+*   **MatterPhysicsBackground**: An interactive physics-based background canvas utilizing Matter.js. Complete with responsive resizing, automatic pausing via IntersectionObserver to save CPU resources, and `prefers-reduced-motion` support.
+*   **TodoApp**: A fully-featured todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
 *   **PongGame**: A complete, playable Pong game built entirely within a single Gia component. Demonstrates a custom game loop running within `requestAnimationFrame`, keyboard input handling, collision logic, scoring state, and Canvas API drawing.
 
 ## Bonus Tip: Gia and Swup
