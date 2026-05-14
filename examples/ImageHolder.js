@@ -66,23 +66,6 @@ class ImageHolder extends gia.Component {
 		this.isScrollBound = false;
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
-		// Calculate extra space needed to cover the parallax translation.
-		// The animation translates by: mappedProgress * speed * 100.
-		// Max translation is 0.5 * speed * ImageSize.
-		// We need ExtraSpace (E) such that E = 0.5 * speed * (1 + 2 * E).
-		// Solving for E: E = (0.5 * speed) / (1 - speed).
-		const speed = Math.abs(this.options.parallaxSpeed);
-		const safeSpeed = Math.min(speed, 0.99); // Prevent division by zero
-		const extraSpacePercent = ((0.5 * safeSpeed) / (1 - safeSpeed)) * 100;
-
-		if (this.options.parallaxDirection === 'vertical') {
-			this.ref.img.style.height = `calc(100% + ${extraSpacePercent * 2}%)`;
-			this.ref.img.style.top = `-${extraSpacePercent}%`;
-		} else {
-			this.ref.img.style.width = `calc(100% + ${extraSpacePercent * 2}%)`;
-			this.ref.img.style.left = `-${extraSpacePercent}%`;
-		}
-
 		// Cache the header element once if needed
 		if (this.options.startFromTop) {
 			this.headerElement = document.querySelector('header#main-header');
@@ -295,9 +278,10 @@ class ImageHolder extends gia.Component {
 			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
 			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
 
+			const scaleStr = ` scale(${1 + Math.abs(this.options.parallaxSpeed)})`;
 			const transformStr = this.options.parallaxDirection === 'horizontal'
-				? `translate3d(${offsetPercent}%, 0, 0)`
-				: `translate3d(0, ${offsetPercent}%, 0)`;
+				? `translate3d(${offsetPercent}%, 0, 0)${scaleStr}`
+				: `translate3d(0, ${offsetPercent}%, 0)${scaleStr}`;
 
 			if (this._lastTransform !== transformStr) {
 				this.ref.img.style.transform = transformStr;
