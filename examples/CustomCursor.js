@@ -212,7 +212,7 @@ class CustomCursor extends gia.Component {
             targetY = this.magneticBounds.centerY + pullY;
 
             // Also move the magnetic element itself slightly towards the mouse
-            const magneticTransformStr = `translate3d(${pullX}px, ${pullY}px, 0px)`;
+            const magneticTransformStr = `translate3d(${pullX.toFixed(4)}px, ${pullY.toFixed(4)}px, 0px)`;
             if (this._lastMagneticTransform !== magneticTransformStr) {
                 this.magneticTarget.style.transform = magneticTransformStr;
                 this._lastMagneticTransform = magneticTransformStr;
@@ -228,7 +228,7 @@ class CustomCursor extends gia.Component {
 
         // Apply to DOM
         if (this.ref.dot) {
-            const dotTransformStr = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+            const dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
             if (this._lastDotTransform !== dotTransformStr) {
                 this.ref.dot.style.transform = dotTransformStr;
                 this._lastDotTransform = dotTransformStr;
@@ -247,7 +247,7 @@ class CustomCursor extends gia.Component {
             this.cursor.x = targetX;
             this.cursor.y = targetY;
             if (this.ref.dot) {
-                const dotTransformStr = `translate3d(${this.cursor.x}px, ${this.cursor.y}px, 0px)`;
+                const dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
                 if (this._lastDotTransform !== dotTransformStr) {
                     this.ref.dot.style.transform = dotTransformStr;
                     this._lastDotTransform = dotTransformStr;
