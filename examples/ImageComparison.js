@@ -44,3 +44,4 @@ class ImageComparison extends gia.Component {
         }
     }
 }
+gia.register(ImageComparison);
