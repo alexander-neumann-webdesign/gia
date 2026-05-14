@@ -346,7 +346,8 @@ class Marquee extends gia.Component {
 		this.currentOffset = offset;
 
 		// Apply transform to the track
-		const transformStr = `translate3d(${this.currentOffset}px, 0, 0)`;
+		const roundedOffset = Math.round(this.currentOffset * 10000) / 10000;
+		const transformStr = `translate3d(${roundedOffset}px, 0, 0)`;
 		if (this._lastTransform !== transformStr) {
 			this.ref.track.style.transform = transformStr;
 			this._lastTransform = transformStr;
