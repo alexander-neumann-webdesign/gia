@@ -132,6 +132,12 @@ class Tooltip extends gia.Component {
 		this.isOpen = true;
 
 		if (typeof this.popoverElement.showPopover === 'function') {
+			// ⚡ BOLT OPTIMIZATION: Force layout recalculation before showing to ensure
+			// @starting-style CSS animations execute correctly on the very first render
+			this.popoverElement.style.display = 'block';
+			this.popoverElement.clientWidth;
+			this.popoverElement.style.display = '';
+
 			this.popoverElement.showPopover();
 		} else {
 			this.popoverElement.style.display = 'block';
