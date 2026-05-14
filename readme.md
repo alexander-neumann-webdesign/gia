@@ -559,6 +559,7 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **ClipboardCopy**: A minimal utility component that seamlessly copies text to the user's clipboard, demonstrating how to use `this.setState` to provide temporary visual UI feedback (e.g., "Copied!") after a successful action.
 *   **CustomCursor**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for smooth magnetic snapping and morphing over interactive elements.
 *   **TextFit**: A typography utility component that integrates the `fitty` library to perfectly scale text to fit its container, automatically handling resize observation and instance cleanup.
+*   **QRCode**: A component that dynamically generates SVG QR codes. It asynchronously loads the `qrcode-generator` library via `require()` only when needed and reacts to state changes to update the code.
 
 ### Media & Galleries
 *   **Slider**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms via `requestAnimationFrame`.
