@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gia Components Demo</title>
+    <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
     <link rel="stylesheet" href="./demo.css">
     <style>
         body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
@@ -762,6 +763,17 @@
         </div>
     </section>
 
+    <section id="TextFit">
+        <h2>TextFit</h2>
+        <div class="demo-block" style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
+            <div style="width: 100%;">
+                <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}' style="display: inline-block; white-space: nowrap;">
+                    Resize this container to see text scaling
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="ThemeToggle">
         <h2>ThemeToggle</h2>
         <div class="demo-block">
@@ -915,6 +927,7 @@
     <script src="../examples/OpenStreetMap.js"></script>
     <script src="../examples/MapLibreMap.js"></script>
     <script src="../examples/CustomCursor.js"></script>
+    <script src="../examples/TextFit.js"></script>
     <script src="../examples/RangeSlider.js"></script>
 
     <script src="./demo.js"></script>
