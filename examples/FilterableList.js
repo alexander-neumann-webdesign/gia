@@ -18,6 +18,7 @@ class FilterableList extends gia.Component {
 		this.options = {
 			defaultSort: '', // e.g. 'price:asc'
 			activeFilterClass: 'is-active', // Class to apply to active filter buttons
+			staggerDelay: 20, // ms delay per item for the shuffle animation
 		};
 
 		// Define internal state variables that don't trigger batched DOM updates automatically
@@ -504,15 +505,36 @@ class FilterableList extends gia.Component {
 		// Perform DOM update
 		if (animate && document.startViewTransition) {
 			const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
+			let staggerCss = '';
+			let staggerIndex = 0;
 
 			// Apply unique names before transition
 			for (let i = 0; i < visibleItems.length; i++) {
-				visibleItems[i].style.viewTransitionName = `${componentId}-${visibleItems[i]._originalIndex}`;
+				const vName = `${componentId}-${visibleItems[i]._originalIndex}`;
+				visibleItems[i].style.viewTransitionName = vName;
+				if (this.options.staggerDelay > 0) {
+					const delay = staggerIndex * this.options.staggerDelay;
+					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
+					staggerIndex++;
+				}
 			}
 			for (let i = 0; i < hiddenItems.length; i++) {
-				hiddenItems[i].style.viewTransitionName = `${componentId}-${hiddenItems[i]._originalIndex}`;
+				const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
+				hiddenItems[i].style.viewTransitionName = vName;
+				if (this.options.staggerDelay > 0) {
+					const delay = staggerIndex * this.options.staggerDelay;
+					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
+					staggerIndex++;
+				}
 			}
 			this.ref.container.style.viewTransitionName = `${componentId}-container`;
+
+			let styleEl = null;
+			if (staggerCss) {
+				styleEl = document.createElement('style');
+				styleEl.textContent = staggerCss;
+				document.head.appendChild(styleEl);
+			}
 
 			// Disable full page transitions so pointer events continue to work for controls outside the container
 			document.documentElement.style.viewTransitionName = 'none';
@@ -526,6 +548,9 @@ class FilterableList extends gia.Component {
 			transition.finished.catch(() => {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
+				if (styleEl) {
+					styleEl.remove();
+				}
 				if (this._currentTransition === transition) {
 					// Clean up to avoid global namespace pollution
 					for (let i = 0; i < visibleItems.length; i++) {
