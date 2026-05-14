@@ -63,6 +63,28 @@ details[data-component=Accordion] .content > :last-child {
 details[data-component=Accordion] summary {
   cursor: pointer;
   user-select: none;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+details[data-component=Accordion] summary::-webkit-details-marker {
+  display: none;
+}
+details[data-component=Accordion] .accordion-icon {
+  flex-shrink: 0;
+  margin-left: 1rem;
+  transition: transform 0.3s ease;
+}
+details[data-component=Accordion] .accordion-icon.accordion-icon--plus .vertical-line {
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
+details[data-component=Accordion][open] .accordion-icon--arrow {
+  transform: rotate(180deg);
+}
+details[data-component=Accordion][open] .accordion-icon--plus .vertical-line {
+  transform: rotate(90deg);
 }
 
 /* --- ClipboardCopy --- */
@@ -1000,10 +1022,16 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton] {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
   background: rgba(0, 0, 0, 0.8);
+}
+div[data-component=VideoHolder]:hover button[data-ref=playPauseButton] {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .physics-section {
