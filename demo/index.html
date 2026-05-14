@@ -649,16 +649,26 @@
         <h2>Tabs</h2>
         <div class="demo-block">
             <div data-component="Tabs">
-  <div role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
-    <button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
-    <button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
+  <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
+    <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
+    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
+    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" tabindex="-1">Tab 3</button>
   </div>
   <div class="tab-panels">
-    <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
-      <p>Panel 1 content</p>
+    <div data-ref="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+      <h3>Full-width Tab 1</h3>
+      <p>This tabs layout adapts to different screen sizes using grid. We added some extra content here so you can see how heights change depending on what's active.</p>
     </div>
-    <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
-      <p>Panel 2 content</p>
+    <div data-ref="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+      <h3>Shorter Tab 2</h3>
+      <p>Just a small amount of text here.</p>
+    </div>
+    <div data-ref="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+      <h3>Tab 3 with ImageHolder</h3>
+      <p>This panel contains the requested ImageHolder component.</p>
+      <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}' style="height: 300px; width: 100%;">
+        <img data-ref="img" src="image.png" sizes="100vw" alt="A nice image" loading="lazy" />
+      </div>
     </div>
   </div>
 </div>

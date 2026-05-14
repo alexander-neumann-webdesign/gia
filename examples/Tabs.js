@@ -13,6 +13,8 @@ class Tabs extends gia.Component {
 		this.setState({
 			activeTabIndex: -1
 		});
+
+		this.updateIndicator = this.updateIndicator.bind(this);
 	}
 
 	mount() {
@@ -73,9 +75,21 @@ class Tabs extends gia.Component {
 				}, 100);
 			}
 		}
+
+		if (this.ref.tabList) {
+			this.resizeObserver = new ResizeObserver(() => {
+				this.updateIndicator();
+			});
+			this.resizeObserver.observe(this.ref.tabList);
+		}
 	}
 
 	unmount() {
+		if (this.resizeObserver) {
+			this.resizeObserver.disconnect();
+			this.resizeObserver = null;
+		}
+
 		this.ref.tab.forEach((tab, index) => {
 			if (this.tabClickHandlers[index]) {
 				tab.removeEventListener('click', this.tabClickHandlers[index]);
@@ -139,11 +153,26 @@ class Tabs extends gia.Component {
 		}
 	}
 
+	updateIndicator() {
+		const activeIndex = this.state.activeTabIndex;
+		const activeTab = this.ref.tab[activeIndex];
+
+		if (activeTab && this.ref.tabList) {
+			const left = activeTab.offsetLeft;
+			const width = activeTab.offsetWidth;
+
+			this.ref.tabList.style.setProperty('--indicator-left', `${left}px`);
+			this.ref.tabList.style.setProperty('--indicator-width', `${width}px`);
+		}
+	}
+
 	stateChange(stateChanges) {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
 
 			const updateDOM = () => {
+				this.updateIndicator();
+
 				// Update Tabs
 				this.ref.tab.forEach((tab, index) => {
 					const isSelected = index === activeIndex;
