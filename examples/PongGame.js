@@ -84,6 +84,7 @@ class PongGame extends gia.Component {
         // Cache layout dimensions to avoid getBoundingClientRect in hot paths
         this.width = entry.contentRect.width;
         this.height = entry.contentRect.height;
+        this.offsetTop = this.element.getBoundingClientRect().top + window.scrollY;
 
         // Update canvas size
         this.ref.canvas.width = this.width;
@@ -107,18 +108,7 @@ class PongGame extends gia.Component {
     }
 
     handlePointerMove(e) {
-        // e.clientY is relative to viewport. We need it relative to the element.
-        // We cached element dimensions via ResizeObserver, but we need its position.
-        // Since it's a pointer move, we can just use bounding client rect on the event target,
-        // OR better yet, calculate an offset based on the event.
-        // For max performance, we avoid getBoundingClientRect here if we can.
-        // If element is position: relative/absolute, e.offsetY might work if target is the element.
-
-        // Let's use a cached bounding client rect approach or just accept the offset
-        // Since we want the paddle center to follow the mouse Y:
-
-        const rect = this.element.getBoundingClientRect(); // Minimal read
-        let y = e.clientY - rect.top;
+        let y = e.pageY - this.offsetTop;
 
         // Clamp to screen bounds
         y = Math.max(0, Math.min(y, this.height - this.options.paddleHeight));
@@ -184,26 +174,34 @@ class PongGame extends gia.Component {
 
     gameLoop(currentTime) {
         // Calculate delta time for smooth movement regardless of framerate
-        const deltaTime = (currentTime - this.lastTime) / 16.66; // Normalize to ~60fps
+        const timeScale = (currentTime - this.lastTime) / 16.666; // Normalize to ~60fps
         this.lastTime = currentTime;
 
-        this.update(deltaTime);
+        this.update(timeScale);
         this.draw();
 
         this.animationFrameId = requestAnimationFrame(this.gameLoop);
     }
 
-    update(dt) {
+    update(timeScale) {
         // Move ball
-        this.ballX += this.ballVelocityX * dt;
-        this.ballY += this.ballVelocityY * dt;
+        this.ballX += this.ballVelocityX * timeScale;
+        this.ballY += this.ballVelocityY * timeScale;
 
         // AI Logic: follow the ball
         const aiCenter = this.aiY + (this.options.paddleHeight / 2);
-        if (aiCenter < this.ballY - 10) {
-            this.aiY += this.options.aiSpeed * dt;
-        } else if (aiCenter > this.ballY + 10) {
-            this.aiY -= this.options.aiSpeed * dt;
+
+        // Frame-rate independent exponential smoothing for AI tracking
+        const interpolationFactor = 1 - Math.pow(1 - 0.1, timeScale);
+        const targetAiY = this.ballY - (this.options.paddleHeight / 2);
+        this.aiY += (targetAiY - this.aiY) * interpolationFactor;
+
+        // Apply constant speed limit to AI after exponential smoothing to make it beatable
+        const maxMove = this.options.aiSpeed * timeScale;
+        const actualMove = this.aiY - (aiCenter - (this.options.paddleHeight / 2));
+
+        if (Math.abs(actualMove) > maxMove) {
+            this.aiY = (aiCenter - (this.options.paddleHeight / 2)) + (Math.sign(actualMove) * maxMove);
         }
 
         // Clamp AI paddle
