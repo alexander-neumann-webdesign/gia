@@ -4,7 +4,8 @@ class CustomCursor extends gia.Component {
 
         this.options = {
             friction: 0.8, // The lerp friction. Lower = slower. 0.8 is quite responsive
-            magneticStrength: 0.3 // How much the magnetic element is pulled towards the mouse
+            magneticStrength: 0.3, // How much the magnetic element is pulled towards the mouse
+            magneticPadding: 40 // The extended magnetic zone beyond the element bounds
         };
 
         this.ref = {
@@ -16,6 +17,7 @@ class CustomCursor extends gia.Component {
         this.render = this.render.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleScroll = this.handleScroll.bind(this);
+        this.handleResize = this.handleResize.bind(this);
 
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
@@ -24,6 +26,9 @@ class CustomCursor extends gia.Component {
         this.magneticTarget = null;
         this.magneticBounds = null;
 
+        // Cache of all magnetic elements to avoid layout thrashing during mousemove
+        this.cachedMagneticElements = [];
+
         // Current visual state
         this.currentState = 'default';
         this.currentText = '';
@@ -31,7 +36,7 @@ class CustomCursor extends gia.Component {
         // Animation loop control
         this._rafId = null;
         this._isRenderingFrame = false;
-        this._needsBoundsUpdate = false;
+        this._needsAllBoundsUpdate = true;
         this._lastTime = performance.now();
         this._lastDotTransform = '';
         this._lastMagneticTransform = '';
@@ -39,6 +44,10 @@ class CustomCursor extends gia.Component {
         this._currentPullY = 0;
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Observers to keep bounds up to date
+        this.resizeObserver = null;
+        this.mutationObserver = null;
     }
 
     mount() {
@@ -49,6 +58,30 @@ class CustomCursor extends gia.Component {
 
         window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
         window.addEventListener('scroll', this.handleScroll, { passive: true });
+        window.addEventListener('resize', this.handleResize, { passive: true });
+
+        // Setup observers to trigger bounds updates
+        if (window.ResizeObserver) {
+            this.resizeObserver = new ResizeObserver(this.handleResize);
+            this.resizeObserver.observe(document.body);
+        }
+
+        if (window.MutationObserver) {
+            this.mutationObserver = new MutationObserver((mutations) => {
+                let shouldUpdate = false;
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                        shouldUpdate = true;
+                        break;
+                    }
+                }
+                if (shouldUpdate) {
+                    this._needsAllBoundsUpdate = true;
+                    this._wakeUp();
+                }
+            });
+            this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'class'] });
+        }
 
         // Start the render loop initially
         this._lastTime = performance.now();
@@ -59,6 +92,15 @@ class CustomCursor extends gia.Component {
     unmount() {
         window.removeEventListener('mousemove', this.handleMouseMove);
         window.removeEventListener('scroll', this.handleScroll);
+        window.removeEventListener('resize', this.handleResize);
+
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+        }
+
         this._isRenderingFrame = false;
         if (this._rafId) {
             cancelAnimationFrame(this._rafId);
@@ -73,33 +115,32 @@ class CustomCursor extends gia.Component {
         }
     }
 
-    handleMouseMove(e) {
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
-
-        // Wake up render loop if asleep
+    _wakeUp() {
         if (!this._isRenderingFrame) {
             this._lastTime = performance.now();
             this._isRenderingFrame = true;
             this._rafId = requestAnimationFrame(this.render);
         }
+    }
+
+    handleMouseMove(e) {
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+
+        this._wakeUp();
 
         // Process interactions via event delegation
         this._processInteractions(e.target);
     }
 
     handleScroll() {
-        // Scroll can change relative positions, so wake up the loop
-        if (!this._isRenderingFrame) {
-            this._lastTime = performance.now();
-            this._isRenderingFrame = true;
-            this._rafId = requestAnimationFrame(this.render);
-        }
+        this._needsAllBoundsUpdate = true;
+        this._wakeUp();
+    }
 
-        // Re-evaluate magnetic bounds on scroll if active
-        if (this.magneticTarget) {
-            this._needsBoundsUpdate = true;
-        }
+    handleResize() {
+        this._needsAllBoundsUpdate = true;
+        this._wakeUp();
     }
 
     _processInteractions(target) {
@@ -124,10 +165,36 @@ class CustomCursor extends gia.Component {
             }
         }
 
-        // Magnetic Hover
-        const magneticEl = target.closest('[data-magnetic]');
+        // Magnetic Hover logic
+        // We find the closest magnetic element from the cached bounds
+        let closestMagneticEl = null;
 
-        if (magneticEl && this.magneticTarget !== magneticEl) {
+        let minDistanceSq = Infinity;
+
+        for (const item of this.cachedMagneticElements) {
+            const { el, bounds } = item;
+
+            // Check if mouse is within the padded bounds
+            if (
+                this.mouse.x >= bounds.left - this.options.magneticPadding &&
+                this.mouse.x <= bounds.right + this.options.magneticPadding &&
+                this.mouse.y >= bounds.top - this.options.magneticPadding &&
+                this.mouse.y <= bounds.bottom + this.options.magneticPadding
+            ) {
+                // Find the closest one by center distance to handle overlapping padded zones
+                const dx = this.mouse.x - bounds.centerX;
+                const dy = this.mouse.y - bounds.centerY;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq < minDistanceSq) {
+                    minDistanceSq = distSq;
+                    closestMagneticEl = el;
+                    this.magneticBounds = bounds;
+                }
+            }
+        }
+
+        if (closestMagneticEl && this.magneticTarget !== closestMagneticEl) {
             // Enter new magnetic element
             if (this.magneticTarget) {
                 // Cleanup previous
@@ -136,20 +203,29 @@ class CustomCursor extends gia.Component {
                 this.magneticTarget.classList.remove('is-magnetic-active');
             }
 
-            this.magneticTarget = magneticEl;
+            this.magneticTarget = closestMagneticEl;
             this.magneticTarget.classList.add('is-magnetic-active');
             this._currentPullX = 0;
             this._currentPullY = 0;
 
-            // Defer bounds calculation to the next render frame to avoid synchronous layout thrashing
-            this._needsBoundsUpdate = true;
-
             if (this.currentState !== 'magnetic') {
                 this.currentState = 'magnetic';
                 this.element.setAttribute('data-cursor-state', 'magnetic');
+
+                // Set inline styles to "embrace" the element
+                if (this.ref.dot) {
+                    const computedStyle = window.getComputedStyle(this.magneticTarget);
+                    const borderRadius = computedStyle.borderRadius || '0px';
+
+                    this.ref.dot.style.width = `${this.magneticBounds.width}px`;
+                    this.ref.dot.style.height = `${this.magneticBounds.height}px`;
+                    this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
+                    this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
+                    this.ref.dot.style.borderRadius = borderRadius;
+                }
             }
 
-        } else if (!magneticEl && this.magneticTarget) {
+        } else if (!closestMagneticEl && this.magneticTarget) {
             // Exit magnetic element
             this.magneticTarget.style.transform = '';
             this._lastMagneticTransform = '';
@@ -160,6 +236,15 @@ class CustomCursor extends gia.Component {
             if (this.currentState === 'magnetic') {
                 this.currentState = 'default';
                 this.element.setAttribute('data-cursor-state', 'default');
+
+                // Clear inline styles
+                if (this.ref.dot) {
+                    this.ref.dot.style.width = '';
+                    this.ref.dot.style.height = '';
+                    this.ref.dot.style.marginLeft = '';
+                    this.ref.dot.style.marginTop = '';
+                    this.ref.dot.style.borderRadius = '';
+                }
             }
         }
     }
@@ -167,21 +252,45 @@ class CustomCursor extends gia.Component {
     render(time) {
         if (!this._isRenderingFrame) return;
 
-        if (this._needsBoundsUpdate && this.magneticTarget) {
-            this._needsBoundsUpdate = false;
-            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing (modifying DOM transform before reading)
-            const rect = this.magneticTarget.getBoundingClientRect();
-            const untransformedLeft = rect.left - this._currentPullX;
-            const untransformedTop = rect.top - this._currentPullY;
+        if (this._needsAllBoundsUpdate) {
+            this._needsAllBoundsUpdate = false;
 
-            this.magneticBounds = {
-                x: untransformedLeft,
-                y: untransformedTop,
-                width: rect.width,
-                height: rect.height,
-                centerX: untransformedLeft + rect.width / 2,
-                centerY: untransformedTop + rect.height / 2
-            };
+            // Rebuild the cache of all magnetic elements
+            const elements = document.querySelectorAll('[data-magnetic]');
+            this.cachedMagneticElements = [];
+
+            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
+            for (const el of elements) {
+                // If it's the current target, we need to mathematically untransform it
+                let rect = el.getBoundingClientRect();
+
+                let left = rect.left;
+                let top = rect.top;
+                let width = rect.width;
+                let height = rect.height;
+
+                if (el === this.magneticTarget) {
+                    left -= this._currentPullX;
+                    top -= this._currentPullY;
+                }
+
+                const bounds = {
+                    left: left,
+                    top: top,
+                    right: left + width,
+                    bottom: top + height,
+                    width: width,
+                    height: height,
+                    centerX: left + width / 2,
+                    centerY: top + height / 2
+                };
+
+                this.cachedMagneticElements.push({ el, bounds });
+
+                if (el === this.magneticTarget) {
+                    this.magneticBounds = bounds;
+                }
+            }
         }
 
         // Calculate delta time for frame-rate independent lerp
@@ -333,7 +442,8 @@ SUGGESTED SCSS
     transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
                 height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
                 background-color 0.3s ease,
-                margin 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+                margin 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+                border-radius 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     will-change: transform, width, height;
 }
 
@@ -367,10 +477,6 @@ SUGGESTED SCSS
 
 [data-cursor-state="magnetic"] {
     .custom-cursor__dot {
-        width: 40px;
-        height: 40px;
-        margin-left: -20px;
-        margin-top: -20px;
         background-color: transparent;
         border: 2px solid var(--color-primary, #000);
     }
