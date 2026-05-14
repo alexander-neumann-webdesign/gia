@@ -241,10 +241,10 @@ class SplitText extends gia.Component {
 		// Defer applying styles until the next frame to keep main thread unblocked
 		this._linesArrayToApply = linesArray;
 
-		if (this._rafId) {
-			cancelAnimationFrame(this._rafId);
+		if (!this.ticking) {
+			this.ticking = true;
+			this._rafId = requestAnimationFrame(this._applyLineStyles);
 		}
-		this._rafId = requestAnimationFrame(this._applyLineStyles);
 	}
 
 	_applyLineStyles() {
@@ -278,6 +278,7 @@ class SplitText extends gia.Component {
 
 		this._linesArrayToApply = null;
 		this._rafId = null;
+		this.ticking = false;
 	}
 
 	unmount() {
