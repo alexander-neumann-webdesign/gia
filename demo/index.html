@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gia Components Demo</title>
+    <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
     <link rel="stylesheet" href="./demo.css">
     <style>
         body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
@@ -30,6 +31,9 @@
 
     <!-- QRCode Generator -->
     <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+    <!-- noUiSlider -->
+    <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
+    <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
 </head>
 <body>
     <h1>Gia Components Demo</h1>
@@ -325,6 +329,26 @@
         </div>
     </section>
 
+    <section id="RangeSlider">
+        <h2>RangeSlider</h2>
+        <div class="demo-block">
+            <div data-component="RangeSlider" data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
+                <div data-ref="slider"></div>
+
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1;">
+                        Min Value
+                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                    </label>
+                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1;">
+                        Max Value
+                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="Form">
         <h2>Form</h2>
         <div class="demo-block">
@@ -400,6 +424,31 @@
 </header>
 
 
+        </div>
+    </section>
+
+    <section id="ImageComparison">
+        <div class="container">
+            <h2>Image Comparison</h2>
+            <div class="demo-block">
+                <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
+                    <!-- Left/Before side -->
+                    <div class="image-comparison__before">
+                        <img src="sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
+                    </div>
+                    <!-- Right/After side -->
+                    <div class="image-comparison__after">
+                        <img src="sample-image.jpg" alt="After" />
+                    </div>
+
+                    <input type="range" class="image-comparison__slider" min="0" max="100" value="50" aria-label="Image comparison slider" data-ref="slider" />
+
+                    <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
+                        <div class="image-comparison__handle-line"></div>
+                        <div class="image-comparison__handle-button"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -728,6 +777,17 @@
         </div>
     </section>
 
+    <section id="TextFit">
+        <h2>TextFit</h2>
+        <div class="demo-block" style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
+            <div style="width: 100%;">
+                <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}' style="display: inline-block; white-space: nowrap;">
+                    Resize this container to see text scaling
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="ThemeToggle">
         <h2>ThemeToggle</h2>
         <div class="demo-block">
@@ -791,23 +851,51 @@
         </div>
     </section>
 
+    <!-- Invisible SVG definitions for Icons -->
+    <svg style="display: none;">
+        <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </symbol>
+    </svg>
+
     <section id="CustomCursor">
         <h2>CustomCursor</h2>
         <div class="demo-block">
             <div style="padding: 2rem; border: 1px solid #ccc; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
-                <article class="news-card" data-hover-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer;">
-                    <h3>Hover me for text cursor</h3>
-                    <p>When you hover this block, the cursor will expand and show the text "Read more".</p>
-                </article>
 
-                <nav style="display: flex; gap: 1rem;">
-                    <button type="button" data-magnetic style="padding: 1rem; background: #eee; border: none; border-radius: 8px;">
-                        Magnetic Button
-                    </button>
-                    <a href="#" class="social-icon" data-magnetic aria-label="Social media" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #eee; border-radius: 50%;">
-                        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                    </a>
-                </nav>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <article class="news-card" data-cursor-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Text Cursor</h3>
+                        <p>Hover me for a text cursor state.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Image Cursor</h3>
+                        <p>Hover me to see an image inside the cursor.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-icon="icon-play" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Icon Cursor</h3>
+                        <p>Hover me to see an SVG icon inside the cursor.</p>
+                    </article>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                    <div data-cursor-stick style="padding: 3rem; background: #f0f0f0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <span>data-cursor-stick</span>
+                    </div>
+
+                    <div style="padding: 3rem; background: #e0e0e0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <button type="button" data-magnetic style="padding: 1rem 2rem; background: #333; color: #fff; border: none; border-radius: 30px;">
+                            data-magnetic
+                        </button>
+                    </div>
+                </div>
+
+                <div style="width: 100%; text-align: center; font-style: italic;">
+                    <p>Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
+                </div>
+
             </div>
         </div>
     </section>
@@ -816,6 +904,8 @@
     <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
         <div class="custom-cursor__dot" data-ref="CustomCursor:dot">
             <span class="custom-cursor__text" data-ref="CustomCursor:text"></span>
+            <div class="custom-cursor__media-box" data-ref="CustomCursor:mediaBox"></div>
+            <div class="custom-cursor__icon" data-ref="CustomCursor:icon"></div>
         </div>
     </div>
 
@@ -832,6 +922,7 @@
     <script src="../examples/FilterableList.js"></script>
     <script src="../examples/Form.js"></script>
     <script src="../examples/Header.js"></script>
+    <script src="../examples/ImageComparison.js"></script>
     <script src="../examples/ImageHolder.js"></script>
     <script src="../examples/LightboxGallery.js"></script>
     <script src="../examples/Marquee.js"></script>
@@ -851,6 +942,8 @@
     <script src="../examples/MapLibreMap.js"></script>
     <script src="../examples/CustomCursor.js"></script>
     <script src="../examples/QRCode.js"></script>
+    <script src="../examples/TextFit.js"></script>
+    <script src="../examples/RangeSlider.js"></script>
 
     <script src="./demo.js"></script>
 

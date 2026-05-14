@@ -47,12 +47,32 @@ class ClipboardCopy extends gia.Component {
 			return;
 		}
 
+		const normalizedText = textToCopy
+			.replace(/<br\s*\/?>/gi, "\n")
+			.replace(/\r\n/g, "\n")
+			.replace(/\r/g, "\n");
+
 		try {
-			await navigator.clipboard.writeText(textToCopy);
+			await navigator.clipboard.writeText(normalizedText);
 			this.setState({ status: 'copied' });
 		} catch (err) {
 			console.error("ClipboardCopy: Failed to copy text: ", err);
-			this.setState({ status: 'error' });
+
+			try {
+				const textArea = document.createElement("textarea");
+				textArea.value = normalizedText;
+				textArea.style.position = "fixed";
+				textArea.style.left = "-999999px";
+				document.body.appendChild(textArea);
+				textArea.select();
+				document.execCommand("copy");
+				document.body.removeChild(textArea);
+				console.log("ClipboardCopy: Text copied to clipboard (fallback method)");
+				this.setState({ status: 'copied' });
+			} catch (fallbackErr) {
+				console.error("ClipboardCopy: Fallback method also failed: ", fallbackErr);
+				this.setState({ status: 'error' });
+			}
 		}
 	}
 

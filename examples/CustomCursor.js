@@ -5,12 +5,18 @@ class CustomCursor extends gia.Component {
         this.options = {
             friction: 0.8, // The lerp friction. Lower = slower. 0.8 is quite responsive
             magneticStrength: 0.3, // How much the magnetic element is pulled towards the mouse
-            magneticPadding: 40 // The extended magnetic zone beyond the element bounds
+            magneticPadding: 40, // The extended magnetic zone beyond the element bounds
+            skewing: 3, // Amount of skew based on velocity
+            skewingText: 0, // Skew amount when in text state (usually 0 to keep text readable)
+            skewingIcon: 0,
+            skewingMedia: 0
         };
 
         this.ref = {
             dot: null, // The main cursor dot
-            text: null // The text container inside the cursor
+            text: null, // The text container inside the cursor
+            mediaBox: null, // The media wrapper
+            icon: null // The icon container
         };
 
         // Pre-bind methods for performance in requestAnimationFrame and event listeners
@@ -32,6 +38,15 @@ class CustomCursor extends gia.Component {
         // Current visual state
         this.currentState = 'default';
         this.currentText = '';
+        this.currentImg = '';
+        this.currentVideo = '';
+        this.currentIcon = '';
+
+        // Velocity & Skew
+        this._lastPos = { x: this.cursor.x, y: this.cursor.y };
+        this._velocity = { x: 0, y: 0 };
+        this._skewAngle = 0;
+        this._skewIntensity = 0;
 
         // Animation loop control
         this._rafId = null;
@@ -80,7 +95,7 @@ class CustomCursor extends gia.Component {
                     this._wakeUp();
                 }
             });
-            this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'class'] });
+            this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'data-cursor-stick', 'class'] });
         }
 
         // Start the render loop initially
@@ -144,35 +159,41 @@ class CustomCursor extends gia.Component {
     }
 
     _processInteractions(target) {
-        // Text Hover
-        const textHoverEl = target.closest('[data-hover-text]');
-        if (textHoverEl) {
-            const hoverText = textHoverEl.getAttribute('data-hover-text');
-            if (this.currentState !== 'text' || this.currentText !== hoverText) {
-                this.currentState = 'text';
-                this.currentText = hoverText;
-                this.element.setAttribute('data-cursor-state', 'text');
-                if (this.ref.text) {
-                    this.ref.text.textContent = hoverText;
-                }
-            }
-        } else if (this.currentState === 'text') {
-            this.currentState = 'default';
-            this.currentText = '';
-            this.element.setAttribute('data-cursor-state', 'default');
-            if (this.ref.text) {
-                this.ref.text.textContent = '';
-            }
+        // Check states based on attributes
+        const textHoverEl = target.closest('[data-hover-text], [data-cursor-text]');
+        const iconHoverEl = target.closest('[data-cursor-icon]');
+        const imgHoverEl = target.closest('[data-cursor-img]');
+        const videoHoverEl = target.closest('[data-cursor-video]');
+
+        let targetState = 'default';
+        let targetText = '';
+        let targetIcon = '';
+        let targetImg = '';
+        let targetVideo = '';
+
+        if (imgHoverEl) {
+            targetState = 'media';
+            targetImg = imgHoverEl.getAttribute('data-cursor-img');
+        } else if (videoHoverEl) {
+            targetState = 'media';
+            targetVideo = videoHoverEl.getAttribute('data-cursor-video');
+        } else if (iconHoverEl) {
+            targetState = 'icon';
+            targetIcon = iconHoverEl.getAttribute('data-cursor-icon');
+        } else if (textHoverEl) {
+            targetState = 'text';
+            targetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
         }
 
-        // Magnetic Hover logic
+        // Magnetic and Stick Hover logic
         // We find the closest magnetic element from the cached bounds
         let closestMagneticEl = null;
         let isSnapped = false;
+        let isStick = false;
         let minDistanceSq = Infinity;
 
         for (const item of this.cachedMagneticElements) {
-            const { el, bounds } = item;
+            const { el, bounds, type } = item;
 
             // Check if mouse is within the padded bounds
             if (
@@ -198,6 +219,8 @@ class CustomCursor extends gia.Component {
                         this.mouse.y >= bounds.top - 5 &&
                         this.mouse.y <= bounds.bottom + 5
                     );
+
+                    isStick = type === 'stick';
                 }
             }
         }
@@ -222,50 +245,90 @@ class CustomCursor extends gia.Component {
             this.magneticBounds = null;
         }
 
-        // Handle Snapping Visual State
+        // Determine final target state considering magnetic snapping
+        let finalState = targetState;
         if (isSnapped) {
-            // If we are snapping onto a new element, update the bounds!
-            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+            finalState = isStick ? 'stick' : 'magnetic';
+        }
 
-            if (this.currentState !== 'magnetic' || isNewSnapTarget) {
-                this.currentState = 'magnetic';
-                this._snappedTarget = closestMagneticEl;
-                this.element.setAttribute('data-cursor-state', 'magnetic');
-
-                // Set inline styles to "embrace" the element
-                if (this.ref.dot) {
-                    const computedStyle = window.getComputedStyle(this.magneticTarget);
-                    const borderRadius = computedStyle.borderRadius || '0px';
-
-                    this.ref.dot.style.width = `${this.magneticBounds.width}px`;
-                    this.ref.dot.style.height = `${this.magneticBounds.height}px`;
-                    this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
-                    this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
-                    this.ref.dot.style.borderRadius = borderRadius;
-                }
+        // Handle state changes
+        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
+            // Remove old media/icons if we are switching away from those specific contents
+            if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
+                this.ref.mediaBox.innerHTML = '';
             }
-        } else {
-            // Not snapped
-            if (this.currentState === 'magnetic') {
-                // Revert to default or text
-                this._snappedTarget = null;
+            if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
+                this.ref.icon.innerHTML = '';
+            }
 
-                // If we have a hover text, revert to that, otherwise default
-                if (textHoverEl) {
-                    this.currentState = 'text';
-                    this.element.setAttribute('data-cursor-state', 'text');
-                } else {
-                    this.currentState = 'default';
-                    this.element.setAttribute('data-cursor-state', 'default');
-                }
-
-                // Clear inline styles
+            // Clear inline styles if we are leaving a snapped state
+            if ((this.currentState === 'magnetic' || this.currentState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
                 if (this.ref.dot) {
                     this.ref.dot.style.width = '';
                     this.ref.dot.style.height = '';
                     this.ref.dot.style.marginLeft = '';
                     this.ref.dot.style.marginTop = '';
                     this.ref.dot.style.borderRadius = '';
+                }
+                this._snappedTarget = null;
+            }
+
+            this.currentState = finalState;
+            this.currentText = targetText;
+            this.currentImg = targetImg;
+            this.currentVideo = targetVideo;
+            this.currentIcon = targetIcon;
+
+            this.element.setAttribute('data-cursor-state', finalState);
+
+            // Update DOM inside cursor for content states
+            if (this.ref.text) {
+                this.ref.text.textContent = targetText;
+            }
+
+            if (this.ref.mediaBox && targetState === 'media') {
+                if (targetImg) {
+                    this.ref.mediaBox.innerHTML = `<img src="${targetImg}" alt="Cursor Media" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else if (targetVideo) {
+                    this.ref.mediaBox.innerHTML = `<video src="${targetVideo}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></video>`;
+                }
+            }
+
+            if (this.ref.icon && targetState === 'icon') {
+                this.ref.icon.innerHTML = `
+                    <svg class="mf-svgsprite mf-svgsprite-${targetIcon}">
+                        <use xlink:href="#${targetIcon}"></use>
+                    </svg>
+                `;
+            }
+
+            // Handle Snapping Visual State Updates
+            if (finalState === 'magnetic') {
+                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+                if (isNewSnapTarget) {
+                    this._snappedTarget = closestMagneticEl;
+                    if (this.ref.dot && this.magneticTarget) {
+                        const computedStyle = window.getComputedStyle(this.magneticTarget);
+                        const borderRadius = computedStyle.borderRadius || '0px';
+
+                        this.ref.dot.style.width = `${this.magneticBounds.width}px`;
+                        this.ref.dot.style.height = `${this.magneticBounds.height}px`;
+                        this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
+                        this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
+                        this.ref.dot.style.borderRadius = borderRadius;
+                    }
+                }
+            } else if (finalState === 'stick') {
+                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+                if (isNewSnapTarget) {
+                    this._snappedTarget = closestMagneticEl;
+                    if (this.ref.dot) {
+                        this.ref.dot.style.width = '';
+                        this.ref.dot.style.height = '';
+                        this.ref.dot.style.marginLeft = '';
+                        this.ref.dot.style.marginTop = '';
+                        this.ref.dot.style.borderRadius = '';
+                    }
                 }
             }
         }
@@ -278,7 +341,7 @@ class CustomCursor extends gia.Component {
             this._needsAllBoundsUpdate = false;
 
             // Rebuild the cache of all magnetic elements
-            const elements = document.querySelectorAll('[data-magnetic]');
+            const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
             this.cachedMagneticElements = [];
 
             // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
@@ -296,6 +359,8 @@ class CustomCursor extends gia.Component {
                     top -= this._currentPullY;
                 }
 
+                const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
+
                 const bounds = {
                     left: left,
                     top: top,
@@ -307,7 +372,7 @@ class CustomCursor extends gia.Component {
                     centerY: top + height / 2
                 };
 
-                this.cachedMagneticElements.push({ el, bounds });
+                this.cachedMagneticElements.push({ el, bounds, type });
 
                 if (el === this.magneticTarget) {
                     this.magneticBounds = bounds;
@@ -328,11 +393,21 @@ class CustomCursor extends gia.Component {
 
         // If hovering magnetic element, pull the target to its center
         if (this.magneticTarget && this.magneticBounds) {
-            const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength;
-            const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength;
+            // Compute distance from mouse to the actual element's edges
+            const dxToEdge = Math.max(0, Math.abs(this.mouse.x - this.magneticBounds.centerX) - this.magneticBounds.width / 2);
+            const dyToEdge = Math.max(0, Math.abs(this.mouse.y - this.magneticBounds.centerY) - this.magneticBounds.height / 2);
 
-            // Only snap the cursor target to the element if actually snapped
-            if (this.currentState === 'magnetic') {
+            const maxDistToEdge = Math.max(dxToEdge, dyToEdge);
+
+            // Intensity is 1 when inside the element bounds (maxDistToEdge = 0),
+            // and approaches 0 as we reach the padding boundary
+            const intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
+
+            const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength * intensity;
+            const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength * intensity;
+
+            // Only snap the cursor target to the element if actually snapped (magnetic or stick)
+            if (this.currentState === 'magnetic' || this.currentState === 'stick') {
                 targetX = this.magneticBounds.centerX + pullX;
                 targetY = this.magneticBounds.centerY + pullY;
             }
@@ -355,9 +430,58 @@ class CustomCursor extends gia.Component {
         this.cursor.x += (targetX - this.cursor.x) * interpolationFactor;
         this.cursor.y += (targetY - this.cursor.y) * interpolationFactor;
 
+        // Calculate Skew based on velocity
+        let skewStr = '';
+        if (this.options.skewing) {
+            // Determine active skew multiplier based on state
+            let skewMultiplier = this.options.skewing;
+            if (this.currentState === 'text') skewMultiplier = this.options.skewingText;
+            else if (this.currentState === 'icon') skewMultiplier = this.options.skewingIcon;
+            else if (this.currentState === 'media') skewMultiplier = this.options.skewingMedia;
+
+            if (skewMultiplier > 0 && this.currentState !== 'magnetic' && this.currentState !== 'stick') {
+                this._velocity.x = (this.cursor.x - this._lastPos.x);
+                this._velocity.y = (this.cursor.y - this._lastPos.y);
+
+                const distance = Math.sqrt(this._velocity.x * this._velocity.x + this._velocity.y * this._velocity.y);
+
+                // Calculate Skew angle
+                if (distance > 0) {
+                    this._skewAngle = Math.atan2(this._velocity.y, this._velocity.x);
+                }
+
+                // Calculate Skew Intensity (cap at max)
+                const targetSkewIntensity = Math.min(distance * 0.5, 30) * skewMultiplier;
+
+                // Lerp skew intensity for smoothness
+                this._skewIntensity += (targetSkewIntensity - this._skewIntensity) * interpolationFactor;
+
+                if (Math.abs(this._skewIntensity) > 0.1) {
+                    // We apply rotation then scale.
+                    // e.g. skewing visually distorts the circle into an ellipse in the direction of motion
+                    // We can rotate to the direction of velocity, then scale down the Y and up the X
+                    // Or we can just use skewX / skewY
+                    // Here we use rotate + scale to stretch the dot
+                    const angleDeg = this._skewAngle * (180 / Math.PI);
+                    const scaleX = 1 + (this._skewIntensity * 0.01);
+                    const scaleY = Math.max(1 - (this._skewIntensity * 0.01), 0.1);
+                    skewStr = ` rotate(${angleDeg.toFixed(2)}deg) scale(${scaleX.toFixed(3)}, ${scaleY.toFixed(3)})`;
+                }
+            } else {
+                // Decay skew
+                this._skewIntensity += (0 - this._skewIntensity) * interpolationFactor;
+            }
+
+            this._lastPos.x = this.cursor.x;
+            this._lastPos.y = this.cursor.y;
+        }
+
         // Apply to DOM
         if (this.ref.dot) {
-            const dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
+            let dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
+            if (skewStr) {
+                dotTransformStr += skewStr;
+            }
             if (this._lastDotTransform !== dotTransformStr) {
                 this.ref.dot.style.transform = dotTransformStr;
                 this._lastDotTransform = dotTransformStr;
@@ -371,7 +495,8 @@ class CustomCursor extends gia.Component {
         // Use squared distance for performance (avoids Math.sqrt)
         const distSq = dx * dx + dy * dy;
 
-        if (distSq < 0.01) {
+        // We also need to check if skewIntensity is essentially zero before sleeping
+        if (distSq < 0.01 && Math.abs(this._skewIntensity) < 0.1) {
             // Snap exactly and sleep
             this.cursor.x = targetX;
             this.cursor.y = targetY;
@@ -401,14 +526,20 @@ EXPECTED HTML
 <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
     <div class="custom-cursor__dot" data-ref="CustomCursor:dot">
         <span class="custom-cursor__text" data-ref="CustomCursor:text"></span>
+        <div class="custom-cursor__media-box" data-ref="CustomCursor:mediaBox"></div>
+        <div class="custom-cursor__icon" data-ref="CustomCursor:icon"></div>
     </div>
 </div>
 
 <!-- Example Usage in Content -->
 <article class="news-card" data-hover-text="Read more">
     <h3>Article Title</h3>
-    <p>Some excerpt...</p>
 </article>
+
+<div data-cursor-img="path/to/image.jpg">Hover for image</div>
+<div data-cursor-video="path/to/video.mp4">Hover for video</div>
+<div data-cursor-icon="icon-id">Hover for icon</div>
+<div data-cursor-stick>Stick element</div>
 
 <nav>
     <a href="#" class="social-icon" data-magnetic>
