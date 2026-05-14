@@ -81,10 +81,12 @@ class SplitText extends gia.Component {
 		// Apply the DOM
 		this.element.innerHTML = "";
 
-		// Move all children from clone to element
+		// ⚡ BOLT OPTIMIZATION: Use DocumentFragment to batch DOM insertions
+		const fragment = document.createDocumentFragment();
 		while (clone.firstChild) {
-			this.element.appendChild(clone.firstChild);
+			fragment.appendChild(clone.firstChild);
 		}
+		this.element.appendChild(fragment);
 
 		// Now process lines if needed
 		if (doLines) {
