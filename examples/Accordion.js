@@ -4,6 +4,7 @@ class Accordion extends gia.Component {
 
 		this.options = {
 			closeOthers: false, // If true, only one accordion item can be open at a time within the same group
+			icon: 'plus', // 'plus', 'arrow', or 'none'
 		};
 
 		this.ref = {
@@ -15,13 +16,40 @@ class Accordion extends gia.Component {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}
 
+		// Initial state is correctly set from element initially or open attribute
 		this.setState({
-			isOpen: false
+			isOpen: this.element.hasAttribute('open')
 		});
+	}
+
+	getIconSvg(iconType) {
+		if (iconType === 'plus') {
+			return `
+				<svg class="accordion-icon accordion-icon--plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
+					<line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
+				</svg>
+			`;
+		} else if (iconType === 'arrow') {
+			return `
+				<svg class="accordion-icon accordion-icon--arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<polyline points="6 9 12 15 18 9"></polyline>
+				</svg>
+			`;
+		}
+		return '';
 	}
 
 	mount() {
 		if (!this.isDetails) return;
+
+		// Inject icon into summary if not present and icon !== 'none'
+		const summary = this.element.querySelector('summary');
+		if (summary && this.options.icon !== 'none') {
+			if (!summary.querySelector('.accordion-icon')) {
+				summary.insertAdjacentHTML('beforeend', this.getIconSvg(this.options.icon));
+			}
+		}
 
 		this.element.addEventListener('toggle', this.handleToggle);
 
