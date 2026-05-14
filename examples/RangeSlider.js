@@ -44,11 +44,13 @@ class RangeSlider extends gia.Component {
         if (this.ref.inputs && this.ref.inputs.length > 0) {
             this.sliderInstance.on('update', (values, handle) => {
                 if (this.ref.inputs[handle]) {
-                    this.ref.inputs[handle].value = values[handle];
+                    if (String(this.ref.inputs[handle].value) !== String(values[handle])) {
+                        this.ref.inputs[handle].value = values[handle];
 
-                    // Dispatch events so other components (like Form) can react
-                    this.ref.inputs[handle].dispatchEvent(new Event('input', { bubbles: true }));
-                    this.ref.inputs[handle].dispatchEvent(new Event('change', { bubbles: true }));
+                        // Dispatch events so other components (like Form) can react
+                        this.ref.inputs[handle].dispatchEvent(new Event('input', { bubbles: true }));
+                        this.ref.inputs[handle].dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                 }
             });
 
