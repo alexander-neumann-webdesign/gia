@@ -79,7 +79,10 @@ class OpenStreetMap extends gia.Component {
 				}
 
 				if (loc.title) {
-					marker.bindPopup(loc.title);
+					// Prevent XSS by using a text node rather than a raw HTML string
+					const popupDiv = document.createElement('div');
+					popupDiv.textContent = loc.title;
+					marker.bindPopup(popupDiv);
 				}
 			}
 		}
