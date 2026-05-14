@@ -335,16 +335,11 @@ gia.register(ImageHolder);
  *     opacity: 0;
  *     will-change: transform;
  *
- *     // Entrance animation
- *     // Do NOT transition transform if parallaxSpeed is active, it will cause severe lag!
- *     transform: translateY(20px);
  *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
  *   }
  *
  *   &[data-is-visible="true"][data-is-loaded="true"] img {
  *     opacity: 1;
- *     // If parallaxSpeed === 0, JS will not touch transform, so we can reset it here natively:
- *     // transform: translateY(0);
  *   }
  *
  *   // --- Advanced Usage: parallaxCssVar ---
