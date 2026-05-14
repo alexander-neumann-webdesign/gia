@@ -501,20 +501,20 @@ class FilterableList extends gia.Component {
 			const transition = document.startViewTransition(() => {
 				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 			});
+			this._currentTransition = transition;
 
 			transition.ready.catch(() => {});
 			transition.finished.catch(() => {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
-				// Clean up to avoid global namespace pollution
-				for (let i = 0; i < visibleItems.length; i++) {
-					visibleItems[i].style.viewTransitionName = '';
+				if (this._currentTransition === transition) {
+					// Clean up to avoid global namespace pollution
+					for (let i = 0; i < visibleItems.length; i++) {
+						visibleItems[i].style.viewTransitionName = '';
+					}
+					this.ref.container.style.viewTransitionName = '';
+					document.documentElement.style.viewTransitionName = '';
 				}
-				for (let i = 0; i < hiddenItems.length; i++) {
-					hiddenItems[i].style.viewTransitionName = '';
-				}
-				this.ref.container.style.viewTransitionName = '';
-				document.documentElement.style.viewTransitionName = '';
 			});
 		} else {
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
@@ -527,6 +527,7 @@ class FilterableList extends gia.Component {
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
 		// Update hidden state
 		for (let i = 0; i < hiddenItems.length; i++) {
+			hiddenItems[i].style.viewTransitionName = '';
 			hiddenItems[i].hidden = true;
 		}
 
