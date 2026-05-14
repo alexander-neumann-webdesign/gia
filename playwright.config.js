@@ -1,5 +1,8 @@
-module.exports = {
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
   use: {
-    video: 'on',
+    browserName: 'chromium',
   },
-};
+});
