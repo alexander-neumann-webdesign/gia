@@ -19,6 +19,7 @@ class FilterableList extends gia.Component {
 			defaultSort: '', // e.g. 'price:asc'
 			activeFilterClass: 'is-active', // Class to apply to active filter buttons
 			staggerDelay: 20, // ms delay per item for the shuffle animation
+			maxStaggerDelay: null, // max delay in ms (defaults to staggerDelay * 12)
 		};
 
 		// Define internal state variables that don't trigger batched DOM updates automatically
@@ -508,12 +509,16 @@ class FilterableList extends gia.Component {
 			let staggerCss = '';
 			let staggerIndex = 0;
 
+			const maxDelay = this.options.maxStaggerDelay !== null && this.options.maxStaggerDelay !== undefined
+				? this.options.maxStaggerDelay
+				: this.options.staggerDelay * 12;
+
 			// Apply unique names before transition
 			for (let i = 0; i < visibleItems.length; i++) {
 				const vName = `${componentId}-${visibleItems[i]._originalIndex}`;
 				visibleItems[i].style.viewTransitionName = vName;
 				if (this.options.staggerDelay > 0) {
-					const delay = staggerIndex * this.options.staggerDelay;
+					const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
 					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
 					staggerIndex++;
 				}
@@ -522,7 +527,7 @@ class FilterableList extends gia.Component {
 				const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
 				hiddenItems[i].style.viewTransitionName = vName;
 				if (this.options.staggerDelay > 0) {
-					const delay = staggerIndex * this.options.staggerDelay;
+					const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
 					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
 					staggerIndex++;
 				}
