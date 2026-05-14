@@ -1,8 +1,10 @@
 # Gia
 
+*Note: This is a personal fork of the original Gia framework. It contains numerous enhancements, custom examples, and optimizations.*
+
 A high-performance, minimalistic JavaScript framework designed for progressively enhancing server-rendered websites.
 
-Gia provides a robust architectural foundation with a minimal footprint: **~3.53 Kb minified and gzipped** for the complete UMD build, and **~4.05 Kb** for the ESM build.
+Gia provides a robust architectural foundation with a minimal footprint: **~4.12 Kb minified and gzipped** for the complete UMD build, and **~4.78 Kb** for the ESM build.
 
 ## Features & Benefits
 
@@ -545,32 +547,33 @@ The `examples/` directory contains a comprehensive set of real-world use cases d
 You can preview all examples locally by opening `demo/index.html` in your browser. Or check out the [Live Demo](https://alexander-neumann-webdesign.github.io/gia/demo/).
 
 ### UI & Interactive Elements
-*   **Accordion**: A semantic and accessible accordion component utilizing native `<details>` and `<summary>` elements. It manages state reactively to ensure only one panel remains open at a time if desired, and syncs open states with the URL hash.
-*   **ClipboardCopy**: A simple utility component that copies text from a referenced element to the user's clipboard. It showcases how to use `this.setState` to provide temporary visual feedback after a successful action.
-*   **CustomCursor**: A performant custom cursor component that replaces the native cursor. It features frame-rate independent exponential smoothing for magnetic snapping to interactive elements and supports dynamic text hover states.
-*   **FilterableList**: A robust filtering and sorting component for collections of items. It intelligently manages state via URL parameters for deep linking and utilizes the View Transitions API for seamless, hardware-accelerated DOM reordering and filtering animations.
-*   **Modal**: An accessible dialog window component that utilizes the native `<dialog>` element. It supports triggering via external targets and manages URL hash syncing for easy direct linking to open modals.
-*   **OffCanvasMenu**: A slide-out navigation menu component triggered by user interaction. It demonstrates state-based class toggling and how to handle clicks outside the component to close the menu.
-*   **Slider**: A swipeable content slider demonstrating complex touch event handling and hardware-accelerated CSS transforms. It manages active slide states and updates pagination indicators reactively.
-*   **SplitText**: A performant text splitting component designed for complex typography animations. It intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API, while automatically preserving accessibility for screen readers.
-*   **Tabs**: A robust tabbed interface component that relies on state management to switch active views. It also supports URL hash syncing so users can bookmark and load specific tabs on page load.
-*   **ThemeToggle**: A dark/light mode toggle switch component that persists user preference. It shows how Gia components can interact with `localStorage` and mutate global state efficiently.
-*   **Tooltip**: A dynamic tooltip component using the Floating UI library via asynchronous dynamic import inside `require()`, providing perfectly positioned floating elements.
+*   **Accordion**: A semantic, highly-accessible accordion utilizing native `<details>` and `<summary>` tags. Manages state reactively to auto-close sibling panels and syncs active open states with the URL hash for deep linking.
+*   **ClipboardCopy**: A minimal utility component that seamlessly copies text to the user's clipboard, demonstrating how to use `this.setState` to provide temporary visual UI feedback (e.g., "Copied!") after a successful action.
+*   **CustomCursor**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for smooth magnetic snapping and morphing over interactive elements.
+*   **FilterableList**: A powerful filtering and sorting component for item collections. It synchronizes state with URL search parameters and utilizes the modern View Transitions API for buttery-smooth, hardware-accelerated DOM reordering.
+*   **Form**: An AJAX-powered form component with built-in HTML5 validation handling, animated SVG loading spinners, and state-driven success/error messaging.
+*   **Modal**: An accessible dialog window leveraging the native `<dialog>` element. It supports complex triggering via external targets, click-outside-to-close logic, and manages URL hash syncing.
+*   **OffCanvasMenu**: A slide-out navigation menu demonstrating state-based CSS class toggling, inert trapping for accessibility, and robust click-outside handling to seamlessly close the menu.
+*   **Slider**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms via `requestAnimationFrame`.
+*   **SplitText**: A specialized typography component for complex text animations. It intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API while perfectly preserving screen reader accessibility.
+*   **Tabs**: A classic tabbed interface component relying on Gia's state management to toggle active views and ARIA attributes. Also supports URL hash syncing for bookmarkable tabs.
+*   **ThemeToggle**: A dark/light mode toggle switch that interacts with `localStorage` and optionally mutates global root state to persist user visual preferences.
+*   **Tooltip**: A robust tooltip component asynchronously importing the Floating UI library via `require()` to calculate precise, collision-aware absolute positioning.
 
 ### Media & Scroll Effects
-*   **Header**: A scroll-aware site header component that responds to scroll direction and offset. It intelligently caches layout dimensions and uses `requestAnimationFrame` to apply transforms without layout thrashing.
-*   **ImageHolder**: A highly optimized image component that provides a smooth parallax implementation and tracks viewport entrance to lazy load sources. It automatically calculates and sets the `sizes` attribute dynamically based on the image's layout dimensions for perfect responsive loading.
-*   **LightboxGallery**: A fully featured gallery component demonstrating dynamic script loading by pulling in a vendor library only when required. It handles complex DOM structures and global event bindings.
-*   **Marquee**: An infinite scrolling marquee component cloning elements and handling continuous requestAnimationFrame updates with Lenis scroll velocity integration.
-*   **MatterPhysicsBackground**: An interactive physics-based background component utilizing Matter.js, complete with responsive resizing, automatic pausing via IntersectionObserver to save resources, and `prefers-reduced-motion` support.
-*   **Reveal**: A highly optimized scroll-reveal component that fades and translates elements into view as they enter the viewport. It leverages the global `observeIntersection` API to handle potentially hundreds of elements without performance degradation.
-*   **VideoHolder**: A lazy-loading video component that pauses playback when scrolled out of view to save system resources. It uses intersection observers to handle complex playback logic asynchronously.
+*   **Header**: A scroll-aware site header component that responds to scroll direction and offset. It intelligently caches layout dimensions and uses `requestAnimationFrame` to apply CSS transforms without layout thrashing.
+*   **ImageHolder**: A highly optimized image component providing a buttery-smooth parallax implementation. Tracks viewport entrance to lazy load sources and automatically calculates and sets the `sizes` attribute dynamically based on exact layout dimensions.
+*   **LightboxGallery**: A fully-featured gallery component demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked, handling complex DOM structure mappings and global event bindings.
+*   **Marquee**: An infinite-scrolling marquee component that automatically clones elements and handles continuous, sub-pixel perfect `requestAnimationFrame` updates, complete with Lenis smooth-scroll velocity integration.
+*   **MatterPhysicsBackground**: An interactive physics-based background canvas utilizing Matter.js. Complete with responsive resizing, automatic pausing via IntersectionObserver to save CPU resources, and `prefers-reduced-motion` support.
+*   **Reveal**: A highly optimized, stagger-ready scroll-reveal component that fades and translates elements into view. It leverages the globally shared `observeIntersection` API to handle hundreds of elements without memory leaks or performance degradation.
+*   **VideoHolder**: A lazy-loading video component that automatically pauses playback when scrolled out of view to save system resources. Uses Intersection Observers to handle complex, asynchronous playback promise logic.
 
 ### Advanced Apps & Logic
-*   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the library and dynamically calculates bounding boxes for location markers.
-*   **OpenStreetMap**: A Leaflet-based interactive map component that asynchronously loads its dependencies and maps markers with popups.
-*   **TodoApp**: A full todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
-*   **PongGame**: A complete Pong game built inside a Gia component to demonstrate a complex game loop running within `requestAnimationFrame`, keyboard input handling, scoring state, and canvas drawing.
+*   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the massive mapping library and styles on-demand, dynamically calculating and framing bounding boxes for location markers.
+*   **OpenStreetMap**: A Leaflet-based interactive map component that asynchronously loads its dependencies and styles, plots markers with popups, and minimizes attribution noise.
+*   **TodoApp**: A fully-featured todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
+*   **PongGame**: A complete, playable Pong game built entirely within a single Gia component. Demonstrates a custom game loop running within `requestAnimationFrame`, keyboard input handling, collision logic, scoring state, and Canvas API drawing.
 
 ## Bonus Tip: Gia and Swup
 
