@@ -186,19 +186,23 @@ export default class Component {
 			});
 		}
 
-		if (!resizeCallbacks.has(element)) {
-			resizeCallbacks.set(element, new Set());
+		let rCbs = resizeCallbacks.get(element);
+		if (!rCbs) {
+			rCbs = new Set();
+			resizeCallbacks.set(element, rCbs);
 			globalResizeObserver.observe(element);
 		}
-		resizeCallbacks.get(element).add(callback);
+		rCbs.add(callback);
 
 		if (!this._observedResizeElements) {
 			this._observedResizeElements = new Map();
 		}
-		if (!this._observedResizeElements.has(element)) {
-			this._observedResizeElements.set(element, new Set());
+		let oCbs = this._observedResizeElements.get(element);
+		if (!oCbs) {
+			oCbs = new Set();
+			this._observedResizeElements.set(element, oCbs);
 		}
-		this._observedResizeElements.get(element).add(callback);
+		oCbs.add(callback);
 	}
 
 	unobserveResize(element, callback = null) {
@@ -258,24 +262,29 @@ export default class Component {
 			intersectionObservers.set(hash, observerData);
 		}
 
-		if (!observerData.callbacks.has(element)) {
-			observerData.callbacks.set(element, new Set());
+		let oDataCbs = observerData.callbacks.get(element);
+		if (!oDataCbs) {
+			oDataCbs = new Set();
+			observerData.callbacks.set(element, oDataCbs);
 			observerData.observer.observe(element);
 		}
-		observerData.callbacks.get(element).add(callback);
+		oDataCbs.add(callback);
 
 		if (!this._observedIntersectionElements) {
 			this._observedIntersectionElements = new Map();
 		}
-		if (!this._observedIntersectionElements.has(element)) {
-			this._observedIntersectionElements.set(element, new Map());
+		let componentElementMap = this._observedIntersectionElements.get(element);
+		if (!componentElementMap) {
+			componentElementMap = new Map();
+			this._observedIntersectionElements.set(element, componentElementMap);
 		}
 
-		const componentElementMap = this._observedIntersectionElements.get(element);
-		if (!componentElementMap.has(hash)) {
-			componentElementMap.set(hash, new Set());
+		let hashCbs = componentElementMap.get(hash);
+		if (!hashCbs) {
+			hashCbs = new Set();
+			componentElementMap.set(hash, hashCbs);
 		}
-		componentElementMap.get(hash).add(callback);
+		hashCbs.add(callback);
 	}
 
 	unobserveIntersection(element, callback = null) {
