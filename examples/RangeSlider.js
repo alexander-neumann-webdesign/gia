@@ -65,9 +65,14 @@ class RangeSlider extends gia.Component {
         const input = event.target;
         const index = this.ref.inputs.indexOf(input);
         if (index > -1 && this.sliderInstance) {
-            const values = [];
-            values[index] = input.value;
-            this.sliderInstance.set(values);
+            const currentSliderValues = this.sliderInstance.get();
+            const currentHandleValue = Array.isArray(currentSliderValues) ? currentSliderValues[index] : currentSliderValues;
+
+            if (String(currentHandleValue) !== String(input.value)) {
+                const values = [];
+                values[index] = input.value;
+                this.sliderInstance.set(values);
+            }
         }
     }
 
