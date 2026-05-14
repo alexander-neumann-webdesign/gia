@@ -185,48 +185,6 @@ class CustomCursor extends gia.Component {
             targetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
         }
 
-        if (this.currentState !== targetState || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
-            // Remove old media/icons if we are switching away
-            if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
-                this.ref.mediaBox.innerHTML = '';
-            }
-            if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
-                this.ref.icon.innerHTML = '';
-            }
-
-            this.currentState = targetState;
-            this.currentText = targetText;
-            this.currentImg = targetImg;
-            this.currentVideo = targetVideo;
-            this.currentIcon = targetIcon;
-            this.element.setAttribute('data-cursor-state', targetState);
-
-            // Update DOM inside cursor
-            if (this.ref.text) {
-                this.ref.text.textContent = targetText;
-            }
-
-            if (this.ref.mediaBox && targetState === 'media') {
-                if (targetImg) {
-                    this.ref.mediaBox.innerHTML = `<img src="${targetImg}" alt="Cursor Media" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
-                } else if (targetVideo) {
-                    this.ref.mediaBox.innerHTML = `<video src="${targetVideo}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></video>`;
-                }
-            }
-
-            if (this.ref.icon && targetState === 'icon') {
-                // Here we inject the SVG directly or via a sprite.
-                // For simplicity we inject an svg tag with a use element if it's an ID, or plain text if it's just a class name
-                // To mimic mouse-follower icon usage, we will insert an SVG:
-                this.ref.icon.innerHTML = `
-                    <svg class="mf-svgsprite mf-svgsprite-${targetIcon}">
-                        <use xlink:href="#${targetIcon}"></use>
-                    </svg>
-                `;
-                // Alternatively, users could pass entire SVG strings or font-awesome classes, but this matches mouse-follower's default setup
-            }
-        }
-
         // Magnetic and Stick Hover logic
         // We find the closest magnetic element from the cached bounds
         let closestMagneticEl = null;
@@ -287,66 +245,90 @@ class CustomCursor extends gia.Component {
             this.magneticBounds = null;
         }
 
-        // Handle Snapping Visual State
-        if (isSnapped && !isStick) {
-            // If we are snapping onto a new element, update the bounds!
-            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+        // Determine final target state considering magnetic snapping
+        let finalState = targetState;
+        if (isSnapped) {
+            finalState = isStick ? 'stick' : 'magnetic';
+        }
 
-            if (this.currentState !== 'magnetic' || isNewSnapTarget) {
-                this.currentState = 'magnetic';
-                this._snappedTarget = closestMagneticEl;
-                this.element.setAttribute('data-cursor-state', 'magnetic');
+        // Handle state changes
+        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
+            // Remove old media/icons if we are switching away from those specific contents
+            if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
+                this.ref.mediaBox.innerHTML = '';
+            }
+            if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
+                this.ref.icon.innerHTML = '';
+            }
 
-                // Set inline styles to "embrace" the element
+            // Clear inline styles if we are leaving a snapped state
+            if ((this.currentState === 'magnetic' || this.currentState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
                 if (this.ref.dot) {
-                    const computedStyle = window.getComputedStyle(this.magneticTarget);
-                    const borderRadius = computedStyle.borderRadius || '0px';
+                    this.ref.dot.style.width = '';
+                    this.ref.dot.style.height = '';
+                    this.ref.dot.style.marginLeft = '';
+                    this.ref.dot.style.marginTop = '';
+                    this.ref.dot.style.borderRadius = '';
+                }
+                this._snappedTarget = null;
+            }
 
-                    this.ref.dot.style.width = `${this.magneticBounds.width}px`;
-                    this.ref.dot.style.height = `${this.magneticBounds.height}px`;
-                    this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
-                    this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
-                    this.ref.dot.style.borderRadius = borderRadius;
+            this.currentState = finalState;
+            this.currentText = targetText;
+            this.currentImg = targetImg;
+            this.currentVideo = targetVideo;
+            this.currentIcon = targetIcon;
+
+            this.element.setAttribute('data-cursor-state', finalState);
+
+            // Update DOM inside cursor for content states
+            if (this.ref.text) {
+                this.ref.text.textContent = targetText;
+            }
+
+            if (this.ref.mediaBox && targetState === 'media') {
+                if (targetImg) {
+                    this.ref.mediaBox.innerHTML = `<img src="${targetImg}" alt="Cursor Media" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else if (targetVideo) {
+                    this.ref.mediaBox.innerHTML = `<video src="${targetVideo}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></video>`;
                 }
             }
-        } else if (isSnapped && isStick) {
-             const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
 
-             if (this.currentState !== 'stick' || isNewSnapTarget) {
-                this.currentState = 'stick';
-                this._snappedTarget = closestMagneticEl;
-                this.element.setAttribute('data-cursor-state', 'stick');
+            if (this.ref.icon && targetState === 'icon') {
+                this.ref.icon.innerHTML = `
+                    <svg class="mf-svgsprite mf-svgsprite-${targetIcon}">
+                        <use xlink:href="#${targetIcon}"></use>
+                    </svg>
+                `;
+            }
 
-                // Clear any inline width/height from potential previous 'magnetic' state
-                if (this.ref.dot) {
-                    this.ref.dot.style.width = '';
-                    this.ref.dot.style.height = '';
-                    this.ref.dot.style.marginLeft = '';
-                    this.ref.dot.style.marginTop = '';
-                    this.ref.dot.style.borderRadius = '';
+            // Handle Snapping Visual State Updates
+            if (finalState === 'magnetic') {
+                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+                if (isNewSnapTarget) {
+                    this._snappedTarget = closestMagneticEl;
+                    if (this.ref.dot && this.magneticTarget) {
+                        const computedStyle = window.getComputedStyle(this.magneticTarget);
+                        const borderRadius = computedStyle.borderRadius || '0px';
+
+                        this.ref.dot.style.width = `${this.magneticBounds.width}px`;
+                        this.ref.dot.style.height = `${this.magneticBounds.height}px`;
+                        this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
+                        this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
+                        this.ref.dot.style.borderRadius = borderRadius;
+                    }
                 }
-             }
-        } else {
-            // Not snapped
-            if (this.currentState === 'magnetic' || this.currentState === 'stick') {
-                // Revert to other active state
-                this._snappedTarget = null;
-
-                if (targetState !== 'default') {
-                    this.currentState = targetState;
-                    this.element.setAttribute('data-cursor-state', targetState);
-                } else {
-                    this.currentState = 'default';
-                    this.element.setAttribute('data-cursor-state', 'default');
-                }
-
-                // Clear inline styles
-                if (this.ref.dot) {
-                    this.ref.dot.style.width = '';
-                    this.ref.dot.style.height = '';
-                    this.ref.dot.style.marginLeft = '';
-                    this.ref.dot.style.marginTop = '';
-                    this.ref.dot.style.borderRadius = '';
+            } else if (finalState === 'stick') {
+                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+                if (isNewSnapTarget) {
+                    this._snappedTarget = closestMagneticEl;
+                    if (this.ref.dot) {
+                        this.ref.dot.style.width = '';
+                        this.ref.dot.style.height = '';
+                        this.ref.dot.style.marginLeft = '';
+                        this.ref.dot.style.marginTop = '';
+                        this.ref.dot.style.borderRadius = '';
+                    }
                 }
             }
         }
