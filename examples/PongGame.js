@@ -57,6 +57,9 @@ class PongGame extends gia.Component {
         // Use ResizeObserver for responsive canvas sizing
         this.observeResize(this.element, this.handleResize);
 
+        // Also observe body to catch layout shifts from above elements (like Accordions)
+        this.observeResize(document.body, this.handleBodyResize);
+
         // Use IntersectionObserver to pause when off-screen
         this.observeIntersection(this.element, this.handleIntersection, { threshold: 0 });
 
@@ -99,6 +102,11 @@ class PongGame extends gia.Component {
         }
 
         this.draw(); // Force a draw on resize even if paused
+    }
+
+    handleBodyResize() {
+        // Update offsetTop when body size changes (e.g. accordion opens above us)
+        this.offsetTop = this.element.getBoundingClientRect().top + window.scrollY;
     }
 
     handleIntersection(entries) {
