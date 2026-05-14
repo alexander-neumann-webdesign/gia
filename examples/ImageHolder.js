@@ -66,6 +66,19 @@ class ImageHolder extends gia.Component {
 		this.isScrollBound = false;
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
+		// Calculate exactly the extra space needed to cover the parallax translation.
+		// A parallaxSpeed of 0.2 means the image covers an extra 20% of the container.
+		const speed = Math.abs(this.options.parallaxSpeed);
+		const extraSpacePercent = speed * 100;
+
+		if (this.options.parallaxDirection === 'vertical') {
+			this.ref.img.style.height = `calc(100% + ${extraSpacePercent}%)`;
+			this.ref.img.style.top = `-${extraSpacePercent / 2}%`;
+		} else {
+			this.ref.img.style.width = `calc(100% + ${extraSpacePercent}%)`;
+			this.ref.img.style.left = `-${extraSpacePercent / 2}%`;
+		}
+
 		// Cache the header element once if needed
 		if (this.options.startFromTop) {
 			this.headerElement = document.querySelector('header#main-header');
@@ -273,15 +286,19 @@ class ImageHolder extends gia.Component {
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
 			const mappedProgress = progress - 0.5;
-			let offsetPercent = mappedProgress * this.options.parallaxSpeed * 100;
+
+			// translate3d percentages are relative to the image size (H_img).
+			// Since H_img = H_container * (1 + speed), we must divide the offset by (1 + speed)
+			// to ensure the translation perfectly covers the extra space we added.
+			const speedCalc = this.options.parallaxSpeed / (1 + Math.abs(this.options.parallaxSpeed));
+			let offsetPercent = mappedProgress * speedCalc * 100;
 
 			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
 			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
 
-			const scaleStr = ` scale(${1 + Math.abs(this.options.parallaxSpeed)})`;
 			const transformStr = this.options.parallaxDirection === 'horizontal'
-				? `translate3d(${offsetPercent}%, 0, 0)${scaleStr}`
-				: `translate3d(0, ${offsetPercent}%, 0)${scaleStr}`;
+				? `translate3d(${offsetPercent}%, 0, 0)`
+				: `translate3d(0, ${offsetPercent}%, 0)`;
 
 			if (this._lastTransform !== transformStr) {
 				this.ref.img.style.transform = transformStr;
