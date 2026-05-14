@@ -29,6 +29,8 @@
     <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
     <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
 
+    <!-- QRCode Generator -->
+    <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
     <!-- noUiSlider -->
     <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
     <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
@@ -37,6 +39,18 @@
     <h1>Gia Components Demo</h1>
     <p>Enable auto-mounting or bind actions globally to test.</p>
 
+
+    <section id="QRCode">
+        <h2>QR Code</h2>
+        <div class="demo-block">
+            <div data-component="QRCode"
+                 data-contents="https://github.com/web-padawan/awesome-web-components"
+                 data-type-number="4"
+                 data-error-correction-level="L"
+                 style="width: 200px; height: 200px;">
+            </div>
+        </div>
+    </section>
 
     <section id="Accordion">
         <h2>Accordion</h2>
@@ -927,6 +941,7 @@
     <script src="../examples/OpenStreetMap.js"></script>
     <script src="../examples/MapLibreMap.js"></script>
     <script src="../examples/CustomCursor.js"></script>
+    <script src="../examples/QRCode.js"></script>
     <script src="../examples/TextFit.js"></script>
     <script src="../examples/RangeSlider.js"></script>
 
