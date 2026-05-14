@@ -323,6 +323,9 @@ class FilterableList extends gia.Component {
 		} else if (el.tagName === 'INPUT') {
 			// Handle text, search, range, etc.
 			values = el.value ? [el.value] : [];
+			if (el.type === 'range' && el.value === el.defaultValue) {
+				values = [];
+			}
 		}
 
 		this.activeFilters[filterType] = values;
@@ -628,7 +631,13 @@ class FilterableList extends gia.Component {
 					el.checked = activeValues.includes(el.value);
 				} else if (el.tagName === 'INPUT') {
 					// Text, search, range, etc.
-					const newVal = activeValues.length > 0 ? activeValues[0] : '';
+					let newVal = '';
+					if (activeValues.length > 0) {
+						newVal = activeValues[0];
+					} else {
+						newVal = el.type === 'range' ? (el.defaultValue || '') : '';
+					}
+
 					if (el.value !== newVal) {
 						el.value = newVal;
 					}
