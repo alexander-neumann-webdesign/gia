@@ -363,7 +363,6 @@ div[data-component=ImageHolder] img {
   display: block;
   opacity: 0;
   will-change: transform;
-  transform: translateY(20px);
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 div[data-component=ImageHolder][data-is-visible=true][data-is-loaded=true] img {
