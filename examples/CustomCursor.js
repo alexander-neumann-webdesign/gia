@@ -29,11 +29,14 @@ class CustomCursor extends gia.Component {
         this.currentText = '';
 
         // Animation loop control
+        this._rafId = null;
         this._isRenderingFrame = false;
         this._needsBoundsUpdate = false;
         this._lastTime = performance.now();
         this._lastDotTransform = '';
         this._lastMagneticTransform = '';
+        this._currentPullX = 0;
+        this._currentPullY = 0;
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
@@ -50,13 +53,16 @@ class CustomCursor extends gia.Component {
         // Start the render loop initially
         this._lastTime = performance.now();
         this._isRenderingFrame = true;
-        requestAnimationFrame(this.render);
+        this._rafId = requestAnimationFrame(this.render);
     }
 
     unmount() {
         window.removeEventListener('mousemove', this.handleMouseMove);
         window.removeEventListener('scroll', this.handleScroll);
         this._isRenderingFrame = false;
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId);
+        }
 
         // Reset any currently active magnetic element
         if (this.magneticTarget) {
@@ -75,7 +81,7 @@ class CustomCursor extends gia.Component {
         if (!this._isRenderingFrame) {
             this._lastTime = performance.now();
             this._isRenderingFrame = true;
-            requestAnimationFrame(this.render);
+            this._rafId = requestAnimationFrame(this.render);
         }
 
         // Process interactions via event delegation
@@ -87,7 +93,7 @@ class CustomCursor extends gia.Component {
         if (!this._isRenderingFrame) {
             this._lastTime = performance.now();
             this._isRenderingFrame = true;
-            requestAnimationFrame(this.render);
+            this._rafId = requestAnimationFrame(this.render);
         }
 
         // Re-evaluate magnetic bounds on scroll if active
@@ -132,6 +138,8 @@ class CustomCursor extends gia.Component {
 
             this.magneticTarget = magneticEl;
             this.magneticTarget.classList.add('is-magnetic-active');
+            this._currentPullX = 0;
+            this._currentPullY = 0;
 
             // Calculate true center without existing transforms
             const currentTransform = this.magneticTarget.style.transform;
@@ -174,22 +182,19 @@ class CustomCursor extends gia.Component {
 
         if (this._needsBoundsUpdate && this.magneticTarget) {
             this._needsBoundsUpdate = false;
-            // To properly calculate the original bounds during scroll without transform interference
-            const currentTransform = this.magneticTarget.style.transform;
-            this.magneticTarget.style.transform = 'translate3d(0px, 0px, 0px)';
-
+            // Calculate bounds without synchronous layout thrashing (modifying DOM transform before reading)
             const rect = this.magneticTarget.getBoundingClientRect();
+            const untransformedLeft = rect.left - this._currentPullX;
+            const untransformedTop = rect.top - this._currentPullY;
+
             this.magneticBounds = {
-                x: rect.left,
-                y: rect.top,
+                x: untransformedLeft,
+                y: untransformedTop,
                 width: rect.width,
                 height: rect.height,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2
+                centerX: untransformedLeft + rect.width / 2,
+                centerY: untransformedTop + rect.height / 2
             };
-
-            // Restore transform
-            this.magneticTarget.style.transform = currentTransform;
         }
 
         // Calculate delta time for frame-rate independent lerp
@@ -210,6 +215,9 @@ class CustomCursor extends gia.Component {
 
             targetX = this.magneticBounds.centerX + pullX;
             targetY = this.magneticBounds.centerY + pullY;
+
+            this._currentPullX = pullX;
+            this._currentPullY = pullY;
 
             // Also move the magnetic element itself slightly towards the mouse
             const magneticTransformStr = `translate3d(${pullX.toFixed(4)}px, ${pullY.toFixed(4)}px, 0px)`;
@@ -256,7 +264,7 @@ class CustomCursor extends gia.Component {
             this._isRenderingFrame = false;
         } else {
             // Keep rendering
-            requestAnimationFrame(this.render);
+            this._rafId = requestAnimationFrame(this.render);
         }
     }
 }
