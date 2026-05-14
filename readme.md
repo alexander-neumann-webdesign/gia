@@ -558,12 +558,14 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 *   **ThemeToggle**: A dark/light mode toggle switch that interacts with `localStorage` and optionally mutates global root state to persist user visual preferences.
 *   **ClipboardCopy**: A minimal utility component that seamlessly copies text to the user's clipboard, demonstrating how to use `this.setState` to provide temporary visual UI feedback (e.g., "Copied!") after a successful action.
 *   **CustomCursor**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for smooth magnetic snapping and morphing over interactive elements.
+*   **TextFit**: A typography utility component that integrates the `fitty` library to perfectly scale text to fit its container, automatically handling resize observation and instance cleanup.
 
 ### Media & Galleries
 *   **Slider**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms via `requestAnimationFrame`.
 *   **LightboxGallery**: A fully-featured gallery component demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked, handling complex DOM structure mappings and global event bindings.
 *   **ImageHolder**: A highly optimized image component providing a buttery-smooth parallax implementation. Tracks viewport entrance to lazy load sources and automatically calculates and sets the `sizes` attribute dynamically based on exact layout dimensions.
 *   **VideoHolder**: A lazy-loading video component that automatically pauses playback when scrolled out of view to save system resources. Uses Intersection Observers to handle complex, asynchronous playback promise logic.
+*   **ImageComparison**: A performant before/after media comparison component. It uses a visually hidden native range slider to update a CSS variable, dynamically driving a `clip-path` mask over stacked images.
 
 ### Scroll & Animation Effects
 *   **Reveal**: A highly optimized, stagger-ready scroll-reveal component that fades and translates elements into view. It leverages the globally shared `observeIntersection` API to handle hundreds of elements without memory leaks or performance degradation.
@@ -575,6 +577,8 @@ You can preview all examples locally by opening `demo/index.html` in your browse
 
 ### Forms
 *   **Form**: An AJAX-powered form component with built-in HTML5 validation handling, animated SVG loading spinners, and state-driven success/error messaging.
+*   **MultipleSelect**: A wrapper component for `multiple-select-vanilla`. It dynamically loads its dependencies and exposes standard value getters and setters for easy integration with standard form data collection.
+*   **RangeSlider**: A flexible range slider wrapping the `noUiSlider` library. It implements two-way data binding, seamlessly syncing its visual state with native hidden inputs to ensure compatibility with standard form submissions.
 
 ### Maps
 *   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the massive mapping library and styles on-demand, dynamically calculating and framing bounding boxes for location markers.
