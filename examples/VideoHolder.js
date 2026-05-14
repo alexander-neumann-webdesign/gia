@@ -3,7 +3,8 @@ class VideoHolder extends gia.Component {
 		super(element);
 
 		this.options = {
-			playOnHover: false
+			playOnHover: false,
+			hasPlayPauseButton: false
 		};
 
 		this.ref = {
@@ -14,7 +15,8 @@ class VideoHolder extends gia.Component {
 		this.setState({
 			isPlaying: false,
 			isManuallyPaused: false,
-			isInViewport: false
+			isInViewport: false,
+			isHovered: false
 		});
 	}
 
@@ -31,15 +33,24 @@ class VideoHolder extends gia.Component {
 		});
 
 		if (this.ref.playPauseButton) {
-			this.ref.playPauseButton.addEventListener('click', this.togglePlay);
-			this.ref.video.addEventListener('play', this.handleNativePlay);
-			this.ref.video.addEventListener('pause', this.handleNativePause);
+			if (this.options.hasPlayPauseButton) {
+				this.ref.playPauseButton.addEventListener('click', this.togglePlay);
+				this.ref.video.addEventListener('play', this.handleNativePlay);
+				this.ref.video.addEventListener('pause', this.handleNativePause);
 
-			// Initialize state from DOM
-			this.setState({ isPlaying: !this.ref.video.paused });
+				// set initial hover state styles
+				this.ref.playPauseButton.style.opacity = '0';
+				this.ref.playPauseButton.style.pointerEvents = 'none';
+				this.ref.playPauseButton.style.transition = 'opacity 0.2s ease-in-out';
+
+				// Initialize state from DOM
+				this.setState({ isPlaying: !this.ref.video.paused });
+			} else {
+				this.ref.playPauseButton.style.display = 'none';
+			}
 		}
 
-		if (this.options.playOnHover) {
+		if (this.options.playOnHover || this.options.hasPlayPauseButton) {
 			this.element.addEventListener('mouseenter', this.handleMouseEnter);
 			this.element.addEventListener('mouseleave', this.handleMouseLeave);
 		}
@@ -56,32 +67,37 @@ class VideoHolder extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		if (this.ref.playPauseButton) {
+		if (this.ref.playPauseButton && this.options.hasPlayPauseButton) {
 			this.ref.playPauseButton.removeEventListener('click', this.togglePlay);
 			this.ref.video.removeEventListener('play', this.handleNativePlay);
 			this.ref.video.removeEventListener('pause', this.handleNativePause);
 		}
 
-		if (this.options.playOnHover) {
+		if (this.options.playOnHover || this.options.hasPlayPauseButton) {
 			this.element.removeEventListener('mouseenter', this.handleMouseEnter);
 			this.element.removeEventListener('mouseleave', this.handleMouseLeave);
 		}
 	}
 
 	handleIntersect(entries) {
-		entries.forEach((entry) => {
-			this.setState({ isInViewport: entry.isIntersecting });
-		});
+		const entry = entries[entries.length - 1];
+		this.setState({ isInViewport: entry.isIntersecting });
 	}
 
 	handleMouseEnter() {
-		if (!this.state.isManuallyPaused) {
-			this.setState({ isPlaying: true });
+		const stateUpdates = { isHovered: true };
+		if (this.options.playOnHover && !this.state.isManuallyPaused) {
+			stateUpdates.isPlaying = true;
 		}
+		this.setState(stateUpdates);
 	}
 
 	handleMouseLeave() {
-		this.setState({ isPlaying: false });
+		const stateUpdates = { isHovered: false };
+		if (this.options.playOnHover) {
+			stateUpdates.isPlaying = false;
+		}
+		this.setState(stateUpdates);
 	}
 
 	handleNativePlay() {
@@ -123,6 +139,18 @@ class VideoHolder extends gia.Component {
 			}
 		}
 
+		if ('isHovered' in stateChanges) {
+			if (this.options.hasPlayPauseButton && this.ref.playPauseButton) {
+				if (this.state.isHovered) {
+					this.ref.playPauseButton.style.opacity = '1';
+					this.ref.playPauseButton.style.pointerEvents = 'auto';
+				} else {
+					this.ref.playPauseButton.style.opacity = '0';
+					this.ref.playPauseButton.style.pointerEvents = 'none';
+				}
+			}
+		}
+
 		if ('isPlaying' in stateChanges) {
 			if (this.state.isPlaying) {
 				if (this.ref.video.paused) {
@@ -140,7 +168,7 @@ class VideoHolder extends gia.Component {
 				}
 			}
 
-			if (this.ref.playPauseButton) {
+			if (this.ref.playPauseButton && this.options.hasPlayPauseButton) {
 				if (this.state.isPlaying) {
 					this.ref.playPauseButton.setAttribute('aria-label', 'Pause video');
 					this.ref.playPauseButton.classList.remove('is-paused');
