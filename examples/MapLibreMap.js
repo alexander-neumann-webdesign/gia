@@ -3,6 +3,7 @@ class MapLibreMap extends gia.Component {
 		super(element);
 
 		this.options = {
+			projection: null, // e.g. 'globe'
 			centerCoords: null, // [lng, lat]
 			initialZoomLevel: 1,
 			mapStyle: {
@@ -74,6 +75,14 @@ class MapLibreMap extends gia.Component {
 		});
 
 		this.map.addControl(new maplibregl.NavigationControl());
+
+		if (this.options.projection) {
+			this.map.on('style.load', () => {
+				this.map.setProjection({
+					type: this.options.projection
+				});
+			});
+		}
 
 		if (this.options.locations) {
 			for (const location of this.options.locations) {
