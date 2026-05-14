@@ -52,10 +52,11 @@ class OpenStreetMap extends gia.Component {
 
 		// Initialize map
 		this.map = L.map(this.element).setView([center.lat, center.lng], this.options.initialZoomLevel);
+		this.map.attributionControl.setPrefix(false);
 
 		// Add OpenStreetMap tile layer
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			attribution: '<details class="osm-attribution-details"><summary class="osm-attribution-summary" title="Attribution"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></summary><span class="osm-attribution-text">&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</span></details>'
 		}).addTo(this.map);
 
 		// Add markers
@@ -158,5 +159,43 @@ gia.register(OpenStreetMap);
  *   1% { opacity: 0.25; }
  *   20% { opacity: 0.25; }
  *   60% { transform: scale(1); opacity: 0; }
+ * }
+ *
+ * // Attribution Styles
+ * .leaflet-control-attribution.leaflet-control {
+ *   background: none;
+ *   padding: 0;
+ *   margin: 0;
+ * }
+ * .osm-attribution-details {
+ *   background: rgba(255, 255, 255, 0.8);
+ *   border-radius: 4px;
+ *   padding: 0;
+ *   margin: 0;
+ *   display: flex;
+ *   align-items: center;
+ * }
+ * .osm-attribution-details[open] {
+ *   padding: 0 5px;
+ * }
+ * .osm-attribution-summary {
+ *   list-style: none;
+ *   cursor: pointer;
+ *   display: inline-flex;
+ *   align-items: center;
+ *   justify-content: center;
+ *   padding: 4px;
+ *   background: rgba(255, 255, 255, 0.8);
+ *   border-radius: 4px;
+ * }
+ * .osm-attribution-summary::-webkit-details-marker {
+ *   display: none;
+ * }
+ * .osm-attribution-text {
+ *   margin-left: 4px;
+ *   display: none;
+ * }
+ * .osm-attribution-details[open] .osm-attribution-text {
+ *   display: inline;
  * }
  */
