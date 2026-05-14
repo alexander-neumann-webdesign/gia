@@ -17,21 +17,22 @@ class MultipleSelect extends gia.Component {
 
 	async require() {
 		try {
-			const { multipleSelect } = await import('multiple-select-vanilla');
-			await import('multiple-select-vanilla/dist/styles/css/multiple-select.css');
-			this.multipleSelectFn = multipleSelect;
+			await Promise.all([
+				this.loadStyle('multiple-select-css'),
+				this.loadScript('multiple-select-js', 'multipleSelect')
+			]);
 		} catch (error) {
 			console.error("MultipleSelect: Failed to load multiple-select-vanilla.", error);
 		}
 	}
 
 	mount() {
-		if (typeof this.multipleSelectFn !== 'function') {
-			console.error("MultipleSelect: multipleSelect function is not available.");
+		if (typeof window.multipleSelect === 'undefined') {
+			console.error("MultipleSelect: multipleSelect is not defined on window.");
 			return;
 		}
 
-		this.ms = this.multipleSelectFn(this.element, this.options);
+		this.ms = window.multipleSelect(this.element, this.options);
 	}
 
 	unmount() {
@@ -43,3 +44,16 @@ class MultipleSelect extends gia.Component {
 }
 
 gia.register(MultipleSelect);
+
+/**
+ * Expected HTML Structure:
+ *
+ * <!-- Add the vendor script/styles at the bottom of the body: -->
+ * <!-- <link rel="stylesheet" id="multiple-select-css" data-href="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/styles/css/multiple-select.css"> -->
+ * <!-- <script id="multiple-select-js" data-src="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/multiple-select.js"></script> -->
+ *
+ * <select class="multiple-select" data-component="MultipleSelect">
+ *   <option value="1">First</option>
+ *   <option value="2">Second</option>
+ * </select>
+ */
