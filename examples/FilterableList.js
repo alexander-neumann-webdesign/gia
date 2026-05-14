@@ -25,15 +25,34 @@ class FilterableList extends gia.Component {
 		this.activeSort = this.options.defaultSort;
 
 		this.applyChangesDebounced = this.debounce(this.applyChanges.bind(this), 300);
+
+		this._pendingOutputs = new Map();
+		this._outputRafId = null;
+		this._syncOutputs = this._syncOutputs.bind(this);
+	}
+
+	_syncOutputs() {
+		for (const [id, value] of this._pendingOutputs.entries()) {
+			const outputEl = document.querySelector(`output[for="${id}"]`);
+			if (outputEl && outputEl.value !== value) {
+				outputEl.value = value;
+			}
+		}
+		this._pendingOutputs.clear();
+		this._outputRafId = null;
 	}
 
 	debounce(func, wait) {
 		let timeout;
+		let lastArgs = null;
+		const later = () => {
+			clearTimeout(timeout);
+			if (lastArgs) {
+				func(...lastArgs);
+			}
+		};
 		return function executedFunction(...args) {
-			const later = () => {
-				clearTimeout(timeout);
-				func(...args);
-			};
+			lastArgs = args;
 			clearTimeout(timeout);
 			timeout = setTimeout(later, wait);
 		};
@@ -114,7 +133,8 @@ class FilterableList extends gia.Component {
 		}
 
 		// Save the original index of each item to preserve stable sorting when values are equal
-		this.ref.item.forEach((item, index) => {
+		for (let index = 0; index < this.ref.item.length; index++) {
+			const item = this.ref.item[index];
 			item._originalIndex = index;
 			item._dataCache = {};
 
@@ -143,7 +163,7 @@ class FilterableList extends gia.Component {
 					};
 				}
 			}
-		});
+		}
 
 		// Parse initial state from URL
 		this.parseURL();
@@ -157,23 +177,26 @@ class FilterableList extends gia.Component {
 
 	unmount() {
 		// Cleanup event listeners
-		this.ref.filter.forEach(el => {
+		for (let i = 0; i < this.ref.filter.length; i++) {
+			const el = this.ref.filter[i];
 			el.removeEventListener('change', this.handleFilterChange);
 			el.removeEventListener('input', this.handleFilterChange);
 			el.removeEventListener('click', this.handleFilterClick);
-		});
+		}
 
-		this.ref.sorter.forEach(el => {
+		for (let i = 0; i < this.ref.sorter.length; i++) {
+			const el = this.ref.sorter[i];
 			el.removeEventListener('change', this.handleSorterChange);
 			el.removeEventListener('click', this.handleSorterClick);
-		});
+		}
 
 		// Remove popstate listener
 		window.removeEventListener('popstate', this.handlePopState);
 	}
 
 	bindEvents() {
-		this.ref.filter.forEach(el => {
+		for (let i = 0; i < this.ref.filter.length; i++) {
+			const el = this.ref.filter[i];
 			if (el.tagName === 'SELECT') {
 				el.addEventListener('change', this.handleFilterChange);
 			} else if (el.tagName === 'INPUT') {
@@ -187,15 +210,16 @@ class FilterableList extends gia.Component {
 			} else {
 				el.addEventListener('click', this.handleFilterClick);
 			}
-		});
+		}
 
-		this.ref.sorter.forEach(el => {
+		for (let i = 0; i < this.ref.sorter.length; i++) {
+			const el = this.ref.sorter[i];
 			if (el.tagName === 'SELECT') {
 				el.addEventListener('change', this.handleSorterChange);
 			} else {
 				el.addEventListener('click', this.handleSorterClick);
 			}
-		});
+		}
 
 		window.addEventListener('popstate', this.handlePopState);
 	}
@@ -212,10 +236,11 @@ class FilterableList extends gia.Component {
 
 
 		const possibleFilterTypes = new Set();
-		this.ref.filter.forEach(el => {
+		for (let i = 0; i < this.ref.filter.length; i++) {
+			const el = this.ref.filter[i];
 			const type = el.name || el.getAttribute('data-filter-type');
 			if (type) possibleFilterTypes.add(type);
-		});
+		}
 
 		for (const [key, value] of params.entries()) {
 			if (key.startsWith('filter-')) {
@@ -237,7 +262,9 @@ class FilterableList extends gia.Component {
 				keysToDelete.push(key);
 			}
 		}
-		keysToDelete.forEach(key => params.delete(key));
+		for (let i = 0; i < keysToDelete.length; i++) {
+			params.delete(keysToDelete[i]);
+		}
 
 		// Set new filters
 		for (const [key, values] of Object.entries(this.activeFilters)) {
@@ -265,14 +292,18 @@ class FilterableList extends gia.Component {
 		let values = [];
 		if (el.tagName === 'SELECT') {
 			if (el.multiple) {
-				values = Array.from(el.selectedOptions).map(opt => opt.value);
+				for (let i = 0; i < el.selectedOptions.length; i++) {
+					values.push(el.selectedOptions[i].value);
+				}
 			} else {
 				values = el.value ? [el.value] : [];
 			}
 		} else if (el.tagName === 'INPUT' && el.type === 'checkbox') {
 			// This handles a group of checkboxes with the same name
 			const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
-			values = Array.from(checkboxes).map(cb => cb.value);
+			for (let i = 0; i < checkboxes.length; i++) {
+				values.push(checkboxes[i].value);
+			}
 		} else if (el.tagName === 'INPUT' && el.type === 'radio') {
 			values = el.value ? [el.value] : [];
 		} else if (el.tagName === 'INPUT') {
@@ -283,6 +314,13 @@ class FilterableList extends gia.Component {
 		this.activeFilters[filterType] = values;
 
 		if (e.type === 'input') {
+			if (el.type === 'range' && el.id) {
+				this._pendingOutputs.set(el.id, el.value);
+				if (this._outputRafId) {
+					cancelAnimationFrame(this._outputRafId);
+				}
+				this._outputRafId = requestAnimationFrame(this._syncOutputs);
+			}
 			this.applyChangesDebounced();
 		} else {
 			this.applyChanges();
@@ -341,7 +379,8 @@ class FilterableList extends gia.Component {
 		const visibleItems = [];
 		const hiddenItems = [];
 
-		items.forEach(item => {
+		for (let index = 0; index < items.length; index++) {
+			const item = items[index];
 			let isVisible = true;
 
 			// Check all active filter types
@@ -413,7 +452,7 @@ class FilterableList extends gia.Component {
 			} else {
 				hiddenItems.push(item);
 			}
-		});
+		}
 
 		// Sort visible items
 		if (this.activeSort) {
@@ -448,9 +487,12 @@ class FilterableList extends gia.Component {
 			const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
 
 			// Apply unique names before transition
-			visibleItems.concat(hiddenItems).forEach(item => {
-				item.style.viewTransitionName = `${componentId}-${item._originalIndex}`;
-			});
+			for (let i = 0; i < visibleItems.length; i++) {
+				visibleItems[i].style.viewTransitionName = `${componentId}-${visibleItems[i]._originalIndex}`;
+			}
+			for (let i = 0; i < hiddenItems.length; i++) {
+				hiddenItems[i].style.viewTransitionName = `${componentId}-${hiddenItems[i]._originalIndex}`;
+			}
 			this.ref.container.style.viewTransitionName = `${componentId}-container`;
 
 			// Disable full page transitions so pointer events continue to work for controls outside the container
@@ -465,9 +507,12 @@ class FilterableList extends gia.Component {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
 				// Clean up to avoid global namespace pollution
-				visibleItems.concat(hiddenItems).forEach(item => {
-					item.style.viewTransitionName = '';
-				});
+				for (let i = 0; i < visibleItems.length; i++) {
+					visibleItems[i].style.viewTransitionName = '';
+				}
+				for (let i = 0; i < hiddenItems.length; i++) {
+					hiddenItems[i].style.viewTransitionName = '';
+				}
 				this.ref.container.style.viewTransitionName = '';
 				document.documentElement.style.viewTransitionName = '';
 			});
@@ -481,19 +526,19 @@ class FilterableList extends gia.Component {
 
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
 		// Update hidden state
-		hiddenItems.forEach(item => {
-			item.hidden = true;
-		});
+		for (let i = 0; i < hiddenItems.length; i++) {
+			hiddenItems[i].hidden = true;
+		}
 
-		visibleItems.forEach(item => {
-			item.hidden = false;
-		});
+		for (let i = 0; i < visibleItems.length; i++) {
+			visibleItems[i].hidden = false;
+		}
 
 		// Reorder visible items in the DOM
 		// By appending them in order, they will be moved to the correct position
-		visibleItems.forEach(item => {
-			this.ref.container.appendChild(item);
-		});
+		for (let i = 0; i < visibleItems.length; i++) {
+			this.ref.container.appendChild(visibleItems[i]);
+		}
 	}
 
 	updateControlStates() {
@@ -506,9 +551,10 @@ class FilterableList extends gia.Component {
 	stateChange(stateChanges) {
 		if ('filtersUpdated' in stateChanges) {
 			// Update filter elements
-			this.ref.filter.forEach(el => {
+			for (let i = 0; i < this.ref.filter.length; i++) {
+				const el = this.ref.filter[i];
 				const filterType = el.name || el.getAttribute('data-filter-type');
-				if (!filterType) return;
+				if (!filterType) continue;
 
 				const activeValues = this.activeFilters[filterType] || [];
 
@@ -530,9 +576,10 @@ class FilterableList extends gia.Component {
 					}
 				} else if (el.tagName === 'SELECT') {
 					if (el.multiple) {
-						Array.from(el.options).forEach(opt => {
+						for (let j = 0; j < el.options.length; j++) {
+							const opt = el.options[j];
 							opt.selected = activeValues.includes(opt.value);
-						});
+						}
 					} else {
 						el.value = activeValues.length > 0 ? activeValues[0] : '';
 					}
@@ -547,15 +594,16 @@ class FilterableList extends gia.Component {
 					// Update associated output if it exists (for range inputs)
 					if (el.type === 'range' && el.id) {
 						const outputEl = document.querySelector(`output[for="${el.id}"]`);
-						if (outputEl) {
+						if (outputEl && outputEl.value !== el.value) {
 							outputEl.value = el.value;
 						}
 					}
 				}
-			});
+			}
 
 			// Update sorter elements
-			this.ref.sorter.forEach(el => {
+			for (let i = 0; i < this.ref.sorter.length; i++) {
+				const el = this.ref.sorter[i];
 				if (el.tagName === 'SELECT') {
 					el.value = this.activeSort;
 				} else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
@@ -570,7 +618,7 @@ class FilterableList extends gia.Component {
 						el.setAttribute('aria-selected', 'false');
 					}
 				}
-			});
+			}
 		}
 	}
 }

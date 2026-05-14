@@ -19,6 +19,10 @@ class SplitText extends gia.Component {
 		this._wordIndex = 0;
 		this._lineIndex = 0;
 
+		// Pre-bind methods for high-frequency callbacks to avoid GC overhead
+		this.handleResize = this.handleResize.bind(this);
+		this._applyLineStyles = this._applyLineStyles.bind(this);
+
 		// Initialize/Cache Segmenters once for performance
 		this._initSegmenters();
 	}
@@ -50,18 +54,8 @@ class SplitText extends gia.Component {
 	}
 
 	handleResize() {
-		// Only re-split lines if line splitting is active
 		if (this.options.split.indexOf("lines") !== -1) {
-			// A naive debounce to avoid firing split too rapidly during resize
-			if (this.resizeTimeout) {
-				clearTimeout(this.resizeTimeout);
-			}
-			this.resizeTimeout = setTimeout(() => {
-				// We only need to recalculate lines, not re-parse the entire DOM tree
-				// But to do that cleanly without re-parsing, we need to unwrap old lines first.
-				// Since unwrapping is complex, re-running split is safer and usually fast enough for debounced resize.
-				this.split();
-			}, 100);
+			this.calculateLines();
 		}
 	}
 
@@ -99,7 +93,10 @@ class SplitText extends gia.Component {
 	}
 
 	_walkAndSplit(node) {
-		const childNodes = Array.from(node.childNodes);
+		const childNodes = [];
+		for (let i = 0; i < node.childNodes.length; i++) {
+			childNodes.push(node.childNodes[i]);
+		}
 
 		for (let i = 0; i < childNodes.length; i++) {
 			const child = childNodes[i];
@@ -242,30 +239,51 @@ class SplitText extends gia.Component {
 
 		// Phase 2: STRICT DOM WRITES
 		// Defer applying styles until the next frame to keep main thread unblocked
-		requestAnimationFrame(() => {
-			for (let i = 0; i < linesArray.length; i++) {
-				const lineWords = linesArray[i];
+		this._linesArrayToApply = linesArray;
 
-				for (let j = 0; j < lineWords.length; j++) {
-					const wordEl = lineWords[j];
+		if (!this.ticking) {
+			this.ticking = true;
+			this._rafId = requestAnimationFrame(this._applyLineStyles);
+		}
+	}
+
+	_applyLineStyles() {
+		if (!this._linesArrayToApply) return;
+
+		for (let i = 0; i < this._linesArrayToApply.length; i++) {
+			const lineWords = this._linesArrayToApply[i];
+
+			for (let j = 0; j < lineWords.length; j++) {
+				const wordEl = lineWords[j];
+
+				if (wordEl._currentLineIndex !== i) {
 					wordEl.style.setProperty("--line-index", i);
+					wordEl._currentLineIndex = i;
+				}
 
-					// Instead of querySelectorAll (which is a read operation), we iterate children directly
-					// if they exist, since we know we appended .split-char spans as direct children.
-					const children = wordEl.children;
-					for(let k = 0; k < children.length; k++) {
-						if (children[k].classList.contains("split-char")) {
-							children[k].style.setProperty("--line-index", i);
+				// Instead of querySelectorAll (which is a read operation), we iterate children directly
+				// if they exist, since we know we appended .split-char spans as direct children.
+				const children = wordEl.children;
+				for(let k = 0; k < children.length; k++) {
+					const child = children[k];
+					if (child.classList.contains("split-char")) {
+						if (child._currentLineIndex !== i) {
+							child.style.setProperty("--line-index", i);
+							child._currentLineIndex = i;
 						}
 					}
 				}
 			}
-		});
+		}
+
+		this._linesArrayToApply = null;
+		this._rafId = null;
+		this.ticking = false;
 	}
 
 	unmount() {
-		if (this.resizeTimeout) {
-			clearTimeout(this.resizeTimeout);
+		if (this._rafId) {
+			cancelAnimationFrame(this._rafId);
 		}
 	}
 }
