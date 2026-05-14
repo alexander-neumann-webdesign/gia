@@ -35,13 +35,6 @@ class Tabs extends gia.Component {
 			return;
 		}
 
-		// Ensure tabpanels are focusable if they don't already have a tabindex
-		this.ref.panel.forEach(panel => {
-			if (!panel.hasAttribute('tabindex')) {
-				panel.setAttribute('tabindex', '0');
-			}
-		});
-
 		// Initialize state based on DOM and URL hash.
 		const hash = window.location.hash;
 		let initialIndex = 0;
@@ -142,11 +135,6 @@ class Tabs extends gia.Component {
 				event.preventDefault();
 				newIndex = tabCount - 1;
 				break;
-			case 'Enter':
-			case ' ':
-				event.preventDefault();
-				this.setState({ activeTabIndex: currentIndex });
-				return;
 		}
 
 		if (newIndex !== currentIndex) {
@@ -191,7 +179,7 @@ class Tabs extends gia.Component {
 					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
 					if (isSelected) {
-						tab.setAttribute('tabindex', '0');
+						tab.removeAttribute('tabindex');
 					} else {
 						tab.setAttribute('tabindex', '-1');
 					}
@@ -213,41 +201,102 @@ class Tabs extends gia.Component {
 				});
 			};
 
+
 			const panelsContainer = this.ref.panel[0]?.parentElement;
 
-			if (document.startViewTransition && panelsContainer) {
-				const activePanel = this.ref.panel[activeIndex];
-				const oldPanel = this.ref.panel.find(p => !p.hidden);
+			if (panelsContainer) {
+				const startHeight = panelsContainer.offsetHeight;
 
-				panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
-				if (oldPanel && oldPanel !== activePanel) {
-					oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
-				}
-				if (activePanel) {
-					activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
-				}
+				const doViewTransition = () => {
+					if (document.startViewTransition) {
+						const activePanel = this.ref.panel[activeIndex];
+						const oldPanel = this.ref.panel.find(p => !p.hidden);
 
-				// Disable root transition to prevent full-page crossfade
-				document.documentElement.style.viewTransitionName = 'none';
+						panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
+						if (oldPanel && oldPanel !== activePanel) {
+							oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
+						}
+						if (activePanel) {
+							activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
+						}
 
-				const transition = document.startViewTransition(() => updateDOM());
+						// Disable root transition to prevent full-page crossfade
+						document.documentElement.style.viewTransitionName = 'none';
 
-				transition.ready.catch(() => {});
-				transition.finished.catch(() => {
-					// Ignore AbortError when rapid clicks interrupt an ongoing transition
-				}).finally(() => {
-					panelsContainer.style.viewTransitionName = '';
-					if (oldPanel) {
-						oldPanel.style.viewTransitionName = '';
+						const transition = document.startViewTransition(() => updateDOM());
+
+						transition.ready.catch(() => {});
+						transition.finished.catch(() => {
+							// Ignore AbortError when rapid clicks interrupt an ongoing transition
+						}).finally(() => {
+							panelsContainer.style.viewTransitionName = '';
+							if (oldPanel) {
+								oldPanel.style.viewTransitionName = '';
+							}
+							if (activePanel) {
+								activePanel.style.viewTransitionName = '';
+							}
+							document.documentElement.style.viewTransitionName = '';
+						});
+					} else {
+						updateDOM();
 					}
-					if (activePanel) {
-						activePanel.style.viewTransitionName = '';
-					}
-					document.documentElement.style.viewTransitionName = '';
-				});
+				};
+
+				// To find the end height, we temporarily apply the new state, measure, then revert.
+				// Wait, if we use Web Animations API on panelsContainer, we can just do it.
+				// Let's force layout for start and end heights.
+				
+				// Apply new state to measure
+				const previousHiddenStates = this.ref.panel.map(p => p.hidden);
+				
+				// Update DOM without view transition just to measure
+				updateDOM();
+				
+				// The height might be affected by CSS transitions if display goes from block to none,
+				// but since display: none removes it from flow, the grid height should shrink. 
+				// However, if the old panel is still transitioning, its height might keep the grid tall.
+				// To get pure target height, we could temporarily disable transitions, or just read offsetHeight
+				// if transitions haven't started (they start in the next tick usually).
+				const endHeight = panelsContainer.offsetHeight;
+
+				// Revert state
+				this.ref.panel.forEach((p, i) => p.hidden = previousHiddenStates[i]);
+
+				// Now apply state properly (with view transition)
+				doViewTransition();
+
+				if (startHeight !== endHeight) {
+					// We need to animate the height.
+					// Since the old element might take time to fade out (due to CSS transition),
+					// and grid height takes the max, the container height naturally won't shrink 
+					// until the fade out completes if it was the taller element.
+					// If we animate the container height explicitly, it will force the container size.
+					panelsContainer.style.overflow = 'hidden';
+					const animation = panelsContainer.animate(
+						[
+							{ height: `${startHeight}px` },
+							{ height: `${endHeight}px` }
+						],
+						{
+							duration: 400,
+							easing: 'ease'
+						}
+					);
+
+					animation.onfinish = () => {
+						panelsContainer.style.overflow = '';
+						panelsContainer.style.height = '';
+					};
+					animation.oncancel = () => {
+						panelsContainer.style.overflow = '';
+						panelsContainer.style.height = '';
+					};
+				}
 			} else {
 				updateDOM();
 			}
+
 		}
 	}
 }
