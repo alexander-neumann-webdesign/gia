@@ -706,9 +706,48 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
 }
 
 /* --- Tabs --- */
+:root {
+  --tabs-bg: #e2e8f0;
+  --tabs-border: #cbd5e1;
+  --tab-active-bg: #ffffff;
+  --tab-text: #64748b;
+  --tab-active-text: #0f172a;
+}
+
+:root[data-theme=dark] {
+  --tabs-bg: #1e293b;
+  --tabs-border: #334155;
+  --tab-active-bg: #0f172a;
+  --tab-text: #94a3b8;
+  --tab-active-text: #ffffff;
+}
+
+div[data-component=Tabs] [role=tablist] {
+  position: relative;
+  display: inline-flex;
+  background-color: var(--tabs-bg);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 1rem;
+}
+div[data-component=Tabs] [role=tablist]::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: var(--indicator-left, 4px);
+  width: var(--indicator-width, 0px);
+  background-color: var(--tab-active-bg);
+  border-radius: 6px;
+  transition: left 0.3s ease, width 0.3s ease;
+  z-index: 0;
+}
 div[data-component=Tabs] .tab-panels {
   display: grid;
   grid-template-columns: 1fr;
+  border: 1px solid var(--tabs-border);
+  border-radius: 8px;
+  padding: 1rem;
 }
 div[data-component=Tabs] .tab-panels > * {
   grid-row-start: 1;
@@ -716,12 +755,19 @@ div[data-component=Tabs] .tab-panels > * {
 }
 div[data-component=Tabs] [role=tab] {
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.3s ease, color 0.3s ease;
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--tab-text);
+  transition: color 0.3s ease;
 }
 div[data-component=Tabs] [role=tab][aria-selected=true] {
-  border-color: currentColor;
-  font-weight: bold;
+  color: var(--tab-active-text);
 }
 div[data-component=Tabs] [role=tabpanel] {
   transition: opacity 0.4s ease, display 0.4s allow-discrete;
