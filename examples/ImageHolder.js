@@ -278,9 +278,10 @@ class ImageHolder extends gia.Component {
 			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
 			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
 
+			const scale = 1 + Math.abs(this.options.parallaxSpeed);
 			const transformStr = this.options.parallaxDirection === 'horizontal'
-				? `translate3d(${offsetPercent}%, 0, 0)`
-				: `translate3d(0, ${offsetPercent}%, 0)`;
+				? `translate3d(${offsetPercent}%, 0, 0) scale(${scale})`
+				: `translate3d(0, ${offsetPercent}%, 0) scale(${scale})`;
 
 			if (this._lastTransform !== transformStr) {
 				this.ref.img.style.transform = transformStr;
