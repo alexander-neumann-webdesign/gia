@@ -66,6 +66,23 @@ class ImageHolder extends gia.Component {
 		this.isScrollBound = false;
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
+		// Calculate extra space needed to cover the parallax translation.
+		// The animation translates by: mappedProgress * speed * 100.
+		// Max translation is 0.5 * speed * ImageSize.
+		// We need ExtraSpace (E) such that E = 0.5 * speed * (1 + 2 * E).
+		// Solving for E: E = (0.5 * speed) / (1 - speed).
+		const speed = Math.abs(this.options.parallaxSpeed);
+		const safeSpeed = Math.min(speed, 0.99); // Prevent division by zero
+		const extraSpacePercent = ((0.5 * safeSpeed) / (1 - safeSpeed)) * 100;
+
+		if (this.options.parallaxDirection === 'vertical') {
+			this.ref.img.style.height = `calc(100% + ${extraSpacePercent * 2}%)`;
+			this.ref.img.style.top = `-${extraSpacePercent}%`;
+		} else {
+			this.ref.img.style.width = `calc(100% + ${extraSpacePercent * 2}%)`;
+			this.ref.img.style.left = `-${extraSpacePercent}%`;
+		}
+
 		// Cache the header element once if needed
 		if (this.options.startFromTop) {
 			this.headerElement = document.querySelector('header#main-header');
@@ -306,8 +323,13 @@ gia.register(ImageHolder);
  *   position: relative;
  *
  *   img {
+ *     position: absolute;
+ *     top: 0;
+ *     left: 0;
  *     width: 100%;
- *     height: auto;
+ *     height: 100%;
+ *     object-fit: cover;
+ *     object-position: center;
  *     display: block;
  *     opacity: 0;
  *     will-change: transform;
