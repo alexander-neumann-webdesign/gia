@@ -93,13 +93,9 @@ class SplitText extends gia.Component {
 	}
 
 	_walkAndSplit(node) {
-		const childNodes = [];
-		for (let i = 0; i < node.childNodes.length; i++) {
-			childNodes.push(node.childNodes[i]);
-		}
-
-		for (let i = 0; i < childNodes.length; i++) {
-			const child = childNodes[i];
+		let child = node.firstChild;
+		while (child) {
+			const next = child.nextSibling;
 
 			if (child.nodeType === Node.TEXT_NODE) {
 				// Process text node
@@ -109,6 +105,7 @@ class SplitText extends gia.Component {
 				// But preserve standard whitespace flow
 				if (!text.trim() && text.length > 0) {
 					// It's just whitespace, leave it alone to preserve layout
+					child = next;
 					continue;
 				}
 
@@ -121,6 +118,8 @@ class SplitText extends gia.Component {
 				// Recursive call
 				this._walkAndSplit(child);
 			}
+
+			child = next;
 		}
 	}
 
