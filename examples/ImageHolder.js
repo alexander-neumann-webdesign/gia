@@ -14,6 +14,7 @@ class ImageHolder extends gia.Component {
 		};
 
 		this.ticking = false;
+		this._frameId = null;
 
 		// Layout caching for performance
 		this.cachedLayout = {
@@ -76,7 +77,7 @@ class ImageHolder extends gia.Component {
 		// Initial calculation based on immediate state
 		this._needsBoundsUpdate = true;
 		if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
+			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -86,12 +87,15 @@ class ImageHolder extends gia.Component {
 		if (this.state.isVisible) {
 			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
 		} else if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
+			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
 
 	unmount() {
+		if (this._frameId) {
+			window.cancelAnimationFrame(this._frameId);
+		}
 		if (this.options.parallaxSpeed !== 0) {
 			this.destroyParallax();
 		}
@@ -128,11 +132,10 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		for (const entry of entries) {
-			this.setState({
-				isVisible: entry.isIntersecting
-			});
-		}
+		const entry = entries[entries.length - 1];
+		this.setState({
+			isVisible: entry.isIntersecting
+		});
 	}
 
 	handleScroll(e) {
@@ -148,7 +151,7 @@ class ImageHolder extends gia.Component {
 		}
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
+			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -160,6 +163,7 @@ class ImageHolder extends gia.Component {
 		}
 		this.updateParallax();
 		this.ticking = false;
+		this._frameId = null;
 	}
 
 	stateChange(stateChanges) {
@@ -173,7 +177,7 @@ class ImageHolder extends gia.Component {
 					this._needsBoundsUpdate = true;
 					this.currentScrollY = window.scrollY || window.pageYOffset;
 					if (!this.ticking) {
-						window.requestAnimationFrame(this.tickUpdate);
+						this._frameId = window.requestAnimationFrame(this.tickUpdate);
 						this.ticking = true;
 					}
 				}
@@ -211,7 +215,7 @@ class ImageHolder extends gia.Component {
 		if (widthChanged) {
 			this._needsBoundsUpdate = true;
 			if (!this.ticking) {
-				window.requestAnimationFrame(this.tickUpdate);
+				this._frameId = window.requestAnimationFrame(this.tickUpdate);
 				this.ticking = true;
 			}
 		}
