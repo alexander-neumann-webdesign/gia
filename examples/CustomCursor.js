@@ -141,21 +141,8 @@ class CustomCursor extends gia.Component {
             this._currentPullX = 0;
             this._currentPullY = 0;
 
-            // Calculate true center without existing transforms
-            const currentTransform = this.magneticTarget.style.transform;
-            this.magneticTarget.style.transform = 'translate3d(0px, 0px, 0px)';
-
-            const rect = this.magneticTarget.getBoundingClientRect();
-            this.magneticBounds = {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2
-            };
-
-            this.magneticTarget.style.transform = currentTransform;
+            // Defer bounds calculation to the next render frame to avoid synchronous layout thrashing
+            this._needsBoundsUpdate = true;
 
             if (this.currentState !== 'magnetic') {
                 this.currentState = 'magnetic';
@@ -182,7 +169,7 @@ class CustomCursor extends gia.Component {
 
         if (this._needsBoundsUpdate && this.magneticTarget) {
             this._needsBoundsUpdate = false;
-            // Calculate bounds without synchronous layout thrashing (modifying DOM transform before reading)
+            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing (modifying DOM transform before reading)
             const rect = this.magneticTarget.getBoundingClientRect();
             const untransformedLeft = rect.left - this._currentPullX;
             const untransformedTop = rect.top - this._currentPullY;
