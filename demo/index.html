@@ -388,6 +388,31 @@
         </div>
     </section>
 
+    <section id="ImageComparison">
+        <div class="container">
+            <h2>Image Comparison</h2>
+            <div class="demo-block">
+                <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
+                    <!-- Left/Before side -->
+                    <div class="image-comparison__before">
+                        <img src="sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
+                    </div>
+                    <!-- Right/After side -->
+                    <div class="image-comparison__after">
+                        <img src="sample-image.jpg" alt="After" />
+                    </div>
+
+                    <input type="range" class="image-comparison__slider" min="0" max="100" value="50" aria-label="Image comparison slider" data-ref="slider" />
+
+                    <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
+                        <div class="image-comparison__handle-line"></div>
+                        <div class="image-comparison__handle-button"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="ImageHolder">
         <h2>ImageHolder</h2>
         <div class="demo-block">
@@ -817,6 +842,7 @@
     <script src="../examples/FilterableList.js"></script>
     <script src="../examples/Form.js"></script>
     <script src="../examples/Header.js"></script>
+    <script src="../examples/ImageComparison.js"></script>
     <script src="../examples/ImageHolder.js"></script>
     <script src="../examples/LightboxGallery.js"></script>
     <script src="../examples/Marquee.js"></script>
