@@ -194,11 +194,18 @@ gia.register(VideoHolder);
  *     display: flex;
  *     align-items: center;
  *     justify-content: center;
- *     transition: background-color 0.3s ease;
+ *     opacity: 0;
+ *     pointer-events: none;
+ *     transition: opacity 0.3s ease, background-color 0.3s ease;
  *
  *     &:hover {
  *       background: rgba(0,0,0,0.8);
  *     }
+ *   }
+ *
+ *   &:hover button[data-ref="playPauseButton"] {
+ *     opacity: 1;
+ *     pointer-events: auto;
  *   }
  * }
  */

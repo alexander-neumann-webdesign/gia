@@ -12,3 +12,8 @@
 **Vulnerability:** External links opening in a new tab (`target="_blank"`) without `rel="noopener noreferrer"` can expose the `window.opener` object to the newly opened page. A malicious page can use `window.opener.location` to redirect the original application page to a phishing site.
 **Learning:** Even though modern browsers default to `noopener` for `target="_blank"`, omitting the attribute can leave older browsers vulnerable and indicates a lack of explicit security intent.
 **Prevention:** Always append `rel="noopener noreferrer"` to any anchor tag that uses `target="_blank"` to fully mitigate Reverse Tabnabbing attacks across all browser environments.
+
+## 2024-05-14 - Leaflet bindPopup XSS Vulnerability
+**Vulnerability:** XSS vulnerability found in `OpenStreetMap.js` because `marker.bindPopup(loc.title)` treats string input as raw HTML.
+**Learning:** Leaflet's `bindPopup(content)` method behaves differently depending on the input type. Passing a plain string directly exposes the application to Cross-Site Scripting (XSS) if the string is untrusted, as Leaflet interprets it as HTML.
+**Prevention:** Always create a DOM element, set its `textContent` (or `innerText`) to safely escape the input, and pass the DOM element to `bindPopup(element)` instead of a raw string.
