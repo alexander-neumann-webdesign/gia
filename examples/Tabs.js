@@ -207,6 +207,7 @@ class Tabs extends gia.Component {
 			if (panelsContainer) {
 				const startHeight = panelsContainer.offsetHeight;
 
+				let transition = null;
 				const doViewTransition = () => {
 					if (document.startViewTransition) {
 						const activePanel = this.ref.panel[activeIndex];
@@ -223,7 +224,7 @@ class Tabs extends gia.Component {
 						// Disable root transition to prevent full-page crossfade
 						document.documentElement.style.viewTransitionName = 'none';
 
-						const transition = document.startViewTransition(() => updateDOM());
+						transition = document.startViewTransition(() => updateDOM());
 
 						transition.ready.catch(() => {});
 						transition.finished.catch(() => {
@@ -291,18 +292,24 @@ class Tabs extends gia.Component {
 						],
 						{
 							duration: 400,
-							easing: 'ease'
+							easing: 'ease',
+							fill: 'forwards'
 						}
 					);
 
-					animation.onfinish = () => {
-						panelsContainer.style.overflow = '';
-						panelsContainer.style.height = '';
-					};
-					animation.oncancel = () => {
-						panelsContainer.style.overflow = '';
-						panelsContainer.style.height = '';
-					};
+					if (transition) {
+						transition.finished.finally(() => {
+							animation.cancel();
+							panelsContainer.style.overflow = '';
+							panelsContainer.style.height = '';
+						});
+					} else {
+						setTimeout(() => {
+							animation.cancel();
+							panelsContainer.style.overflow = '';
+							panelsContainer.style.height = '';
+						}, 450); // Defer cleanup to ensure CSS discrete transitions finish before removing height lock
+					}
 				}
 			} else {
 				updateDOM();
