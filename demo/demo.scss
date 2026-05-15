@@ -1639,6 +1639,11 @@ button[data-component="ClipboardCopy"] {
             border: none;
             background: transparent;
         }
+
+        &:focus-visible ~ .image-comparison__handle .image-comparison__handle-button {
+            outline: 2px solid #005fcc;
+            outline-offset: 2px;
+        }
     }
 
     &__handle {

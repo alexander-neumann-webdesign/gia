@@ -1,3 +1,3 @@
-## 2024-10-25 - Self-contained UI Animations
-**Learning:** Using the Web Animations API for component-injected SVGs ensures self-contained UX enhancements (like a loading spinner) without depending on the consuming application's external stylesheet to provide keyframes.
-**Action:** When adding small animated UI enhancements to reusable components, prefer `element.animate()` to keep the component portable and dependency-free.
+## 2025-05-15 - Added ImageComparison Range Slider Accessibility
+**Learning:** Native input ranges that are visually hidden but still interactive via custom styling require explicit `:focus-visible` states using sibling CSS selectors so keyboard users know they have focus. Also, adding `aria-label` dynamically via JS if missing ensures screen readers announce the element correctly even if developers miss it in their markup.
+**Action:** Always check custom slider components for explicit focus states and ensure fallback ARIA labels are added programmatically.
