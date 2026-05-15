@@ -13,6 +13,11 @@ class ImageComparison extends gia.Component {
     mount() {
         if (this.ref.slider) {
             this.ref.slider.addEventListener('input', this.handleInput);
+
+            if (!this.ref.slider.hasAttribute('aria-label') && !this.ref.slider.hasAttribute('aria-labelledby')) {
+                this.ref.slider.setAttribute('aria-label', 'Image comparison slider');
+            }
+
             // Set initial state
             this.updateExposure();
         }
