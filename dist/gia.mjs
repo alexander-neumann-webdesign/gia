@@ -1,6 +1,6 @@
 var k = Object.defineProperty;
 var I = (a, e, t) => e in a ? k(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var y = (a, e, t) => I(a, typeof e != "symbol" ? e + "" : e, t);
+var v = (a, e, t) => I(a, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (a) => {
   if (typeof a != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", a);
@@ -13,9 +13,9 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = a;
 });
-class z {
+class M {
   constructor() {
-    y(this, "_options", {
+    v(this, "_options", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -32,8 +32,8 @@ class z {
     return this._options[e];
   }
 }
-const f = new z();
-function M(a, e, t, n) {
+const f = new M();
+function z(a, e, t, n) {
   if (a.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), a.__gia_component__;
   try {
@@ -58,7 +58,7 @@ function x(a = {}, e = document.documentElement) {
     if (S(r))
       return;
     const l = r.getAttribute(n);
-    typeof a[l] == "function" ? t.push(M(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
+    typeof a[l] == "function" ? t.push(z(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
   };
   for (let r = 0; r < i; r++)
     o(s[r]);
@@ -213,10 +213,10 @@ let N = class {
     let i = _.get(s);
     i || (i = { observer: new IntersectionObserver((u) => {
       for (let d = 0; d < u.length; d++) {
-        const w = u[d], v = i.callbacks.get(w.target);
-        if (v) {
+        const w = u[d], y = i.callbacks.get(w.target);
+        if (y) {
           const O = [w];
-          for (const A of v)
+          for (const A of y)
             A(O);
         }
       }
@@ -366,7 +366,7 @@ let N = class {
     }
   }
 };
-class q extends N {
+class H extends N {
   async require() {
   }
   _load() {
@@ -376,21 +376,29 @@ class q extends N {
 class L extends EventTarget {
   emit(e, t = {}) {
     f.get("log") && console.info(`Emitting event '${e}'`);
-    const n = new CustomEvent(e, { detail: t });
-    n._name = e, this.dispatchEvent(n);
+    const n = { ...t, _name: e }, s = new CustomEvent(e, { detail: n });
+    s._name = e, this.dispatchEvent(s);
   }
   on(e, t, n = !1) {
-    const s = (i) => t({ ...i.detail, _name: i._name });
-    t._wrapped = s, this.addEventListener(e, s, { once: n });
+    let s = t._wrappedHandlers;
+    s || (s = /* @__PURE__ */ new Map(), t._wrappedHandlers = s);
+    let i = s.get(e);
+    i || (i = (o) => {
+      o.detail && o.detail._name === o._name ? t(o.detail) : t({ ...o.detail, _name: o._name });
+    }, s.set(e, i)), this.addEventListener(e, i, { once: n });
   }
   once(e, t) {
     this.on(e, t, !0);
   }
   off(e, t) {
-    t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t), t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
+    if (t && t._wrappedHandlers) {
+      const n = t._wrappedHandlers.get(e);
+      n && this.removeEventListener(e, n);
+    } else t && t._wrapped ? this.removeEventListener(e, t._wrapped) : t && this.removeEventListener(e, t);
+    t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const W = new L();
+const q = new L();
 let g = null;
 function j(a) {
   const e = `${f.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
@@ -426,11 +434,11 @@ f.set = function(a, e) {
 typeof window < "u" && setTimeout(P, 0);
 export {
   N as BaseComponent,
-  q as Component,
+  H as Component,
   f as config,
-  M as createInstance,
+  z as createInstance,
   F as destroyInstance,
-  W as eventbus,
+  q as eventbus,
   S as getComponentFromElement,
   x as loadComponents,
   F as removeComponents
