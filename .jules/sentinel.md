@@ -17,3 +17,8 @@
 **Vulnerability:** XSS vulnerability found in `OpenStreetMap.js` because `marker.bindPopup(loc.title)` treats string input as raw HTML.
 **Learning:** Leaflet's `bindPopup(content)` method behaves differently depending on the input type. Passing a plain string directly exposes the application to Cross-Site Scripting (XSS) if the string is untrusted, as Leaflet interprets it as HTML.
 **Prevention:** Always create a DOM element, set its `textContent` (or `innerText`) to safely escape the input, and pass the DOM element to `bindPopup(element)` instead of a raw string.
+
+## 2025-02-09 - DOM-based XSS via innerHTML and data attributes
+**Vulnerability:** XSS vulnerability found in `CustomCursor.js` because `data-cursor-img` and `data-cursor-video` attributes were dynamically read from the DOM and injected directly into `innerHTML` using string interpolation. This allowed attackers to inject malicious HTML/JavaScript.
+**Learning:** Using untrusted data (even data from your own DOM if it's user-controlled) directly within `innerHTML` interpolation strings creates a direct pathway for DOM-based XSS.
+**Prevention:** Avoid `innerHTML` with dynamic variables whenever possible. Instead, use safe DOM APIs like `document.createElement`, setting properties like `src`, `textContent`, and styles directly, and then append the elements using `appendChild`.
