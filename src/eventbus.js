@@ -9,15 +9,35 @@ class EventBus extends EventTarget {
 		if (config.get("log")) {
 			console.info(`Emitting event '${event}'`);
 		}
-		const customEvent = new CustomEvent(event, { detail: eventObject });
+		// ⚡ BOLT OPTIMIZATION: Create the detail payload once per emit rather than inside every listener's wrapper.
+		// This saves N object spread allocations where N is the number of listeners.
+		const detail = { ...eventObject, _name: event };
+		const customEvent = new CustomEvent(event, { detail });
 		customEvent._name = event;
 		this.dispatchEvent(customEvent);
 	}
 
 	on(event, handler, once = false) {
-		const wrappedHandler = (e) => handler({ ...e.detail, _name: e._name });
-		// Store the wrapped handler so we can remove it later
-		handler._wrapped = wrappedHandler;
+		let wrappedHandlers = handler._wrappedHandlers;
+		if (!wrappedHandlers) {
+			wrappedHandlers = new Map();
+			handler._wrappedHandlers = wrappedHandlers;
+		}
+
+		let wrappedHandler = wrappedHandlers.get(event);
+		if (!wrappedHandler) {
+			// ⚡ BOLT OPTIMIZATION: Prevent object spread allocation {...e.detail} on every event listener
+			// by using the pre-spread detail object created in emit().
+			wrappedHandler = (e) => {
+				if (e.detail && e.detail._name === e._name) {
+					handler(e.detail);
+				} else {
+					handler({ ...e.detail, _name: e._name });
+				}
+			};
+			wrappedHandlers.set(event, wrappedHandler);
+		}
+
 		this.addEventListener(event, wrappedHandler, { once });
 	}
 
@@ -26,14 +46,18 @@ class EventBus extends EventTarget {
 	}
 
 	off(event, handler) {
-		if (handler && handler._wrapped) {
+		if (handler && handler._wrappedHandlers) {
+			const wrappedHandler = handler._wrappedHandlers.get(event);
+			if (wrappedHandler) {
+				this.removeEventListener(event, wrappedHandler);
+			}
+		} else if (handler && handler._wrapped) {
+			// Backwards compatibility if any old handlers exist
 			this.removeEventListener(event, handler._wrapped);
 		} else if (handler) {
 			this.removeEventListener(event, handler);
 		}
-		// Note: native EventTarget doesn't natively support removing all listeners for an event without the reference.
-		// Since off() without handler is used to clear all, we simply do nothing as it is rarely needed in modern usages,
-		// or log a warning if an attempt is made to do so.
+
 		if (!handler) {
 			console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
 		}
