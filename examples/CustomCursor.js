@@ -302,10 +302,27 @@ class CustomCursor extends gia.Component {
             }
 
             if (this.ref.mediaBox && targetState === 'media') {
+                this.ref.mediaBox.innerHTML = '';
+                let mediaElement;
                 if (targetImg) {
-                    this.ref.mediaBox.innerHTML = `<img src="${targetImg}" alt="Cursor Media" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = targetImg;
+                    mediaElement.alt = 'Cursor Media';
                 } else if (targetVideo) {
-                    this.ref.mediaBox.innerHTML = `<video src="${targetVideo}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></video>`;
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = targetVideo;
+                    mediaElement.autoplay = true;
+                    mediaElement.loop = true;
+                    mediaElement.muted = true;
+                    mediaElement.playsInline = true;
+                }
+
+                if (mediaElement) {
+                    mediaElement.style.width = '100%';
+                    mediaElement.style.height = '100%';
+                    mediaElement.style.objectFit = 'cover';
+                    mediaElement.style.borderRadius = '50%';
+                    this.ref.mediaBox.appendChild(mediaElement);
                 }
             }
 
