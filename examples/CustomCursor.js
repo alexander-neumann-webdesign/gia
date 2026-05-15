@@ -149,7 +149,6 @@ class CustomCursor extends gia.Component {
     }
 
     handleScroll() {
-        this._needsAllBoundsUpdate = true;
         this._wakeUp();
     }
 
@@ -160,30 +159,41 @@ class CustomCursor extends gia.Component {
 
     _processInteractions(target) {
         // Check states based on attributes
-        const textHoverEl = target.closest('[data-hover-text], [data-cursor-text]');
-        const iconHoverEl = target.closest('[data-cursor-icon]');
-        const imgHoverEl = target.closest('[data-cursor-img]');
-        const videoHoverEl = target.closest('[data-cursor-video]');
+        // Only run expensive DOM traversal if target changed
+        if (this._lastInteractionTarget !== target) {
+            this._lastInteractionTarget = target;
 
-        let targetState = 'default';
-        let targetText = '';
-        let targetIcon = '';
-        let targetImg = '';
-        let targetVideo = '';
+            const textHoverEl = target.closest('[data-hover-text], [data-cursor-text]');
+            const iconHoverEl = target.closest('[data-cursor-icon]');
+            const imgHoverEl = target.closest('[data-cursor-img]');
+            const videoHoverEl = target.closest('[data-cursor-video]');
 
-        if (imgHoverEl) {
-            targetState = 'media';
-            targetImg = imgHoverEl.getAttribute('data-cursor-img');
-        } else if (videoHoverEl) {
-            targetState = 'media';
-            targetVideo = videoHoverEl.getAttribute('data-cursor-video');
-        } else if (iconHoverEl) {
-            targetState = 'icon';
-            targetIcon = iconHoverEl.getAttribute('data-cursor-icon');
-        } else if (textHoverEl) {
-            targetState = 'text';
-            targetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
+            this._cachedTargetState = 'default';
+            this._cachedTargetText = '';
+            this._cachedTargetIcon = '';
+            this._cachedTargetImg = '';
+            this._cachedTargetVideo = '';
+
+            if (imgHoverEl) {
+                this._cachedTargetState = 'media';
+                this._cachedTargetImg = imgHoverEl.getAttribute('data-cursor-img');
+            } else if (videoHoverEl) {
+                this._cachedTargetState = 'media';
+                this._cachedTargetVideo = videoHoverEl.getAttribute('data-cursor-video');
+            } else if (iconHoverEl) {
+                this._cachedTargetState = 'icon';
+                this._cachedTargetIcon = iconHoverEl.getAttribute('data-cursor-icon');
+            } else if (textHoverEl) {
+                this._cachedTargetState = 'text';
+                this._cachedTargetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
+            }
         }
+
+        let targetState = this._cachedTargetState;
+        let targetText = this._cachedTargetText;
+        let targetIcon = this._cachedTargetIcon;
+        let targetImg = this._cachedTargetImg;
+        let targetVideo = this._cachedTargetVideo;
 
         // Magnetic and Stick Hover logic
         // We find the closest magnetic element from the cached bounds
@@ -192,19 +202,24 @@ class CustomCursor extends gia.Component {
         let isStick = false;
         let minDistanceSq = Infinity;
 
+        const scrollX = window.scrollX || window.pageXOffset;
+        const scrollY = window.scrollY || window.pageYOffset;
+        const docMouseX = this.mouse.x + scrollX;
+        const docMouseY = this.mouse.y + scrollY;
+
         for (const item of this.cachedMagneticElements) {
             const { el, bounds, type } = item;
 
             // Check if mouse is within the padded bounds
             if (
-                this.mouse.x >= bounds.left - this.options.magneticPadding &&
-                this.mouse.x <= bounds.right + this.options.magneticPadding &&
-                this.mouse.y >= bounds.top - this.options.magneticPadding &&
-                this.mouse.y <= bounds.bottom + this.options.magneticPadding
+                docMouseX >= bounds.left - this.options.magneticPadding &&
+                docMouseX <= bounds.right + this.options.magneticPadding &&
+                docMouseY >= bounds.top - this.options.magneticPadding &&
+                docMouseY <= bounds.bottom + this.options.magneticPadding
             ) {
                 // Find the closest one by center distance to handle overlapping padded zones
-                const dx = this.mouse.x - bounds.centerX;
-                const dy = this.mouse.y - bounds.centerY;
+                const dx = docMouseX - bounds.centerX;
+                const dy = docMouseY - bounds.centerY;
                 const distSq = dx * dx + dy * dy;
 
                 if (distSq < minDistanceSq) {
@@ -214,10 +229,10 @@ class CustomCursor extends gia.Component {
 
                     // Check if directly over or very near the element itself
                     isSnapped = (
-                        this.mouse.x >= bounds.left - 5 &&
-                        this.mouse.x <= bounds.right + 5 &&
-                        this.mouse.y >= bounds.top - 5 &&
-                        this.mouse.y <= bounds.bottom + 5
+                        docMouseX >= bounds.left - 5 &&
+                        docMouseX <= bounds.right + 5 &&
+                        docMouseY >= bounds.top - 5 &&
+                        docMouseY <= bounds.bottom + 5
                     );
 
                     isStick = type === 'stick';
@@ -344,13 +359,16 @@ class CustomCursor extends gia.Component {
             const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
             this.cachedMagneticElements = [];
 
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+
             // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
             for (const el of elements) {
                 // If it's the current target, we need to mathematically untransform it
                 let rect = el.getBoundingClientRect();
 
-                let left = rect.left;
-                let top = rect.top;
+                let left = rect.left + scrollX;
+                let top = rect.top + scrollY;
                 let width = rect.width;
                 let height = rect.height;
 
@@ -393,9 +411,14 @@ class CustomCursor extends gia.Component {
 
         // If hovering magnetic element, pull the target to its center
         if (this.magneticTarget && this.magneticBounds) {
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+            const docMouseX = this.mouse.x + scrollX;
+            const docMouseY = this.mouse.y + scrollY;
+
             // Compute distance from mouse to the actual element's edges
-            const dxToEdge = Math.max(0, Math.abs(this.mouse.x - this.magneticBounds.centerX) - this.magneticBounds.width / 2);
-            const dyToEdge = Math.max(0, Math.abs(this.mouse.y - this.magneticBounds.centerY) - this.magneticBounds.height / 2);
+            const dxToEdge = Math.max(0, Math.abs(docMouseX - this.magneticBounds.centerX) - this.magneticBounds.width / 2);
+            const dyToEdge = Math.max(0, Math.abs(docMouseY - this.magneticBounds.centerY) - this.magneticBounds.height / 2);
 
             const maxDistToEdge = Math.max(dxToEdge, dyToEdge);
 
@@ -403,13 +426,13 @@ class CustomCursor extends gia.Component {
             // and approaches 0 as we reach the padding boundary
             const intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
 
-            const pullX = (this.mouse.x - this.magneticBounds.centerX) * this.options.magneticStrength * intensity;
-            const pullY = (this.mouse.y - this.magneticBounds.centerY) * this.options.magneticStrength * intensity;
+            const pullX = (docMouseX - this.magneticBounds.centerX) * this.options.magneticStrength * intensity;
+            const pullY = (docMouseY - this.magneticBounds.centerY) * this.options.magneticStrength * intensity;
 
             // Only snap the cursor target to the element if actually snapped (magnetic or stick)
             if (this.currentState === 'magnetic' || this.currentState === 'stick') {
-                targetX = this.magneticBounds.centerX + pullX;
-                targetY = this.magneticBounds.centerY + pullY;
+                targetX = (this.magneticBounds.centerX - scrollX) + pullX;
+                targetY = (this.magneticBounds.centerY - scrollY) + pullY;
             }
 
             this._currentPullX = pullX;
