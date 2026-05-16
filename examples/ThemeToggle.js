@@ -76,9 +76,9 @@ class ThemeToggle extends gia.Component {
 
 			// Update button visual state if needed (e.g., swapping SVG icons)
 			if (theme === this.options.darkThemeName) {
-				this.element.setAttribute('aria-checked', 'true');
+				this.element.setAttribute('aria-label', 'Switch to light mode');
 			} else {
-				this.element.setAttribute('aria-checked', 'false');
+				this.element.setAttribute('aria-label', 'Switch to dark mode');
 			}
 		}
 	}
@@ -89,7 +89,7 @@ gia.register(ThemeToggle);
 /**
  * Expected HTML Structure:
  *
- * <button data-component="ThemeToggle" role="switch" aria-label="Dark mode" aria-checked="false">
+ * <button data-component="ThemeToggle" aria-label="Toggle dark mode">
  *   <span class="icon-light" aria-hidden="true">☀️</span>
  *   <span class="icon-dark" aria-hidden="true">🌙</span>
  * </button>
