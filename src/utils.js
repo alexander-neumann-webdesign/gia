@@ -23,10 +23,16 @@ export function toggleClass(element, className, condition = null) {
 }
 
 function modifyClass(nodes, className, action) {
-	const iterable = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
-	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
-	for (let i = 0; i < iterable.length; i++) {
-		iterable[i].classList[action](className);
+	if (!nodes) return nodes;
+	// ⚡ BOLT OPTIMIZATION: Avoid wrapping single nodes in an array [nodes] to prevent
+	// unnecessary array memory allocations. We check nodeType to ensure elements
+	// with a length property (like <form> or <select>) are still treated as single nodes.
+	if (nodes.length !== undefined && nodes.nodeType === undefined) {
+		for (let i = 0; i < nodes.length; i++) {
+			nodes[i].classList[action](className);
+		}
+	} else {
+		nodes.classList[action](className);
 	}
 	return nodes;
 }
