@@ -69,19 +69,19 @@ export default class Component {
 		const itemsEmpty = itemsKeys.length === 0;
 
 		if (itemsEmpty) {
-			for (const refName in refsByName) {
-				if (Object.prototype.hasOwnProperty.call(refsByName, refName)) {
-					const colonIndex = refName.indexOf(":");
-					if (colonIndex !== -1) {
-						const componentName = refName.substring(0, colonIndex);
-						const actualRefName = refName.substring(colonIndex + 1);
-						if (componentName === this._name && !this._ref[actualRefName]) {
-							this._ref[actualRefName] = refsByName[refName];
-						}
-					} else {
-						if (!this._ref[refName]) {
-							this._ref[refName] = refsByName[refName];
-						}
+			const refKeys = Object.keys(refsByName);
+			for (let i = 0; i < refKeys.length; i++) {
+				const refName = refKeys[i];
+				const colonIndex = refName.indexOf(":");
+				if (colonIndex !== -1) {
+					const componentName = refName.substring(0, colonIndex);
+					const actualRefName = refName.substring(colonIndex + 1);
+					if (componentName === this._name && !this._ref[actualRefName]) {
+						this._ref[actualRefName] = refsByName[refName];
+					}
+				} else {
+					if (!this._ref[refName]) {
+						this._ref[refName] = refsByName[refName];
 					}
 				}
 			}
@@ -532,12 +532,13 @@ export default class Component {
 
 	_flushStateChanges() {
 		// Apply batched attribute changes
-		for (const attrName in this._pendingAttributeChanges) {
-			if (Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) {
-				const value = this._pendingAttributeChanges[attrName];
-				if (this.element.getAttribute(attrName) !== value) {
-					this.element.setAttribute(attrName, value);
-				}
+		// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+		const attrKeys = this._pendingAttributeChanges ? Object.keys(this._pendingAttributeChanges) : [];
+		for (let i = 0; i < attrKeys.length; i++) {
+			const attrName = attrKeys[i];
+			const value = this._pendingAttributeChanges[attrName];
+			if (this.element.getAttribute(attrName) !== value) {
+				this.element.setAttribute(attrName, value);
 			}
 		}
 
