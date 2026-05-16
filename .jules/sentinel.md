@@ -22,3 +22,8 @@
 **Vulnerability:** XSS vulnerability found in `CustomCursor.js` because `data-cursor-img` and `data-cursor-video` attributes were dynamically read from the DOM and injected directly into `innerHTML` using string interpolation. This allowed attackers to inject malicious HTML/JavaScript.
 **Learning:** Using untrusted data (even data from your own DOM if it's user-controlled) directly within `innerHTML` interpolation strings creates a direct pathway for DOM-based XSS.
 **Prevention:** Avoid `innerHTML` with dynamic variables whenever possible. Instead, use safe DOM APIs like `document.createElement`, setting properties like `src`, `textContent`, and styles directly, and then append the elements using `appendChild`.
+
+## 2025-02-09 - DOM-based XSS via innerHTML and data attributes (Icon)
+**Vulnerability:** XSS vulnerability found in `CustomCursor.js` because `data-cursor-icon` attribute was dynamically read from the DOM and injected directly into `innerHTML` using string interpolation to create SVG. This allowed attackers to inject malicious HTML/JavaScript.
+**Learning:** Using untrusted data directly within `innerHTML` interpolation strings creates a direct pathway for DOM-based XSS, even for seemingly safe elements like SVGs.
+**Prevention:** Avoid `innerHTML` with dynamic variables whenever possible. Use safe DOM APIs like `document.createElementNS` for SVG elements, setting properties and attributes directly, and then append the elements using `appendChild`.

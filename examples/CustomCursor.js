@@ -327,11 +327,14 @@ class CustomCursor extends gia.Component {
             }
 
             if (this.ref.icon && targetState === 'icon') {
-                this.ref.icon.innerHTML = `
-                    <svg class="mf-svgsprite mf-svgsprite-${targetIcon}">
-                        <use xlink:href="#${targetIcon}"></use>
-                    </svg>
-                `;
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const xlinkNS = 'http://www.w3.org/1999/xlink';
+                const svg = document.createElementNS(svgNS, 'svg');
+                svg.setAttribute('class', `mf-svgsprite mf-svgsprite-${targetIcon}`);
+                const use = document.createElementNS(svgNS, 'use');
+                use.setAttributeNS(xlinkNS, 'href', `#${targetIcon}`);
+                svg.appendChild(use);
+                this.ref.icon.replaceChildren(svg);
             }
 
             // Handle Snapping Visual State Updates
