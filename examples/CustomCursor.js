@@ -163,10 +163,9 @@ class CustomCursor extends gia.Component {
         if (this._lastInteractionTarget !== target) {
             this._lastInteractionTarget = target;
 
-            const textHoverEl = target.closest('[data-hover-text], [data-cursor-text]');
-            const iconHoverEl = target.closest('[data-cursor-icon]');
-            const imgHoverEl = target.closest('[data-cursor-img]');
-            const videoHoverEl = target.closest('[data-cursor-video]');
+            // ⚡ BOLT OPTIMIZATION: Combine multiple target.closest() calls into a single query
+            // to drastically reduce synchronous DOM traversals during high-frequency mousemove events.
+            const interactiveEl = target.closest('[data-hover-text], [data-cursor-text], [data-cursor-icon], [data-cursor-img], [data-cursor-video]');
 
             this._cachedTargetState = 'default';
             this._cachedTargetText = '';
@@ -174,18 +173,20 @@ class CustomCursor extends gia.Component {
             this._cachedTargetImg = '';
             this._cachedTargetVideo = '';
 
-            if (imgHoverEl) {
-                this._cachedTargetState = 'media';
-                this._cachedTargetImg = imgHoverEl.getAttribute('data-cursor-img');
-            } else if (videoHoverEl) {
-                this._cachedTargetState = 'media';
-                this._cachedTargetVideo = videoHoverEl.getAttribute('data-cursor-video');
-            } else if (iconHoverEl) {
-                this._cachedTargetState = 'icon';
-                this._cachedTargetIcon = iconHoverEl.getAttribute('data-cursor-icon');
-            } else if (textHoverEl) {
-                this._cachedTargetState = 'text';
-                this._cachedTargetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
+            if (interactiveEl) {
+                if (interactiveEl.hasAttribute('data-cursor-img')) {
+                    this._cachedTargetState = 'media';
+                    this._cachedTargetImg = interactiveEl.getAttribute('data-cursor-img');
+                } else if (interactiveEl.hasAttribute('data-cursor-video')) {
+                    this._cachedTargetState = 'media';
+                    this._cachedTargetVideo = interactiveEl.getAttribute('data-cursor-video');
+                } else if (interactiveEl.hasAttribute('data-cursor-icon')) {
+                    this._cachedTargetState = 'icon';
+                    this._cachedTargetIcon = interactiveEl.getAttribute('data-cursor-icon');
+                } else {
+                    this._cachedTargetState = 'text';
+                    this._cachedTargetText = interactiveEl.getAttribute('data-hover-text') || interactiveEl.getAttribute('data-cursor-text');
+                }
             }
         }
 
@@ -302,19 +303,39 @@ class CustomCursor extends gia.Component {
             }
 
             if (this.ref.mediaBox && targetState === 'media') {
+                this.ref.mediaBox.innerHTML = '';
+                let mediaElement;
                 if (targetImg) {
-                    this.ref.mediaBox.innerHTML = `<img src="${targetImg}" alt="Cursor Media" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = targetImg;
+                    mediaElement.alt = 'Cursor Media';
                 } else if (targetVideo) {
-                    this.ref.mediaBox.innerHTML = `<video src="${targetVideo}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></video>`;
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = targetVideo;
+                    mediaElement.autoplay = true;
+                    mediaElement.loop = true;
+                    mediaElement.muted = true;
+                    mediaElement.playsInline = true;
+                }
+
+                if (mediaElement) {
+                    mediaElement.style.width = '100%';
+                    mediaElement.style.height = '100%';
+                    mediaElement.style.objectFit = 'cover';
+                    mediaElement.style.borderRadius = '50%';
+                    this.ref.mediaBox.appendChild(mediaElement);
                 }
             }
 
             if (this.ref.icon && targetState === 'icon') {
-                this.ref.icon.innerHTML = `
-                    <svg class="mf-svgsprite mf-svgsprite-${targetIcon}">
-                        <use xlink:href="#${targetIcon}"></use>
-                    </svg>
-                `;
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const xlinkNS = 'http://www.w3.org/1999/xlink';
+                const svg = document.createElementNS(svgNS, 'svg');
+                svg.setAttribute('class', `mf-svgsprite mf-svgsprite-${targetIcon}`);
+                const use = document.createElementNS(svgNS, 'use');
+                use.setAttributeNS(xlinkNS, 'href', `#${targetIcon}`);
+                svg.appendChild(use);
+                this.ref.icon.replaceChildren(svg);
             }
 
             // Handle Snapping Visual State Updates

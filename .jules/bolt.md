@@ -4,3 +4,6 @@
 ## 2024-05-15 - Safe DOM node type checking for allocation-free optimizations
 **Learning:** When attempting to avoid array allocation for single elements by duck-typing iterables (e.g., checking `length`), `<form>` and `<select>` elements will falsely trigger as iterables because they natively possess a `.length` property representing their form controls or options.
 **Action:** Use `nodes.length !== undefined && nodes.nodeType === undefined` to safely differentiate iterables (Arrays/NodeLists) from single DOM nodes without incurring array wrapper allocations, as iterables do not possess a `nodeType` property.
+## 2025-02-18 - Object Iteration Performance
+**Learning:** In high-frequency path areas like a UI component's `setState` or `set ref` methods, traditional `for...in` loops paired with `Object.prototype.hasOwnProperty.call()` validation are significantly slower than extracting keys using `Object.keys()` and iterating with a standard `for` loop. For object emptiness checks, `Object.keys(obj).length === 0` is also measurably faster.
+**Action:** When iterating over objects containing non-prototype properties in hot paths, utilize `Object.keys(obj)` arrays rather than `for...in` loops with `hasOwnProperty` guard checks to maximize V8 execution performance.

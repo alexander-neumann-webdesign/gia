@@ -52,22 +52,21 @@ export default class Component {
 		const allRefs = queryAll(`[${attrName}]`, this.element);
 
 		const refsByName = {};
+		// ⚡ BOLT OPTIMIZATION: Avoid double lookup by caching the array reference
 		for (let i = 0; i < allRefs.length; i++) {
 			const element = allRefs[i];
 			const refName = element.getAttribute(attrName);
-			if (!refsByName[refName]) {
-				refsByName[refName] = [];
+			let list = refsByName[refName];
+			if (list === undefined) {
+				list = [];
+				refsByName[refName] = list;
 			}
-			refsByName[refName].push(element);
+			list.push(element);
 		}
 
-		let itemsEmpty = true;
-		for (const key in items) {
-			if (Object.prototype.hasOwnProperty.call(items, key)) {
-				itemsEmpty = false;
-				break;
-			}
-		}
+		// ⚡ BOLT OPTIMIZATION: Object.keys().length is faster than for...in + hasOwnProperty
+		const itemsKeys = items ? Object.keys(items) : [];
+		const itemsEmpty = itemsKeys.length === 0;
 
 		if (itemsEmpty) {
 			for (const refName in refsByName) {
@@ -88,24 +87,24 @@ export default class Component {
 			}
 		} else {
 			this._ref = {};
-			for (const key in items) {
-				if (Object.prototype.hasOwnProperty.call(items, key)) {
-					const isArray = Array.isArray(items[key]);
+			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+			for (let i = 0; i < itemsKeys.length; i++) {
+				const key = itemsKeys[i];
+				const isArray = Array.isArray(items[key]);
 
-					if (items[key] !== null && isArray && items[key].length > 0) {
-						this._ref[key] = items[key];
-						continue;
-					}
-
-					const prefixedName = `${this._name}:${key}`;
-					let refs = refsByName[prefixedName] || [];
-
-					if (refs.length === 0) {
-						refs = refsByName[key] || [];
-					}
-
-					this._ref[key] = isArray ? refs : (refs[0] ?? null);
+				if (items[key] !== null && isArray && items[key].length > 0) {
+					this._ref[key] = items[key];
+					continue;
 				}
+
+				const prefixedName = `${this._name}:${key}`;
+				let refs = refsByName[prefixedName] || [];
+
+				if (refs.length === 0) {
+					refs = refsByName[key] || [];
+				}
+
+				this._ref[key] = isArray ? refs : (refs[0] ?? null);
 			}
 		}
 	}
@@ -497,34 +496,35 @@ export default class Component {
 		// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
 		// inside the primary validation loop to avoid allocating an intermediate `stateChanges`
 		// object and iterating twice over the keys.
-		for (const key in changes) {
-			if (Object.prototype.hasOwnProperty.call(changes, key)) {
-				const newValue = changes[key];
-				if (this._state[key] !== newValue) {
-					this._state[key] = newValue;
+		// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+		const keys = changes ? Object.keys(changes) : [];
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+			const newValue = changes[key];
+			if (this._state[key] !== newValue) {
+				this._state[key] = newValue;
 
-					if (!this._pendingStateChanges) {
-						this._pendingStateChanges = {};
-						this._pendingAttributeChanges = {};
-						requestAnimationFrame(this._flushStateChanges);
+				if (!this._pendingStateChanges) {
+					this._pendingStateChanges = {};
+					this._pendingAttributeChanges = {};
+					requestAnimationFrame(this._flushStateChanges);
+				}
+
+				// Build batched state change payload
+				this._pendingStateChanges[key] = newValue;
+
+				// Process state changes for attributes
+				const type = typeof newValue;
+				if (type === "boolean" || type === "string") {
+					let attrName = globalStateAttributeCache.get(key);
+					if (!attrName) {
+						// Convert camelCase to kebab-case
+						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+						attrName = `data-${kebabKey}`;
+						globalStateAttributeCache.set(key, attrName);
 					}
 
-					// Build batched state change payload
-					this._pendingStateChanges[key] = newValue;
-
-					// Process state changes for attributes
-					const type = typeof newValue;
-					if (type === "boolean" || type === "string") {
-						let attrName = globalStateAttributeCache.get(key);
-						if (!attrName) {
-							// Convert camelCase to kebab-case
-							const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-							attrName = `data-${kebabKey}`;
-							globalStateAttributeCache.set(key, attrName);
-						}
-
-						this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
-					}
+					this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
 				}
 			}
 		}

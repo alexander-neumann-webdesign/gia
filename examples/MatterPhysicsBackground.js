@@ -13,6 +13,8 @@ class MatterPhysicsBackground extends gia.Component {
             restitution: 0.8
         };
 
+        this.handleBodyResize = this.handleBodyResize.bind(this);
+
         this.setState({
             isPaused: false
         });
@@ -66,6 +68,8 @@ class MatterPhysicsBackground extends gia.Component {
         const rect = this.element.getBoundingClientRect();
         this.width = rect.width;
         this.height = rect.height;
+        this.offsetLeft = rect.left + window.scrollX;
+        this.offsetTop = rect.top + window.scrollY;
 
         // create renderer
         this.render = Render.create({
@@ -140,6 +144,7 @@ class MatterPhysicsBackground extends gia.Component {
 
         // Observers
         this.observeResize(this.element, this.handleResize);
+        this.observeResize(document.body, this.handleBodyResize);
         this.observeIntersection(this.element, this.handleIntersection, { threshold: 0 });
 
         this.updateRunnerState();
@@ -235,20 +240,19 @@ class MatterPhysicsBackground extends gia.Component {
         // Only spawn if we aren't dragging an existing object
         if (this.mouseConstraint && this.mouseConstraint.body) return;
 
-        // Get relative coordinates
-        const rect = this.ref.canvas.getBoundingClientRect();
-        let clientX, clientY;
+        // Get relative coordinates using cached bounds
+        let pageX, pageY;
 
         if (e.touches && e.touches.length > 0) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
+            pageX = e.touches[0].pageX;
+            pageY = e.touches[0].pageY;
         } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
+            pageX = e.pageX;
+            pageY = e.pageY;
         }
 
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
+        const x = pageX - this.offsetLeft;
+        const y = pageY - this.offsetTop;
 
         this._addRandomShape(x, y);
     }
@@ -257,20 +261,19 @@ class MatterPhysicsBackground extends gia.Component {
         // Skip if physics is paused or no engine
         if (!this.engine || this.state.isPaused) return;
 
-        // Get relative coordinates
-        const rect = this.ref.canvas.getBoundingClientRect();
-        let clientX, clientY;
+        // Get relative coordinates using cached bounds
+        let pageX, pageY;
 
         if (e.touches && e.touches.length > 0) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
+            pageX = e.touches[0].pageX;
+            pageY = e.touches[0].pageY;
         } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
+            pageX = e.pageX;
+            pageY = e.pageY;
         }
 
-        const mouseX = clientX - rect.left;
-        const mouseY = clientY - rect.top;
+        const mouseX = pageX - this.offsetLeft;
+        const mouseY = pageY - this.offsetTop;
 
         if (this.cursorBody) {
             window.Matter.Body.setPosition(this.cursorBody, { x: mouseX, y: mouseY });
@@ -288,6 +291,10 @@ class MatterPhysicsBackground extends gia.Component {
         this.width = entry.contentRect.width;
         this.height = entry.contentRect.height;
 
+        const rect = this.element.getBoundingClientRect();
+        this.offsetLeft = rect.left + window.scrollX;
+        this.offsetTop = rect.top + window.scrollY;
+
         if (this.render) {
             this.render.canvas.width = this.width * window.devicePixelRatio;
             this.render.canvas.height = this.height * window.devicePixelRatio;
@@ -300,6 +307,12 @@ class MatterPhysicsBackground extends gia.Component {
         }
 
         this._createWalls();
+    }
+
+    handleBodyResize() {
+        const rect = this.element.getBoundingClientRect();
+        this.offsetLeft = rect.left + window.scrollX;
+        this.offsetTop = rect.top + window.scrollY;
     }
 
     handleIntersection(entries) {
