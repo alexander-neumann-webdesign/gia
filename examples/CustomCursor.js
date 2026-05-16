@@ -163,10 +163,9 @@ class CustomCursor extends gia.Component {
         if (this._lastInteractionTarget !== target) {
             this._lastInteractionTarget = target;
 
-            const textHoverEl = target.closest('[data-hover-text], [data-cursor-text]');
-            const iconHoverEl = target.closest('[data-cursor-icon]');
-            const imgHoverEl = target.closest('[data-cursor-img]');
-            const videoHoverEl = target.closest('[data-cursor-video]');
+            // ⚡ BOLT OPTIMIZATION: Combine multiple target.closest() calls into a single query
+            // to drastically reduce synchronous DOM traversals during high-frequency mousemove events.
+            const interactiveEl = target.closest('[data-hover-text], [data-cursor-text], [data-cursor-icon], [data-cursor-img], [data-cursor-video]');
 
             this._cachedTargetState = 'default';
             this._cachedTargetText = '';
@@ -174,18 +173,20 @@ class CustomCursor extends gia.Component {
             this._cachedTargetImg = '';
             this._cachedTargetVideo = '';
 
-            if (imgHoverEl) {
-                this._cachedTargetState = 'media';
-                this._cachedTargetImg = imgHoverEl.getAttribute('data-cursor-img');
-            } else if (videoHoverEl) {
-                this._cachedTargetState = 'media';
-                this._cachedTargetVideo = videoHoverEl.getAttribute('data-cursor-video');
-            } else if (iconHoverEl) {
-                this._cachedTargetState = 'icon';
-                this._cachedTargetIcon = iconHoverEl.getAttribute('data-cursor-icon');
-            } else if (textHoverEl) {
-                this._cachedTargetState = 'text';
-                this._cachedTargetText = textHoverEl.getAttribute('data-hover-text') || textHoverEl.getAttribute('data-cursor-text');
+            if (interactiveEl) {
+                if (interactiveEl.hasAttribute('data-cursor-img')) {
+                    this._cachedTargetState = 'media';
+                    this._cachedTargetImg = interactiveEl.getAttribute('data-cursor-img');
+                } else if (interactiveEl.hasAttribute('data-cursor-video')) {
+                    this._cachedTargetState = 'media';
+                    this._cachedTargetVideo = interactiveEl.getAttribute('data-cursor-video');
+                } else if (interactiveEl.hasAttribute('data-cursor-icon')) {
+                    this._cachedTargetState = 'icon';
+                    this._cachedTargetIcon = interactiveEl.getAttribute('data-cursor-icon');
+                } else {
+                    this._cachedTargetState = 'text';
+                    this._cachedTargetText = interactiveEl.getAttribute('data-hover-text') || interactiveEl.getAttribute('data-cursor-text');
+                }
             }
         }
 
