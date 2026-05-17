@@ -27,6 +27,7 @@ class CustomCursor extends gia.Component {
 
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        this.scroll = { x: typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset) : 0, y: typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset) : 0 };
 
         // For magnetic target
         this.magneticTarget = null;
@@ -149,6 +150,8 @@ class CustomCursor extends gia.Component {
     }
 
     handleScroll() {
+        this.scroll.x = window.scrollX || window.pageXOffset;
+        this.scroll.y = window.scrollY || window.pageYOffset;
         this._wakeUp();
     }
 
@@ -203,8 +206,8 @@ class CustomCursor extends gia.Component {
         let isStick = false;
         let minDistanceSq = Infinity;
 
-        const scrollX = window.scrollX || window.pageXOffset;
-        const scrollY = window.scrollY || window.pageYOffset;
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
         const docMouseX = this.mouse.x + scrollX;
         const docMouseY = this.mouse.y + scrollY;
 
@@ -380,8 +383,8 @@ class CustomCursor extends gia.Component {
             const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
             this.cachedMagneticElements = [];
 
-            const scrollX = window.scrollX || window.pageXOffset;
-            const scrollY = window.scrollY || window.pageYOffset;
+            const scrollX = this.scroll.x;
+            const scrollY = this.scroll.y;
 
             // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
             for (const el of elements) {
@@ -432,8 +435,8 @@ class CustomCursor extends gia.Component {
 
         // If hovering magnetic element, pull the target to its center
         if (this.magneticTarget && this.magneticBounds) {
-            const scrollX = window.scrollX || window.pageXOffset;
-            const scrollY = window.scrollY || window.pageYOffset;
+            const scrollX = this.scroll.x;
+            const scrollY = this.scroll.y;
             const docMouseX = this.mouse.x + scrollX;
             const docMouseY = this.mouse.y + scrollY;
 
