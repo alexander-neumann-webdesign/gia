@@ -95,7 +95,6 @@ class Modal extends gia.Component {
 
 		if (this.options.preventScroll && this.element.open) {
 			document.body.style.overflow = '';
-			document.body.style.paddingRight = '';
 		}
 	}
 
@@ -155,8 +154,6 @@ class Modal extends gia.Component {
 				}
 
 				if (this.options.preventScroll) {
-					const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-					document.body.style.paddingRight = `${scrollbarWidth}px`;
 					document.body.style.overflow = 'hidden';
 
 					// Lenis integration: Stop smooth scrolling
@@ -188,7 +185,6 @@ class Modal extends gia.Component {
 
 				if (this.options.preventScroll) {
 					document.body.style.overflow = '';
-					document.body.style.paddingRight = '';
 
 					// Lenis integration: Resume smooth scrolling
 					if (window.lenis) {
