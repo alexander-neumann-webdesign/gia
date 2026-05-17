@@ -1,6 +1,6 @@
-var O = Object.defineProperty;
-var I = (a, e, t) => e in a ? O(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var v = (a, e, t) => I(a, typeof e != "symbol" ? e + "" : e, t);
+var M = Object.defineProperty;
+var O = (a, e, t) => e in a ? M(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
+var v = (a, e, t) => O(a, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (a) => {
   if (typeof a != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", a);
@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = a;
 });
-class M {
+class z {
   constructor() {
     v(this, "_options", {
       log: !1,
@@ -32,8 +32,8 @@ class M {
     return this._options[e];
   }
 }
-const u = new M();
-function z(a, e, t, n) {
+const u = new z();
+function I(a, e, t, n) {
   if (a.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), a.__gia_component__;
   try {
@@ -58,7 +58,7 @@ function x(a = {}, e = document.documentElement) {
     if (S(r))
       return;
     const l = r.getAttribute(n);
-    typeof a[l] == "function" ? t.push(z(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
+    typeof a[l] == "function" ? t.push(I(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
   };
   for (let r = 0; r < o; r++)
     i(s[r]);
@@ -78,7 +78,7 @@ function w(a) {
     a.__gia_component__ = null, e.element && (e.element = null), u.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function F(a = document.documentElement) {
+function H(a = document.documentElement) {
   const e = _(`[${u.get("attrPrefix")}-component]`, a);
   for (let t = 0; t < e.length; t++)
     w(e[t]);
@@ -210,9 +210,9 @@ let N = class {
       for (let d = 0; d < f.length; d++) {
         const m = f[d], E = o.callbacks.get(m.target);
         if (E) {
-          const P = [m];
-          for (const k of E)
-            k(P);
+          const k = [m];
+          for (const P of E)
+            P(k);
         }
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, b.set(s, o));
@@ -258,7 +258,7 @@ let N = class {
     if (t && window[t])
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
-    return n ? n.tagName !== "SCRIPT" ? Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : (n._loadPromise || (n._loadPromise = new Promise((s, o) => {
+    return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((s, o) => {
       const i = () => {
         n.onload = null, n.onerror = null;
       };
@@ -267,7 +267,7 @@ let N = class {
       }, n.onerror = () => {
         i(), delete n._loadPromise, o(new Error(`Failed to load script: ${e}`));
       }, !n.src && n.dataset.src ? (n.src = n.dataset.src, delete n.dataset.src) : !n.src && !n.dataset.src && (i(), o(new Error(`Script tag '${e}' has no src or data-src.`)));
-    })), n._loadPromise) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
+    })), n._loadPromise) : Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
   }
   /**
    * Loads a stylesheet that is already defined in the DOM with a data-href attribute.
@@ -277,7 +277,7 @@ let N = class {
    */
   loadStyle(e) {
     const t = document.getElementById(e);
-    return t ? t.tagName !== "LINK" ? Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : (t._loadPromise || (t._loadPromise = new Promise((n, s) => {
+    return t ? t instanceof HTMLLinkElement ? (t._loadPromise || (t._loadPromise = new Promise((n, s) => {
       const o = () => {
         t.onload = null, t.onerror = null;
       };
@@ -298,7 +298,7 @@ let N = class {
           }
         i && (o(), n(!0));
       }
-    })), t._loadPromise) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
+    })), t._loadPromise) : Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
   }
   mount() {
   }
@@ -361,7 +361,7 @@ let N = class {
     }
   }
 };
-class H extends N {
+class F extends N {
   async require() {
   }
   _load() {
@@ -429,12 +429,12 @@ u.set = function(a, e) {
 typeof window < "u" && setTimeout(A, 0);
 export {
   N as BaseComponent,
-  H as Component,
+  F as Component,
   u as config,
-  z as createInstance,
-  F as destroyInstance,
+  I as createInstance,
+  H as destroyInstance,
   q as eventbus,
   S as getComponentFromElement,
   x as loadComponents,
-  F as removeComponents
+  H as removeComponents
 };
