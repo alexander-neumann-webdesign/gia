@@ -357,7 +357,7 @@ export default class Component {
 
 		// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
 		// and unintended execution of malicious payloads (e.g., via iframe data-src).
-		if (script.tagName !== 'SCRIPT') {
+		if (!(script instanceof HTMLScriptElement)) {
 			return Promise.reject(new Error(`Element with ID '${scriptId}' is not a valid script tag.`));
 		}
 
@@ -418,7 +418,7 @@ export default class Component {
 		}
 
 		// SECURITY: Ensure the found element is actually a link tag
-		if (link.tagName !== 'LINK') {
+		if (!(link instanceof HTMLLinkElement)) {
 			return Promise.reject(new Error(`Element with ID '${styleId}' is not a valid link tag.`));
 		}
 

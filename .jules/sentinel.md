@@ -27,3 +27,8 @@
 **Vulnerability:** XSS vulnerability found in `CustomCursor.js` because `data-cursor-icon` attribute was dynamically read from the DOM and injected directly into `innerHTML` using string interpolation to create SVG. This allowed attackers to inject malicious HTML/JavaScript.
 **Learning:** Using untrusted data directly within `innerHTML` interpolation strings creates a direct pathway for DOM-based XSS, even for seemingly safe elements like SVGs.
 **Prevention:** Avoid `innerHTML` with dynamic variables whenever possible. Use safe DOM APIs like `document.createElementNS` for SVG elements, setting properties and attributes directly, and then append the elements using `appendChild`.
+
+## 2025-02-14 - DOM Clobbering Bypass via tagName property
+**Vulnerability:** A previous fix for DOM Clobbering in `loadScript` and `loadStyle` relied on `element.tagName === 'SCRIPT'`. This check itself was vulnerable to DOM Clobbering because an attacker could inject an element like `<form id="scriptId"><input name="tagName" value="SCRIPT"></form>`. In older browsers or certain contexts, `form.tagName` would return the input element rather than `'FORM'`, effectively bypassing the check.
+**Learning:** Properties like `tagName` on DOM elements can be clobbered by nested elements with matching `name` attributes, especially within `<form>` tags.
+**Prevention:** Use `instanceof` checks against specific element interfaces (e.g., `element instanceof HTMLScriptElement`) rather than relying on the `tagName` property when validating elements retrieved from the DOM.
