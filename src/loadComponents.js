@@ -30,7 +30,7 @@ export default function loadComponents(components = {}, context = document.docum
 
 		const componentName = element.getAttribute(attrName);
 
-		if (typeof components[componentName] === "function") {
+		if (Object.prototype.hasOwnProperty.call(components, componentName) && typeof components[componentName] === "function") {
 			initialisedComponents.push(createInstance(element, componentName, components[componentName]));
 		} else {
 			console.warn(`Constructor "${componentName}" not found.`);
