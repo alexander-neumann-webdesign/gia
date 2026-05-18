@@ -211,11 +211,16 @@ class CustomCursor extends gia.Component {
         for (const item of this.cachedMagneticElements) {
             const { el, bounds, type } = item;
 
+            // Early exit optimization: Since the array is sorted by bounds.top,
+            // if the mouse is above this element's padding zone, it's above all subsequent elements too.
+            if (docMouseY < bounds.top - this.options.magneticPadding) {
+                break;
+            }
+
             // Check if mouse is within the padded bounds
             if (
                 docMouseX >= bounds.left - this.options.magneticPadding &&
                 docMouseX <= bounds.right + this.options.magneticPadding &&
-                docMouseY >= bounds.top - this.options.magneticPadding &&
                 docMouseY <= bounds.bottom + this.options.magneticPadding
             ) {
                 // Find the closest one by center distance to handle overlapping padded zones
@@ -417,6 +422,9 @@ class CustomCursor extends gia.Component {
                     this.magneticBounds = bounds;
                 }
             }
+
+            // Sort elements by their top boundary to allow early-exit optimization during interaction checks
+            this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
         }
 
         // Calculate delta time for frame-rate independent lerp

@@ -1,3 +1,7 @@
 ## 2025-02-18 - EventBus Detail Payload Allocation and Wrapper Map Fix
 **Learning:** In custom EventTarget-based EventBus implementations that wrap event handlers (to extract `.detail`), using a single property (`handler._wrapped`) to store the wrapper closure causes a critical bug when the same handler is bound to multiple events (it gets overwritten, preventing `off()` from working). Additionally, creating the detail payload with the spread operator inside the listener wrapper causes O(N) object allocations per emit (where N is the number of listeners).
 **Action:** Store wrapped handlers in a `Map` keyed by event name on the handler object. Pre-calculate the detail payload once inside `emit()` and pass it down, avoiding object allocation inside the listener's closure.
+
+## 2024-05-24 - Optimize O(N) Array Iteration with 1D Spatial Partitioning
+**Learning:** During high-frequency `mousemove` events, iterating through an unsorted array to calculate mathematical distance to bounding boxes (e.g., for magnetic snapping effects) results in O(N) operations per frame, heavily impacting performance when N is large.
+**Action:** Implemented 1D Spatial Partitioning. By sorting the cached bounding boxes by their `bounds.top` coordinate, the loop can use an early exit (`break`) the moment the cursor's Y-coordinate passes the padding threshold, safely reducing iteration cost from O(N) to roughly O(1) without requiring complex spatial grid data structures or injecting hidden DOM nodes.
