@@ -315,6 +315,14 @@ div[data-component=FilterableList] .item .item-details .price-tag {
   }
 }
 /* --- Form --- */
+.form-dropzone {
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.form-dropzone.is-dragover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: #666 !important;
+}
+
 .form-success {
   color: green;
   padding: 1rem;
