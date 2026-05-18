@@ -179,7 +179,7 @@ class Tabs extends gia.Component {
 					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
 					if (isSelected) {
-						tab.removeAttribute('tabindex');
+						tab.setAttribute('tabindex', '0');
 					} else {
 						tab.setAttribute('tabindex', '-1');
 					}

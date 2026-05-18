@@ -371,11 +371,22 @@
                   <input type="number" id="age" name="age" min="0" max="120" style="width: 100%; padding: 0.5rem;" />
                 </div>
                 <div style="margin-bottom: 1rem;">
+                  <label style="display: block; margin-bottom: 0.5rem;">Upload Files</label>
+                  <div data-ref="dropzone" class="form-dropzone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
+                    <input type="file" name="files[]" multiple style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" />
+                    <span class="form-dropzone-label">Drag and drop files here or click to browse</span>
+                  </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
                   <fieldset style="border: 1px solid #ccc; padding: 1rem;">
                     <legend>Preferences</legend>
                     <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
                       <input type="checkbox" name="preferences" value="newsletter" /> Subscribe to newsletter
                     </label>
+                    <div style="margin-top: 0.5rem; margin-bottom: 1rem;" data-condition="preferences:newsletter">
+                      <label for="newsletter_email" style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;">Newsletter Email (Conditional)</label>
+                      <input type="email" id="newsletter_email" name="newsletter_email" required style="width: 100%; padding: 0.5rem;" />
+                    </div>
                     <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
                       <input type="checkbox" name="preferences" value="updates" /> Receive product updates
                     </label>

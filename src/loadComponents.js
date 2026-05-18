@@ -10,7 +10,20 @@ import { queryAll } from "./utils.js";
  */
 
 export default function loadComponents(components = {}, context = document.documentElement) {
-	if (!components || Object.keys(components).length === 0) {
+	if (!components) {
+		console.warn("App has no components");
+		return;
+	}
+
+	// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
+	// This avoids allocating an array with Object.keys() every time loadComponents is called
+	let hasComponents = false;
+	for (const _k in components) {
+		hasComponents = true;
+		break;
+	}
+
+	if (!hasComponents) {
 		console.warn("App has no components");
 		return;
 	}
@@ -21,28 +34,35 @@ export default function loadComponents(components = {}, context = document.docum
 	const elements = queryAll(`[${attrName}]`, context);
 	const elementsLength = elements.length;
 
-	const processElement = (element) => {
+	// ⚡ BOLT OPTIMIZATION: Inline processElement logic to avoid allocating a closure function
+	// and to prevent additional garbage collection overhead per element.
+	for (let i = 0; i < elementsLength; i++) {
+		const element = elements[i];
 		const instance = getComponentFromElement(element);
 
-		if (instance) {
-			return;
+		if (!instance) {
+			const componentName = element.getAttribute(attrName);
+
+			if (typeof components[componentName] === "function") {
+				initialisedComponents.push(createInstance(element, componentName, components[componentName]));
+			} else {
+				console.warn(`Constructor "${componentName}" not found.`);
+			}
 		}
-
-		const componentName = element.getAttribute(attrName);
-
-		if (typeof components[componentName] === "function") {
-			initialisedComponents.push(createInstance(element, componentName, components[componentName]));
-		} else {
-			console.warn(`Constructor "${componentName}" not found.`);
-		}
-	};
-
-	for (let i = 0; i < elementsLength; i++) {
-		processElement(elements[i]);
 	}
 
 	if (context instanceof Element && context.hasAttribute(attrName)) {
-		processElement(context);
+		const instance = getComponentFromElement(context);
+
+		if (!instance) {
+			const componentName = context.getAttribute(attrName);
+
+			if (typeof components[componentName] === "function") {
+				initialisedComponents.push(createInstance(context, componentName, components[componentName]));
+			} else {
+				console.warn(`Constructor "${componentName}" not found.`);
+			}
+		}
 	}
 
 	// call _load/require/mount

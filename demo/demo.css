@@ -315,6 +315,14 @@ div[data-component=FilterableList] .item .item-details .price-tag {
   }
 }
 /* --- Form --- */
+.form-dropzone {
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.form-dropzone.is-dragover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: #666 !important;
+}
+
 .form-success {
   color: green;
   padding: 1rem;
@@ -1032,7 +1040,11 @@ div[data-component=VideoHolder] button[data-ref=playPauseButton] svg path.icon-s
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover {
   background: rgba(0, 0, 0, 0.8);
 }
-div[data-component=VideoHolder]:hover button[data-ref=playPauseButton] {
+div[data-component=VideoHolder] button[data-ref=playPauseButton]:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+div[data-component=VideoHolder]:hover button[data-ref=playPauseButton], div[data-component=VideoHolder]:focus-within button[data-ref=playPauseButton] {
   opacity: 1;
   pointer-events: auto;
 }

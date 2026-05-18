@@ -13,7 +13,11 @@ class Form extends gia.Component {
 			successMessage: null,
 			errorMessage: null,
 			requiredInputs: [],
+			dropzone: [],
+			conditions: [],
 		};
+
+		this.originalDropzoneLabels = new Map();
 
 		this.setState({
 			isSubmitting: false,
@@ -45,6 +49,14 @@ class Form extends gia.Component {
 				input.addEventListener('input', this.handleInputChange);
 			});
 
+			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
+			if (this.ref.conditions.length > 0) {
+				this.evaluateConditions = this.evaluateConditions.bind(this);
+				this.formElement.addEventListener('change', this.evaluateConditions);
+				this.formElement.addEventListener('input', this.evaluateConditions);
+				this.evaluateConditions();
+			}
+
 			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
@@ -53,15 +65,144 @@ class Form extends gia.Component {
 		if (this.ref.submitBtn) {
 			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
 		}
+
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.addEventListener('dragover', this.handleDragOver);
+				dropzone.addEventListener('dragleave', this.handleDragLeave);
+				dropzone.addEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.addEventListener('change', this.handleFileChange);
+				}
+
+				const label = dropzone.querySelector('.form-dropzone-label');
+				if (label) {
+					this.originalDropzoneLabels.set(dropzone, label.textContent);
+				}
+			});
+		}
+	}
+
+	handleDragOver(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.add('is-dragover');
+	}
+
+	handleDragLeave(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+	}
+
+	handleDrop(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+
+		const fileInput = dropzone.querySelector('input[type="file"]');
+		if (fileInput && event.dataTransfer.files.length > 0) {
+			fileInput.files = event.dataTransfer.files;
+			// Manually dispatch change event so handleFileChange fires
+			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+		}
+	}
+
+	handleFileChange(event) {
+		const fileInput = event.target;
+		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
+		if (!dropzone) return;
+
+		const label = dropzone.querySelector('.form-dropzone-label');
+		if (label) {
+			if (fileInput.files && fileInput.files.length > 1) {
+				label.textContent = `${fileInput.files.length} files selected`;
+			} else if (fileInput.files && fileInput.files.length === 1) {
+				label.textContent = fileInput.files[0].name;
+			} else {
+				// Restore original
+				const originalText = this.originalDropzoneLabels.get(dropzone);
+				if (originalText) {
+					label.textContent = originalText;
+				}
+			}
+		}
 	}
 
 	unmount() {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
+			if (this.evaluateConditions) {
+				this.formElement.removeEventListener('change', this.evaluateConditions);
+				this.formElement.removeEventListener('input', this.evaluateConditions);
+			}
 		}
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
+		});
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.removeEventListener('dragover', this.handleDragOver);
+				dropzone.removeEventListener('dragleave', this.handleDragLeave);
+				dropzone.removeEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.removeEventListener('change', this.handleFileChange);
+				}
+			});
+		}
+	}
+
+	evaluateConditions() {
+		if (!this.ref.conditions || this.ref.conditions.length === 0) return;
+
+		let formData = new FormData(this.formElement);
+
+		this.ref.conditions.forEach(el => {
+			const conditionString = el.getAttribute('data-condition');
+			if (!conditionString) return;
+
+			// Support "fieldName:expectedValue" format
+			const parts = conditionString.split(':');
+			const fieldName = parts[0];
+			const expectedValue = parts.length > 1 ? parts.slice(1).join(':') : undefined;
+
+			const actualValues = formData.getAll(fieldName);
+
+			let conditionMet = false;
+
+			if (expectedValue !== undefined) {
+				conditionMet = actualValues.includes(expectedValue);
+			} else {
+				// If no expected value is specified, just check if the field has ANY value
+				conditionMet = actualValues.some(val => val !== "");
+			}
+
+			if (conditionMet) {
+				el.hidden = false;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (input.hasAttribute('data-disabled-by-condition')) {
+						input.disabled = false;
+						input.removeAttribute('data-disabled-by-condition');
+					}
+				});
+			} else {
+				el.hidden = true;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (!input.disabled) {
+						input.disabled = true;
+						input.setAttribute('data-disabled-by-condition', 'true');
+					}
+				});
+			}
 		});
 	}
 
@@ -196,6 +337,18 @@ class Form extends gia.Component {
 			if (result.success !== false) {
 				this.setState({ isSubmitting: false, isSuccess: true });
 				this.formElement.reset();
+
+				// Reset dropzone labels
+				if (this.ref.dropzone) {
+					const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+					dropzones.forEach(dropzone => {
+						const label = dropzone.querySelector('.form-dropzone-label');
+						const originalText = this.originalDropzoneLabels.get(dropzone);
+						if (label && originalText) {
+							label.textContent = originalText;
+						}
+					});
+				}
 			} else {
 				throw new Error(result.data || "Form submission failed");
 			}
@@ -301,6 +454,13 @@ gia.register(Form);
  *     <div class="form-group">
  *       <label for="message">Message</label>
  *       <textarea id="message" name="message" required></textarea>
+ *     </div>
+ *     <div class="form-group">
+ *       <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
+ *     </div>
+ *     <div class="form-group" data-condition="subscribe:yes">
+ *       <label for="newsletter_email">Newsletter Email</label>
+ *       <input type="email" id="newsletter_email" name="newsletter_email" required />
  *     </div>
  *     <button type="submit" data-ref="submitBtn">Send Message</button>
  *   </form>
