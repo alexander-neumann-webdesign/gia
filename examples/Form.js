@@ -13,7 +13,10 @@ class Form extends gia.Component {
 			successMessage: null,
 			errorMessage: null,
 			requiredInputs: [],
+			dropzone: [],
 		};
+
+		this.originalDropzoneLabels = new Map();
 
 		this.setState({
 			isSubmitting: false,
@@ -53,6 +56,71 @@ class Form extends gia.Component {
 		if (this.ref.submitBtn) {
 			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
 		}
+
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.addEventListener('dragover', this.handleDragOver);
+				dropzone.addEventListener('dragleave', this.handleDragLeave);
+				dropzone.addEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.addEventListener('change', this.handleFileChange);
+				}
+
+				const label = dropzone.querySelector('.form-dropzone-label');
+				if (label) {
+					this.originalDropzoneLabels.set(dropzone, label.textContent);
+				}
+			});
+		}
+	}
+
+	handleDragOver(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.add('is-dragover');
+	}
+
+	handleDragLeave(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+	}
+
+	handleDrop(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+
+		const fileInput = dropzone.querySelector('input[type="file"]');
+		if (fileInput && event.dataTransfer.files.length > 0) {
+			fileInput.files = event.dataTransfer.files;
+			// Manually dispatch change event so handleFileChange fires
+			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+		}
+	}
+
+	handleFileChange(event) {
+		const fileInput = event.target;
+		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
+		if (!dropzone) return;
+
+		const label = dropzone.querySelector('.form-dropzone-label');
+		if (label) {
+			if (fileInput.files && fileInput.files.length > 1) {
+				label.textContent = `${fileInput.files.length} files selected`;
+			} else if (fileInput.files && fileInput.files.length === 1) {
+				label.textContent = fileInput.files[0].name;
+			} else {
+				// Restore original
+				const originalText = this.originalDropzoneLabels.get(dropzone);
+				if (originalText) {
+					label.textContent = originalText;
+				}
+			}
+		}
 	}
 
 	unmount() {
@@ -63,6 +131,19 @@ class Form extends gia.Component {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
 		});
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.removeEventListener('dragover', this.handleDragOver);
+				dropzone.removeEventListener('dragleave', this.handleDragLeave);
+				dropzone.removeEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.removeEventListener('change', this.handleFileChange);
+				}
+			});
+		}
 	}
 
 	handleInputChange() {
@@ -196,6 +277,18 @@ class Form extends gia.Component {
 			if (result.success !== false) {
 				this.setState({ isSubmitting: false, isSuccess: true });
 				this.formElement.reset();
+
+				// Reset dropzone labels
+				if (this.ref.dropzone) {
+					const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+					dropzones.forEach(dropzone => {
+						const label = dropzone.querySelector('.form-dropzone-label');
+						const originalText = this.originalDropzoneLabels.get(dropzone);
+						if (label && originalText) {
+							label.textContent = originalText;
+						}
+					});
+				}
 			} else {
 				throw new Error(result.data || "Form submission failed");
 			}
