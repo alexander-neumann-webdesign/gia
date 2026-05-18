@@ -1,6 +1,6 @@
-var M = Object.defineProperty;
-var O = (a, e, t) => e in a ? M(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var v = (a, e, t) => O(a, typeof e != "symbol" ? e + "" : e, t);
+var P = Object.defineProperty;
+var M = (a, e, t) => e in a ? P(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
+var y = (a, e, t) => M(a, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (a) => {
   if (typeof a != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", a);
@@ -15,7 +15,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
 });
 class z {
   constructor() {
-    v(this, "_options", {
+    y(this, "_options", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -58,7 +58,7 @@ function x(a = {}, e = document.documentElement) {
     if (S(r))
       return;
     const l = r.getAttribute(n);
-    typeof a[l] == "function" ? t.push(I(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
+    Object.prototype.hasOwnProperty.call(a, l) && typeof a[l] == "function" ? t.push(I(r, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
   };
   for (let r = 0; r < o; r++)
     i(s[r]);
@@ -83,8 +83,8 @@ function H(a = document.documentElement) {
   for (let t = 0; t < e.length; t++)
     w(e[t]);
 }
-let p = null;
-const h = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), y = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), C = /* @__PURE__ */ new WeakMap(), $ = /* @__PURE__ */ new Map();
+let m = null;
+const h = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), v = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), C = /* @__PURE__ */ new WeakMap(), $ = /* @__PURE__ */ new Map();
 function R(a) {
   const e = a.root || null, t = a.rootMargin || "0px 0px 0px 0px", n = a.threshold || 0, s = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${s}`;
@@ -97,7 +97,7 @@ let N = class {
     return this._ref;
   }
   set ref(e) {
-    const t = `${u.get("attrPrefix")}-ref`, n = _(`[${t}]`, this.element), s = {};
+    const t = `${u.get("attrPrefix")}-ref`, n = _(`[${t}]`, this.element), s = /* @__PURE__ */ Object.create(null);
     for (let r = 0; r < n.length; r++) {
       const c = n[r], l = c.getAttribute(t);
       let f = s[l];
@@ -109,8 +109,8 @@ let N = class {
       for (let c = 0; c < r.length; c++) {
         const l = r[c], f = l.indexOf(":");
         if (f !== -1) {
-          const d = l.substring(0, f), m = l.substring(f + 1);
-          d === this._name && !this._ref[m] && (this._ref[m] = s[l]);
+          const d = l.substring(0, f), p = l.substring(f + 1);
+          d === this._name && !this._ref[p] && (this._ref[p] = s[l]);
         } else
           this._ref[l] || (this._ref[l] = s[l]);
       }
@@ -168,7 +168,7 @@ let N = class {
   }
   observeResize(e, t) {
     if (typeof window > "u" || !window.ResizeObserver) return;
-    p || (p = new ResizeObserver((o) => {
+    m || (m = new ResizeObserver((o) => {
       for (let i = 0; i < o.length; i++) {
         const r = o[i], c = h.get(r.target);
         if (c) {
@@ -179,7 +179,7 @@ let N = class {
       }
     }));
     let n = h.get(e);
-    n || (n = /* @__PURE__ */ new Set(), h.set(e, n), p.observe(e)), n.add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map());
+    n || (n = /* @__PURE__ */ new Set(), h.set(e, n), m.observe(e)), n.add(t), this._observedResizeElements || (this._observedResizeElements = /* @__PURE__ */ new Map());
     let s = this._observedResizeElements.get(e);
     s || (s = /* @__PURE__ */ new Set(), this._observedResizeElements.set(e, s)), s.add(t);
   }
@@ -200,7 +200,7 @@ let N = class {
     }
     n.size === 0 && this._observedResizeElements.delete(e);
     const s = h.get(e);
-    s && s.size === 0 && (h.delete(e), p && p.unobserve(e));
+    s && s.size === 0 && (h.delete(e), m && m.unobserve(e));
   }
   observeIntersection(e, t, n = {}) {
     if (typeof window > "u" || !window.IntersectionObserver) return;
@@ -208,11 +208,11 @@ let N = class {
     let o = b.get(s);
     o || (o = { observer: new IntersectionObserver((f) => {
       for (let d = 0; d < f.length; d++) {
-        const m = f[d], E = o.callbacks.get(m.target);
+        const p = f[d], E = o.callbacks.get(p.target);
         if (E) {
-          const k = [m];
-          for (const P of E)
-            P(k);
+          const k = [p];
+          for (const O of E)
+            O(k);
         }
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, b.set(s, o));
@@ -337,7 +337,7 @@ let N = class {
     let t = C.get(e);
     t || (t = Object.getOwnPropertyNames(e).filter((n) => {
       var s;
-      return !y.has(n) && !n.startsWith("_") && typeof ((s = Object.getOwnPropertyDescriptor(e, n)) == null ? void 0 : s.value) == "function";
+      return !v.has(n) && !n.startsWith("_") && typeof ((s = Object.getOwnPropertyDescriptor(e, n)) == null ? void 0 : s.value) == "function";
     }), C.set(e, t));
     for (let n = 0; n < t.length; n++) {
       const s = t[n];
@@ -354,7 +354,7 @@ let N = class {
         if (r === -1 && (r = o.length), r > i) {
           const c = o.substring(i, r), l = c.indexOf("->");
           let f, d;
-          l !== -1 ? (f = c.substring(0, l), d = c.substring(l + 2)) : (f = c, d = void 0), this[d] && typeof this[d] == "function" && !d.startsWith("_") && !y.has(d) ? s.addEventListener(f, this[d]) : console.warn(`Method "${d}" not found, is restricted, or is not a function in component.`);
+          l !== -1 ? (f = c.substring(0, l), d = c.substring(l + 2)) : (f = c, d = void 0), this[d] && typeof this[d] == "function" && !d.startsWith("_") && !v.has(d) ? s.addEventListener(f, this[d]) : console.warn(`Method "${d}" not found, is restricted, or is not a function in component.`);
         }
         i = r + 1;
       }
@@ -395,7 +395,7 @@ class L extends EventTarget {
 }
 const q = new L();
 let g = null;
-function B(a) {
+function j(a) {
   const e = `${u.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
   for (let s = 0; s < a.length; s++) {
     const o = a[s];
@@ -417,14 +417,14 @@ function B(a) {
     s.isConnected && x(t, s);
 }
 function A() {
-  typeof document > "u" || (u.get("autoMountComponents") && !g ? (g = new MutationObserver(B), g.observe(document.body, {
+  typeof document > "u" || (u.get("autoMountComponents") && !g ? (g = new MutationObserver(j), g.observe(document.body, {
     childList: !0,
     subtree: !0
   })) : !u.get("autoMountComponents") && g && (g.disconnect(), g = null));
 }
-const j = u.set;
+const B = u.set;
 u.set = function(a, e) {
-  j.call(this, a, e), a === "autoMountComponents" && A();
+  B.call(this, a, e), a === "autoMountComponents" && A();
 };
 typeof window < "u" && setTimeout(A, 0);
 export {
