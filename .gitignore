@@ -15,3 +15,8 @@ wiki-wishlist
 .idea
 .vscode
 demo/demo.css.map
+server.log
+server.pid
+verification_transition.png
+test-results/
+videos/
