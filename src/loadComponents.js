@@ -38,7 +38,9 @@ export default function loadComponents(components = {}, context = document.docum
 	// and to prevent additional garbage collection overhead per element.
 	for (let i = 0; i < elementsLength; i++) {
 		const element = elements[i];
-		const instance = getComponentFromElement(element);
+		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
+		// and string-type checking since we know element is a DOM node.
+		const instance = element.__gia_component__;
 
 		if (!instance) {
 			const componentName = element.getAttribute(attrName);
@@ -52,7 +54,8 @@ export default function loadComponents(components = {}, context = document.docum
 	}
 
 	if (context instanceof Element && context.hasAttribute(attrName)) {
-		const instance = getComponentFromElement(context);
+		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
+		const instance = context.__gia_component__;
 
 		if (!instance) {
 			const componentName = context.getAttribute(attrName);
