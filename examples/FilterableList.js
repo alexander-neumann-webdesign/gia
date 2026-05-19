@@ -230,9 +230,9 @@ class FilterableList extends gia.Component {
 	bindEvents() {
 		for (let i = 0; i < this.ref.filter.length; i++) {
 			const el = this.ref.filter[i];
-			if (el.tagName === 'SELECT') {
+			if (el instanceof HTMLSelectElement) {
 				el.addEventListener('change', this.handleFilterChange);
-			} else if (el.tagName === 'INPUT') {
+			} else if (el instanceof HTMLInputElement) {
 				if (el.type === 'checkbox' || el.type === 'radio') {
 					el.addEventListener('change', this.handleFilterChange);
 				} else {
@@ -247,7 +247,7 @@ class FilterableList extends gia.Component {
 
 		for (let i = 0; i < this.ref.sorter.length; i++) {
 			const el = this.ref.sorter[i];
-			if (el.tagName === 'SELECT') {
+			if (el instanceof HTMLSelectElement) {
 				el.addEventListener('change', this.handleSorterChange);
 			} else {
 				el.addEventListener('click', this.handleSorterClick);
@@ -341,7 +341,7 @@ class FilterableList extends gia.Component {
 		if (!filterType) return;
 
 		let values = [];
-		if (el.tagName === 'SELECT') {
+		if (el instanceof HTMLSelectElement) {
 			if (el.multiple) {
 				for (let i = 0; i < el.selectedOptions.length; i++) {
 					values.push(el.selectedOptions[i].value);
@@ -349,15 +349,15 @@ class FilterableList extends gia.Component {
 			} else {
 				values = el.value ? [el.value] : [];
 			}
-		} else if (el.tagName === 'INPUT' && el.type === 'checkbox') {
+		} else if (el instanceof HTMLInputElement && el.type === 'checkbox') {
 			// This handles a group of checkboxes with the same name
 			const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
 			for (let i = 0; i < checkboxes.length; i++) {
 				values.push(checkboxes[i].value);
 			}
-		} else if (el.tagName === 'INPUT' && el.type === 'radio') {
+		} else if (el instanceof HTMLInputElement && el.type === 'radio') {
 			values = el.value ? [el.value] : [];
-		} else if (el.tagName === 'INPUT') {
+		} else if (el instanceof HTMLInputElement) {
 			// Handle text, search, range, etc.
 			values = el.value ? [el.value] : [];
 			if (el.type === 'range' && el.value === el.defaultValue) {
@@ -723,7 +723,7 @@ class FilterableList extends gia.Component {
 
 				const activeValues = this.activeFilters[filterType] || [];
 
-				if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+				if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
 					const filterValue = el.getAttribute('data-filter-value');
 					let isActive = false;
 					if (filterValue === '*' || filterValue === 'all' || !filterValue) {
@@ -739,7 +739,7 @@ class FilterableList extends gia.Component {
 						el.classList.remove(this.options.activeFilterClass);
 						el.setAttribute('aria-pressed', 'false');
 					}
-				} else if (el.tagName === 'SELECT') {
+				} else if (el instanceof HTMLSelectElement) {
 					if (el.multiple) {
 						for (let j = 0; j < el.options.length; j++) {
 							const opt = el.options[j];
@@ -748,9 +748,9 @@ class FilterableList extends gia.Component {
 					} else {
 						el.value = activeValues.length > 0 ? activeValues[0] : '';
 					}
-				} else if (el.tagName === 'INPUT' && (el.type === 'checkbox' || el.type === 'radio')) {
+				} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
 					el.checked = activeValues.includes(el.value);
-				} else if (el.tagName === 'INPUT') {
+				} else if (el instanceof HTMLInputElement) {
 					// Text, search, range, etc.
 					let newVal = '';
 					if (activeValues.length > 0) {
@@ -775,9 +775,9 @@ class FilterableList extends gia.Component {
 			// Update sorter elements
 			for (let i = 0; i < this.ref.sorter.length; i++) {
 				const el = this.ref.sorter[i];
-				if (el.tagName === 'SELECT') {
+				if (el instanceof HTMLSelectElement) {
 					el.value = this.activeSort;
-				} else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+				} else if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
 					const sortValue = el.getAttribute('data-sort-value');
 					const isActive = this.activeSort === sortValue;
 

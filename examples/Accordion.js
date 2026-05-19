@@ -11,7 +11,7 @@ class Accordion extends gia.Component {
 			summary: null // Optional: if you specifically want to reference the summary
 		};
 
-		this.isDetails = this.element.tagName.toLowerCase() === 'details';
+		this.isDetails = this.element instanceof HTMLDetailsElement;
 		if (!this.isDetails) {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}

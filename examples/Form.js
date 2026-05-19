@@ -32,7 +32,7 @@ class Form extends gia.Component {
 
 	mount() {
 		// If the component is attached to the <form> itself
-		if (this.element.tagName === 'FORM') {
+		if (this.element instanceof HTMLFormElement) {
 			this.formElement = this.element;
 		} else if (this.ref.form) {
 			this.formElement = this.ref.form;
