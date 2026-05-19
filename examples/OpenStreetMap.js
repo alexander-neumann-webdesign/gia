@@ -10,6 +10,16 @@ class OpenStreetMap extends gia.Component {
 		};
 	}
 
+	_load() {
+		// Delay initialization until the map container intersects with the viewport
+		this.observeIntersection(this.element, (entries) => {
+			if (entries[0].isIntersecting) {
+				this.unobserveIntersection(this.element);
+				super._load();
+			}
+		});
+	}
+
 	async require() {
 		// Asynchronously load the Leaflet script and style
 		try {

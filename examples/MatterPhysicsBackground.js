@@ -36,6 +36,21 @@ class MatterPhysicsBackground extends gia.Component {
         this.handlePointerLeave = this.handlePointerLeave.bind(this);
     }
 
+    _load() {
+        // Delay initialization until the container intersects with the viewport
+        this.observeIntersection(this.element, (entries) => {
+            if (entries[0].isIntersecting) {
+                // We keep observing for the main logic (to pause/play on intersection)
+                // but only load once. We cannot unobserve the element fully since it is
+                // used later in mount(), but we can ensure super._load() is called once.
+                if (!this._hasLoaded) {
+                    this._hasLoaded = true;
+                    super._load();
+                }
+            }
+        });
+    }
+
     async require() {
         // Load matter.js asynchronously from CDN.
         // It exposes the global 'Matter' variable.
