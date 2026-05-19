@@ -10,7 +10,7 @@ class OffCanvasMenu extends gia.Component {
 			isOpen: false
 		});
 
-		this.isDialog = this.element.tagName.toLowerCase() === 'dialog';
+		this.isDialog = this.element instanceof HTMLDialogElement;
 		if (!this.isDialog) {
 			console.warn("OffCanvasMenu: Component should be attached to a <dialog> element.");
 		}

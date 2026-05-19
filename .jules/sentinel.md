@@ -32,3 +32,8 @@
 **Vulnerability:** A previous fix for DOM Clobbering in `loadScript` and `loadStyle` relied on `element.tagName === 'SCRIPT'`. This check itself was vulnerable to DOM Clobbering because an attacker could inject an element like `<form id="scriptId"><input name="tagName" value="SCRIPT"></form>`. In older browsers or certain contexts, `form.tagName` would return the input element rather than `'FORM'`, effectively bypassing the check.
 **Learning:** Properties like `tagName` on DOM elements can be clobbered by nested elements with matching `name` attributes, especially within `<form>` tags.
 **Prevention:** Use `instanceof` checks against specific element interfaces (e.g., `element instanceof HTMLScriptElement`) rather than relying on the `tagName` property when validating elements retrieved from the DOM.
+
+## 2025-02-14 - DOM Clobbering in multiple components using tagName property
+**Vulnerability:** Several examples components (`Accordion.js`, `FilterableList.js`, `Form.js`, `Modal.js`, `OffCanvasMenu.js`) relied on checking `element.tagName === '...'`. As seen previously, this is vulnerable to DOM Clobbering (e.g. an attacker injecting an element like `<input name="tagName">` inside the form). This effectively bypasses the type check.
+**Learning:** Checking `element.tagName` can be easily clobbered. Any logic relying on it can be bypassed if the user has some control over the DOM.
+**Prevention:** Replaced all occurrences of `element.tagName === '...'` with the more secure `element instanceof HTMLElementType` pattern (e.g., `element instanceof HTMLFormElement`). This ensures the element is strictly of the expected type, rather than relying on an overrideable property.
