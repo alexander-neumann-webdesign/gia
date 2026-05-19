@@ -178,9 +178,10 @@
         <label for="price-min">Min Price: $<output for="price-min">0</output></label>
         <label for="price-max">Max Price: $<output for="price-max">50</output></label>
       </div>
-      <div class="dual-range-slider" style="position: relative; height: 30px;">
-        <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0" style="position: absolute; width: 100%; top: 5px;" oninput="this.value = Math.min(this.value, document.getElementById('price-max').value - 1)">
-        <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50" style="position: absolute; width: 100%; top: 5px;" oninput="this.value = Math.max(this.value, document.getElementById('price-min').value - -1)">
+      <div data-component="RangeSlider" data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}' class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
+        <div data-ref="slider"></div>
+        <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0" style="display: none;">
+        <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50" style="display: none;">
       </div>
     </div>
 
