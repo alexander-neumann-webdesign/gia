@@ -608,6 +608,9 @@ class FilterableList extends gia.Component {
 			for (let i = 0; i < visibleItems.length; i++) {
 				const vName = `${componentId}-${visibleItems[i]._originalIndex}`;
 				visibleItems[i].style.viewTransitionName = vName;
+				const zIndex = visibleItems.length - i;
+				staggerCss += `::view-transition-group(${vName}) { z-index: ${zIndex}; }\n`;
+
 				if (this.options.staggerDelay > 0) {
 					const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
 					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;

@@ -14,6 +14,7 @@ class Form extends gia.Component {
 			errorMessage: null,
 			requiredInputs: [],
 			dropzone: [],
+			conditions: [],
 		};
 
 		this.originalDropzoneLabels = new Map();
@@ -48,6 +49,14 @@ class Form extends gia.Component {
 				input.addEventListener('input', this.handleInputChange);
 			});
 
+			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
+			if (this.ref.conditions.length > 0) {
+				this.evaluateConditions = this.evaluateConditions.bind(this);
+				this.formElement.addEventListener('change', this.evaluateConditions);
+				this.formElement.addEventListener('input', this.evaluateConditions);
+				this.evaluateConditions();
+			}
+
 			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
@@ -55,6 +64,14 @@ class Form extends gia.Component {
 
 		if (this.ref.submitBtn) {
 			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
+		}
+
+		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
+			this.ref.successMessage.setAttribute('role', 'status');
+		}
+
+		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
+			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
 
 		if (this.ref.dropzone) {
@@ -126,6 +143,10 @@ class Form extends gia.Component {
 	unmount() {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
+			if (this.evaluateConditions) {
+				this.formElement.removeEventListener('change', this.evaluateConditions);
+				this.formElement.removeEventListener('input', this.evaluateConditions);
+			}
 		}
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
@@ -146,6 +167,53 @@ class Form extends gia.Component {
 		}
 	}
 
+	evaluateConditions() {
+		if (!this.ref.conditions || this.ref.conditions.length === 0) return;
+
+		let formData = new FormData(this.formElement);
+
+		this.ref.conditions.forEach(el => {
+			const conditionString = el.getAttribute('data-condition');
+			if (!conditionString) return;
+
+			// Support "fieldName:expectedValue" format
+			const parts = conditionString.split(':');
+			const fieldName = parts[0];
+			const expectedValue = parts.length > 1 ? parts.slice(1).join(':') : undefined;
+
+			const actualValues = formData.getAll(fieldName);
+
+			let conditionMet = false;
+
+			if (expectedValue !== undefined) {
+				conditionMet = actualValues.includes(expectedValue);
+			} else {
+				// If no expected value is specified, just check if the field has ANY value
+				conditionMet = actualValues.some(val => val !== "");
+			}
+
+			if (conditionMet) {
+				el.hidden = false;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (input.hasAttribute('data-disabled-by-condition')) {
+						input.disabled = false;
+						input.removeAttribute('data-disabled-by-condition');
+					}
+				});
+			} else {
+				el.hidden = true;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (!input.disabled) {
+						input.disabled = true;
+						input.setAttribute('data-disabled-by-condition', 'true');
+					}
+				});
+			}
+		});
+	}
+
 	handleInputChange() {
 		let requiredInputMissing = false;
 		this.ref.requiredInputs.forEach((input) => {
@@ -153,15 +221,19 @@ class Form extends gia.Component {
 				if (!input.checked || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			} else {
 				if (!input.value || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			}
 		});
@@ -394,6 +466,13 @@ gia.register(Form);
  *     <div class="form-group">
  *       <label for="message">Message</label>
  *       <textarea id="message" name="message" required></textarea>
+ *     </div>
+ *     <div class="form-group">
+ *       <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
+ *     </div>
+ *     <div class="form-group" data-condition="subscribe:yes">
+ *       <label for="newsletter_email">Newsletter Email</label>
+ *       <input type="email" id="newsletter_email" name="newsletter_email" required />
  *     </div>
  *     <button type="submit" data-ref="submitBtn">Send Message</button>
  *   </form>
