@@ -4,4 +4,10 @@
 
 ## 2026-05-18 - Optimize DOM loadComponents in MutationObserver
 **Learning:** Calling `loadComponents` on every newly added node via `MutationObserver` in `autoMount.js` means overhead scales linearly with the number of DOM insertions.
-**Action:** Always optimize high-frequency lifecycle methods (like those triggered by MutationObservers) to avoid allocating intermediate arrays and closure functions. Inline helper logic directly into the loop.
+**Action:** Always optimize high-frequency lifecycle methods (like those triggered by MutationObservers) to avoid allocating intermediate arrays and closure functions. Inline helper logic directly into the loop.## 2024-05-19 - Observer Callback Array Reuse Anti-Pattern
+**Learning:** Hoisting an array outside a callback loop (like `const entryArr = [null];`) and mutating it inside the loop to pass to callbacks (to save garbage collection overhead) is an anti-pattern. If any callback defers execution, debounces, or stores the array reference, it will read the mutated state of the final iteration rather than its own snapshot.
+**Action:** Do not attempt to share array references across iterations in observer loops or event emitters just to avoid GC pressure. The safety cost outweighs the micro-optimization. The standard `const entryArr = [entry];` allocation inside the loop is required for correctness.
+
+## 2024-05-19 - Inline getComponentFromElement in Hot Paths
+**Learning:** `loadComponents` runs continuously on `MutationObserver` triggers via `autoMount.js`. Calling `getComponentFromElement(element)` for every single node introduces redundant function call and string-type check overhead inside this extremely hot path.
+**Action:** In loops where the target is definitively known to be a DOM element (like iterating `addedNodes`), bypass `getComponentFromElement` entirely and inline the access directly via `element.__gia_component__`.
