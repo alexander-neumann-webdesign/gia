@@ -37,6 +37,27 @@ class MatterPhysicsBackground extends gia.Component {
     }
 
     async require() {
+        // Delay initialization until the container is near the viewport
+        // and the main thread is idle (meaning other components have initialized)
+        await new Promise(resolve => {
+            const initWhenIdle = () => {
+				if ('requestIdleCallback' in window) {
+					window.requestIdleCallback(resolve);
+				} else {
+					setTimeout(resolve, 0);
+				}
+			};
+
+            const intersectionCallback = (entries) => {
+                if (entries[0].isIntersecting) {
+                    // We only need to wait for the first intersection to resolve require()
+                    this.unobserveIntersection(this.element, intersectionCallback);
+                    initWhenIdle();
+                }
+            };
+            this.observeIntersection(this.element, intersectionCallback);
+        });
+
         // Load matter.js asynchronously from CDN.
         // It exposes the global 'Matter' variable.
         await this.loadScript('matter-js-script', 'Matter');
