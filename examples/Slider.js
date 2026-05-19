@@ -5,7 +5,8 @@ class Slider extends gia.Component {
 		this.options = {
 			loop: true,
 			align: "center",
-			skipSnaps: false
+			skipSnaps: false,
+			dots: false
 		};
 
 		this.ref = {
@@ -14,6 +15,8 @@ class Slider extends gia.Component {
 			slide: [], // The slides
 			prevBtn: null, // Optional
 			nextBtn: null, // Optional
+			dotsContainer: null, // Optional container for dots
+			dot: [], // Dynamically generated dots
 		};
 
 		this.emblaApi = null;
@@ -69,11 +72,46 @@ class Slider extends gia.Component {
 		this.emblaApi.on('select', this.onSelect);
 		this.emblaApi.on('reInit', this.onSelect);
 
+		if (this.options.dots && this.ref.dotsContainer) {
+			this.setupDots();
+		}
+
 		// Initial state
 		this.onSelect();
 	}
 
-	unmount() {
+	setupDots() {
+		if (!this.emblaApi) return;
+
+		const scrollSnaps = this.emblaApi.scrollSnapList();
+		this.ref.dot = scrollSnaps.map((_, index) => {
+			const dot = document.createElement('button');
+			dot.classList.add('embla__dot');
+			dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+			dot.addEventListener('click', () => this.emblaApi.scrollTo(index));
+			this.ref.dotsContainer.appendChild(dot);
+			return dot;
+		});
+
+		this.emblaApi.on('select', this.updateDots.bind(this));
+		this.emblaApi.on('reInit', this.updateDots.bind(this));
+		this.updateDots();
+	}
+
+	updateDots() {
+		if (!this.emblaApi || !this.ref.dot) return;
+		const selected = this.emblaApi.selectedScrollSnap();
+
+		this.ref.dot.forEach((dot, index) => {
+			if (index === selected) {
+				dot.classList.add('is-selected');
+			} else {
+				dot.classList.remove('is-selected');
+			}
+		});
+	}
+
+			unmount() {
 		if (this.emblaApi) {
 			this.emblaApi.destroy();
 		}
@@ -83,6 +121,11 @@ class Slider extends gia.Component {
 		}
 		if (this.ref.nextBtn) {
 			this.ref.nextBtn.removeEventListener('click', this.scrollNext);
+		}
+
+		if (this.ref.dotsContainer && this.ref.dot) {
+			this.ref.dot.forEach(dot => dot.remove());
+			this.ref.dot = [];
 		}
 	}
 

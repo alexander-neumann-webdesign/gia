@@ -706,9 +706,11 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
 }
 
 /* --- Slider --- */
+/* --- Slider --- */
 .slider-wrapper[data-component=Slider] {
   position: relative;
   max-width: 100%;
+  padding-bottom: 3rem; /* Space for controls */
 }
 .slider-wrapper[data-component=Slider] .embla {
   overflow: hidden;
@@ -716,19 +718,96 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
 .slider-wrapper[data-component=Slider] .embla__container {
   display: flex;
   touch-action: pan-y pinch-zoom;
+  margin-left: -1rem; /* Negative margin for gap */
 }
 .slider-wrapper[data-component=Slider] .embla__slide {
   flex: 0 0 100%;
   min-width: 0;
+  padding-left: 1rem; /* Padding for gap */
 }
 @media (min-width: 768px) {
   .slider-wrapper[data-component=Slider] .embla__slide {
     flex: 0 0 50%;
   }
 }
-.slider-wrapper[data-component=Slider] button:disabled {
-  opacity: 0.5;
+@media (min-width: 1024px) {
+  .slider-wrapper[data-component=Slider] .embla__slide {
+    flex: 0 0 33.333%;
+  }
+}
+.slider-wrapper[data-component=Slider] .card-content {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.slider-wrapper[data-component=Slider] .card-content img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.slider-wrapper[data-component=Slider] .card-content .card-caption {
+  padding: 1rem;
+  font-weight: bold;
+  text-align: center;
+  background: #f8f9fa;
+  color: #333;
+}
+.slider-wrapper[data-component=Slider] .slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+.slider-wrapper[data-component=Slider] .slider-btn {
+  background: transparent;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+.slider-wrapper[data-component=Slider] .slider-btn:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  color: #000;
+}
+.slider-wrapper[data-component=Slider] .slider-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
+}
+.slider-wrapper[data-component=Slider] .slider-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.slider-wrapper[data-component=Slider] .embla__dots {
+  display: flex;
+  gap: 0.5rem;
+}
+.slider-wrapper[data-component=Slider] .embla__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.slider-wrapper[data-component=Slider] .embla__dot.is-selected {
+  background-color: #333;
+  transform: scale(1.2);
 }
 
 /* --- SplitText --- */
