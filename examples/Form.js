@@ -66,6 +66,14 @@ class Form extends gia.Component {
 			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
 		}
 
+		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
+			this.ref.successMessage.setAttribute('role', 'status');
+		}
+
+		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
+			this.ref.errorMessage.setAttribute('role', 'alert');
+		}
+
 		if (this.ref.dropzone) {
 			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
 			dropzones.forEach((dropzone) => {
@@ -213,15 +221,19 @@ class Form extends gia.Component {
 				if (!input.checked || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			} else {
 				if (!input.value || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			}
 		});

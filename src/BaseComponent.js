@@ -390,11 +390,11 @@ export default class Component {
 			// TRIGGER: Move data-src to src if not already done
 			// If script.src is already set, the browser is likely already downloading it.
 			// We still attach the listeners above to catch the completion event.
-			if (!script.src && script.dataset.src) {
-				script.src = script.dataset.src;
+			if (!script.src && script.hasAttribute('data-src')) {
+				script.src = script.getAttribute('data-src');
 				// Clean up the data attribute to keep DOM tidy (optional)
-				delete script.dataset.src;
-			} else if (!script.src && !script.dataset.src) {
+				script.removeAttribute('data-src');
+			} else if (!script.src && !script.hasAttribute('data-src')) {
 				// Edge case: Tag exists but has no source at all
 				cleanup();
 				reject(new Error(`Script tag '${scriptId}' has no src or data-src.`));
@@ -448,15 +448,15 @@ export default class Component {
 			};
 
 			// TRIGGER: Move data-href to href if not already done
-			if (!link.href && link.dataset.href) {
-				link.href = link.dataset.href;
+			if (!link.href && link.hasAttribute('data-href')) {
+				link.href = link.getAttribute('data-href');
 				// Clean up the data attribute to keep DOM tidy (optional)
-				delete link.dataset.href;
-			} else if (!link.href && !link.dataset.href) {
+				link.removeAttribute('data-href');
+			} else if (!link.href && !link.hasAttribute('data-href')) {
 				// Edge case: Tag exists but has no source at all
 				cleanup();
 				reject(new Error(`Link tag '${styleId}' has no href or data-href.`));
-			} else if (link.href && !link.dataset.href) {
+			} else if (link.href && !link.hasAttribute('data-href')) {
 				// Already has href (might be pre-loaded)
 				// The onload event might have already fired, but we're attaching it now.
 				// If the stylesheet is already loaded, `onload` will not fire again.
@@ -583,7 +583,9 @@ export default class Component {
 		// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
 		for (let i = 0; i < length; i++) {
 			const el = actionElements[i];
-			const actionString = el.dataset.action; // Allow multiple: "click->doX hover->doY"
+			const actionString = el.getAttribute('data-action'); // Allow multiple: "click->doX hover->doY"
+
+			if (!actionString) continue;
 
 			let startIndex = 0;
 			// ⚡ BOLT OPTIMIZATION: Avoid .split() to prevent intermediate array allocations
