@@ -761,6 +761,7 @@ class FilterableList extends gia.Component {
 
 					if (el.value !== newVal) {
 						el.value = newVal;
+						el.dispatchEvent(new Event('change', { bubbles: true }));
 					}
 					// Update associated output if it exists (for range inputs)
 					if (el.type === 'range' && el.id) {

@@ -26,7 +26,6 @@ class Form extends gia.Component {
 			requiredInputsFilled: false,
 		});
 
-		this.originalSubmitBtnHTML = '';
 		this.spinnerAnimation = null;
 	}
 
@@ -60,10 +59,6 @@ class Form extends gia.Component {
 			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
-		}
-
-		if (this.ref.submitBtn) {
-			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
 		}
 
 		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
@@ -469,7 +464,7 @@ class Form extends gia.Component {
 				if (stateChanges.isSubmitting) {
 					this.ref.submitBtn.setAttribute('aria-busy', 'true');
 					// Inject spinner SVG
-					this.ref.submitBtn.innerHTML = `
+					this.ref.submitBtn.insertAdjacentHTML('afterbegin', `
 						<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
 							<line x1="12" y1="2" x2="12" y2="6"></line>
 							<line x1="12" y1="18" x2="12" y2="22"></line>
@@ -480,8 +475,7 @@ class Form extends gia.Component {
 							<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
 							<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
 						</svg>
-						${this.originalSubmitBtnHTML}
-					`;
+					`);
 
 					// Animate spinner
 					const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
@@ -502,7 +496,10 @@ class Form extends gia.Component {
 						this.spinnerAnimation.cancel();
 						this.spinnerAnimation = null;
 					}
-					this.ref.submitBtn.innerHTML = this.originalSubmitBtnHTML;
+					const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
+					if (spinnerIcon) {
+						spinnerIcon.remove();
+					}
 				}
 			}
 
