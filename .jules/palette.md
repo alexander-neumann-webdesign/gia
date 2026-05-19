@@ -35,3 +35,7 @@
 ## 2024-05-18 - Redundant Screen Reader Text in Dynamic Buttons
 **Learning:** When an icon-only button dynamically changes state and updates its `aria-label` (e.g., "Play video" -> "Pause video"), including visually hidden text (`.sr-only`) inside the button creates duplicate and confusing announcements for screen reader users (e.g., "Pause video Pause button").
 **Action:** Rely solely on the dynamically updated `aria-label` on the button itself. Ensure that any injected decorative SVG icons have `aria-hidden="true"` so they are completely ignored by screen readers.
+
+## 2024-05-19 - Form validation and dynamic feedback messages accessibility
+**Learning:** Forms that dynamically reveal success or error messages need those messages to have appropriate ARIA roles (`status` for success, `alert` for errors) so that screen readers announce them. Additionally, invalid inputs should use `aria-invalid="true"` so that the screen reader correctly identifies missing or poorly formatted fields.
+**Action:** Added `aria-invalid` toggling logic within `handleInputChange()` and explicitly set `role="status"` and `role="alert"` for form feedback message elements in `Form.js`. When adding dynamic form validation in the future, always ensure these ARIA attributes are updated to reflect the UI state.
