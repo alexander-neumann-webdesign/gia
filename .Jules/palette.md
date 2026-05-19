@@ -9,3 +9,7 @@
 ## 2025-05-17 - Ensure Active Tabs Are Focusable
 **Learning:** In custom tab implementations, using `element.removeAttribute('tabindex')` for the active tab only works for keyboard accessibility if the underlying element is natively focusable (like a `<button>` or `<a>`). If a developer uses a non-interactive element like `<div>` or `<span>`, it completely drops out of the tab order.
 **Action:** Always set `tabindex="0"` on the active tab element explicitly rather than removing the attribute.
+
+## 2025-05-18 - VideoHolder Play/Pause Button Keyboard Accessibility
+**Learning:** Controls hidden via hover states (opacity: 0) remain invisible to keyboard users when focused unless the container also listens for focus-within.
+**Action:** Always add &:focus-within alongside &:hover for hidden controls, and ensure an explicit :focus-visible outline is set.

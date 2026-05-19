@@ -14,6 +14,7 @@ class Form extends gia.Component {
 			errorMessage: null,
 			requiredInputs: [],
 			dropzone: [],
+			conditions: [],
 		};
 
 		this.originalDropzoneLabels = new Map();
@@ -48,6 +49,14 @@ class Form extends gia.Component {
 				input.addEventListener('input', this.handleInputChange);
 			});
 
+			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
+			if (this.ref.conditions.length > 0) {
+				this.evaluateConditions = this.evaluateConditions.bind(this);
+				this.formElement.addEventListener('change', this.evaluateConditions);
+				this.formElement.addEventListener('input', this.evaluateConditions);
+				this.evaluateConditions();
+			}
+
 			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
@@ -55,6 +64,14 @@ class Form extends gia.Component {
 
 		if (this.ref.submitBtn) {
 			this.originalSubmitBtnHTML = this.ref.submitBtn.innerHTML;
+		}
+
+		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
+			this.ref.successMessage.setAttribute('role', 'status');
+		}
+
+		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
+			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
 
 		if (this.ref.dropzone) {
@@ -96,7 +113,23 @@ class Form extends gia.Component {
 
 		const fileInput = dropzone.querySelector('input[type="file"]');
 		if (fileInput && event.dataTransfer.files.length > 0) {
-			fileInput.files = event.dataTransfer.files;
+			let dt = dropzone._giaFiles || new DataTransfer();
+
+			// Add previously accumulated files if not already in dt
+			if (!dropzone._giaFiles) {
+				for (let i = 0; i < fileInput.files.length; i++) {
+					dt.items.add(fileInput.files[i]);
+				}
+			}
+
+			// Add new dropped files
+			for (let i = 0; i < event.dataTransfer.files.length; i++) {
+				dt.items.add(event.dataTransfer.files[i]);
+			}
+
+			dropzone._giaFiles = dt;
+			fileInput.files = dt.files;
+
 			// Manually dispatch change event so handleFileChange fires
 			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 		}
@@ -107,25 +140,141 @@ class Form extends gia.Component {
 		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
 		if (!dropzone) return;
 
+		// If this event comes from a native file dialog selection rather than drag and drop
+		if (event.isTrusted && fileInput.files && fileInput.files.length > 0) {
+			let dt = dropzone._giaFiles || new DataTransfer();
+
+			// If not initialized, add existing files first (should be none usually from a fresh click)
+			if (!dropzone._giaFiles) {
+				// but just in case
+			}
+
+			for (let i = 0; i < fileInput.files.length; i++) {
+				dt.items.add(fileInput.files[i]);
+			}
+
+			dropzone._giaFiles = dt;
+			fileInput.files = dt.files;
+		} else if (!dropzone._giaFiles && fileInput.files && fileInput.files.length > 0) {
+			// Initialize if not done
+			let dt = new DataTransfer();
+			for (let i = 0; i < fileInput.files.length; i++) {
+				dt.items.add(fileInput.files[i]);
+			}
+			dropzone._giaFiles = dt;
+		} else if (!fileInput.files || fileInput.files.length === 0) {
+			// Clear files
+			dropzone._giaFiles = null;
+		}
+
+		this.renderFileList(dropzone, fileInput);
+	}
+
+	renderFileList(dropzone, fileInput) {
 		const label = dropzone.querySelector('.form-dropzone-label');
-		if (label) {
-			if (fileInput.files && fileInput.files.length > 1) {
-				label.textContent = `${fileInput.files.length} files selected`;
-			} else if (fileInput.files && fileInput.files.length === 1) {
-				label.textContent = fileInput.files[0].name;
-			} else {
-				// Restore original
-				const originalText = this.originalDropzoneLabels.get(dropzone);
-				if (originalText) {
-					label.textContent = originalText;
-				}
+
+		// Remove existing list if any
+		let existingList = dropzone.querySelector('.form-dropzone-list');
+		if (existingList) {
+			existingList.remove();
+		}
+
+		if (fileInput.files && fileInput.files.length > 0) {
+			if (label) label.hidden = true;
+
+			const listContainer = document.createElement('div');
+			listContainer.className = 'form-dropzone-list';
+			listContainer.style.position = 'relative';
+			listContainer.style.zIndex = '10';
+			listContainer.style.textAlign = 'left';
+			listContainer.style.marginTop = '1rem';
+			listContainer.style.width = '100%';
+
+			for (let i = 0; i < fileInput.files.length; i++) {
+				const file = fileInput.files[i];
+				const fileItem = document.createElement('div');
+				fileItem.style.display = 'flex';
+				fileItem.style.alignItems = 'center';
+				fileItem.style.justifyContent = 'space-between';
+				fileItem.style.padding = '0.5rem';
+				fileItem.style.border = '1px solid #ddd';
+				fileItem.style.marginBottom = '0.5rem';
+				fileItem.style.backgroundColor = '#fff';
+
+				const sizeKB = (file.size / 1024).toFixed(2);
+
+				const fileInfo = document.createElement('div');
+
+				const nameStrong = document.createElement('strong');
+				nameStrong.textContent = file.name;
+
+				const detailsSmall = document.createElement('small');
+				detailsSmall.textContent = `${file.type || 'Unknown Type'} • ${sizeKB} KB`;
+
+				fileInfo.appendChild(nameStrong);
+				fileInfo.appendChild(document.createElement('br'));
+				fileInfo.appendChild(detailsSmall);
+
+				const removeBtn = document.createElement('button');
+				removeBtn.type = 'button';
+				removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+				removeBtn.style.background = 'none';
+				removeBtn.style.border = 'none';
+				removeBtn.style.cursor = 'pointer';
+				removeBtn.style.color = '#f44336';
+				removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
+				// Capture exact file object to remove rather than by name to avoid duplicates bug
+				removeBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					e.preventDefault();
+					this.removeFile(dropzone, fileInput, file);
+				});
+
+				fileItem.appendChild(fileInfo);
+				fileItem.appendChild(removeBtn);
+				listContainer.appendChild(fileItem);
+			}
+
+			dropzone.appendChild(listContainer);
+		} else {
+			if (label) label.hidden = false;
+			// Restore original text just in case
+			const originalText = this.originalDropzoneLabels.get(dropzone);
+			if (label && originalText) {
+				label.textContent = originalText;
 			}
 		}
+	}
+
+	removeFile(dropzone, fileInput, fileToRemove) {
+		if (!fileInput.files || fileInput.files.length === 0) return;
+
+		let dt = new DataTransfer();
+		let removed = false;
+		for (let i = 0; i < fileInput.files.length; i++) {
+			// Remove exactly one matching file by reference/equality checks
+			if (!removed && fileInput.files[i] === fileToRemove) {
+				removed = true;
+				continue;
+			}
+			dt.items.add(fileInput.files[i]);
+		}
+
+		dropzone._giaFiles = dt;
+		fileInput.files = dt.files;
+
+		// Trigger change event to re-render
+		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
 	unmount() {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
+			if (this.evaluateConditions) {
+				this.formElement.removeEventListener('change', this.evaluateConditions);
+				this.formElement.removeEventListener('input', this.evaluateConditions);
+			}
 		}
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
@@ -146,6 +295,53 @@ class Form extends gia.Component {
 		}
 	}
 
+	evaluateConditions() {
+		if (!this.ref.conditions || this.ref.conditions.length === 0) return;
+
+		let formData = new FormData(this.formElement);
+
+		this.ref.conditions.forEach(el => {
+			const conditionString = el.getAttribute('data-condition');
+			if (!conditionString) return;
+
+			// Support "fieldName:expectedValue" format
+			const parts = conditionString.split(':');
+			const fieldName = parts[0];
+			const expectedValue = parts.length > 1 ? parts.slice(1).join(':') : undefined;
+
+			const actualValues = formData.getAll(fieldName);
+
+			let conditionMet = false;
+
+			if (expectedValue !== undefined) {
+				conditionMet = actualValues.includes(expectedValue);
+			} else {
+				// If no expected value is specified, just check if the field has ANY value
+				conditionMet = actualValues.some(val => val !== "");
+			}
+
+			if (conditionMet) {
+				el.hidden = false;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (input.hasAttribute('data-disabled-by-condition')) {
+						input.disabled = false;
+						input.removeAttribute('data-disabled-by-condition');
+					}
+				});
+			} else {
+				el.hidden = true;
+				const inputs = el.querySelectorAll('input, select, textarea');
+				inputs.forEach(input => {
+					if (!input.disabled) {
+						input.disabled = true;
+						input.setAttribute('data-disabled-by-condition', 'true');
+					}
+				});
+			}
+		});
+	}
+
 	handleInputChange() {
 		let requiredInputMissing = false;
 		this.ref.requiredInputs.forEach((input) => {
@@ -153,15 +349,19 @@ class Form extends gia.Component {
 				if (!input.checked || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			} else {
 				if (!input.value || input.value === "") {
 					requiredInputMissing = true;
 					input.classList.add("input-missing");
+					input.setAttribute("aria-invalid", "true");
 				} else {
 					input.classList.remove("input-missing");
+					input.removeAttribute("aria-invalid");
 				}
 			}
 		});
@@ -278,14 +478,24 @@ class Form extends gia.Component {
 				this.setState({ isSubmitting: false, isSuccess: true });
 				this.formElement.reset();
 
-				// Reset dropzone labels
+				// Reset dropzone labels and files
 				if (this.ref.dropzone) {
 					const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
 					dropzones.forEach(dropzone => {
+						dropzone._giaFiles = null;
+
+						let existingList = dropzone.querySelector('.form-dropzone-list');
+						if (existingList) {
+							existingList.remove();
+						}
+
 						const label = dropzone.querySelector('.form-dropzone-label');
 						const originalText = this.originalDropzoneLabels.get(dropzone);
-						if (label && originalText) {
-							label.textContent = originalText;
+						if (label) {
+							label.hidden = false;
+							if (originalText) {
+								label.textContent = originalText;
+							}
 						}
 					});
 				}
@@ -394,6 +604,13 @@ gia.register(Form);
  *     <div class="form-group">
  *       <label for="message">Message</label>
  *       <textarea id="message" name="message" required></textarea>
+ *     </div>
+ *     <div class="form-group">
+ *       <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
+ *     </div>
+ *     <div class="form-group" data-condition="subscribe:yes">
+ *       <label for="newsletter_email">Newsletter Email</label>
+ *       <input type="email" id="newsletter_email" name="newsletter_email" required />
  *     </div>
  *     <button type="submit" data-ref="submitBtn">Send Message</button>
  *   </form>

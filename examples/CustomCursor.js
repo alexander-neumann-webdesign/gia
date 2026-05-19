@@ -27,6 +27,7 @@ class CustomCursor extends gia.Component {
 
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        this.scroll = { x: typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset) : 0, y: typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset) : 0 };
 
         // For magnetic target
         this.magneticTarget = null;
@@ -149,6 +150,8 @@ class CustomCursor extends gia.Component {
     }
 
     handleScroll() {
+        this.scroll.x = window.scrollX || window.pageXOffset;
+        this.scroll.y = window.scrollY || window.pageYOffset;
         this._wakeUp();
     }
 
@@ -203,20 +206,30 @@ class CustomCursor extends gia.Component {
         let isStick = false;
         let minDistanceSq = Infinity;
 
-        const scrollX = window.scrollX || window.pageXOffset;
-        const scrollY = window.scrollY || window.pageYOffset;
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
         const docMouseX = this.mouse.x + scrollX;
         const docMouseY = this.mouse.y + scrollY;
 
         for (const item of this.cachedMagneticElements) {
             const { el, bounds, type } = item;
 
-            // Check if mouse is within the padded bounds
+            // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning checks.
+            // If the element's top bound (minus padding) is below the cursor, all subsequent elements
+            // in the sorted array will also be below the cursor. We can safely break the loop early.
+            if (bounds.top - this.options.magneticPadding > docMouseY) {
+                break;
+            }
+
+            // If the element's bottom bound (plus padding) is above the cursor, skip to the next element.
+            if (bounds.bottom + this.options.magneticPadding < docMouseY) {
+                continue;
+            }
+
+            // Check horizontal padded bounds (we already checked vertical via the spatial partitioning above)
             if (
                 docMouseX >= bounds.left - this.options.magneticPadding &&
-                docMouseX <= bounds.right + this.options.magneticPadding &&
-                docMouseY >= bounds.top - this.options.magneticPadding &&
-                docMouseY <= bounds.bottom + this.options.magneticPadding
+                docMouseX <= bounds.right + this.options.magneticPadding
             ) {
                 // Find the closest one by center distance to handle overlapping padded zones
                 const dx = docMouseX - bounds.centerX;
@@ -380,8 +393,8 @@ class CustomCursor extends gia.Component {
             const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
             this.cachedMagneticElements = [];
 
-            const scrollX = window.scrollX || window.pageXOffset;
-            const scrollY = window.scrollY || window.pageYOffset;
+            const scrollX = this.scroll.x;
+            const scrollY = this.scroll.y;
 
             // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
             for (const el of elements) {
@@ -417,6 +430,10 @@ class CustomCursor extends gia.Component {
                     this.magneticBounds = bounds;
                 }
             }
+
+            // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
+            // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
+            this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
         }
 
         // Calculate delta time for frame-rate independent lerp
@@ -432,8 +449,8 @@ class CustomCursor extends gia.Component {
 
         // If hovering magnetic element, pull the target to its center
         if (this.magneticTarget && this.magneticBounds) {
-            const scrollX = window.scrollX || window.pageXOffset;
-            const scrollY = window.scrollY || window.pageYOffset;
+            const scrollX = this.scroll.x;
+            const scrollY = this.scroll.y;
             const docMouseX = this.mouse.x + scrollX;
             const docMouseY = this.mouse.y + scrollY;
 

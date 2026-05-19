@@ -383,6 +383,10 @@
                     <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
                       <input type="checkbox" name="preferences" value="newsletter" /> Subscribe to newsletter
                     </label>
+                    <div style="margin-top: 0.5rem; margin-bottom: 1rem;" data-condition="preferences:newsletter">
+                      <label for="newsletter_email" style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;">Newsletter Email (Conditional)</label>
+                      <input type="email" id="newsletter_email" name="newsletter_email" required style="width: 100%; padding: 0.5rem;" />
+                    </div>
                     <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
                       <input type="checkbox" name="preferences" value="updates" /> Receive product updates
                     </label>
