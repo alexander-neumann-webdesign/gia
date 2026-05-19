@@ -20,3 +20,5 @@ server.pid
 verification_transition.png
 test-results/
 videos/
+dev.log
+demo/demo.css.map

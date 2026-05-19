@@ -113,7 +113,16 @@ class Form extends gia.Component {
 
 		const fileInput = dropzone.querySelector('input[type="file"]');
 		if (fileInput && event.dataTransfer.files.length > 0) {
-			fileInput.files = event.dataTransfer.files;
+			const dt = new DataTransfer();
+			if (fileInput.files) {
+				for (let i = 0; i < fileInput.files.length; i++) {
+					dt.items.add(fileInput.files[i]);
+				}
+			}
+			for (let i = 0; i < event.dataTransfer.files.length; i++) {
+				dt.items.add(event.dataTransfer.files[i]);
+			}
+			fileInput.files = dt.files;
 			// Manually dispatch change event so handleFileChange fires
 			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 		}
@@ -124,20 +133,102 @@ class Form extends gia.Component {
 		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
 		if (!dropzone) return;
 
+		this.renderFileList(dropzone, fileInput);
+	}
+
+	formatFileSize(bytes) {
+		if (bytes === 0) return '0 Bytes';
+		const k = 1024;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+	}
+
+	renderFileList(dropzone, fileInput) {
 		const label = dropzone.querySelector('.form-dropzone-label');
-		if (label) {
-			if (fileInput.files && fileInput.files.length > 1) {
-				label.textContent = `${fileInput.files.length} files selected`;
-			} else if (fileInput.files && fileInput.files.length === 1) {
-				label.textContent = fileInput.files[0].name;
-			} else {
-				// Restore original
+
+		// Remove existing file list if any
+		const existingList = dropzone.querySelector('.form-file-list');
+		if (existingList) {
+			existingList.remove();
+		}
+
+		if (fileInput.files && fileInput.files.length > 0) {
+			if (label) label.hidden = true;
+
+			const fileList = document.createElement('div');
+			fileList.className = 'form-file-list';
+			fileList.style.marginTop = '1rem';
+			fileList.style.textAlign = 'left';
+
+			Array.from(fileInput.files).forEach(file => {
+				const fileItem = document.createElement('div');
+				fileItem.className = 'form-file-item';
+				fileItem.style.display = 'flex';
+				fileItem.style.justifyContent = 'space-between';
+				fileItem.style.alignItems = 'center';
+				fileItem.style.padding = '0.5rem';
+				fileItem.style.borderBottom = '1px solid #ccc';
+
+				const fileInfo = document.createElement('div');
+				fileInfo.className = 'form-file-info';
+
+				const fileName = document.createElement('strong');
+				fileName.textContent = file.name;
+				fileName.style.display = 'block';
+
+				const fileMeta = document.createElement('small');
+				fileMeta.textContent = `${file.type || 'Unknown type'} • ${this.formatFileSize(file.size)}`;
+				fileMeta.style.color = '#666';
+
+				fileInfo.appendChild(fileName);
+				fileInfo.appendChild(fileMeta);
+
+				const removeBtn = document.createElement('button');
+				removeBtn.type = 'button';
+				removeBtn.className = 'remove-file-btn';
+				removeBtn.textContent = '🗑️';
+				removeBtn.style.background = 'none';
+				removeBtn.style.border = 'none';
+				removeBtn.style.cursor = 'pointer';
+				removeBtn.style.fontSize = '1.2rem';
+				removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+
+				removeBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					e.preventDefault();
+					this.removeFile(dropzone, fileInput, file);
+				});
+
+				fileItem.appendChild(fileInfo);
+				fileItem.appendChild(removeBtn);
+				fileList.appendChild(fileItem);
+			});
+
+			dropzone.appendChild(fileList);
+		} else {
+			if (label) {
+				label.hidden = false;
 				const originalText = this.originalDropzoneLabels.get(dropzone);
 				if (originalText) {
 					label.textContent = originalText;
 				}
 			}
 		}
+	}
+
+	removeFile(dropzone, fileInput, fileToRemove) {
+		const dt = new DataTransfer();
+		if (fileInput.files) {
+			for (let i = 0; i < fileInput.files.length; i++) {
+				const file = fileInput.files[i];
+				if (file !== fileToRemove) {
+					dt.items.add(file);
+				}
+			}
+		}
+		fileInput.files = dt.files;
+		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
 	unmount() {
