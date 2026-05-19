@@ -5,8 +5,7 @@ class Slider extends gia.Component {
 		this.options = {
 			loop: true,
 			align: "center",
-			skipSnaps: false,
-			dots: false
+			skipSnaps: false
 		};
 
 		this.ref = {
@@ -72,7 +71,7 @@ class Slider extends gia.Component {
 		this.emblaApi.on('select', this.onSelect);
 		this.emblaApi.on('reInit', this.onSelect);
 
-		if (this.options.dots && this.ref.dotsContainer) {
+		if (this.ref.dotsContainer) {
 			this.setupDots();
 		}
 
@@ -111,7 +110,7 @@ class Slider extends gia.Component {
 		});
 	}
 
-			unmount() {
+	unmount() {
 		if (this.emblaApi) {
 			this.emblaApi.destroy();
 		}
