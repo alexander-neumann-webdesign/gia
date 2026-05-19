@@ -220,9 +220,15 @@ gia.register(VideoHolder);
  *     &:hover {
  *       background: rgba(0,0,0,0.8);
  *     }
+ *
+ *     &:focus-visible {
+ *       outline: 2px solid white;
+ *       outline-offset: 2px;
+ *     }
  *   }
  *
- *   &:hover button[data-ref="playPauseButton"] {
+ *   &:hover button[data-ref="playPauseButton"],
+ *   &:focus-within button[data-ref="playPauseButton"] {
  *     opacity: 1;
  *     pointer-events: auto;
  *   }
