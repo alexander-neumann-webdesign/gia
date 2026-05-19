@@ -1661,6 +1661,14 @@ button[data-component="ClipboardCopy"] {
         }
     }
 
+    &--transitioning &__after {
+        transition: clip-path 0.3s ease-out;
+    }
+
+    &--transitioning &__handle {
+        transition: left 0.3s ease-out;
+    }
+
     &__handle {
         grid-column: 1 / 2;
         grid-row: 1 / 2;

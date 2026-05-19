@@ -49,3 +49,6 @@
 ## 2025-05-18 - Hover Controls Keyboard Accessibility
 **Learning:** Controls hidden via hover states (opacity: 0) remain invisible to keyboard users when focused unless the container also listens for focus-within.
 **Action:** Always add `&:focus-within` alongside `&:hover` for hidden controls, and ensure an explicit `:focus-visible` outline is set.
+## 2024-06-25 - Smooth Slider Jump without Drag Lag
+**Learning/Vulnerability:** When adding CSS transitions to `<input type="range">` visuals (like custom clip-paths or handles) to make clicking/jumping smooth, it naturally causes the slider to "lag" behind the cursor during standard drag interactions.
+**Action/Prevention:** Differentiate between a jump and a drag using pointer events. On `pointerdown`, check if the click target distance is > 3% from the current value. If so, add a modifier class (e.g., `--transitioning`) with a `setTimeout` to remove it (matching the CSS transition duration). On `pointermove`, immediately remove the class so dragging stays instant and responsive.
