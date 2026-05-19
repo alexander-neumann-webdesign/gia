@@ -64,6 +64,9 @@ class CustomCursor extends gia.Component {
         // Observers to keep bounds up to date
         this.resizeObserver = null;
         this.mutationObserver = null;
+
+        // Preloaded images cache
+        this.preloadedImages = new Set();
     }
 
     mount() {
@@ -96,7 +99,7 @@ class CustomCursor extends gia.Component {
                     this._wakeUp();
                 }
             });
-            this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'data-cursor-stick', 'class'] });
+            this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'data-cursor-stick', 'data-cursor-img', 'class'] });
         }
 
         // Start the render loop initially
@@ -383,11 +386,25 @@ class CustomCursor extends gia.Component {
         }
     }
 
+    _preloadImages() {
+        const imageElements = document.querySelectorAll('[data-cursor-img]');
+        for (const el of imageElements) {
+            const src = el.getAttribute('data-cursor-img');
+            if (src && !this.preloadedImages.has(src)) {
+                this.preloadedImages.add(src);
+                const img = new Image();
+                img.src = src;
+            }
+        }
+    }
+
     render(time) {
         if (!this._isRenderingFrame) return;
 
         if (this._needsAllBoundsUpdate) {
             this._needsAllBoundsUpdate = false;
+
+            this._preloadImages();
 
             // Rebuild the cache of all magnetic elements
             const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
