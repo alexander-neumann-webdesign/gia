@@ -31,17 +31,27 @@ class MapLibreMap extends gia.Component {
 		this.markers = [];
 	}
 
-	_load() {
-		// Delay initialization until the map container intersects with the viewport
-		this.observeIntersection(this.element, (entries) => {
-			if (entries[0].isIntersecting) {
-				this.unobserveIntersection(this.element);
-				super._load();
-			}
-		});
-	}
-
 	async require() {
+		// Delay initialization until the map container is near the viewport
+		// and the main thread is idle (meaning other components have initialized)
+		await new Promise(resolve => {
+			const initWhenIdle = () => {
+				if ('requestIdleCallback' in window) {
+					window.requestIdleCallback(resolve);
+				} else {
+					setTimeout(resolve, 0);
+				}
+			};
+
+			const intersectionCallback = (entries) => {
+				if (entries[0].isIntersecting) {
+					this.unobserveIntersection(this.element, intersectionCallback);
+					initWhenIdle();
+				}
+			};
+			this.observeIntersection(this.element, intersectionCallback);
+		});
+
 		await Promise.all([
 			this.loadScript('maplibre-js', 'maplibregl'),
 			this.loadStyle('maplibre-css')
