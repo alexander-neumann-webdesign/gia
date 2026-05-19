@@ -40,3 +40,8 @@
 ## 2026-05-19 - File Uploads DataTransfer & XSS Prevention
 **Learning/Vulnerability:** Using `innerHTML` for rendering dynamic file data allows DOM-based XSS if user-controlled file names contain malicious payloads. Further, native `<input type="file">`.files represents a read-only `FileList`. Overwriting it requires a new `DataTransfer` object. Finally, removing files using their `name` strings introduces a bug if multiple files have duplicate names.
 **Action/Prevention:** Neutralize XSS vectors by constructing the file item DOM using `document.createElement()` and assigning text purely via `.textContent`. Manage `FileList` state by iteratively constructing a `DataTransfer` object, adding valid `File` objects, and comparing by object reference (`file !== fileToRemove`) instead of name to reliably handle duplicates.
+
+## 2026-05-19 - DOM-based XSS via innerHTML caching and string interpolation
+**Vulnerability:** XSS vulnerability found in `Form.js` due to caching `this.ref.submitBtn.innerHTML` and later injecting it back using string interpolation (`${this.originalSubmitBtnHTML}`) alongside a spinner SVG. This allows DOM-based XSS if the initial button HTML is ever influenced by user input.
+**Learning:** Reading `innerHTML` from the DOM, modifying it via string interpolation, and setting it back is a dangerous pattern. Even if the data originates from the DOM itself, it creates a pathway for DOM-based XSS if the initial DOM state is user-controlled.
+**Prevention:** Avoid caching and re-injecting `innerHTML` using string interpolation. Use safer DOM APIs like `insertAdjacentHTML` with static strings for adding elements (like a spinner) and `.remove()` to remove them, leaving the original content untouched.
