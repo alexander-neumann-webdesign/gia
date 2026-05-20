@@ -388,7 +388,7 @@ class Marquee extends gia.Component {
 		// Create a single container wrapper for the original items to easily measure its full width.
 		// Append original items into this wrapper instead of using outerHTML to preserve event listeners/refs.
 
-		this.ref.track.innerHTML = '';
+		this.ref.track.replaceChildren();
 
 		const originalWrapper = document.createElement('div');
 		originalWrapper.style.display = 'flex'; // Ensure it's inline

@@ -231,7 +231,7 @@ class TodoApp extends gia.Component {
 		}
 
 		// Clear existing list and append new fragment
-		this.ref.list.innerHTML = '';
+		this.ref.list.replaceChildren();
 		this.ref.list.appendChild(fragment);
 	}
 }

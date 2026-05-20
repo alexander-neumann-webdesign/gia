@@ -79,7 +79,7 @@ class SplitText extends gia.Component {
 		this._walkAndSplit(clone);
 
 		// Apply the DOM
-		this.element.innerHTML = "";
+		this.element.replaceChildren();
 
 		// ⚡ BOLT OPTIMIZATION: Use DocumentFragment to batch DOM insertions
 		const fragment = document.createDocumentFragment();
