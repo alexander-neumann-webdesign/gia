@@ -1756,11 +1756,11 @@ button[data-component="ClipboardCopy"] {
     }
 
     &--transitioning &__after {
-        transition: clip-path 0.3s ease-out;
+        transition: clip-path 0.15s ease-out;
     }
 
     &--transitioning &__handle {
-        transition: left 0.3s ease-out;
+        transition: left 0.15s ease-out;
     }
 
     &__handle {

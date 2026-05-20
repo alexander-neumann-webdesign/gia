@@ -14,6 +14,7 @@ class ImageComparison extends gia.Component {
         this.handlePointerDown = this.handlePointerDown.bind(this);
         this.handlePointerUp = this.handlePointerUp.bind(this);
         this.handlePointerMove = this.handlePointerMove.bind(this);
+        this.dragStartX = null;
     }
 
     mount() {
@@ -51,19 +52,21 @@ class ImageComparison extends gia.Component {
 
     handlePointerDown(e) {
         if (this.ref.slider) {
+            this.dragStartX = e.clientX;
             const currentValStr = this.element.style.getPropertyValue('--exposure');
             const currentVal = currentValStr ? parseFloat(currentValStr) : 50;
             const rect = this.ref.slider.getBoundingClientRect();
             const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
+            const isCurrentlyTransitioning = this.element.classList.contains('image-comparison--transitioning');
 
-            if (Math.abs(clickPct - currentVal) > 3) {
+            if (Math.abs(clickPct - currentVal) > 3 || isCurrentlyTransitioning) {
                 this.element.classList.add('image-comparison--transitioning');
                 if (this.transitionTimeout) {
                     clearTimeout(this.transitionTimeout);
                 }
                 this.transitionTimeout = setTimeout(() => {
                     this.element.classList.remove('image-comparison--transitioning');
-                }, 300);
+                }, 150);
             }
         }
         this.isDragging = true;
@@ -71,13 +74,16 @@ class ImageComparison extends gia.Component {
 
     handlePointerUp() {
         this.isDragging = false;
+        this.dragStartX = null;
     }
 
     handlePointerMove(e) {
         if (this.isDragging) {
-            this.element.classList.remove('image-comparison--transitioning');
-            if (this.transitionTimeout) {
-                clearTimeout(this.transitionTimeout);
+            if (this.dragStartX !== null && Math.abs(e.clientX - this.dragStartX) > 2) {
+                this.element.classList.remove('image-comparison--transitioning');
+                if (this.transitionTimeout) {
+                    clearTimeout(this.transitionTimeout);
+                }
             }
         }
     }

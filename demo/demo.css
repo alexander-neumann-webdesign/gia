@@ -1488,10 +1488,10 @@ button[data-component=ClipboardCopy][data-status=error] {
   outline-offset: 2px;
 }
 .image-comparison--transitioning .image-comparison__after {
-  transition: clip-path 0.3s ease-out;
+  transition: clip-path 0.15s ease-out;
 }
 .image-comparison--transitioning .image-comparison__handle {
-  transition: left 0.3s ease-out;
+  transition: left 0.15s ease-out;
 }
 .image-comparison__handle {
   grid-column: 1/2;
