@@ -54,7 +54,7 @@ class RangeSlider extends gia.Component {
         if (this.ref.inputs.length > 0) {
             this.sliderInstance.on('update', (values, handle) => {
                 if (this.ref.inputs[handle]) {
-                    if (String(this.ref.inputs[handle].value) !== String(values[handle])) {
+                    if (parseFloat(this.ref.inputs[handle].value) !== parseFloat(values[handle])) {
                         this.ref.inputs[handle].value = values[handle];
 
                         // Dispatch events so other components (like Form) can react
@@ -78,7 +78,7 @@ class RangeSlider extends gia.Component {
             const currentSliderValues = this.sliderInstance.get();
             const currentHandleValue = Array.isArray(currentSliderValues) ? currentSliderValues[index] : currentSliderValues;
 
-            if (String(currentHandleValue) !== String(input.value)) {
+            if (parseFloat(currentHandleValue) !== parseFloat(input.value)) {
                 const values = [];
                 values[index] = input.value;
                 this.sliderInstance.set(values);
