@@ -1,29 +1,24 @@
 import config from "./config.js";
-import getComponentFromElement from "./getComponentFromElement.js";
-
-/**
- * Destroys and removes instance from DOM element
- * @param element: DOM element
- */
-
-// export default function destroyInstance(element) {
-// 	const instance = getComponentFromElement(element);
-// 	if (instance) {
-// 		const name = instance._name;
-// 		instance.unmount();
-// 		element.__gia_component__ = null;
-// 		if (config.get("log")) {
-// 			console.info(`Removed component "${name}".`);
-// 		}
-// 	}
-// }
 
 /**
  * Destroys and removes instance from DOM element
  * @param element: DOM element
  */
 export default function destroyInstance(element) {
-	const instance = getComponentFromElement(element);
+	if (!element) return;
+
+	// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
+	// inside the extremely hot autoMount MutationObserver removal loop.
+	let instance = element.__gia_component__;
+
+	// Fallback for ID string passing
+	if (!instance && typeof element === "string") {
+		const el = document.getElementById(element);
+		if (el) {
+			instance = el.__gia_component__;
+			element = el; // update element reference for cleanup below
+		}
+	}
 
 	if (instance) {
 		const name = instance._name || "Unknown";
