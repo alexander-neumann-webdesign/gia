@@ -63,7 +63,7 @@ class ImageComparison extends gia.Component {
                 }
                 this.transitionTimeout = setTimeout(() => {
                     this.element.classList.remove('image-comparison--transitioning');
-                }, 300);
+                }, 150);
             }
         }
         this.isDragging = true;
