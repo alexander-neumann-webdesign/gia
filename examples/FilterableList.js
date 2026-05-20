@@ -596,6 +596,10 @@ class FilterableList extends gia.Component {
 
 		// Perform DOM update
 		if (animate && document.startViewTransition) {
+			// Temporarily disable CSS transitions and apply DOM changes to measure target height
+			this.ref.container.style.transition = 'none';
+			const initialHeight = this.ref.container.offsetHeight;
+
 			const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
 			let staggerCss = '';
 			let staggerIndex = 0;
@@ -643,10 +647,34 @@ class FilterableList extends gia.Component {
 			});
 			this._currentTransition = transition;
 
-			transition.ready.catch(() => {});
+			let heightAnimation = null;
+
+			transition.ready.then(() => {
+				const targetHeight = this.ref.container.offsetHeight;
+				if (initialHeight !== targetHeight) {
+					heightAnimation = this.ref.container.animate(
+						[
+							{ height: `${initialHeight}px` },
+							{ height: `${targetHeight}px` }
+						],
+						{
+							duration: 400,
+							easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+							fill: 'forwards'
+						}
+					);
+				}
+			}).catch(() => {});
+
 			transition.finished.catch(() => {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
+				this.ref.container.style.transition = '';
+
+				if (heightAnimation) {
+					heightAnimation.cancel();
+				}
+
 				if (styleEl) {
 					styleEl.remove();
 				}
