@@ -164,7 +164,7 @@ class VideoHolder extends gia.Component {
 					if (isPlaying) {
 						iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
 					} else {
-						iconShape.setAttribute('d', 'M 5 3 L 19 12 L 19 12 L 5 21 Z M 5 3 L 19 12 L 19 12 L 5 21 Z');
+						iconShape.setAttribute('d', 'M 5 3 L 12 7.5 L 12 16.5 L 5 21 Z M 12 7.5 L 19 12 L 19 12 L 12 16.5 Z');
 					}
 				}
 			}
