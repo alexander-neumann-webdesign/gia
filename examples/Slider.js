@@ -104,8 +104,10 @@ class Slider extends gia.Component {
 		this.ref.dot.forEach((dot, index) => {
 			if (index === selected) {
 				dot.classList.add('is-selected');
+				dot.setAttribute('aria-current', 'true');
 			} else {
 				dot.classList.remove('is-selected');
+				dot.removeAttribute('aria-current');
 			}
 		});
 	}
