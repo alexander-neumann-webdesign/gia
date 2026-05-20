@@ -127,6 +127,10 @@ class MatterPhysicsBackground extends gia.Component {
         const mouse = Mouse.create(this.render.canvas);
 
         this.cursorBody = Bodies.circle(-1000, -1000, this.options.cursorSize, {
+            collisionFilter: {
+                category: 0x0002,
+                mask: 0xFFFFFFFF
+            },
             isStatic: true,
             render: { visible: false }
         });
@@ -235,7 +239,11 @@ class MatterPhysicsBackground extends gia.Component {
         const options = {
             restitution: this.options.restitution,
             density: this.options.density,
-            render: { fillStyle }
+            render: { fillStyle },
+            collisionFilter: {
+                category: 0x0001,
+                mask: 0xFFFFFFFF ^ 0x0002
+            }
         };
 
         let body;
@@ -256,6 +264,12 @@ class MatterPhysicsBackground extends gia.Component {
         Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.5);
 
         Composite.add(this.engine.world, body);
+
+        setTimeout(() => {
+            if (body) {
+                body.collisionFilter.mask = 0xFFFFFFFF;
+            }
+        }, 500);
     }
 
     handlePointerDown(e) {
