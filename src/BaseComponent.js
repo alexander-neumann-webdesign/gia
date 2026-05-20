@@ -172,13 +172,11 @@ export default class Component {
 		if (!globalResizeObserver) {
 			globalResizeObserver = new ResizeObserver((entries) => {
 				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
-				// and pre-allocate the entry array to avoid creating a new array on every iteration
-				const entryArr = [null];
 				for (let i = 0; i < entries.length; i++) {
 					const entry = entries[i];
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
-						entryArr[0] = entry;
+						const entryArr = [entry];
 						for (const cb of callbacks) {
 							cb(entryArr);
 						}
@@ -248,13 +246,11 @@ export default class Component {
 		if (!observerData) {
 			const observer = new IntersectionObserver((entries) => {
 				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
-				// and pre-allocate the entry array to avoid creating a new array on every iteration
-				const entryArr = [null];
 				for (let i = 0; i < entries.length; i++) {
 					const entry = entries[i];
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
-						entryArr[0] = entry;
+						const entryArr = [entry];
 						for (const cb of callbacks) {
 							cb(entryArr);
 						}
