@@ -58,11 +58,16 @@ class FilterableList extends gia.Component {
 				func(...lastArgs);
 			}
 		};
-		return function executedFunction(...args) {
+		const executedFunction = function(...args) {
 			lastArgs = args;
 			clearTimeout(timeout);
 			timeout = setTimeout(later, wait);
 		};
+		executedFunction.cancel = function() {
+			clearTimeout(timeout);
+			lastArgs = null;
+		};
+		return executedFunction;
 	}
 
 
@@ -376,6 +381,7 @@ class FilterableList extends gia.Component {
 			}
 			this.applyChangesDebounced();
 		} else {
+			this.applyChangesDebounced.cancel();
 			this.applyChanges();
 		}
 	}
@@ -463,6 +469,15 @@ class FilterableList extends gia.Component {
 	}
 
 	updateList(animate = true) {
+		// Cancel any ongoing transitions
+		if (this._currentTransition) {
+			this._currentTransition.skipTransition();
+		}
+		if (this._heightAnimation) {
+			this._heightAnimation.cancel();
+			this._heightAnimation = null;
+		}
+
 		// Filter and sort items array without DOM changes
 		const items = this.ref.item;
 		const visibleItems = [];
@@ -630,7 +645,6 @@ class FilterableList extends gia.Component {
 					staggerIndex++;
 				}
 			}
-			this.ref.container.style.viewTransitionName = `${componentId}-container`;
 
 			let styleEl = null;
 			if (staggerCss) {
@@ -663,16 +677,24 @@ class FilterableList extends gia.Component {
 							fill: 'forwards'
 						}
 					);
+					if (this._currentTransition === transition) {
+						this._heightAnimation = heightAnimation;
+					} else {
+						heightAnimation.cancel();
+					}
 				}
 			}).catch(() => {});
 
 			transition.finished.catch(() => {
 				// Ignore AbortError when transition is skipped
 			}).finally(() => {
-				this.ref.container.style.transition = '';
+				if (this._currentTransition === transition) {
+					this.ref.container.style.transition = '';
+				}
 
-				if (heightAnimation) {
+				if (this._heightAnimation === heightAnimation && heightAnimation) {
 					heightAnimation.cancel();
+					this._heightAnimation = null;
 				}
 
 				if (styleEl) {
@@ -683,8 +705,8 @@ class FilterableList extends gia.Component {
 					for (let i = 0; i < visibleItems.length; i++) {
 						visibleItems[i].style.viewTransitionName = '';
 					}
-					this.ref.container.style.viewTransitionName = '';
 					document.documentElement.style.viewTransitionName = '';
+					this._currentTransition = null;
 				}
 			});
 		} else {
