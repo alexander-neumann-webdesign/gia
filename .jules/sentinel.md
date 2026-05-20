@@ -45,3 +45,8 @@
 **Vulnerability:** XSS vulnerability found in `Form.js` due to caching `this.ref.submitBtn.innerHTML` and later injecting it back using string interpolation (`${this.originalSubmitBtnHTML}`) alongside a spinner SVG. This allows DOM-based XSS if the initial button HTML is ever influenced by user input.
 **Learning:** Reading `innerHTML` from the DOM, modifying it via string interpolation, and setting it back is a dangerous pattern. Even if the data originates from the DOM itself, it creates a pathway for DOM-based XSS if the initial DOM state is user-controlled.
 **Prevention:** Avoid caching and re-injecting `innerHTML` using string interpolation. Use safer DOM APIs like `insertAdjacentHTML` with static strings for adding elements (like a spinner) and `.remove()` to remove them, leaving the original content untouched.
+
+## 2024-05-20 - [DOM DoS via Prototype Pollution in Component Refs]
+**Vulnerability:** The component `_ref` initialization used a standard dictionary object `const refsByName = {}` to group matched DOM elements. An attacker could add an element with `data-ref="__proto__"`. Since `list` would evaluate to `Object.prototype`, trying to call `list.push(element)` triggers a DOM DoS crashing the page because `.push` doesn't exist on `Object.prototype`.
+**Learning:** Initializing dictionaries for grouping keys from DOM attributes as plain objects `{}` is inherently unsafe in JS, as reserved keys like `__proto__` can collide with built-in properties causing fatal errors on basic operations.
+**Prevention:** Always use `Object.create(null)` to create safe dictionary objects when caching or storing state parsed from potentially attacker-controlled DOM attributes.
