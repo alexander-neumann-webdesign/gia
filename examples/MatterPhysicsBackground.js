@@ -10,7 +10,8 @@ class MatterPhysicsBackground extends gia.Component {
             shapeSize: 40,
             wallThickness: 60,
             density: 0.04,
-            restitution: 0.8
+            restitution: 0.8,
+            cursorSize: 20
         };
 
         this.handleBodyResize = this.handleBodyResize.bind(this);
@@ -125,7 +126,7 @@ class MatterPhysicsBackground extends gia.Component {
         // add mouse control
         const mouse = Mouse.create(this.render.canvas);
 
-        this.cursorBody = Bodies.circle(-1000, -1000, 60, {
+        this.cursorBody = Bodies.circle(-1000, -1000, this.options.cursorSize, {
             isStatic: true,
             render: { visible: false }
         });
