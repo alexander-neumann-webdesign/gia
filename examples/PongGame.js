@@ -137,9 +137,12 @@ class PongGame extends gia.Component {
             if (this.ref.pauseToggle) {
                 const label = this.state.isPaused ? 'Play Background Animation' : 'Pause Background Animation';
                 this.ref.pauseToggle.setAttribute('aria-label', label);
-                this.ref.pauseToggle.innerHTML = this.state.isPaused
-                    ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
-                    : '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                let svgPath = this.ref.pauseToggle.querySelector('path');
+                if (svgPath) {
+                    const playD = "M 8 5 V 19 L 19 12 Z M 8 5 V 19 L 19 12 Z";
+                    const pauseD = "M 6 5 L 10 5 L 10 19 L 6 19 Z M 14 5 L 18 5 L 18 19 L 14 19 Z";
+                    svgPath.setAttribute('d', this.state.isPaused ? playD : pauseD);
+                }
             }
         }
 
@@ -347,7 +350,7 @@ EXPECTED HTML
 
         <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation">
             <!-- Icon will be injected by component state -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path style="transition: d 0.3s ease;" d="M 6 5 L 10 5 L 10 19 L 6 19 Z M 14 5 L 18 5 L 18 19 L 14 19 Z"/></svg>
         </button>
     </div>
 </section>

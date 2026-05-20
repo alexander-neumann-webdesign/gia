@@ -287,10 +287,10 @@ class CustomCursor extends gia.Component {
         if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
             // Remove old media/icons if we are switching away from those specific contents
             if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
-                this.ref.mediaBox.innerHTML = '';
+                this.ref.mediaBox.replaceChildren();
             }
             if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
-                this.ref.icon.innerHTML = '';
+                this.ref.icon.replaceChildren();
             }
 
             // Clear inline styles if we are leaving a snapped state
@@ -319,7 +319,7 @@ class CustomCursor extends gia.Component {
             }
 
             if (this.ref.mediaBox && targetState === 'media') {
-                this.ref.mediaBox.innerHTML = '';
+                this.ref.mediaBox.replaceChildren();
                 let mediaElement;
                 if (targetImg) {
                     mediaElement = document.createElement('img');
