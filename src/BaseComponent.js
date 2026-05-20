@@ -64,9 +64,13 @@ export default class Component {
 			list.push(element);
 		}
 
-		// ⚡ BOLT OPTIMIZATION: Object.keys().length is faster than for...in + hasOwnProperty
-		const itemsKeys = items ? Object.keys(items) : [];
-		const itemsEmpty = itemsKeys.length === 0;
+		// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
+		// This avoids allocating an array with Object.keys() every time set ref is called
+		let itemsEmpty = true;
+		for (const _k in items) {
+			itemsEmpty = false;
+			break;
+		}
 
 		if (itemsEmpty) {
 			const refKeys = Object.keys(refsByName);
@@ -87,6 +91,7 @@ export default class Component {
 			}
 		} else {
 			this._ref = {};
+			const itemsKeys = items ? Object.keys(items) : [];
 			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
 			for (let i = 0; i < itemsKeys.length; i++) {
 				const key = itemsKeys[i];
@@ -532,13 +537,23 @@ export default class Component {
 
 	_flushStateChanges() {
 		// Apply batched attribute changes
-		// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
-		const attrKeys = this._pendingAttributeChanges ? Object.keys(this._pendingAttributeChanges) : [];
-		for (let i = 0; i < attrKeys.length; i++) {
-			const attrName = attrKeys[i];
-			const value = this._pendingAttributeChanges[attrName];
-			if (this.element.getAttribute(attrName) !== value) {
-				this.element.setAttribute(attrName, value);
+		// ⚡ BOLT OPTIMIZATION: Fast-failing for...in empty check to avoid Object.keys() array allocation
+		// when no attributes changed (common in hot paths like games or parallax).
+		let hasAttrChanges = false;
+		for (const _k in this._pendingAttributeChanges) {
+			hasAttrChanges = true;
+			break;
+		}
+
+		if (hasAttrChanges) {
+			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+			const attrKeys = Object.keys(this._pendingAttributeChanges);
+			for (let i = 0; i < attrKeys.length; i++) {
+				const attrName = attrKeys[i];
+				const value = this._pendingAttributeChanges[attrName];
+				if (this.element.getAttribute(attrName) !== value) {
+					this.element.setAttribute(attrName, value);
+				}
 			}
 		}
 
