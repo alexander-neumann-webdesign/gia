@@ -114,7 +114,7 @@ let x = class {
     return this._ref;
   }
   set ref(e) {
-    const t = `${u.get("attrPrefix")}-ref`, n = _(`[${t}]`, this.element), o = {};
+    const t = `${u.get("attrPrefix")}-ref`, n = _(`[${t}]`, this.element), o = /* @__PURE__ */ Object.create(null);
     for (let r = 0; r < n.length; r++) {
       const c = n[r], l = c.getAttribute(t);
       let f = o[l];

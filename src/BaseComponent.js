@@ -51,7 +51,8 @@ export default class Component {
 		const attrName = `${config.get("attrPrefix")}-ref`;
 		const allRefs = queryAll(`[${attrName}]`, this.element);
 
-		const refsByName = {};
+		// 🛡️ SECURITY: Prevent DOM DoS / Prototype Pollution by using Object.create(null)
+		const refsByName = Object.create(null);
 		// ⚡ BOLT OPTIMIZATION: Avoid double lookup by caching the array reference
 		for (let i = 0; i < allRefs.length; i++) {
 			const element = allRefs[i];
