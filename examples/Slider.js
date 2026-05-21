@@ -75,8 +75,75 @@ class Slider extends gia.Component {
 			this.setupDots();
 		}
 
+		this.setupTween();
+
 		// Initial state
 		this.onSelect();
+	}
+
+	setupTween() {
+		if (!this.emblaApi) return;
+
+		let slideNodes = this.emblaApi.slideNodes();
+		const TWEEN_FACTOR_BASE = 0.8;
+		let tweenFactor = 0;
+
+		const numberWithinRange = (number, min, max) => Math.min(Math.max(number, min), max);
+
+		const setTweenFactor = () => {
+			tweenFactor = TWEEN_FACTOR_BASE * this.emblaApi.scrollSnapList().length;
+		};
+
+		const setSlideNodes = () => {
+			slideNodes = this.emblaApi.slideNodes();
+		};
+
+		const tweenOpacity = (embla, eventName) => {
+			const engine = embla.internalEngine();
+			const scrollProgress = embla.scrollProgress();
+			const slidesInView = embla.slidesInView();
+			const isScrollEvent = eventName === "scroll";
+
+			embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
+				let diffToTarget = scrollSnap - scrollProgress;
+				const slidesInSnap = engine.slideRegistry[snapIndex];
+
+				slidesInSnap.forEach((slideIndex) => {
+					if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
+
+					if (engine.options.loop) {
+						engine.slideLooper.loopPoints.forEach((loopItem) => {
+							const target = loopItem.target();
+
+							if (slideIndex === loopItem.index && target !== 0) {
+								const sign = Math.sign(target);
+
+								if (sign === -1) {
+									diffToTarget = scrollSnap - (1 + scrollProgress);
+								}
+								if (sign === 1) {
+									diffToTarget = scrollSnap + (1 - scrollProgress);
+								}
+							}
+						});
+					}
+
+					const tweenValue = 1 - Math.abs(diffToTarget * tweenFactor);
+					const opacity = numberWithinRange(tweenValue, 0, 1).toString();
+					slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
+				});
+			});
+		};
+
+		setTweenFactor();
+		tweenOpacity(this.emblaApi);
+
+		this.emblaApi
+			.on("reInit", setSlideNodes)
+			.on("reInit", setTweenFactor)
+			.on("reInit", tweenOpacity)
+			.on("scroll", tweenOpacity)
+			.on("slideFocus", tweenOpacity);
 	}
 
 	setupDots() {
@@ -87,7 +154,16 @@ class Slider extends gia.Component {
 			const dot = document.createElement('button');
 			dot.classList.add('embla__dot');
 			dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+			dot.tabIndex = 0;
 			dot.addEventListener('click', () => this.emblaApi.scrollTo(index));
+			dot.addEventListener('keydown', (event) => {
+				if (event.key === 'Enter' || event.key === ' ') {
+					if (event.key === ' ') {
+						event.preventDefault(); // Prevent space from scrolling the page
+					}
+					this.emblaApi.scrollTo(index);
+				}
+			});
 			this.ref.dotsContainer.appendChild(dot);
 			return dot;
 		});
@@ -105,9 +181,11 @@ class Slider extends gia.Component {
 			if (index === selected) {
 				dot.classList.add('is-selected');
 				dot.setAttribute('aria-current', 'true');
+				dot.tabIndex = -1;
 			} else {
 				dot.classList.remove('is-selected');
 				dot.removeAttribute('aria-current');
+				dot.tabIndex = 0;
 			}
 		});
 	}
