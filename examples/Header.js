@@ -167,6 +167,10 @@ gia.register(Header);
  *   width: 100%;
  *   transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
  *
+ *   // Recommended: give header a view-transition-name and elevate it
+ *   // so it stays above transitioning elements
+ *   view-transition-name: main-header;
+ *
  *   // Default values when scrubTransition is false
  *   padding: 2rem 0;
  *   background-color: transparent;
@@ -187,5 +191,9 @@ gia.register(Header);
  *   &[data-is-hidden="true"] {
  *     transform: translateY(-100%);
  *   }
+ * }
+ *
+ * ::view-transition-group(main-header) {
+ *   z-index: 9999;
  * }
  */
