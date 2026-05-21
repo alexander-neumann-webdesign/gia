@@ -872,6 +872,8 @@ dialog[data-component="OffCanvasMenu"] {
     height: 100%;
     display: flex;
     flex-direction: column;
+    opacity: var(--card-slide-visibility, 1);
+    scale: calc(0.9 + 0.1 * var(--card-slide-visibility, 1));
 
     img {
       width: 100%;
