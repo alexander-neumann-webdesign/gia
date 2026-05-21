@@ -277,7 +277,7 @@ let x = class {
    * @return {Promise}
    */
   loadScript(e, t) {
-    if (t && window[t])
+    if (t && window[t] && !(window[t] instanceof Node))
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
     return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((o, i) => {
