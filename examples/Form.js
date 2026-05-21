@@ -357,50 +357,8 @@ class Form extends gia.Component {
 		let rawData = new FormData(this.formElement);
 		let data = new FormData();
 
-		// 1. Automatically fix duplicate field names
-		let uniqueKeys = [...new Set(rawData.keys())];
-
-		uniqueKeys.forEach((key) => {
-			let values = rawData.getAll(key);
-
-			if (values.length > 1 && !key.endsWith("[]")) {
-				values.forEach((value) => {
-					data.append(key + "[]", value);
-				});
-			} else {
-				values.forEach((value) => {
-					data.append(key, value);
-				});
-			}
-		});
-
-		// 2. Smart Detection Logic for Name and Email
-		let detectedName = "";
-		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
-		if (nameInput && nameInput.value.trim() !== "") {
-			detectedName = nameInput.value;
-		} else {
-			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
-			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
-			let parts = [];
-			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
-			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
-			if (parts.length > 0) detectedName = parts.join(" ");
-		}
-
-		let detectedEmail = "";
-		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
-		if (emailInput && emailInput.value.trim() !== "") {
-			detectedEmail = emailInput.value;
-		} else {
-			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
-			if (fallbackEmail && fallbackEmail.value) {
-				detectedEmail = fallbackEmail.value;
-			}
-		}
-
-		if (detectedName) data.append("detected-name", detectedName);
-		if (detectedEmail) data.append("detected-email", detectedEmail);
+		this._normalizeFormData(rawData, data);
+		this._detectNameAndEmail(data);
 
 		// If an action is provided in options, append it for WordPress AJAX compatibility
 		if (this.options.action) {
@@ -463,6 +421,56 @@ class Form extends gia.Component {
 			console.error("Form component error:", error);
 			this.setState({ isSubmitting: false, isError: true });
 		}
+	}
+
+	_normalizeFormData(rawData, data) {
+		// 1. Automatically fix duplicate field names
+		let uniqueKeys = [...new Set(rawData.keys())];
+
+		for (let i = 0; i < uniqueKeys.length; i++) {
+			const key = uniqueKeys[i];
+			let values = rawData.getAll(key);
+
+			if (values.length > 1 && !key.endsWith("[]")) {
+				for (let j = 0; j < values.length; j++) {
+					data.append(key + "[]", values[j]);
+				}
+			} else {
+				for (let j = 0; j < values.length; j++) {
+					data.append(key, values[j]);
+				}
+			}
+		}
+	}
+
+	_detectNameAndEmail(data) {
+		// 2. Smart Detection Logic for Name and Email
+		let detectedName = "";
+		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
+		if (nameInput && nameInput.value.trim() !== "") {
+			detectedName = nameInput.value;
+		} else {
+			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
+			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
+			let parts = [];
+			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
+			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
+			if (parts.length > 0) detectedName = parts.join(" ");
+		}
+
+		let detectedEmail = "";
+		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
+		if (emailInput && emailInput.value.trim() !== "") {
+			detectedEmail = emailInput.value;
+		} else {
+			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
+			if (fallbackEmail && fallbackEmail.value) {
+				detectedEmail = fallbackEmail.value;
+			}
+		}
+
+		if (detectedName) data.append("detected-name", detectedName);
+		if (detectedEmail) data.append("detected-email", detectedEmail);
 	}
 
 	stateChange(stateChanges) {
