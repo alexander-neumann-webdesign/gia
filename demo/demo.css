@@ -1551,4 +1551,54 @@ button[data-component=ClipboardCopy][data-status=error] {
   margin-left: 4px;
 }
 
+/* --- RangeSlider (noUiSlider) Overrides --- */
+.noUi-target {
+  background: #e9ecef;
+  border-radius: 100px;
+  border: none;
+  box-shadow: inset 0 1px 1px #F0F0F0, 0 3px 6px -5px #BBB;
+}
+
+.noUi-horizontal {
+  height: 6px;
+}
+
+.noUi-connects {
+  border-radius: 100px;
+}
+
+.noUi-connect {
+  background: #007bff !important;
+}
+
+.noUi-horizontal .noUi-handle {
+  width: 20px;
+  height: 20px;
+  right: -10px;
+  top: -7px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #007bff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+
+.noUi-horizontal .noUi-handle:before,
+.noUi-horizontal .noUi-handle:after,
+.noUi-vertical .noUi-handle:before,
+.noUi-vertical .noUi-handle:after {
+  display: none;
+}
+
+.noUi-handle:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.noUi-handle:focus,
+.noUi-handle:active {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
 /*# sourceMappingURL=demo.css.map */
