@@ -20,3 +20,8 @@
 ## 2026-05-21 - [Infinite Loops from Weak Comparison]
 **Learning:** In a codebase using custom state management coupled with native DOM elements, directly assigning a number to an `input.value` automatically serializes it to a string. Validating updates with `input.value !== newValue` triggers an infinite loop when `newValue` is a number because `"10" !== 10` is always true.
 **Action:** When synchronizing state back to `<input type="number">` or `range`, always parse both values into floats before comparing, and ensure you explicitly handle empty strings which resolve to `NaN` to prevent `NaN !== NaN` infinite loops.
+## Extracted large looping methods
+
+**Pattern:** Splitting large iterative methods in array-processing loops (`_filterItems` in lists).
+**Learning:** For extremely large and deeply nested functions that do array traversal, extracting the conditional matching logic into isolated, state-free helper methods (`_isItemVisible`, `_itemMatchesFilter`) drastically improves code clarity and maintainability without incurring noticeable performance penalties, even in `requestAnimationFrame` contexts.
+**Application:** Keep boolean branching isolated from the loop iteration mechanism.
