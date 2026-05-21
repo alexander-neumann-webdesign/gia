@@ -92,6 +92,7 @@ class Slider extends gia.Component {
 			return dot;
 		});
 
+		this.emblaApi.on('scroll', this.updateDots.bind(this));
 		this.emblaApi.on('select', this.updateDots.bind(this));
 		this.emblaApi.on('reInit', this.updateDots.bind(this));
 		this.updateDots();
@@ -99,7 +100,21 @@ class Slider extends gia.Component {
 
 	updateDots() {
 		if (!this.emblaApi || !this.ref.dot) return;
-		const selected = this.emblaApi.selectedScrollSnap();
+
+		let selected = this.emblaApi.selectedScrollSnap();
+		const progress = this.emblaApi.scrollProgress();
+		const snapList = this.emblaApi.scrollSnapList();
+
+		if (snapList && snapList.length > 0 && typeof progress === 'number') {
+			let minDiff = Infinity;
+			for (let i = 0; i < snapList.length; i++) {
+				const diff = Math.abs(snapList[i] - progress);
+				if (diff < minDiff) {
+					minDiff = diff;
+					selected = i;
+				}
+			}
+		}
 
 		this.ref.dot.forEach((dot, index) => {
 			if (index === selected) {
