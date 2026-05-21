@@ -5,7 +5,8 @@ class Slider extends gia.Component {
 		this.options = {
 			loop: true,
 			align: "center",
-			skipSnaps: true
+			skipSnaps: true,
+			tween: false
 		};
 
 		this.ref = {
@@ -75,7 +76,9 @@ class Slider extends gia.Component {
 			this.setupDots();
 		}
 
-		this.setupTween();
+		if (this.options.tween) {
+			this.setupTween();
+		}
 
 		// Initial state
 		this.onSelect();
@@ -156,14 +159,6 @@ class Slider extends gia.Component {
 			dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
 			dot.tabIndex = 0;
 			dot.addEventListener('click', () => this.emblaApi.scrollTo(index));
-			dot.addEventListener('keydown', (event) => {
-				if (event.key === 'Enter' || event.key === ' ') {
-					if (event.key === ' ') {
-						event.preventDefault(); // Prevent space from scrolling the page
-					}
-					this.emblaApi.scrollTo(index);
-				}
-			});
 			this.ref.dotsContainer.appendChild(dot);
 			return dot;
 		});
