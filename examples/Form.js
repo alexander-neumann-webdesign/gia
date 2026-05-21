@@ -39,6 +39,14 @@ class Form extends gia.Component {
 			this.formElement = this.element.querySelector('form');
 		}
 
+		// Accessibility: Enhance form feedback with live region roles
+		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
+			this.ref.successMessage.setAttribute('role', 'status');
+		}
+		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
+			this.ref.errorMessage.setAttribute('role', 'alert');
+		}
+
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
 

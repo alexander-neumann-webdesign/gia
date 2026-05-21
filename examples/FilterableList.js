@@ -619,6 +619,12 @@ class FilterableList extends gia.Component {
 			let staggerCss = '';
 			let staggerIndex = 0;
 
+			if (this.ref.announcer) {
+				const announcerName = `${componentId}-announcer`;
+				this.ref.announcer.style.viewTransitionName = announcerName;
+				staggerCss += `::view-transition-group(${announcerName}) { animation-duration: 0.4s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }\n`;
+			}
+
 			const maxDelay = this.options.maxStaggerDelay !== null && this.options.maxStaggerDelay !== undefined
 				? this.options.maxStaggerDelay
 				: this.options.staggerDelay * 12;
@@ -705,6 +711,9 @@ class FilterableList extends gia.Component {
 					for (let i = 0; i < visibleItems.length; i++) {
 						visibleItems[i].style.viewTransitionName = '';
 					}
+					if (this.ref.announcer) {
+						this.ref.announcer.style.viewTransitionName = '';
+					}
 					document.documentElement.style.viewTransitionName = '';
 					this._currentTransition = null;
 				}
@@ -733,37 +742,34 @@ class FilterableList extends gia.Component {
 		for (let i = 0; i < visibleItems.length; i++) {
 			this.ref.container.appendChild(visibleItems[i]);
 		}
+
+		const count = visibleItems.length;
+
+		for (let i = 0; i < this.ref.announcerCount.length; i++) {
+			this.ref.announcerCount[i].textContent = count;
+		}
+
+		if (this.ref.announcerSingular) {
+			this.ref.announcerSingular.hidden = count !== 1;
+		}
+
+		if (this.ref.announcerPlural) {
+			this.ref.announcerPlural.hidden = count === 1 || count === 0;
+		}
+
+		if (this.ref.announcerEmpty) {
+			this.ref.announcerEmpty.hidden = count > 0;
+		}
 	}
 
 	updateControlStates(visibleCount) {
 		// Let's use setState to trigger stateChange for UI updates
 		this.setState({
 			filtersUpdated: Date.now(), // Dummy state to trigger stateChange
-			resultsCount: visibleCount
 		});
 	}
 
 	stateChange(stateChanges) {
-		if ('resultsCount' in stateChanges) {
-			const count = stateChanges.resultsCount;
-
-			for (let i = 0; i < this.ref.announcerCount.length; i++) {
-				this.ref.announcerCount[i].textContent = count;
-			}
-
-			if (this.ref.announcerSingular) {
-				this.ref.announcerSingular.hidden = count !== 1;
-			}
-
-			if (this.ref.announcerPlural) {
-				this.ref.announcerPlural.hidden = count === 1 || count === 0;
-			}
-
-			if (this.ref.announcerEmpty) {
-				this.ref.announcerEmpty.hidden = count > 0;
-			}
-		}
-
 		if ('filtersUpdated' in stateChanges) {
 			// Update filter elements
 			for (let i = 0; i < this.ref.filter.length; i++) {
@@ -809,7 +815,21 @@ class FilterableList extends gia.Component {
 						newVal = el.type === 'range' ? (el.defaultValue || '') : '';
 					}
 
-					if (el.value !== newVal) {
+					let isDifferent = false;
+					if (el.type === 'range' || el.type === 'number') {
+						const num1 = parseFloat(el.value);
+						const num2 = parseFloat(newVal);
+						// Handle empty strings causing NaN !== NaN
+						if (isNaN(num1) && isNaN(num2)) {
+							isDifferent = String(el.value) !== String(newVal);
+						} else {
+							isDifferent = num1 !== num2;
+						}
+					} else {
+						isDifferent = el.value !== String(newVal);
+					}
+
+					if (isDifferent) {
 						el.value = newVal;
 						el.dispatchEvent(new Event('change', { bubbles: true }));
 					}

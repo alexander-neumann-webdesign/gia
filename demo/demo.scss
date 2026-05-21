@@ -57,7 +57,7 @@ details[data-component="Accordion"] {
   }
 
   .content {
-    padding: 1rem 0;
+    padding: 0 1rem 1rem;
 
     > :first-child {
       margin-top: 0;
@@ -74,6 +74,13 @@ details[data-component="Accordion"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
 
     &::-webkit-details-marker {
       display: none;

@@ -70,6 +70,10 @@ class CustomCursor extends gia.Component {
     }
 
     mount() {
+        if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+            return;
+        }
+
         if (this.prefersReducedMotion) {
             // If user prefers reduced motion, disable friction for instant snapping
             this.options.friction = 1;

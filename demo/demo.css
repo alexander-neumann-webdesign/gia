@@ -53,7 +53,7 @@ details[data-component=Accordion][open]::details-content {
   opacity: 1;
 }
 details[data-component=Accordion] .content {
-  padding: 1rem 0;
+  padding: 0 1rem 1rem;
 }
 details[data-component=Accordion] .content > :first-child {
   margin-top: 0;
@@ -68,6 +68,12 @@ details[data-component=Accordion] summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+details[data-component=Accordion] summary:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 details[data-component=Accordion] summary::-webkit-details-marker {
   display: none;
