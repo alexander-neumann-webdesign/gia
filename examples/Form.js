@@ -573,10 +573,10 @@ gia.register(Form);
  *     <button type="submit" data-ref="submitBtn">Send Message</button>
  *   </form>
  *
- *   <div data-ref="successMessage" hidden class="form-success">
+ *   <div data-ref="successMessage" hidden class="form-success" role="status">
  *     Thank you for your message. It has been sent.
  *   </div>
- *   <div data-ref="errorMessage" hidden class="form-error">
+ *   <div data-ref="errorMessage" hidden class="form-error" role="alert">
  *     There was an error trying to send your message. Please try again later.
  *   </div>
  * </div>
