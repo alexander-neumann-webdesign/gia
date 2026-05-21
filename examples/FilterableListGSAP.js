@@ -38,6 +38,14 @@ class FilterableListGSAP extends gia.Component {
 		this.handleShowMoreClick = this.handleShowMoreClick.bind(this);
 	}
 
+
+	async require() {
+		await Promise.all([
+			this.loadScript("gsap", "gsap"),
+			this.loadScript("Flip", "Flip"),
+		]);
+	}
+
 	_syncOutputs() {
 		for (const [id, value] of this._pendingOutputs.entries()) {
 			const outputEl = document.querySelector(`output[for="${id}"]`);
