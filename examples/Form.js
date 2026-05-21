@@ -210,6 +210,43 @@ class Form extends gia.Component {
 				fileList.appendChild(fileItem);
 			});
 
+			const addMoreBtn = document.createElement('button');
+			addMoreBtn.type = 'button';
+			addMoreBtn.className = 'add-more-files-btn';
+			addMoreBtn.textContent = '+ Add more files';
+			addMoreBtn.style.marginTop = '1rem';
+			addMoreBtn.style.padding = '0.5rem 1rem';
+			addMoreBtn.style.cursor = 'pointer';
+			addMoreBtn.style.position = 'relative';
+			addMoreBtn.style.zIndex = '10';
+
+			addMoreBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				const tempInput = document.createElement('input');
+				tempInput.type = 'file';
+				if (fileInput.multiple) tempInput.multiple = true;
+				if (fileInput.accept) tempInput.accept = fileInput.accept;
+
+				tempInput.addEventListener('change', (e) => {
+					if (tempInput.files && tempInput.files.length > 0) {
+						const dt = new DataTransfer();
+						if (fileInput.files) {
+							for (let i = 0; i < fileInput.files.length; i++) {
+								dt.items.add(fileInput.files[i]);
+							}
+						}
+						for (let i = 0; i < tempInput.files.length; i++) {
+							dt.items.add(tempInput.files[i]);
+						}
+						fileInput.files = dt.files;
+						fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+				});
+
+				tempInput.click();
+			});
+
+			fileList.appendChild(addMoreBtn);
 			dropzone.appendChild(fileList);
 		} else {
 			if (label) {
