@@ -14,7 +14,8 @@ class RangeSlider extends gia.Component {
                 'min': 0,
                 'max': 100
             },
-            step: 1
+            step: 1,
+            tooltips: true
         };
 
         this.sliderInstance = null;
