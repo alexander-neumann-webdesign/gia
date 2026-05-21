@@ -404,9 +404,28 @@
                     </label>
                   </fieldset>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                  <label for="satisfaction" style="display: block; margin-bottom: 0.5rem;">Satisfaction (Range)</label>
-                  <input type="range" id="satisfaction" name="satisfaction" min="1" max="10" value="5" style="width: 100%;" />
+                <div style="margin-bottom: 1.5rem;">
+                  <label style="display: block; margin-bottom: 0.5rem;">Satisfaction (1-10)</label>
+                  <div data-component="RangeSlider" data-options='{"start": [5], "connect": "lower", "range": {"min": 1, "max": 10}, "step": 1}' style="margin-bottom: 1rem;">
+                    <div data-ref="slider"></div>
+                    <input type="hidden" name="satisfaction" data-ref="inputs" />
+                  </div>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                  <label style="display: block; margin-bottom: 0.5rem;">Budget Range</label>
+                  <div data-component="RangeSlider" data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}' style="margin-bottom: 1rem;">
+                    <div data-ref="slider"></div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                      <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
+                          Min Budget
+                          <input type="number" name="budget_min" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                      </label>
+                      <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
+                          Max Budget
+                          <input type="number" name="budget_max" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                      </label>
+                    </div>
+                  </div>
                 </div>
                 <div style="margin-bottom: 1rem;">
                   <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
