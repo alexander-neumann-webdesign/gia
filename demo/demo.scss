@@ -186,7 +186,7 @@ button[data-component="ClipboardCopy"] {
 }
 
 /* --- FilterableList --- */
-div[data-component="FilterableList"] {
+div[data-component="FilterableList"], div[data-component="FilterableListGSAP"] {
   .results-announcer {
     margin-bottom: 1rem;
     font-weight: bold;
