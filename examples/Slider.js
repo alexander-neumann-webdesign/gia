@@ -5,7 +5,7 @@ class Slider extends gia.Component {
 		this.options = {
 			loop: true,
 			align: "center",
-			skipSnaps: false
+			skipSnaps: true
 		};
 
 		this.ref = {
