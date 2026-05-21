@@ -484,66 +484,7 @@ class FilterableListGSAP extends gia.Component {
 
 		for (let index = 0; index < items.length; index++) {
 			const item = items[index];
-			let isVisible = true;
-
-			for (const type in this.activeFilters) {
-				const activeValues = this.activeFilters[type];
-				if (activeValues && activeValues.length > 0) {
-					let baseType = type;
-					let operator = 'eq';
-
-					if (type.endsWith('-min')) {
-						baseType = type.replace('-min', '');
-						operator = 'min';
-					} else if (type.endsWith('-max')) {
-						baseType = type.replace('-max', '');
-						operator = 'max';
-					} else if (type.endsWith('-includes')) {
-						baseType = type.replace('-includes', '');
-						operator = 'includes';
-					}
-
-					const cached = item._dataCache[baseType];
-					if (!cached) {
-						isVisible = false;
-						break;
-					}
-
-					let hasMatch = false;
-					for (let i = 0; i < activeValues.length; i++) {
-						const filterVal = activeValues[i];
-
-						if (operator === 'min') {
-							const numFilterVal = parseFloat(filterVal);
-							if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
-								hasMatch = true;
-								break;
-							}
-						} else if (operator === 'max') {
-							const numFilterVal = parseFloat(filterVal);
-							if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
-								hasMatch = true;
-								break;
-							}
-						} else if (operator === 'includes') {
-							if (this.fuzzyMatch(cached.raw, filterVal)) {
-								hasMatch = true;
-								break;
-							}
-						} else {
-							if (cached.array.includes(filterVal)) {
-								hasMatch = true;
-								break;
-							}
-						}
-					}
-
-					if (!hasMatch) {
-						isVisible = false;
-						break;
-					}
-				}
-			}
+			const isVisible = this._isItemVisible(item);
 
 			if (isVisible) {
 				if (this.options.maxItemCount > 0 && currentItemsVisibleCount >= this.options.maxItemCount) {
@@ -559,6 +500,65 @@ class FilterableListGSAP extends gia.Component {
 		}
 
 		return { visibleItems, hiddenItems, currentItemsHiddenBehindMoreButtonCount };
+	}
+
+	_isItemVisible(item) {
+		for (const type in this.activeFilters) {
+			const activeValues = this.activeFilters[type];
+			if (activeValues && activeValues.length > 0) {
+				if (!this._itemMatchesFilter(item, type, activeValues)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	_itemMatchesFilter(item, type, activeValues) {
+		let baseType = type;
+		let operator = 'eq';
+
+		if (type.endsWith('-min')) {
+			baseType = type.replace('-min', '');
+			operator = 'min';
+		} else if (type.endsWith('-max')) {
+			baseType = type.replace('-max', '');
+			operator = 'max';
+		} else if (type.endsWith('-includes')) {
+			baseType = type.replace('-includes', '');
+			operator = 'includes';
+		}
+
+		const cached = item._dataCache[baseType];
+		if (!cached) {
+			return false;
+		}
+
+		for (let i = 0; i < activeValues.length; i++) {
+			const filterVal = activeValues[i];
+
+			if (operator === 'min') {
+				const numFilterVal = parseFloat(filterVal);
+				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
+					return true;
+				}
+			} else if (operator === 'max') {
+				const numFilterVal = parseFloat(filterVal);
+				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
+					return true;
+				}
+			} else if (operator === 'includes') {
+				if (this.fuzzyMatch(cached.raw, filterVal)) {
+					return true;
+				}
+			} else {
+				if (cached.array.includes(filterVal)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	_updateShowMoreVisibility(hiddenBehindMoreCount) {
