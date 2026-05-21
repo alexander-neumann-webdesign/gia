@@ -1,1 +1,0 @@
-The JS logic for `tween` is already implemented in `examples/Slider.js` and setting `tween: true` in HTML correctly triggers it. Furthermore, Playwright test with screenshots confirmed that the opacity and scale variables are successfully extracted from computed styles.
