@@ -163,6 +163,8 @@ class Form extends gia.Component {
 			fileList.className = 'form-file-list';
 			fileList.style.marginTop = '1rem';
 			fileList.style.textAlign = 'left';
+			fileList.style.position = 'relative';
+			fileList.style.zIndex = '10';
 
 			Array.from(fileInput.files).forEach(file => {
 				const fileItem = document.createElement('div');
