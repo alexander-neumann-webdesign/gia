@@ -476,21 +476,9 @@ class FilterableListGSAP extends gia.Component {
 		this.updateList(true);
 	}
 
-	updateList(animate = true) {
-		// Cancel any ongoing transitions
-		if (this._currentTransition) {
-			this._currentTransition.skipTransition();
-		}
-		if (this._heightAnimation) {
-			this._heightAnimation.cancel();
-			this._heightAnimation = null;
-		}
-
-		// Filter and sort items array without DOM changes
-		const items = this.ref.item;
+	_filterItems(items) {
 		const visibleItems = [];
 		const hiddenItems = [];
-
 		let currentItemsVisibleCount = 0;
 		let currentItemsHiddenBehindMoreButtonCount = 0;
 
@@ -498,13 +486,11 @@ class FilterableListGSAP extends gia.Component {
 			const item = items[index];
 			let isVisible = true;
 
-			// Check all active filter types
 			for (const type in this.activeFilters) {
 				const activeValues = this.activeFilters[type];
 				if (activeValues && activeValues.length > 0) {
-					// Handle special suffix operators
 					let baseType = type;
-					let operator = 'eq'; // default is exact match
+					let operator = 'eq';
 
 					if (type.endsWith('-min')) {
 						baseType = type.replace('-min', '');
@@ -518,7 +504,6 @@ class FilterableListGSAP extends gia.Component {
 					}
 
 					const cached = item._dataCache[baseType];
-
 					if (!cached) {
 						isVisible = false;
 						break;
@@ -541,13 +526,11 @@ class FilterableListGSAP extends gia.Component {
 								break;
 							}
 						} else if (operator === 'includes') {
-							// Case insensitive fuzzy substring search
 							if (this.fuzzyMatch(cached.raw, filterVal)) {
 								hasMatch = true;
 								break;
 							}
 						} else {
-							// Default exact array match
 							if (cached.array.includes(filterVal)) {
 								hasMatch = true;
 								break;
@@ -557,7 +540,7 @@ class FilterableListGSAP extends gia.Component {
 
 					if (!hasMatch) {
 						isVisible = false;
-						break; // AND logic between types: fail early
+						break;
 					}
 				}
 			}
@@ -575,21 +558,25 @@ class FilterableListGSAP extends gia.Component {
 			}
 		}
 
-		// Update show more UI visibility
+		return { visibleItems, hiddenItems, currentItemsHiddenBehindMoreButtonCount };
+	}
+
+	_updateShowMoreVisibility(hiddenBehindMoreCount) {
 		if (this.ref.showMoreBtn) {
 			if (this.options.maxItemCount === -1) {
 				this.ref.showMoreBtn.classList.remove("visible");
-			} else if (currentItemsHiddenBehindMoreButtonCount > 0) {
+			} else if (hiddenBehindMoreCount > 0) {
 				this.ref.showMoreBtn.classList.add("visible");
 				if (this.ref.showMoreBtnCount) {
-					this.ref.showMoreBtnCount.textContent = currentItemsHiddenBehindMoreButtonCount;
+					this.ref.showMoreBtnCount.textContent = hiddenBehindMoreCount;
 				}
 			} else {
 				this.ref.showMoreBtn.classList.remove("visible");
 			}
 		}
+	}
 
-		// Sort visible items
+	_sortItems(visibleItems) {
 		if (this.activeSort) {
 			const [sortProperty, sortDirection] = this.activeSort.split(':');
 			const isDesc = sortDirection === 'desc';
@@ -598,24 +585,37 @@ class FilterableListGSAP extends gia.Component {
 				const cacheA = a._dataCache[sortProperty];
 				const cacheB = b._dataCache[sortProperty];
 
-				// Handle missing attributes
 				if (!cacheA && !cacheB) return a._originalIndex - b._originalIndex;
 				if (!cacheA) return isDesc ? 1 : -1;
 				if (!cacheB) return isDesc ? -1 : 1;
 
-				// Try numeric sort
 				if (!isNaN(cacheA.num) && !isNaN(cacheB.num)) {
 					return isDesc ? cacheB.num - cacheA.num : cacheA.num - cacheB.num;
 				}
 
-				// Fallback to string sort
 				const comp = cacheA.raw.localeCompare(cacheB.raw);
 				return isDesc ? -comp : comp;
 			});
 		} else {
-			// Restore original order if no sort is active
 			visibleItems.sort((a, b) => a._originalIndex - b._originalIndex);
 		}
+	}
+
+	updateList(animate = true) {
+		// Cancel any ongoing transitions
+		if (this._currentTransition) {
+			this._currentTransition.skipTransition();
+		}
+		if (this._heightAnimation) {
+			this._heightAnimation.cancel();
+			this._heightAnimation = null;
+		}
+
+		const items = this.ref.item;
+		const { visibleItems, hiddenItems, currentItemsHiddenBehindMoreButtonCount } = this._filterItems(items);
+
+		this._updateShowMoreVisibility(currentItemsHiddenBehindMoreButtonCount);
+		this._sortItems(visibleItems);
 
 		// Perform DOM update
 		if (animate && window.gsap && window.Flip) {
