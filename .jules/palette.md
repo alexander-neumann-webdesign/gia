@@ -1,0 +1,3 @@
+## 2025-02-17 - Dynamic Form Feedback Requires Explicit ARIA Live Region Roles
+**Learning:** Adding validation dynamically via Javascript often leaves screen readers unaware of the message visually rendered, e.g. success messages (`Thank you for your message`) or error alerts. Simply un-hiding an element is insufficient. We need explicit roles (`status` or `alert`) on these dynamically revealed messages.
+**Action:** When implementing or updating Form components with custom dynamic validation/submission feedback, always ensure elements indicating success use `role="status"` and errors use `role="alert"`.
