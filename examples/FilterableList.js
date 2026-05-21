@@ -815,7 +815,21 @@ class FilterableList extends gia.Component {
 						newVal = el.type === 'range' ? (el.defaultValue || '') : '';
 					}
 
-					if (el.value !== newVal) {
+					let isDifferent = false;
+					if (el.type === 'range' || el.type === 'number') {
+						const num1 = parseFloat(el.value);
+						const num2 = parseFloat(newVal);
+						// Handle empty strings causing NaN !== NaN
+						if (isNaN(num1) && isNaN(num2)) {
+							isDifferent = String(el.value) !== String(newVal);
+						} else {
+							isDifferent = num1 !== num2;
+						}
+					} else {
+						isDifferent = el.value !== String(newVal);
+					}
+
+					if (isDifferent) {
 						el.value = newVal;
 						el.dispatchEvent(new Event('change', { bubbles: true }));
 					}
