@@ -674,11 +674,17 @@
     <section id="ImageHolder">
         <h2>ImageHolder</h2>
         <div class="demo-block">
-            <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
-  <img data-ref="img" src="sample-image.jpg"  sizes="100vw" alt="A nice image" loading="lazy" />
-</div>
-
-
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
+                </div>
+            </div>
         </div>
     </section>
 
