@@ -737,11 +737,11 @@ class FilterableList extends gia.Component {
 		// Update hidden state
 		for (let i = 0; i < hiddenItems.length; i++) {
 			hiddenItems[i].style.viewTransitionName = '';
-			hiddenItems[i].hidden = true;
+			hiddenItems[i].style.display = 'none';
 		}
 
 		for (let i = 0; i < visibleItems.length; i++) {
-			visibleItems[i].hidden = false;
+			visibleItems[i].style.display = '';
 		}
 
 		// Reorder visible items in the DOM
