@@ -167,9 +167,7 @@ class CustomCursor extends gia.Component {
         this._wakeUp();
     }
 
-    _processInteractions(target) {
-        // Check states based on attributes
-        // Only run expensive DOM traversal if target changed
+    _updateTargetState(target) {
         if (this._lastInteractionTarget !== target) {
             this._lastInteractionTarget = target;
 
@@ -199,24 +197,13 @@ class CustomCursor extends gia.Component {
                 }
             }
         }
+    }
 
-        let targetState = this._cachedTargetState;
-        let targetText = this._cachedTargetText;
-        let targetIcon = this._cachedTargetIcon;
-        let targetImg = this._cachedTargetImg;
-        let targetVideo = this._cachedTargetVideo;
-
-        // Magnetic and Stick Hover logic
-        // We find the closest magnetic element from the cached bounds
+    _findClosestMagneticElement(docMouseX, docMouseY) {
         let closestMagneticEl = null;
         let isSnapped = false;
         let isStick = false;
         let minDistanceSq = Infinity;
-
-        const scrollX = this.scroll.x;
-        const scrollY = this.scroll.y;
-        const docMouseX = this.mouse.x + scrollX;
-        const docMouseY = this.mouse.y + scrollY;
 
         for (const item of this.cachedMagneticElements) {
             const { el, bounds, type } = item;
@@ -261,7 +248,10 @@ class CustomCursor extends gia.Component {
             }
         }
 
-        // Handle entering/changing magnetic element pull zone
+        return { closestMagneticEl, isSnapped, isStick };
+    }
+
+    _handleMagneticPullZone(closestMagneticEl) {
         if (closestMagneticEl && this.magneticTarget !== closestMagneticEl) {
             if (this.magneticTarget) {
                 this.magneticTarget.style.transform = '';
@@ -280,14 +270,9 @@ class CustomCursor extends gia.Component {
             this.magneticTarget = null;
             this.magneticBounds = null;
         }
+    }
 
-        // Determine final target state considering magnetic snapping
-        let finalState = targetState;
-        if (isSnapped) {
-            finalState = isStick ? 'stick' : 'magnetic';
-        }
-
-        // Handle state changes
+    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
         if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
             // Remove old media/icons if we are switching away from those specific contents
             if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
@@ -388,6 +373,36 @@ class CustomCursor extends gia.Component {
                 }
             }
         }
+    }
+
+    _processInteractions(target) {
+        // Check states based on attributes
+        // Only run expensive DOM traversal if target changed
+        this._updateTargetState(target);
+
+        let targetState = this._cachedTargetState;
+        let targetText = this._cachedTargetText;
+        let targetIcon = this._cachedTargetIcon;
+        let targetImg = this._cachedTargetImg;
+        let targetVideo = this._cachedTargetVideo;
+
+        // Magnetic and Stick Hover logic
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
+        const docMouseX = this.mouse.x + scrollX;
+        const docMouseY = this.mouse.y + scrollY;
+
+        const { closestMagneticEl, isSnapped, isStick } = this._findClosestMagneticElement(docMouseX, docMouseY);
+
+        this._handleMagneticPullZone(closestMagneticEl);
+
+        // Determine final target state considering magnetic snapping
+        let finalState = targetState;
+        if (isSnapped) {
+            finalState = isStick ? 'stick' : 'magnetic';
+        }
+
+        this._updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon);
     }
 
     _preloadImages() {
