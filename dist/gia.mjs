@@ -338,7 +338,7 @@ let x = class {
         const s = typeof i;
         if (s === "boolean" || s === "string") {
           let r = $.get(o);
-          r || (r = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, $.set(o, r)), this._pendingAttributeChanges[r] = s === "boolean" ? i ? "true" : "false" : i;
+          r || (r = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, $.set(o, r)), (!this._ignoredAttributes || !this._ignoredAttributes.includes(o)) && (this._pendingAttributeChanges[r] = s === "boolean" ? i ? "true" : "false" : i);
         }
       }
     }
