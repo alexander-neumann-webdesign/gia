@@ -44,3 +44,6 @@
 ## 2024-05-19 - Bypass Property Getters in Hot Paths
 **Learning:** Accessing `this.state` via a getter that returns `this._state` adds a slight performance overhead. Over thousands of frames, this can become a minor bottleneck.
 **Action:** In performance-critical animation loops (e.g., `requestAnimationFrame`), bypass getter methods for state objects and directly access their underlying properties (like `this._state`) to eliminate unnecessary function call overhead on every frame.
+## 2026-05-22 - Prevent layout thrashing in ImageHolder
+**Learning:** To prevent forced synchronous layouts inside requestAnimationFrame loops, never defer layout reads (e.g., getBoundingClientRect()) using dirty flags like state properties. Instead, perform these reads synchronously inside observer callbacks (like ResizeObserver or IntersectionObserver) or event handlers, and cache the values to be used purely for mathematical updates in the animation frame.
+**Action:** Reordered layout reads to happen before DOM writes in initialization and resize handlers, and moved layout caching from the async stateChange loop to the synchronous IntersectionObserver callback.

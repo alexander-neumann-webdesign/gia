@@ -66,6 +66,14 @@ class ImageHolder extends gia.Component {
 		this.isScrollBound = false;
 		this.currentScrollY = window.scrollY || window.pageYOffset;
 
+		// Cache the header element once if needed
+		if (this.options.startFromTop) {
+			this.headerElement = document.querySelector('header#main-header');
+		}
+
+		// Initial calculation based on immediate state
+		this.cacheLayout();
+
 		// Calculate exactly the extra space needed to cover the parallax translation.
 		// A parallaxSpeed of 0.2 means the image covers an extra 20% of the container.
 		const speed = Math.abs(this.options.parallaxSpeed);
@@ -79,16 +87,9 @@ class ImageHolder extends gia.Component {
 			this.ref.img.style.left = `-${extraSpacePercent / 2}%`;
 		}
 
-		// Cache the header element once if needed
-		if (this.options.startFromTop) {
-			this.headerElement = document.querySelector('header#main-header');
-		}
-
 		// Setup Resize Observer on document to catch layout shifts
 		this.observeResize(document.body, this.handleBodyResize);
 
-		// Initial calculation based on immediate state
-		this.cacheLayout();
 		if (!this.ticking) {
 			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
@@ -146,6 +147,14 @@ class ImageHolder extends gia.Component {
 
 	handleIntersect(entries) {
 		const entry = entries[entries.length - 1];
+
+		// If becoming visible, perform synchronous layout read here to prevent thrashing
+		// during the subsequent asynchronous stateChange loop
+		if (entry.isIntersecting && this.options.parallaxSpeed !== 0) {
+			this.cacheLayout();
+			this.currentScrollY = window.scrollY || window.pageYOffset;
+		}
+
 		this.setState({
 			isVisible: entry.isIntersecting
 		});
@@ -182,9 +191,6 @@ class ImageHolder extends gia.Component {
 					// Dynamically bind scroll listener only when visible to save resources
 					this.bindScroll();
 
-					// Force a recalculation as soon as it becomes visible
-					this.cacheLayout();
-					this.currentScrollY = window.scrollY || window.pageYOffset;
 					if (!this.ticking) {
 						this._frameId = window.requestAnimationFrame(this.tickUpdate);
 						this.ticking = true;
@@ -201,6 +207,7 @@ class ImageHolder extends gia.Component {
 
 	handleResize(entries) {
 		let widthChanged = false;
+		let sizeUpdates = [];
 
 		for (let entry of entries) {
 			const width = entry.contentRect.width;
@@ -211,7 +218,7 @@ class ImageHolder extends gia.Component {
 				const newSizes = `${Math.ceil(width)}px`;
 
 				if (currentSizes !== newSizes) {
-					this.ref.img.setAttribute('sizes', newSizes);
+					sizeUpdates.push(newSizes);
 				}
 
 				// We only care about layout caching if parallax is enabled
@@ -221,12 +228,19 @@ class ImageHolder extends gia.Component {
 			}
 		}
 
+		// Perform layout read FIRST before any DOM writes to prevent thrashing
 		if (widthChanged) {
 			this.cacheLayout();
 			if (!this.ticking) {
 				this._frameId = window.requestAnimationFrame(this.tickUpdate);
 				this.ticking = true;
 			}
+		}
+
+		// Perform DOM writes LAST
+		if (sizeUpdates.length > 0) {
+			// In this loop it's always the same image ref, but keeping the logic general
+			this.ref.img.setAttribute('sizes', sizeUpdates[0]);
 		}
 	}
 
