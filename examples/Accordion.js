@@ -16,13 +16,10 @@ class Accordion extends gia.Component {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}
 
-		this._ignoredAttributes = ['isOpen'];
-
 		// Initial state is correctly set from element initially or open attribute
 		this.setState({
 			isOpen: this.element.hasAttribute('open')
 		});
-		this.element.removeAttribute('data-is-open');
 	}
 
 	getIconSvg(iconType) {
@@ -153,6 +150,7 @@ class Accordion extends gia.Component {
 			// (e.g., for embla-carousel or other scripts that rely on window resizing)
 			window.dispatchEvent(new Event('resize'));
 		}
+		this.element.removeAttribute('data-is-open');
 	}
 }
 
