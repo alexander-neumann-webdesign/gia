@@ -777,6 +777,23 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   background: #f8f9fa;
   color: #333;
 }
+.slider-wrapper[data-component=Slider] .card-content .embla__parallax {
+  border-radius: 8px 8px 0 0;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+.slider-wrapper[data-component=Slider] .card-content .embla__parallax-img {
+  position: absolute;
+  top: 0;
+  left: -10%;
+  width: 120%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: translateX(var(--slide-parallax-x, 0%));
+  will-change: transform;
+}
 .slider-wrapper[data-component=Slider] .slider-controls {
   display: flex;
   align-items: center;
