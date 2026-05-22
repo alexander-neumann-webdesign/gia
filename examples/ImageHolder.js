@@ -88,7 +88,7 @@ class ImageHolder extends gia.Component {
 		this.observeResize(document.body, this.handleBodyResize);
 
 		// Initial calculation based on immediate state
-		this._needsBoundsUpdate = true;
+		this.cacheLayout();
 		if (!this.ticking) {
 			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
@@ -96,7 +96,7 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleBodyResize() {
-		this._needsBoundsUpdate = true;
+		this.cacheLayout();
 		if (this.state.isVisible) {
 			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
 		} else if (!this.ticking) {
@@ -170,10 +170,6 @@ class ImageHolder extends gia.Component {
 	}
 
 	tickUpdate() {
-		if (this._needsBoundsUpdate) {
-			this.cacheLayout();
-			this._needsBoundsUpdate = false;
-		}
 		this.updateParallax();
 		this.ticking = false;
 		this._frameId = null;
@@ -187,7 +183,7 @@ class ImageHolder extends gia.Component {
 					this.bindScroll();
 
 					// Force a recalculation as soon as it becomes visible
-					this._needsBoundsUpdate = true;
+					this.cacheLayout();
 					this.currentScrollY = window.scrollY || window.pageYOffset;
 					if (!this.ticking) {
 						this._frameId = window.requestAnimationFrame(this.tickUpdate);
@@ -226,7 +222,7 @@ class ImageHolder extends gia.Component {
 		}
 
 		if (widthChanged) {
-			this._needsBoundsUpdate = true;
+			this.cacheLayout();
 			if (!this.ticking) {
 				this._frameId = window.requestAnimationFrame(this.tickUpdate);
 				this.ticking = true;
