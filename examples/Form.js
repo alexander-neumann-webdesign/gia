@@ -5,6 +5,8 @@ class Form extends gia.Component {
 		this.options = {
 			ajaxUrl: '', // URL to send the AJAX request to, often provided by WordPress (e.g., via wp_localize_script or data attribute)
 			action: '', // Optional: action parameter for WordPress AJAX (e.g., 'submit_contact_form')
+			addMoreFilesText: '+ Add more files',
+			removeFileText: '🗑️',
 		};
 
 		this.ref = {
@@ -174,7 +176,7 @@ class Form extends gia.Component {
 			const addMoreBtn = document.createElement('button');
 			addMoreBtn.type = 'button';
 			addMoreBtn.className = 'add-more-files-btn';
-			addMoreBtn.textContent = '+ Add more files';
+			addMoreBtn.textContent = this.options.addMoreFilesText;
 			addMoreBtn.style.marginTop = '1rem';
 			addMoreBtn.style.padding = '0.5rem 1rem';
 			addMoreBtn.style.cursor = 'pointer';
@@ -246,7 +248,7 @@ class Form extends gia.Component {
 		const removeBtn = document.createElement('button');
 		removeBtn.type = 'button';
 		removeBtn.className = 'remove-file-btn';
-		removeBtn.textContent = '🗑️';
+		removeBtn.textContent = this.options.removeFileText;
 		removeBtn.style.background = 'none';
 		removeBtn.style.border = 'none';
 		removeBtn.style.cursor = 'pointer';
