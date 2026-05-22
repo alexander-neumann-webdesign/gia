@@ -154,6 +154,7 @@ class Accordion extends gia.Component {
 				window.dispatchEvent(new Event('resize'));
 			}, 0);
 		}
+		this.element.removeAttribute('data-is-open');
 	}
 }
 
