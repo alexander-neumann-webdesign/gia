@@ -47,3 +47,7 @@
 ## 2026-05-22 - Prevent layout thrashing in ImageHolder
 **Learning:** To prevent forced synchronous layouts inside requestAnimationFrame loops, never defer layout reads (e.g., getBoundingClientRect()) using dirty flags like state properties. Instead, perform these reads synchronously inside observer callbacks (like ResizeObserver or IntersectionObserver) or event handlers, and cache the values to be used purely for mathematical updates in the animation frame.
 **Action:** Reordered layout reads to happen before DOM writes in initialization and resize handlers, and moved layout caching from the async stateChange loop to the synchronous IntersectionObserver callback.
+
+## 2024-05-22 - Avoid Layout Reads in rAF & Eliminate Getter Overhead
+**Learning:** Performing layout reads (like `getBoundingClientRect()`) inside `requestAnimationFrame` loops or using a dirty flag to defer them can cause severe layout thrashing. Additionally, accessing properties via getters (like `this.options` or `this.ref`) inside high-frequency animation loops adds unnecessary function call overhead on every frame.
+**Action:** Move layout reads out of rAF loops and perform them synchronously inside observer callbacks (like `ResizeObserver` or `IntersectionObserver`). In performance-critical hot paths, bypass getter methods and access underlying properties directly (e.g., `this._options`, `this._ref`) to eliminate overhead.
