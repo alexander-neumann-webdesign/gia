@@ -17,6 +17,10 @@
 ## 2024-05-19 - Object Iteration Array Allocations in High-Frequency Paths
 **Learning:** Checking if an object is empty via `Object.keys(obj).length === 0` allocates an intermediate array and iterates through all keys in the JS engine. When used in high-frequency methods like `set ref` or `_flushStateChanges` (which run constantly during component initialization or game loops), this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Replace `Object.keys(obj).length === 0` checks with a fast-failing `for...in` loop. This achieves an O(1) empty check with zero memory allocation. Use this pattern strictly for empty object checks, not for full iteration.
+
+## 2024-05-19 - Layout Thrashing in requestAnimationFrame
+**Learning:** Checking layout properties (like `getBoundingClientRect()`, `offsetHeight`, `window.scrollY`) inside a `requestAnimationFrame` callback loop triggers a forced synchronous layout recalculation if any other components mutated the DOM earlier in the same frame. Deferring layout reads using boolean flags (like `_needsBoundsUpdate`) until the next `rAF` tick is an anti-pattern.
+**Action:** Extract all layout reads out of `requestAnimationFrame`. Execute them synchronously inside observer callbacks (`ResizeObserver`, `IntersectionObserver`) or event handlers (`scroll`, `resize`), cache the result, and let the `rAF` loop strictly perform mathematical calculations and DOM writes based on the cached values.
 ## 2026-05-21 - [Infinite Loops from Weak Comparison]
 **Learning:** In a codebase using custom state management coupled with native DOM elements, directly assigning a number to an `input.value` automatically serializes it to a string. Validating updates with `input.value !== newValue` triggers an infinite loop when `newValue` is a number because `"10" !== 10` is always true.
 **Action:** When synchronizing state back to `<input type="number">` or `range`, always parse both values into floats before comparing, and ensure you explicitly handle empty strings which resolve to `NaN` to prevent `NaN !== NaN` infinite loops.
