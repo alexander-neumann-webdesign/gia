@@ -1,4 +1,4 @@
-class FilterableList extends gia.Component {
+class FilterableListGSAP extends gia.Component {
 	constructor(element) {
 		super(element);
 
@@ -36,6 +36,14 @@ class FilterableList extends gia.Component {
 		this._syncOutputs = this._syncOutputs.bind(this);
 		this.handleResetClick = this.handleResetClick.bind(this);
 		this.handleShowMoreClick = this.handleShowMoreClick.bind(this);
+	}
+
+
+	async require() {
+		await Promise.all([
+			this.loadScript("gsap", "gsap"),
+			this.loadScript("Flip", "Flip"),
+		]);
 	}
 
 	_syncOutputs() {
@@ -593,7 +601,8 @@ class FilterableList extends gia.Component {
 		}
 	}
 
-	_cancelOngoingAnimations() {
+	updateList(animate = true) {
+		// Cancel any ongoing transitions
 		if (this._currentTransition) {
 			this._currentTransition.skipTransition();
 		}
@@ -601,120 +610,6 @@ class FilterableList extends gia.Component {
 			this._heightAnimation.cancel();
 			this._heightAnimation = null;
 		}
-	}
-
-	_applyViewTransition(visibleItems, hiddenItems) {
-		// Temporarily disable CSS transitions and apply DOM changes to measure target height
-		this.ref.container.style.transition = 'none';
-		const initialHeight = this.ref.container.offsetHeight;
-
-		const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
-		let staggerCss = '';
-		let staggerIndex = 0;
-
-		if (this.ref.announcer) {
-			const announcerName = `${componentId}-announcer`;
-			this.ref.announcer.style.viewTransitionName = announcerName;
-			staggerCss += `::view-transition-group(${announcerName}) { animation-duration: 0.4s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }\n`;
-		}
-
-		const maxDelay = this.options.maxStaggerDelay !== null && this.options.maxStaggerDelay !== undefined
-			? this.options.maxStaggerDelay
-			: this.options.staggerDelay * 12;
-
-		// Apply unique names before transition
-		for (let i = 0; i < visibleItems.length; i++) {
-			const vName = `${componentId}-${visibleItems[i]._originalIndex}`;
-			visibleItems[i].style.viewTransitionName = vName;
-			const zIndex = visibleItems.length - i;
-			staggerCss += `::view-transition-group(${vName}) { z-index: ${zIndex}; }\n`;
-
-			if (this.options.staggerDelay > 0) {
-				const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
-				staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
-				staggerIndex++;
-			}
-		}
-		for (let i = 0; i < hiddenItems.length; i++) {
-			const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
-			hiddenItems[i].style.viewTransitionName = vName;
-			if (this.options.staggerDelay > 0) {
-				const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
-				staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
-				staggerIndex++;
-			}
-		}
-
-		let styleEl = null;
-		if (staggerCss) {
-			styleEl = document.createElement('style');
-			styleEl.textContent = staggerCss;
-			document.head.appendChild(styleEl);
-		}
-
-		// Disable full page transitions so pointer events continue to work for controls outside the container
-		document.documentElement.style.viewTransitionName = 'none';
-
-		const transition = document.startViewTransition(() => {
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
-		});
-		this._currentTransition = transition;
-
-		let heightAnimation = null;
-
-		transition.ready.then(() => {
-			const targetHeight = this.ref.container.offsetHeight;
-			if (initialHeight !== targetHeight) {
-				heightAnimation = this.ref.container.animate(
-					[
-						{ height: `${initialHeight}px` },
-						{ height: `${targetHeight}px` }
-					],
-					{
-						duration: 400,
-						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-						fill: 'forwards'
-					}
-				);
-				if (this._currentTransition === transition) {
-					this._heightAnimation = heightAnimation;
-				} else {
-					heightAnimation.cancel();
-				}
-			}
-		}).catch(() => {});
-
-		transition.finished.catch(() => {
-			// Ignore AbortError when transition is skipped
-		}).finally(() => {
-			if (this._currentTransition === transition) {
-				this.ref.container.style.transition = '';
-			}
-
-			if (this._heightAnimation === heightAnimation && heightAnimation) {
-				heightAnimation.cancel();
-				this._heightAnimation = null;
-			}
-
-			if (styleEl) {
-				styleEl.remove();
-			}
-			if (this._currentTransition === transition) {
-				// Clean up to avoid global namespace pollution
-				for (let i = 0; i < visibleItems.length; i++) {
-					visibleItems[i].style.viewTransitionName = '';
-				}
-				if (this.ref.announcer) {
-					this.ref.announcer.style.viewTransitionName = '';
-				}
-				document.documentElement.style.viewTransitionName = '';
-				this._currentTransition = null;
-			}
-		});
-	}
-
-	updateList(animate = true) {
-		this._cancelOngoingAnimations();
 
 		const items = this.ref.item;
 		const { visibleItems, hiddenItems, currentItemsHiddenBehindMoreButtonCount } = this._filterItems(items);
@@ -723,8 +618,20 @@ class FilterableList extends gia.Component {
 		this._sortItems(visibleItems);
 
 		// Perform DOM update
-		if (animate && document.startViewTransition) {
-			this._applyViewTransition(visibleItems, hiddenItems);
+		if (animate && window.gsap && window.Flip) {
+			const state = window.Flip.getState(this.ref.item);
+
+			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+
+			window.Flip.from(state, {
+				duration: 0.4,
+				ease: "power2.inOut",
+				stagger: this.options.staggerDelay / 1000,
+				absolute: true,
+				onComplete: () => {
+					// cleanup after transition
+				}
+			});
 		} else {
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 		}
@@ -736,7 +643,6 @@ class FilterableList extends gia.Component {
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
 		// Update hidden state
 		for (let i = 0; i < hiddenItems.length; i++) {
-			hiddenItems[i].style.viewTransitionName = '';
 			hiddenItems[i].hidden = true;
 		}
 
@@ -822,21 +728,7 @@ class FilterableList extends gia.Component {
 						newVal = el.type === 'range' ? (el.defaultValue || '') : '';
 					}
 
-					let isDifferent = false;
-					if (el.type === 'range' || el.type === 'number') {
-						const num1 = parseFloat(el.value);
-						const num2 = parseFloat(newVal);
-						// Handle empty strings causing NaN !== NaN
-						if (isNaN(num1) && isNaN(num2)) {
-							isDifferent = String(el.value) !== String(newVal);
-						} else {
-							isDifferent = num1 !== num2;
-						}
-					} else {
-						isDifferent = el.value !== String(newVal);
-					}
-
-					if (isDifferent) {
+					if (el.value !== newVal) {
 						el.value = newVal;
 						el.dispatchEvent(new Event('change', { bubbles: true }));
 					}
@@ -872,7 +764,7 @@ class FilterableList extends gia.Component {
 	}
 }
 
-gia.register(FilterableList);
+gia.register(FilterableListGSAP);
 
 /**
  * Expected HTML Structure:

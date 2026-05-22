@@ -156,13 +156,13 @@ button[data-component=ClipboardCopy][data-status=error] {
 }
 
 /* --- FilterableList --- */
-div[data-component=FilterableList] .results-announcer {
+div[data-component=FilterableList] .results-announcer, div[data-component=FilterableListGSAP] .results-announcer {
   margin-bottom: 1rem;
   font-weight: bold;
   font-size: 0.9rem;
   color: #555;
 }
-div[data-component=FilterableList] .results-announcer .reset-filters-btn {
+div[data-component=FilterableList] .results-announcer .reset-filters-btn, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn {
   margin-left: 0.5rem;
   padding: 0.25rem 0.75rem;
   font-size: 0.8rem;
@@ -171,41 +171,41 @@ div[data-component=FilterableList] .results-announcer .reset-filters-btn {
   border-radius: 4px;
   cursor: pointer;
 }
-div[data-component=FilterableList] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableList] .results-announcer .reset-filters-btn:focus-visible {
+div[data-component=FilterableList] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableList] .results-announcer .reset-filters-btn:focus-visible, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:focus-visible {
   background: #e1e1e1;
   outline: none;
 }
-div[data-component=FilterableList] .controls {
+div[data-component=FilterableList] .controls, div[data-component=FilterableListGSAP] .controls {
   margin-bottom: 2rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-div[data-component=FilterableList] .controls button {
+div[data-component=FilterableList] .controls button, div[data-component=FilterableListGSAP] .controls button {
   padding: 0.5rem 1rem;
   border: 1px solid #ccc;
   background: white;
   cursor: pointer;
   border-radius: 4px;
 }
-div[data-component=FilterableList] .controls button.is-active {
+div[data-component=FilterableList] .controls button.is-active, div[data-component=FilterableListGSAP] .controls button.is-active {
   background: #007bff;
   color: white;
   border-color: #007bff;
 }
-div[data-component=FilterableList] .controls select {
+div[data-component=FilterableList] .controls select, div[data-component=FilterableListGSAP] .controls select {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
   margin-left: auto;
 }
-div[data-component=FilterableList] .grid {
+div[data-component=FilterableList] .grid, div[data-component=FilterableListGSAP] .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   transition: height 0.4s ease;
 }
-div[data-component=FilterableList] .item {
+div[data-component=FilterableList] .item, div[data-component=FilterableListGSAP] .item {
   border: 1px solid #eee;
   border-radius: 8px;
   padding: 1.5rem;
@@ -216,20 +216,20 @@ div[data-component=FilterableList] .item {
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-div[data-component=FilterableList] .item[hidden] {
+div[data-component=FilterableList] .item[hidden], div[data-component=FilterableListGSAP] .item[hidden] {
   display: none !important;
 }
-div[data-component=FilterableList] .item .shape-visual {
+div[data-component=FilterableList] .item .shape-visual, div[data-component=FilterableListGSAP] .item .shape-visual {
   width: 60px;
   height: 60px;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=circle] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=circle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=circle] {
   border-radius: 50%;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=square] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=square], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=square] {
   border-radius: 8px;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=triangle] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=triangle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=triangle] {
   width: 0;
   height: 0;
   border-left: 30px solid transparent;
@@ -237,33 +237,33 @@ div[data-component=FilterableList] .item .shape-visual[data-shape=triangle] {
   border-bottom: 60px solid currentColor;
   background-color: transparent !important;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=red] {
+div[data-component=FilterableList] .item .shape-visual[data-color=red], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=red] {
   background-color: #ff4d4d;
   color: #ff4d4d;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=blue] {
+div[data-component=FilterableList] .item .shape-visual[data-color=blue], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=blue] {
   background-color: #4d4dff;
   color: #4d4dff;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=green] {
+div[data-component=FilterableList] .item .shape-visual[data-color=green], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=green] {
   background-color: #4dff4d;
   color: #4dff4d;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=yellow] {
+div[data-component=FilterableList] .item .shape-visual[data-color=yellow], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=yellow] {
   background-color: #ffd700;
   color: #ffd700;
 }
-div[data-component=FilterableList] .item .item-details {
+div[data-component=FilterableList] .item .item-details, div[data-component=FilterableListGSAP] .item .item-details {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
 }
-div[data-component=FilterableList] .item .item-details .item-name {
+div[data-component=FilterableList] .item .item-details .item-name, div[data-component=FilterableListGSAP] .item .item-details .item-name {
   font-weight: bold;
   font-size: 1.1rem;
 }
-div[data-component=FilterableList] .item .item-details .price-tag {
+div[data-component=FilterableList] .item .item-details .price-tag, div[data-component=FilterableListGSAP] .item .item-details .price-tag {
   color: #666;
   background: #f0f0f0;
   padding: 0.2rem 0.5rem;
@@ -278,6 +278,10 @@ div[data-component=FilterableList] .item .item-details .price-tag {
 ::view-transition-group(*) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-group(main-header) {
+  z-index: 9999;
 }
 
 ::view-transition-new(*):only-child {
@@ -359,6 +363,7 @@ header[data-component=Header] {
   left: 0;
   width: 100%;
   transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+  view-transition-name: main-header;
   padding: 2rem 0;
   background-color: transparent;
 }
@@ -756,6 +761,8 @@ dialog[data-component=OffCanvasMenu] .offcanvas-content {
   height: 100%;
   display: flex;
   flex-direction: column;
+  opacity: var(--card-slide-visibility, 1);
+  scale: calc(0.9 + 0.1 * var(--card-slide-visibility, 1));
 }
 .slider-wrapper[data-component=Slider] .card-content img {
   width: 100%;
@@ -1549,6 +1556,55 @@ button[data-component=ClipboardCopy][data-status=error] {
   border-width: 5px 0 5px 6px;
   border-color: transparent transparent transparent #333;
   margin-left: 4px;
+}
+
+/* --- RangeSlider (noUiSlider) Overrides --- */
+.noUi-target {
+  background: #fafafa;
+  border-radius: 9px;
+  border: 1px solid #d3d3d3;
+  box-shadow: inset 0 1px 1px #F0F0F0, 0 3px 6px -5px #BBB;
+}
+
+.noUi-horizontal {
+  height: 10px;
+}
+
+.noUi-connects {
+  border-radius: 9px;
+}
+
+.noUi-connect {
+  background: #c0392b !important;
+}
+
+.noUi-horizontal .noUi-handle {
+  width: 18px;
+  height: 18px;
+  right: -9px;
+  top: -5px;
+  border-radius: 9px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  box-shadow: inset 0 0 1px #FFF, inset 0 1px 7px #EBEBEB, 0 3px 6px -3px #BBB;
+  cursor: pointer;
+}
+
+.noUi-horizontal .noUi-handle:before,
+.noUi-horizontal .noUi-handle:after,
+.noUi-vertical .noUi-handle:before,
+.noUi-vertical .noUi-handle:after {
+  display: none;
+}
+
+.noUi-handle:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.noUi-handle:focus,
+.noUi-handle:active {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
 }
 
 /*# sourceMappingURL=demo.css.map */

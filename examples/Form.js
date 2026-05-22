@@ -163,51 +163,51 @@ class Form extends gia.Component {
 			fileList.className = 'form-file-list';
 			fileList.style.marginTop = '1rem';
 			fileList.style.textAlign = 'left';
+			fileList.style.position = 'relative';
+			fileList.style.zIndex = '10';
 
 			Array.from(fileInput.files).forEach(file => {
-				const fileItem = document.createElement('div');
-				fileItem.className = 'form-file-item';
-				fileItem.style.display = 'flex';
-				fileItem.style.justifyContent = 'space-between';
-				fileItem.style.alignItems = 'center';
-				fileItem.style.padding = '0.5rem';
-				fileItem.style.borderBottom = '1px solid #ccc';
-
-				const fileInfo = document.createElement('div');
-				fileInfo.className = 'form-file-info';
-
-				const fileName = document.createElement('strong');
-				fileName.textContent = file.name;
-				fileName.style.display = 'block';
-
-				const fileMeta = document.createElement('small');
-				fileMeta.textContent = `${file.type || 'Unknown type'} • ${this.formatFileSize(file.size)}`;
-				fileMeta.style.color = '#666';
-
-				fileInfo.appendChild(fileName);
-				fileInfo.appendChild(fileMeta);
-
-				const removeBtn = document.createElement('button');
-				removeBtn.type = 'button';
-				removeBtn.className = 'remove-file-btn';
-				removeBtn.textContent = '🗑️';
-				removeBtn.style.background = 'none';
-				removeBtn.style.border = 'none';
-				removeBtn.style.cursor = 'pointer';
-				removeBtn.style.fontSize = '1.2rem';
-				removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
-
-				removeBtn.addEventListener('click', (e) => {
-					e.stopPropagation();
-					e.preventDefault();
-					this.removeFile(dropzone, fileInput, file);
-				});
-
-				fileItem.appendChild(fileInfo);
-				fileItem.appendChild(removeBtn);
+				const fileItem = this._createFileItem(file, dropzone, fileInput);
 				fileList.appendChild(fileItem);
 			});
 
+			const addMoreBtn = document.createElement('button');
+			addMoreBtn.type = 'button';
+			addMoreBtn.className = 'add-more-files-btn';
+			addMoreBtn.textContent = '+ Add more files';
+			addMoreBtn.style.marginTop = '1rem';
+			addMoreBtn.style.padding = '0.5rem 1rem';
+			addMoreBtn.style.cursor = 'pointer';
+			addMoreBtn.style.position = 'relative';
+			addMoreBtn.style.zIndex = '10';
+
+			addMoreBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				const tempInput = document.createElement('input');
+				tempInput.type = 'file';
+				if (fileInput.multiple) tempInput.multiple = true;
+				if (fileInput.accept) tempInput.accept = fileInput.accept;
+
+				tempInput.addEventListener('change', (e) => {
+					if (tempInput.files && tempInput.files.length > 0) {
+						const dt = new DataTransfer();
+						if (fileInput.files) {
+							for (let i = 0; i < fileInput.files.length; i++) {
+								dt.items.add(fileInput.files[i]);
+							}
+						}
+						for (let i = 0; i < tempInput.files.length; i++) {
+							dt.items.add(tempInput.files[i]);
+						}
+						fileInput.files = dt.files;
+						fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+				});
+
+				tempInput.click();
+			});
+
+			fileList.appendChild(addMoreBtn);
 			dropzone.appendChild(fileList);
 		} else {
 			if (label) {
@@ -218,6 +218,51 @@ class Form extends gia.Component {
 				}
 			}
 		}
+	}
+
+	_createFileItem(file, dropzone, fileInput) {
+		const fileItem = document.createElement('div');
+		fileItem.className = 'form-file-item';
+		fileItem.style.display = 'flex';
+		fileItem.style.justifyContent = 'space-between';
+		fileItem.style.alignItems = 'center';
+		fileItem.style.padding = '0.5rem';
+		fileItem.style.borderBottom = '1px solid #ccc';
+
+		const fileInfo = document.createElement('div');
+		fileInfo.className = 'form-file-info';
+
+		const fileName = document.createElement('strong');
+		fileName.textContent = file.name;
+		fileName.style.display = 'block';
+
+		const fileMeta = document.createElement('small');
+		fileMeta.textContent = `${file.type || 'Unknown type'} • ${this.formatFileSize(file.size)}`;
+		fileMeta.style.color = '#666';
+
+		fileInfo.appendChild(fileName);
+		fileInfo.appendChild(fileMeta);
+
+		const removeBtn = document.createElement('button');
+		removeBtn.type = 'button';
+		removeBtn.className = 'remove-file-btn';
+		removeBtn.textContent = '🗑️';
+		removeBtn.style.background = 'none';
+		removeBtn.style.border = 'none';
+		removeBtn.style.cursor = 'pointer';
+		removeBtn.style.fontSize = '1.2rem';
+		removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+
+		removeBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			this.removeFile(dropzone, fileInput, file);
+		});
+
+		fileItem.appendChild(fileInfo);
+		fileItem.appendChild(removeBtn);
+
+		return fileItem;
 	}
 
 	removeFile(dropzone, fileInput, fileToRemove) {
@@ -357,50 +402,8 @@ class Form extends gia.Component {
 		let rawData = new FormData(this.formElement);
 		let data = new FormData();
 
-		// 1. Automatically fix duplicate field names
-		let uniqueKeys = [...new Set(rawData.keys())];
-
-		uniqueKeys.forEach((key) => {
-			let values = rawData.getAll(key);
-
-			if (values.length > 1 && !key.endsWith("[]")) {
-				values.forEach((value) => {
-					data.append(key + "[]", value);
-				});
-			} else {
-				values.forEach((value) => {
-					data.append(key, value);
-				});
-			}
-		});
-
-		// 2. Smart Detection Logic for Name and Email
-		let detectedName = "";
-		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
-		if (nameInput && nameInput.value.trim() !== "") {
-			detectedName = nameInput.value;
-		} else {
-			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
-			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
-			let parts = [];
-			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
-			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
-			if (parts.length > 0) detectedName = parts.join(" ");
-		}
-
-		let detectedEmail = "";
-		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
-		if (emailInput && emailInput.value.trim() !== "") {
-			detectedEmail = emailInput.value;
-		} else {
-			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
-			if (fallbackEmail && fallbackEmail.value) {
-				detectedEmail = fallbackEmail.value;
-			}
-		}
-
-		if (detectedName) data.append("detected-name", detectedName);
-		if (detectedEmail) data.append("detected-email", detectedEmail);
+		this._normalizeFormData(rawData, data);
+		this._detectNameAndEmail(data);
 
 		// If an action is provided in options, append it for WordPress AJAX compatibility
 		if (this.options.action) {
@@ -444,17 +447,7 @@ class Form extends gia.Component {
 				this.setState({ isSubmitting: false, isSuccess: true });
 				this.formElement.reset();
 
-				// Reset dropzone labels
-				if (this.ref.dropzone) {
-					const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
-					dropzones.forEach(dropzone => {
-						const label = dropzone.querySelector('.form-dropzone-label');
-						const originalText = this.originalDropzoneLabels.get(dropzone);
-						if (label && originalText) {
-							label.textContent = originalText;
-						}
-					});
-				}
+				this._resetDropzones();
 			} else {
 				throw new Error(result.data || "Form submission failed");
 			}
@@ -465,81 +458,150 @@ class Form extends gia.Component {
 		}
 	}
 
+	_resetDropzones() {
+		if (!this.ref.dropzone) return;
+
+		const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+		dropzones.forEach(dropzone => {
+			const label = dropzone.querySelector('.form-dropzone-label');
+			const originalText = this.originalDropzoneLabels.get(dropzone);
+			if (label && originalText) {
+				label.textContent = originalText;
+			}
+
+			const existingList = dropzone.querySelector('.form-file-list');
+			if (existingList) {
+				existingList.remove();
+			}
+		});
+	}
+
+	_normalizeFormData(rawData, data) {
+		// 1. Automatically fix duplicate field names
+		let uniqueKeys = [...new Set(rawData.keys())];
+
+		for (let i = 0; i < uniqueKeys.length; i++) {
+			const key = uniqueKeys[i];
+			let values = rawData.getAll(key);
+
+			if (values.length > 1 && !key.endsWith("[]")) {
+				for (let j = 0; j < values.length; j++) {
+					data.append(key + "[]", values[j]);
+				}
+			} else {
+				for (let j = 0; j < values.length; j++) {
+					data.append(key, values[j]);
+				}
+			}
+		}
+	}
+
+	_detectNameAndEmail(data) {
+		// 2. Smart Detection Logic for Name and Email
+		let detectedName = "";
+		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
+		if (nameInput && nameInput.value.trim() !== "") {
+			detectedName = nameInput.value;
+		} else {
+			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
+			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
+			let parts = [];
+			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
+			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
+			if (parts.length > 0) detectedName = parts.join(" ");
+		}
+
+		let detectedEmail = "";
+		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
+		if (emailInput && emailInput.value.trim() !== "") {
+			detectedEmail = emailInput.value;
+		} else {
+			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
+			if (fallbackEmail && fallbackEmail.value) {
+				detectedEmail = fallbackEmail.value;
+			}
+		}
+
+		if (detectedName) data.append("detected-name", detectedName);
+		if (detectedEmail) data.append("detected-email", detectedEmail);
+	}
+
+	_updateSubmittingUI(isSubmitting) {
+		if (this.ref.submitBtn) {
+			this.ref.submitBtn.disabled = isSubmitting;
+			if (isSubmitting) {
+				this.ref.submitBtn.setAttribute('aria-busy', 'true');
+				// Inject spinner SVG
+				this.ref.submitBtn.insertAdjacentHTML('afterbegin', `
+					<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
+						<line x1="12" y1="2" x2="12" y2="6"></line>
+						<line x1="12" y1="18" x2="12" y2="22"></line>
+						<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+						<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+						<line x1="2" y1="12" x2="6" y2="12"></line>
+						<line x1="18" y1="12" x2="22" y2="12"></line>
+						<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+						<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+					</svg>
+				`);
+
+				// Animate spinner
+				const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
+				if (spinnerIcon && typeof spinnerIcon.animate === 'function') {
+					this.spinnerAnimation = spinnerIcon.animate([
+						{ transform: 'rotate(0deg)' },
+						{ transform: 'rotate(360deg)' }
+					], {
+						duration: 1000,
+						iterations: Infinity,
+						easing: 'linear'
+					});
+				}
+			} else {
+				this.ref.submitBtn.removeAttribute('aria-busy');
+				// Restore original HTML
+				if (this.spinnerAnimation) {
+					this.spinnerAnimation.cancel();
+					this.spinnerAnimation = null;
+				}
+				const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
+				if (spinnerIcon) {
+					spinnerIcon.remove();
+				}
+			}
+		}
+
+		if (this.formElement) {
+			if (isSubmitting) {
+				this.formElement.classList.add('is-submitting');
+			} else {
+				this.formElement.classList.remove('is-submitting');
+			}
+		}
+	}
+
+	_showMessage(element, isVisible) {
+		if (element) {
+			element.hidden = !isVisible;
+			if (isVisible) {
+				window.setTimeout(() => {
+					element.scrollIntoView({ behavior: "smooth", block: "center" });
+				}, 300);
+			}
+		}
+	}
+
 	stateChange(stateChanges) {
 		if ('isSubmitting' in stateChanges) {
-			if (this.ref.submitBtn) {
-				this.ref.submitBtn.disabled = stateChanges.isSubmitting;
-				if (stateChanges.isSubmitting) {
-					this.ref.submitBtn.setAttribute('aria-busy', 'true');
-					// Inject spinner SVG
-					this.ref.submitBtn.insertAdjacentHTML('afterbegin', `
-						<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
-							<line x1="12" y1="2" x2="12" y2="6"></line>
-							<line x1="12" y1="18" x2="12" y2="22"></line>
-							<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-							<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-							<line x1="2" y1="12" x2="6" y2="12"></line>
-							<line x1="18" y1="12" x2="22" y2="12"></line>
-							<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-							<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-						</svg>
-					`);
-
-					// Animate spinner
-					const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
-					if (spinnerIcon && typeof spinnerIcon.animate === 'function') {
-						this.spinnerAnimation = spinnerIcon.animate([
-							{ transform: 'rotate(0deg)' },
-							{ transform: 'rotate(360deg)' }
-						], {
-							duration: 1000,
-							iterations: Infinity,
-							easing: 'linear'
-						});
-					}
-				} else {
-					this.ref.submitBtn.removeAttribute('aria-busy');
-					// Restore original HTML
-					if (this.spinnerAnimation) {
-						this.spinnerAnimation.cancel();
-						this.spinnerAnimation = null;
-					}
-					const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
-					if (spinnerIcon) {
-						spinnerIcon.remove();
-					}
-				}
-			}
-
-			if (this.formElement) {
-				if (stateChanges.isSubmitting) {
-					this.formElement.classList.add('is-submitting');
-				} else {
-					this.formElement.classList.remove('is-submitting');
-				}
-			}
+			this._updateSubmittingUI(stateChanges.isSubmitting);
 		}
 
 		if ('isSuccess' in stateChanges) {
-			if (this.ref.successMessage) {
-				this.ref.successMessage.hidden = !stateChanges.isSuccess;
-				if (stateChanges.isSuccess) {
-					window.setTimeout(() => {
-						this.ref.successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
-					}, 300);
-				}
-			}
+			this._showMessage(this.ref.successMessage, stateChanges.isSuccess);
 		}
 
 		if ('isError' in stateChanges) {
-			if (this.ref.errorMessage) {
-				this.ref.errorMessage.hidden = !stateChanges.isError;
-				if (stateChanges.isError) {
-					window.setTimeout(() => {
-						this.ref.errorMessage.scrollIntoView({ behavior: "smooth", block: "center" });
-					}, 300);
-				}
-			}
+			this._showMessage(this.ref.errorMessage, stateChanges.isError);
 		}
 	}
 }
@@ -573,10 +635,10 @@ gia.register(Form);
  *     <button type="submit" data-ref="submitBtn">Send Message</button>
  *   </form>
  *
- *   <div data-ref="successMessage" hidden class="form-success">
+ *   <div data-ref="successMessage" hidden class="form-success" role="status">
  *     Thank you for your message. It has been sent.
  *   </div>
- *   <div data-ref="errorMessage" hidden class="form-error">
+ *   <div data-ref="errorMessage" hidden class="form-error" role="alert">
  *     There was an error trying to send your message. Please try again later.
  *   </div>
  * </div>
