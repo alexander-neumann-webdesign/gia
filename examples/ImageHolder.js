@@ -64,7 +64,7 @@ class ImageHolder extends gia.Component {
 
 	initParallax() {
 		this.isScrollBound = false;
-		this.currentScrollY = window.scrollY || window.pageYOffset;
+		this.currentScrollY = this.getScrollY();
 
 		// Cache the header element once if needed
 		if (this.options.startFromTop) {
@@ -99,7 +99,7 @@ class ImageHolder extends gia.Component {
 	handleBodyResize() {
 		this.cacheLayout();
 		if (this.state.isVisible) {
-			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY;
+			this.currentScrollY = this.getScrollY();
 			if (!this.ticking) {
 				this._frameId = window.requestAnimationFrame(this.tickUpdate);
 				this.ticking = true;
@@ -148,7 +148,7 @@ class ImageHolder extends gia.Component {
 		// during the subsequent asynchronous stateChange loop
 		if (entry.isIntersecting && this.options.parallaxSpeed !== 0) {
 			this.cacheLayout();
-			this.currentScrollY = window.scrollY || window.pageYOffset;
+			this.currentScrollY = this.getScrollY();
 		}
 
 		this.setState({
@@ -238,7 +238,7 @@ class ImageHolder extends gia.Component {
 		if (this.options.parallaxSpeed === 0) return;
 
 		const rect = this.element.getBoundingClientRect();
-		const scrollTop = window.scrollY || window.pageYOffset;
+		const scrollTop = this.getScrollY();
 
 		this.cachedLayout.elementHeight = rect.height;
 		this.cachedLayout.elementTop = rect.top + scrollTop;

@@ -57,3 +57,6 @@
 ## 2026-05-22 - Prevent Layout Thrashing via Global Event Listeners in Framework
 **Learning:** Binding high-frequency event listeners (like scroll) individually to numerous component instances causes interleaved layout reads (`window.scrollY`) and writes (`requestAnimationFrame`), leading to layout thrashing. Furthermore, component-level global state breaks encapsulation.
 **Action:** Implement a single global event listener at the framework level (`observeScroll`) that reads layout values exactly once and dispatches them to a `Set` of active instances.
+## 2026-05-22 - Optimize Global Checks in Hot Paths
+**Learning:** Repeatedly querying global objects (like `window.lenis`) inside high-frequency event handlers or hot paths degrades performance over time.
+**Action:** Lazily evaluate and cache the presence of global libraries or features in a module-level variable (e.g., `hasLenis`) so the check only runs exactly once.

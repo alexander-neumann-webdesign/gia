@@ -1,21 +1,21 @@
-var R = Object.defineProperty;
-var x = (r, e, t) => e in r ? R(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var A = (r, e, t) => x(r, typeof e != "symbol" ? e + "" : e, t);
-typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (r) => {
-  if (typeof r != "function") {
-    console.error("Gia: Register failed. Expected a Class, got:", r);
+var x = Object.defineProperty;
+var N = (a, e, t) => e in a ? x(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
+var $ = (a, e, t) => N(a, typeof e != "symbol" ? e + "" : e, t);
+typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (a) => {
+  if (typeof a != "function") {
+    console.error("Gia: Register failed. Expected a Class, got:", a);
     return;
   }
-  const e = r.name;
+  const e = a.name;
   if (!e) {
     console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
     return;
   }
-  window.gia.components[e] = r;
+  window.gia.components[e] = a;
 });
-class L {
+class B {
   constructor() {
-    A(this, "_options", {
+    $(this, "_options", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -32,30 +32,30 @@ class L {
     return this._options[e];
   }
 }
-const u = new L();
-function k(r, e, t, n) {
-  if (r.__gia_component__)
-    return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
+const u = new B();
+function O(a, e, t, n) {
+  if (a.__gia_component__)
+    return console.warn(`Component "${e}" already exists.`), a.__gia_component__;
   try {
-    const o = new t(r, n);
+    const o = new t(a, n);
     return u.get("log") && console.info(`Created instance of component "${e}".`), o;
   } catch (o) {
     return console.error(`Failed to create component "${e}".`, o), null;
   }
 }
-function q(r) {
-  return typeof r == "string" && (r = document.getElementById(r), !r) ? null : r.__gia_component__;
+function G(a) {
+  return typeof a == "string" && (a = document.getElementById(a), !a) ? null : a.__gia_component__;
 }
-function p(r, e = document) {
-  return typeof r != "string" ? r : e.querySelectorAll(r);
+function p(a, e = document) {
+  return typeof a != "string" ? a : e.querySelectorAll(a);
 }
-function N(r = {}, e = document.documentElement) {
-  if (!r) {
+function j(a = {}, e = document.documentElement) {
+  if (!a) {
     console.warn("App has no components");
     return;
   }
   let t = !1;
-  for (const a in r) {
+  for (const r in a) {
     t = !0;
     break;
   }
@@ -64,26 +64,26 @@ function N(r = {}, e = document.documentElement) {
     return;
   }
   const n = [], o = `${u.get("attrPrefix")}-component`, i = p(`[${o}]`, e), s = i.length;
-  for (let a = 0; a < s; a++) {
-    const l = i[a];
+  for (let r = 0; r < s; r++) {
+    const l = i[r];
     if (!l.__gia_component__) {
       const d = l.getAttribute(o);
-      typeof r[d] == "function" ? n.push(k(l, d, r[d])) : console.warn(`Constructor "${d}" not found.`);
+      typeof a[d] == "function" ? n.push(O(l, d, a[d])) : console.warn(`Constructor "${d}" not found.`);
     }
   }
   if (e instanceof Element && e.hasAttribute(o) && !e.__gia_component__) {
     const l = e.getAttribute(o);
-    typeof r[l] == "function" ? n.push(k(e, l, r[l])) : console.warn(`Constructor "${l}" not found.`);
+    typeof a[l] == "function" ? n.push(O(e, l, a[l])) : console.warn(`Constructor "${l}" not found.`);
   }
-  for (let a = 0; a < n.length; a++)
-    n[a]._load();
+  for (let r = 0; r < n.length; r++)
+    n[r]._load();
 }
-function y(r) {
-  if (!r) return;
-  let e = r.__gia_component__;
-  if (!e && typeof r == "string") {
-    const t = document.getElementById(r);
-    t && (e = t.__gia_component__, r = t);
+function S(a) {
+  if (!a) return;
+  let e = a.__gia_component__;
+  if (!e && typeof a == "string") {
+    const t = document.getElementById(a);
+    t && (e = t.__gia_component__, a = t);
   }
   if (e) {
     const t = e._name || "Unknown";
@@ -92,32 +92,35 @@ function y(r) {
     } catch (n) {
       console.error(`Gia: Error unmounting component "${t}".`, n);
     }
-    r.__gia_component__ = null, e.element && (e.element = null), u.get("log") && console.info(`Removed component "${t}".`);
+    a.__gia_component__ = null, e.element && (e.element = null), u.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function G(r = document.documentElement) {
-  const e = p(`[${u.get("attrPrefix")}-component]`, r);
+function K(a = document.documentElement) {
+  const e = p(`[${u.get("attrPrefix")}-component]`, a);
   for (let t = 0; t < e.length; t++)
-    y(e[t]);
+    S(e[t]);
 }
 let _ = null;
 const h = /* @__PURE__ */ new Map(), m = /* @__PURE__ */ new Map();
 let w = !1;
 const b = /* @__PURE__ */ new Set();
-let v = { scrollY: 0, originalEvent: null };
-function E(r) {
+let v = { scrollY: 0, originalEvent: null }, C;
+function y() {
+  return C === void 0 && (C = typeof window < "u" && !!window.lenis), C;
+}
+function E(a) {
   if (b.size !== 0) {
-    r && typeof r.scroll == "number" ? v.scrollY = r.scroll : v.scrollY = window.scrollY || window.pageYOffset, v.originalEvent = r;
+    y() ? v.scrollY = window.lenis.scroll : v.scrollY = window.scrollY || window.pageYOffset, v.originalEvent = a;
     for (const e of b)
       e(v);
   }
 }
-const $ = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle", "observeScroll", "unobserveScroll"]), P = /* @__PURE__ */ new WeakMap(), O = /* @__PURE__ */ new Map();
-function B(r) {
-  const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", n = r.threshold || 0, o = Array.isArray(n) ? n.join(",") : n.toString();
+const P = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle", "observeScroll", "unobserveScroll", "getScrollY"]), M = /* @__PURE__ */ new WeakMap(), z = /* @__PURE__ */ new Map();
+function H(a) {
+  const e = a.root || null, t = a.rootMargin || "0px 0px 0px 0px", n = a.threshold || 0, o = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${o}`;
 }
-let j = class {
+let D = class {
   constructor(e, t) {
     this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._flushStateChanges = this._flushStateChanges.bind(this), this._autoBindFunctions(), u.get("autoBindActions") && this._autoBindActions();
   }
@@ -127,9 +130,9 @@ let j = class {
   set ref(e) {
     const t = `${u.get("attrPrefix")}-ref`, n = p(`[${t}]`, this.element), o = /* @__PURE__ */ Object.create(null);
     for (let s = 0; s < n.length; s++) {
-      const a = n[s], l = a.getAttribute(t);
+      const r = n[s], l = r.getAttribute(t);
       let c = o[l];
-      c === void 0 && (c = [], o[l] = c), c.push(a);
+      c === void 0 && (c = [], o[l] = c), c.push(r);
     }
     let i = !0;
     for (const s in e) {
@@ -138,8 +141,8 @@ let j = class {
     }
     if (i) {
       const s = Object.keys(o);
-      for (let a = 0; a < s.length; a++) {
-        const l = s[a], c = l.indexOf(":");
+      for (let r = 0; r < s.length; r++) {
+        const l = s[r], c = l.indexOf(":");
         if (c !== -1) {
           const d = l.substring(0, c), f = l.substring(c + 1);
           d === this._name && !this._ref[f] && (this._ref[f] = o[l]);
@@ -149,8 +152,8 @@ let j = class {
     } else {
       this._ref = {};
       const s = e ? Object.keys(e) : [];
-      for (let a = 0; a < s.length; a++) {
-        const l = s[a], c = Array.isArray(e[l]);
+      for (let r = 0; r < s.length; r++) {
+        const l = s[r], c = Array.isArray(e[l]);
         if (e[l] !== null && c && e[l].length > 0) {
           this._ref[l] = e[l];
           continue;
@@ -206,9 +209,9 @@ let j = class {
     if (typeof window > "u" || !window.ResizeObserver) return;
     _ || (_ = new ResizeObserver((i) => {
       for (let s = 0; s < i.length; s++) {
-        const a = i[s], l = h.get(a.target);
+        const r = i[s], l = h.get(r.target);
         if (l) {
-          const c = [a];
+          const c = [r];
           for (const d of l)
             d(c);
         }
@@ -238,8 +241,11 @@ let j = class {
     const o = h.get(e);
     o && o.size === 0 && (h.delete(e), _ && _.unobserve(e));
   }
+  getScrollY() {
+    return y() ? window.lenis.scroll : window.scrollY || window.pageYOffset;
+  }
   observeScroll(e) {
-    typeof window > "u" || (b.add(e), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), w || (window.lenis ? window.lenis.on("scroll", E) : window.addEventListener("scroll", E, { passive: !0 }), w = !0));
+    typeof window > "u" || (b.add(e), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), w || (y() ? window.lenis.on("scroll", E) : window.addEventListener("scroll", E, { passive: !0 }), w = !0));
   }
   unobserveScroll(e = null) {
     if (this._observedScrollCallbacks) {
@@ -250,29 +256,29 @@ let j = class {
           b.delete(t);
         this._observedScrollCallbacks.clear();
       }
-      b.size === 0 && w && (window.lenis ? window.lenis.off("scroll", E) : window.removeEventListener("scroll", E), w = !1);
+      b.size === 0 && w && (y() ? window.lenis.off("scroll", E) : window.removeEventListener("scroll", E), w = !1);
     }
   }
   observeIntersection(e, t, n = {}) {
     if (typeof window > "u" || !window.IntersectionObserver) return;
-    const o = B(n);
+    const o = H(n);
     let i = m.get(o);
     i || (i = { observer: new IntersectionObserver((d) => {
       for (let f = 0; f < d.length; f++) {
-        const C = d[f], S = i.callbacks.get(C.target);
-        if (S) {
-          const z = [C];
-          for (const I of S)
-            I(z);
+        const A = d[f], k = i.callbacks.get(A.target);
+        if (k) {
+          const L = [A];
+          for (const R of k)
+            R(L);
         }
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, m.set(o, i));
     let s = i.callbacks.get(e);
     s || (s = /* @__PURE__ */ new Set(), i.callbacks.set(e, s), i.observer.observe(e)), s.add(t), this._observedIntersectionElements || (this._observedIntersectionElements = /* @__PURE__ */ new Map());
-    let a = this._observedIntersectionElements.get(e);
-    a || (a = /* @__PURE__ */ new Map(), this._observedIntersectionElements.set(e, a));
-    let l = a.get(o);
-    l || (l = /* @__PURE__ */ new Set(), a.set(o, l)), l.add(t);
+    let r = this._observedIntersectionElements.get(e);
+    r || (r = /* @__PURE__ */ new Map(), this._observedIntersectionElements.set(e, r));
+    let l = r.get(o);
+    l || (l = /* @__PURE__ */ new Set(), r.set(o, l)), l.add(t);
   }
   unobserveIntersection(e, t = null) {
     if (!this._observedIntersectionElements) return;
@@ -284,15 +290,15 @@ let j = class {
           i.has(t) && (i.delete(t), s && s.callbacks.has(e) && s.callbacks.get(e).delete(t));
         else {
           if (s && s.callbacks.has(e)) {
-            const a = s.callbacks.get(e);
+            const r = s.callbacks.get(e);
             for (const l of i)
-              a.delete(l);
+              r.delete(l);
           }
           i.clear();
         }
         if (i.size === 0 && n.delete(o), s) {
-          const a = s.callbacks.get(e);
-          a && a.size === 0 && (s.callbacks.delete(e), s.observer.unobserve(e)), s.callbacks.size === 0 && (s.observer.disconnect(), m.delete(o));
+          const r = s.callbacks.get(e);
+          r && r.size === 0 && (s.callbacks.delete(e), s.observer.unobserve(e)), s.callbacks.size === 0 && (s.observer.disconnect(), m.delete(o));
         }
       }
       n.size === 0 && this._observedIntersectionElements.delete(e);
@@ -342,8 +348,8 @@ let j = class {
         i(), o(new Error(`Link tag '${e}' has no href or data-href.`));
       else if (t.href && !t.hasAttribute("data-href")) {
         let s = !1;
-        for (let a = 0; a < document.styleSheets.length; a++)
-          if (document.styleSheets[a].href === t.href) {
+        for (let r = 0; r < document.styleSheets.length; r++)
+          if (document.styleSheets[r].href === t.href) {
             s = !0;
             break;
           }
@@ -366,8 +372,8 @@ let j = class {
         this._state[o] = i, this._pendingStateChanges || (this._pendingStateChanges = {}, this._pendingAttributeChanges = {}, requestAnimationFrame(this._flushStateChanges)), this._pendingStateChanges[o] = i;
         const s = typeof i;
         if (s === "boolean" || s === "string") {
-          let a = O.get(o);
-          a || (a = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, O.set(o, a)), this._pendingAttributeChanges[a] = s === "boolean" ? i ? "true" : "false" : i;
+          let r = z.get(o);
+          r || (r = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, z.set(o, r)), this._pendingAttributeChanges[r] = s === "boolean" ? i ? "true" : "false" : i;
         }
       }
     }
@@ -392,11 +398,11 @@ let j = class {
   }
   _autoBindFunctions() {
     const e = Object.getPrototypeOf(this);
-    let t = P.get(e);
+    let t = M.get(e);
     t || (t = Object.getOwnPropertyNames(e).filter((n) => {
       var o;
-      return !$.has(n) && !n.startsWith("_") && typeof ((o = Object.getOwnPropertyDescriptor(e, n)) == null ? void 0 : o.value) == "function";
-    }), P.set(e, t));
+      return !P.has(n) && !n.startsWith("_") && typeof ((o = Object.getOwnPropertyDescriptor(e, n)) == null ? void 0 : o.value) == "function";
+    }), M.set(e, t));
     for (let n = 0; n < t.length; n++) {
       const o = t[n];
       this[o] = this[o].bind(this);
@@ -409,25 +415,25 @@ let j = class {
       if (!i) continue;
       let s = 0;
       for (; s < i.length; ) {
-        let a = i.indexOf(" ", s);
-        if (a === -1 && (a = i.length), a > s) {
-          const l = i.substring(s, a), c = l.indexOf("->");
+        let r = i.indexOf(" ", s);
+        if (r === -1 && (r = i.length), r > s) {
+          const l = i.substring(s, r), c = l.indexOf("->");
           let d, f;
-          c !== -1 ? (d = l.substring(0, c), f = l.substring(c + 2)) : (d = l, f = void 0), this[f] && typeof this[f] == "function" && !f.startsWith("_") && !$.has(f) ? o.addEventListener(d, this[f]) : console.warn(`Method "${f}" not found, is restricted, or is not a function in component.`);
+          c !== -1 ? (d = l.substring(0, c), f = l.substring(c + 2)) : (d = l, f = void 0), this[f] && typeof this[f] == "function" && !f.startsWith("_") && !P.has(f) ? o.addEventListener(d, this[f]) : console.warn(`Method "${f}" not found, is restricted, or is not a function in component.`);
         }
-        s = a + 1;
+        s = r + 1;
       }
     }
   }
 };
-class W extends j {
+class U extends D {
   async require() {
   }
   _load() {
     this.require().then(this.mount.bind(this));
   }
 }
-class D extends EventTarget {
+class T extends EventTarget {
   emit(e, t = {}) {
     u.get("log") && console.info(`Emitting event '${e}'`);
     const n = { ...t, _name: e }, o = new CustomEvent(e, { detail: n });
@@ -452,48 +458,48 @@ class D extends EventTarget {
     t || console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
   }
 }
-const Y = new D();
+const J = new T();
 let g = null;
-function H(r) {
+function F(a) {
   const e = `${u.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
-  for (let o = 0; o < r.length; o++) {
-    const i = r[o];
+  for (let o = 0; o < a.length; o++) {
+    const i = a[o];
     for (let s = 0; s < i.removedNodes.length; s++) {
-      const a = i.removedNodes[s];
-      if (a.nodeType === Node.ELEMENT_NODE) {
-        a.hasAttribute(e) && y(a);
-        const l = p(`[${e}]`, a);
+      const r = i.removedNodes[s];
+      if (r.nodeType === Node.ELEMENT_NODE) {
+        r.hasAttribute(e) && S(r);
+        const l = p(`[${e}]`, r);
         for (let c = 0; c < l.length; c++)
-          y(l[c]);
+          S(l[c]);
       }
     }
     for (let s = 0; s < i.addedNodes.length; s++) {
-      const a = i.addedNodes[s];
-      a.nodeType === Node.ELEMENT_NODE && (a.hasAttribute(e) || a.querySelector(`[${e}]`)) && n.add(a);
+      const r = i.addedNodes[s];
+      r.nodeType === Node.ELEMENT_NODE && (r.hasAttribute(e) || r.querySelector(`[${e}]`)) && n.add(r);
     }
   }
   for (const o of n)
-    o.isConnected && N(t, o);
+    o.isConnected && j(t, o);
 }
-function M() {
-  typeof document > "u" || (u.get("autoMountComponents") && !g ? (g = new MutationObserver(H), g.observe(document.body, {
+function I() {
+  typeof document > "u" || (u.get("autoMountComponents") && !g ? (g = new MutationObserver(F), g.observe(document.body, {
     childList: !0,
     subtree: !0
   })) : !u.get("autoMountComponents") && g && (g.disconnect(), g = null));
 }
-const T = u.set;
-u.set = function(r, e) {
-  T.call(this, r, e), r === "autoMountComponents" && M();
+const Y = u.set;
+u.set = function(a, e) {
+  Y.call(this, a, e), a === "autoMountComponents" && I();
 };
-typeof window < "u" && setTimeout(M, 0);
+typeof window < "u" && setTimeout(I, 0);
 export {
-  j as BaseComponent,
-  W as Component,
+  D as BaseComponent,
+  U as Component,
   u as config,
-  k as createInstance,
-  G as destroyInstance,
-  Y as eventbus,
-  q as getComponentFromElement,
-  N as loadComponents,
-  G as removeComponents
+  O as createInstance,
+  K as destroyInstance,
+  J as eventbus,
+  G as getComponentFromElement,
+  j as loadComponents,
+  K as removeComponents
 };

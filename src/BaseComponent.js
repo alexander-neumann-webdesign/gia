@@ -10,13 +10,21 @@ const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks
 let isGlobalScrollBound = false;
 const scrollCallbacks = new Set();
 let globalScrollEvent = { scrollY: 0, originalEvent: null };
+let hasLenis = undefined;
+
+function getHasLenis() {
+	if (hasLenis === undefined) {
+		hasLenis = typeof window !== "undefined" && !!window.lenis;
+	}
+	return hasLenis;
+}
 
 function handleGlobalScroll(e) {
 	if (scrollCallbacks.size === 0) return;
 
 	// Read layout exactly once
-	if (e && typeof e.scroll === 'number') {
-		globalScrollEvent.scrollY = e.scroll;
+	if (getHasLenis()) {
+		globalScrollEvent.scrollY = window.lenis.scroll;
 	} else {
 		globalScrollEvent.scrollY = window.scrollY || window.pageYOffset;
 	}
@@ -28,7 +36,7 @@ function handleGlobalScroll(e) {
 	}
 }
 
-const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle", "observeScroll", "unobserveScroll"]);
+const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle", "observeScroll", "unobserveScroll", "getScrollY"]);
 const protoMethodsCache = new WeakMap();
 const globalStateAttributeCache = new Map();
 
@@ -271,6 +279,13 @@ export default class Component {
 		}
 	}
 
+	getScrollY() {
+		if (getHasLenis()) {
+			return window.lenis.scroll;
+		}
+		return window.scrollY || window.pageYOffset;
+	}
+
 	observeScroll(callback) {
 		if (typeof window === "undefined") return;
 
@@ -282,7 +297,7 @@ export default class Component {
 		this._observedScrollCallbacks.add(callback);
 
 		if (!isGlobalScrollBound) {
-			if (window.lenis) {
+			if (getHasLenis()) {
 				window.lenis.on('scroll', handleGlobalScroll);
 			} else {
 				window.addEventListener('scroll', handleGlobalScroll, { passive: true });
@@ -305,7 +320,7 @@ export default class Component {
 		}
 
 		if (scrollCallbacks.size === 0 && isGlobalScrollBound) {
-			if (window.lenis) {
+			if (getHasLenis()) {
 				window.lenis.off('scroll', handleGlobalScroll);
 			} else {
 				window.removeEventListener('scroll', handleGlobalScroll);
