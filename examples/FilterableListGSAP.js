@@ -619,7 +619,7 @@ class FilterableListGSAP extends gia.Component {
 
 		// Perform DOM update
 		if (animate && window.gsap && window.Flip) {
-			const state = window.Flip.getState(this.ref.item);
+			const state = window.Flip.getState([this.ref.container, ...this.ref.item]);
 
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 
@@ -628,6 +628,12 @@ class FilterableListGSAP extends gia.Component {
 				ease: "power2.inOut",
 				stagger: this.options.staggerDelay / 1000,
 				absolute: true,
+				onEnter: elements => {
+					return window.gsap.fromTo(elements, {opacity: 0, scale: 0.8}, {opacity: 1, scale: 1, duration: 0.4});
+				},
+				onLeave: elements => {
+					return window.gsap.to(elements, {opacity: 0, scale: 0.8, duration: 0.4});
+				},
 				onComplete: () => {
 					// cleanup after transition
 				}
