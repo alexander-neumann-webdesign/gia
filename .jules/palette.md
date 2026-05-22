@@ -5,3 +5,7 @@
 ## 2026-05-21 - Form Validation Screen Reader Feedback
 **Learning:** Native or custom HTML form validation feedback (like success or error messages) that is dynamically un-hidden via JS is not automatically announced by screen readers. This leaves visually impaired users unaware if a form submission succeeded or failed.
 **Action:** Always add ARIA live region roles (`role="status"` for success/informative messages, `role="alert"` for critical/error messages) to dynamic feedback elements so screen readers can automatically announce the text when the element becomes visible.
+
+## 2025-05-19 - Adding Confirmation Dialogs for Destructive Actions
+**Learning:** Destructive actions, such as deleting a task in the TodoApp, executed instantly without any confirmation, can easily lead to accidental data loss. This is a common pattern that degrades user experience and trust.
+**Action:** Always intercept destructive actions (like deletions) with a native browser confirmation (`window.confirm()`) or a custom confirmation modal to ensure the user intends to perform the action before proceeding.

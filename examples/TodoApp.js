@@ -77,7 +77,9 @@ class TodoApp extends gia.Component {
 
 		if (deleteBtn) {
 			const id = deleteBtn.getAttribute('data-id');
-			this.deleteTask(id);
+			if (window.confirm('Are you sure you want to delete this task?')) {
+				this.deleteTask(id);
+			}
 		}
 	}
 
