@@ -80,8 +80,8 @@ class CustomCursor extends gia.Component {
         }
 
         window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
-        window.addEventListener('scroll', this.handleScroll, { passive: true });
-        window.addEventListener('resize', this.handleResize, { passive: true });
+        this.observeScroll(this.handleScroll);
+        this.observeWindowResize(this.handleResize);
 
         // Setup observers to trigger bounds updates
         if (window.ResizeObserver) {
@@ -114,8 +114,8 @@ class CustomCursor extends gia.Component {
 
     unmount() {
         window.removeEventListener('mousemove', this.handleMouseMove);
-        window.removeEventListener('scroll', this.handleScroll);
-        window.removeEventListener('resize', this.handleResize);
+        this.unobserveScroll(this.handleScroll);
+        this.unobserveWindowResize(this.handleResize);
 
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
@@ -156,9 +156,9 @@ class CustomCursor extends gia.Component {
         this._processInteractions(e.target);
     }
 
-    handleScroll() {
+    handleScroll(payload) {
         this.scroll.x = window.scrollX || window.pageXOffset;
-        this.scroll.y = window.scrollY || window.pageYOffset;
+        this.scroll.y = payload ? payload.scroll : (window.scrollY || window.pageYOffset);
         this._wakeUp();
     }
 
