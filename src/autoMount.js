@@ -33,7 +33,12 @@ function handleMutations(mutations) {
         for (let i = 0; i < mutation.addedNodes.length; i++) {
             const node = mutation.addedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
-                addedElements.add(node);
+                // ⚡ BOLT OPTIMIZATION: Only track nodes that are, or contain, components.
+                // This prevents loadComponents from running redundantly when large blocks
+                // of plain HTML (like list items or paragraphs) are inserted.
+                if (node.hasAttribute(attrName) || node.querySelector(`[${attrName}]`)) {
+                    addedElements.add(node);
+                }
             }
         }
     }

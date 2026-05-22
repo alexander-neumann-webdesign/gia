@@ -6,7 +6,8 @@ class Slider extends gia.Component {
 			loop: true,
 			align: "center",
 			skipSnaps: true,
-			tween: false
+			tween: false,
+			parallax: false
 		};
 
 		this.ref = {
@@ -80,6 +81,10 @@ class Slider extends gia.Component {
 			this.setupTween();
 		}
 
+		if (this.options.parallax) {
+			this.setupParallax();
+		}
+
 		// Initial state
 		this.onSelect();
 	}
@@ -147,6 +152,69 @@ class Slider extends gia.Component {
 			.on("reInit", tweenOpacity)
 			.on("scroll", tweenOpacity)
 			.on("slideFocus", tweenOpacity);
+	}
+
+
+	setupParallax() {
+		if (!this.emblaApi) return;
+
+		let slideNodes = this.emblaApi.slideNodes();
+		const PARALLAX_FACTOR = 0.2; // 20%
+		let parallaxMultiplier = 0;
+
+		const setParallaxMultiplier = () => {
+			parallaxMultiplier = PARALLAX_FACTOR * this.emblaApi.scrollSnapList().length;
+		};
+
+		const setSlideNodes = () => {
+			slideNodes = this.emblaApi.slideNodes();
+		};
+
+		const applyParallax = (embla, eventName) => {
+			const engine = embla.internalEngine();
+			const scrollProgress = embla.scrollProgress();
+			const slidesInView = embla.slidesInView();
+			const isScrollEvent = eventName === "scroll";
+
+			embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
+				let diffToTarget = scrollSnap - scrollProgress;
+				const slidesInSnap = engine.slideRegistry[snapIndex];
+
+				slidesInSnap.forEach((slideIndex) => {
+					if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
+
+					if (engine.options.loop) {
+						engine.slideLooper.loopPoints.forEach((loopItem) => {
+							const target = loopItem.target();
+
+							if (slideIndex === loopItem.index && target !== 0) {
+								const sign = Math.sign(target);
+
+								if (sign === -1) {
+									diffToTarget = scrollSnap - (1 + scrollProgress);
+								}
+								if (sign === 1) {
+									diffToTarget = scrollSnap + (1 - scrollProgress);
+								}
+							}
+						});
+					}
+
+					const translate = diffToTarget * (-1 * parallaxMultiplier) * 100;
+					slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
+				});
+			});
+		};
+
+		setParallaxMultiplier();
+		applyParallax(this.emblaApi);
+
+		this.emblaApi
+			.on("reInit", setSlideNodes)
+			.on("reInit", setParallaxMultiplier)
+			.on("reInit", applyParallax)
+			.on("scroll", applyParallax)
+			.on("slideFocus", applyParallax);
 	}
 
 	setupDots() {

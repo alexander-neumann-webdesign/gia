@@ -17,6 +17,10 @@
 ## 2024-05-19 - Object Iteration Array Allocations in High-Frequency Paths
 **Learning:** Checking if an object is empty via `Object.keys(obj).length === 0` allocates an intermediate array and iterates through all keys in the JS engine. When used in high-frequency methods like `set ref` or `_flushStateChanges` (which run constantly during component initialization or game loops), this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Replace `Object.keys(obj).length === 0` checks with a fast-failing `for...in` loop. This achieves an O(1) empty check with zero memory allocation. Use this pattern strictly for empty object checks, not for full iteration.
+
+## 2024-05-19 - Layout Thrashing in requestAnimationFrame
+**Learning:** Checking layout properties (like `getBoundingClientRect()`, `offsetHeight`, `window.scrollY`) inside a `requestAnimationFrame` callback loop triggers a forced synchronous layout recalculation if any other components mutated the DOM earlier in the same frame. Deferring layout reads using boolean flags (like `_needsBoundsUpdate`) until the next `rAF` tick is an anti-pattern.
+**Action:** Extract all layout reads out of `requestAnimationFrame`. Execute them synchronously inside observer callbacks (`ResizeObserver`, `IntersectionObserver`) or event handlers (`scroll`, `resize`), cache the result, and let the `rAF` loop strictly perform mathematical calculations and DOM writes based on the cached values.
 ## 2026-05-21 - [Infinite Loops from Weak Comparison]
 **Learning:** In a codebase using custom state management coupled with native DOM elements, directly assigning a number to an `input.value` automatically serializes it to a string. Validating updates with `input.value !== newValue` triggers an infinite loop when `newValue` is a number because `"10" !== 10` is always true.
 **Action:** When synchronizing state back to `<input type="number">` or `range`, always parse both values into floats before comparing, and ensure you explicitly handle empty strings which resolve to `NaN` to prevent `NaN !== NaN` infinite loops.
@@ -28,3 +32,25 @@
 ## 2026-05-22 - Refactored complex monolithic stateChange method in Tabs.js into smaller helper methods.
 **Learning:** Encapsulating complex logic (especially those that mix DOM updates, View Transitions, and procedural animations) into smaller, well-named helper methods drastically improves readability and maintainability without sacrificing performance.
 **Action:** When working with large `stateChange` or `render` functions, explicitly break down sequential tasks (e.g. `_updateDOM`, `_measureTargetHeight`, `_applyViewTransition`) into separate private methods.
+## 2024-05-22 - Optimize DOM loadComponents in MutationObserver (Revisited)
+**Learning:** Calling `loadComponents` on every newly added node via `MutationObserver` in `autoMount.js` means overhead scales linearly with the number of DOM insertions. `loadComponents` calls `querySelectorAll` which is slow.
+**Action:** When tracking added nodes in the `MutationObserver`, filter them by checking if the node is or contains a component before adding them to the tracking set (`node.hasAttribute(attrName) || node.querySelector(...)`). This completely bypasses processing overhead for large blocks of plain HTML insertions.
+
+## 2024-05-19 - Defer Event Bindings
+**Learning:** Attaching global `pointermove`, `pointerup`, and `pointercancel` listeners on the `window` constantly can cause performance degradation because events fire whenever the mouse moves, even if the user isn't actively interacting.
+**Action:** When implementing drag interactions (like marquees or sliders), attach `pointermove`, `pointerup`, and `pointercancel` listeners to the `window` dynamically inside the `pointerdown` handler, and remove them on `pointerup`.
+
+## 2024-05-19 - Passive Pointermove Event Binding
+**Learning:** If an interaction does not need to cancel scrolling (e.g., using `touch-action: pan-y`), passing `{ passive: false }` to the event listener can still block the browser's scrolling thread and cause jank.
+**Action:** When attaching `pointermove` listeners for interactions that do not require calling `preventDefault()`, use `{ passive: true }` to avoid blocking the main scrolling thread.
+
+## 2024-05-19 - Bypass Property Getters in Hot Paths
+**Learning:** Accessing `this.state` via a getter that returns `this._state` adds a slight performance overhead. Over thousands of frames, this can become a minor bottleneck.
+**Action:** In performance-critical animation loops (e.g., `requestAnimationFrame`), bypass getter methods for state objects and directly access their underlying properties (like `this._state`) to eliminate unnecessary function call overhead on every frame.
+## 2026-05-22 - Prevent layout thrashing in ImageHolder
+**Learning:** To prevent forced synchronous layouts inside requestAnimationFrame loops, never defer layout reads (e.g., getBoundingClientRect()) using dirty flags like state properties. Instead, perform these reads synchronously inside observer callbacks (like ResizeObserver or IntersectionObserver) or event handlers, and cache the values to be used purely for mathematical updates in the animation frame.
+**Action:** Reordered layout reads to happen before DOM writes in initialization and resize handlers, and moved layout caching from the async stateChange loop to the synchronous IntersectionObserver callback.
+
+## 2024-05-22 - Avoid Layout Reads in rAF & Eliminate Getter Overhead
+**Learning:** Performing layout reads (like `getBoundingClientRect()`) inside `requestAnimationFrame` loops or using a dirty flag to defer them can cause severe layout thrashing. Additionally, accessing properties via getters (like `this.options` or `this.ref`) inside high-frequency animation loops adds unnecessary function call overhead on every frame.
+**Action:** Move layout reads out of rAF loops and perform them synchronously inside observer callbacks (like `ResizeObserver` or `IntersectionObserver`). In performance-critical hot paths, bypass getter methods and access underlying properties directly (e.g., `this._options`, `this._ref`) to eliminate overhead.

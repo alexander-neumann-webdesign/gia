@@ -1,6 +1,6 @@
 var M = Object.defineProperty;
 var O = (a, e, t) => e in a ? M(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var E = (a, e, t) => O(a, typeof e != "symbol" ? e + "" : e, t);
+var y = (a, e, t) => O(a, typeof e != "symbol" ? e + "" : e, t);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (a) => {
   if (typeof a != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", a);
@@ -15,7 +15,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
 });
 class I {
   constructor() {
-    E(this, "_options", {
+    y(this, "_options", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -33,7 +33,7 @@ class I {
   }
 }
 const u = new I();
-function y(a, e, t, n) {
+function E(a, e, t, n) {
   if (a.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), a.__gia_component__;
   try {
@@ -68,12 +68,12 @@ function z(a = {}, e = document.documentElement) {
     const c = i[r];
     if (!c.__gia_component__) {
       const d = c.getAttribute(o);
-      typeof a[d] == "function" ? n.push(y(c, d, a[d])) : console.warn(`Constructor "${d}" not found.`);
+      typeof a[d] == "function" ? n.push(E(c, d, a[d])) : console.warn(`Constructor "${d}" not found.`);
     }
   }
   if (e instanceof Element && e.hasAttribute(o) && !e.__gia_component__) {
     const c = e.getAttribute(o);
-    typeof a[c] == "function" ? n.push(y(e, c, a[c])) : console.warn(`Constructor "${c}" not found.`);
+    typeof a[c] == "function" ? n.push(E(e, c, a[c])) : console.warn(`Constructor "${c}" not found.`);
   }
   for (let r = 0; r < n.length; r++)
     n[r]._load();
@@ -440,7 +440,7 @@ function L(a) {
     }
     for (let s = 0; s < i.addedNodes.length; s++) {
       const r = i.addedNodes[s];
-      r.nodeType === Node.ELEMENT_NODE && n.add(r);
+      r.nodeType === Node.ELEMENT_NODE && (r.hasAttribute(e) || r.querySelector(`[${e}]`)) && n.add(r);
     }
   }
   for (const o of n)
@@ -461,7 +461,7 @@ export {
   x as BaseComponent,
   F as Component,
   u as config,
-  y as createInstance,
+  E as createInstance,
   H as destroyInstance,
   q as eventbus,
   D as getComponentFromElement,

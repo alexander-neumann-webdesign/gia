@@ -45,17 +45,16 @@ class Marquee extends gia.Component {
 		this.speedMultiplier = 1;
 
 		this._isRenderingFrame = false;
-		this._needsBoundsUpdate = true;
 
 		this.handleIntersection = this.handleIntersection.bind(this);
 		this.preventDrag = this.preventDrag.bind(this);
 	}
 
 	mount() {
-		if (!this.ref.track) return;
+		if (!this._ref.track) return;
 
 		this.originalItems = [];
-		const children = this.ref.track.children;
+		const children = this._ref.track.children;
 		for (let i = 0; i < children.length; i++) {
 			this.originalItems.push(children[i]);
 		}
@@ -131,14 +130,14 @@ class Marquee extends gia.Component {
 	}
 
 	initHover() {
-		if (this.options.pauseOnHover) {
+		if (this._options.pauseOnHover) {
 			this.element.addEventListener('mouseenter', this.onMouseEnter);
 			this.element.addEventListener('mouseleave', this.onMouseLeave);
 		}
 	}
 
 	destroyHover() {
-		if (this.options.pauseOnHover) {
+		if (this._options.pauseOnHover) {
 			this.element.removeEventListener('mouseenter', this.onMouseEnter);
 			this.element.removeEventListener('mouseleave', this.onMouseLeave);
 		}
@@ -173,12 +172,9 @@ class Marquee extends gia.Component {
 
 	initDrag() {
 		this.element.addEventListener('pointerdown', this.onPointerDown);
-		window.addEventListener('pointermove', this.onPointerMove, { passive: false });
-		window.addEventListener('pointerup', this.onPointerUp);
-		window.addEventListener('pointercancel', this.onPointerUp);
 
 		// Prevent default drag behaviors on images and links within track
-		this.ref.track.addEventListener('dragstart', this.preventDrag);
+		this._ref.track.addEventListener('dragstart', this.preventDrag);
 	}
 
 	destroyDrag() {
@@ -187,8 +183,8 @@ class Marquee extends gia.Component {
 		window.removeEventListener('pointerup', this.onPointerUp);
 		window.removeEventListener('pointercancel', this.onPointerUp);
 
-		if (this.ref.track) {
-			this.ref.track.removeEventListener('dragstart', this.preventDrag);
+		if (this._ref.track) {
+			this._ref.track.removeEventListener('dragstart', this.preventDrag);
 		}
 	}
 
@@ -208,12 +204,16 @@ class Marquee extends gia.Component {
 		this.lastDragTime = performance.now();
 		this.dragVelocity = 0;
 
+		window.addEventListener('pointermove', this.onPointerMove, { passive: true });
+		window.addEventListener('pointerup', this.onPointerUp);
+		window.addEventListener('pointercancel', this.onPointerUp);
+
 		// Optional: add a grabbing cursor class
 		this.element.style.cursor = 'grabbing';
 	}
 
 	onPointerMove(e) {
-		if (!this.state.isDragging) return;
+		if (!this._state.isDragging) return;
 
 		const deltaX = e.clientX - this.lastDragX;
 		const now = performance.now();
@@ -236,10 +236,14 @@ class Marquee extends gia.Component {
 	}
 
 	onPointerUp(e) {
-		if (!this.state.isDragging) return;
+		if (!this._state.isDragging) return;
 
 		this.setState({ isDragging: false });
 		this.element.style.cursor = '';
+
+		window.removeEventListener('pointermove', this.onPointerMove);
+		window.removeEventListener('pointerup', this.onPointerUp);
+		window.removeEventListener('pointercancel', this.onPointerUp);
 
 		const timeSinceLastMove = performance.now() - this.lastDragTime;
 		if (timeSinceLastMove < 50) {
@@ -252,7 +256,7 @@ class Marquee extends gia.Component {
 	handleResize(entries) {
 		const entry = entries[entries.length - 1];
 		this.containerWidth = entry.contentRect.width;
-		this._needsBoundsUpdate = true;
+		this.updateBounds();
 	}
 
 	updateBounds() {
@@ -296,19 +300,13 @@ class Marquee extends gia.Component {
 				}
 
 				this.clones.push(cloneWrapper);
-				this.ref.track.appendChild(cloneWrapper);
+				this._ref.track.appendChild(cloneWrapper);
 			}
 		}
-
-		this._needsBoundsUpdate = false;
 	}
 
 	tick(time) {
 		if (!this.ticking) return;
-
-		if (this._needsBoundsUpdate) {
-			this.updateBounds();
-		}
 
 		// Calculate delta time for consistent speed across refresh rates (e.g., 60hz vs 144hz)
 		// Normalize against a standard 60fps frame (~16.67ms)
@@ -319,23 +317,25 @@ class Marquee extends gia.Component {
 
 		let frameOffset = 0;
 
-		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
+		const isPaused = this._state.isDragging || (this._options.pauseOnHover && this._state.isHovered);
 		const targetMultiplier = isPaused ? 0 : 1;
 
-		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - Math.pow(0.9, timeScale));
+		const decayMath = Math.pow(0.9, timeScale);
+
+		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - decayMath);
 
 		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
 			this.speedMultiplier = targetMultiplier;
 		}
 
-		const directionMultiplier = this.options.direction === 'left' ? -1 : 1;
-		frameOffset += (this.options.speed * directionMultiplier) * this.speedMultiplier * timeScale;
+		const directionMultiplier = this._options.direction === 'left' ? -1 : 1;
+		frameOffset += (this._options.speed * directionMultiplier) * this.speedMultiplier * timeScale;
 
 		// Apply scroll velocity if any
 		if (Math.abs(this.scrollVelocity) > 0.01) {
 			frameOffset += this.scrollVelocity * timeScale;
 			// Decay the scroll velocity (friction) using frame-rate independent exponential smoothing
-			this.scrollVelocity *= Math.pow(0.9, timeScale);
+			this.scrollVelocity *= decayMath;
 		} else {
 			this.scrollVelocity = 0;
 		}
@@ -372,7 +372,7 @@ class Marquee extends gia.Component {
 		const roundedOffset = Math.round(this.currentOffset * 10000) / 10000;
 		const transformStr = `translate3d(${roundedOffset}px, 0, 0)`;
 		if (this._lastTransform !== transformStr) {
-			this.ref.track.style.transform = transformStr;
+			this._ref.track.style.transform = transformStr;
 			this._lastTransform = transformStr;
 		}
 	}
@@ -388,7 +388,7 @@ class Marquee extends gia.Component {
 		// Create a single container wrapper for the original items to easily measure its full width.
 		// Append original items into this wrapper instead of using outerHTML to preserve event listeners/refs.
 
-		this.ref.track.replaceChildren();
+		this._ref.track.replaceChildren();
 
 		const originalWrapper = document.createElement('div');
 		originalWrapper.style.display = 'flex'; // Ensure it's inline
@@ -398,7 +398,7 @@ class Marquee extends gia.Component {
 			originalWrapper.appendChild(this.originalItems[i]);
 		}
 
-		this.ref.track.appendChild(originalWrapper);
+		this._ref.track.appendChild(originalWrapper);
 		this.originalWrapper = originalWrapper;
 	}
 }

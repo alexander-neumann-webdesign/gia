@@ -674,11 +674,17 @@
     <section id="ImageHolder">
         <h2>ImageHolder</h2>
         <div class="demo-block">
-            <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
-  <img data-ref="img" src="sample-image.jpg"  sizes="100vw" alt="A nice image" loading="lazy" />
-</div>
-
-
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
+                </div>
+            </div>
         </div>
     </section>
 
@@ -979,6 +985,66 @@
                         <div class="card-content">
                           <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
                           <div class="card-caption">Tween Slide 5</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="slider-controls">
+                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div class="embla__dots" data-ref="dotsContainer"></div>
+                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3>
+                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": true, "align": "center", "parallax": true}'>
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 1</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 2</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 3</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 4</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 5</div>
                         </div>
                       </div>
                     </div>
