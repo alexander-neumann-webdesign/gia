@@ -126,12 +126,6 @@ class OffCanvasMenu extends gia.Component {
 
 			if (isOpen) {
 				if (!this.element.open) {
-					// ⚡ BOLT OPTIMIZATION: Force layout recalculation before showing to ensure
-					// @starting-style CSS animations execute correctly on the very first render
-					this.element.style.display = 'block';
-					this.element.clientWidth;
-					this.element.style.display = '';
-
 					this.element.showModal();
 				}
 
