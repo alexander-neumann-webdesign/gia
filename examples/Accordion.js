@@ -16,29 +16,13 @@ class Accordion extends gia.Component {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}
 
+		this._ignoredAttributes = ['isOpen'];
+
 		// Initial state is correctly set from element initially or open attribute
-		this.isOpen = this.element.hasAttribute('open');
-	}
-
-	_setIsOpen(isOpen) {
-		this.isOpen = isOpen;
-
-		// Sync DOM if necessary
-		if (this.element.open !== isOpen) {
-			this.element.open = isOpen;
-		}
-
-		// Dispatch event for other accordions
-		if (isOpen && this.options.closeOthers) {
-			const customEvent = new CustomEvent('accordion:open', {
-				detail: { instance: this, parent: this.element.parentElement }
-			});
-			window.dispatchEvent(customEvent);
-		}
-
-		// Dispatch a window resize event to trigger layout updates
-		// (e.g., for embla-carousel or other scripts that rely on window resizing)
-		window.dispatchEvent(new Event('resize'));
+		this.setState({
+			isOpen: this.element.hasAttribute('open')
+		});
+		this.element.removeAttribute('data-is-open');
 	}
 
 	getIconSvg(iconType) {
@@ -95,13 +79,13 @@ class Accordion extends gia.Component {
 			window.swup.hooks.on("scroll:end", this.maybeStartOpened);
 		}
 
-		this._setIsOpen(shouldBeOpen);
+		this.setState({ isOpen: shouldBeOpen });
 	}
 
 	maybeStartOpened() {
 		if (window.location.hash && this.element.id === window.location.hash.substring(1)) {
-			if (!this.isOpen) {
-				this._setIsOpen(true);
+			if (!this.state.isOpen) {
+				this.setState({ isOpen: true });
 
 				setTimeout(() => {
 					this.element.scrollIntoView({ behavior: 'smooth' });
@@ -127,8 +111,8 @@ class Accordion extends gia.Component {
 	handleToggle(event) {
 		// Only update state if it doesn't match the element's actual state
 		// This prevents infinite loops since stateChange might alter element.open
-		if (this.isOpen !== this.element.open) {
-			this._setIsOpen(this.element.open);
+		if (this.state.isOpen !== this.element.open) {
+			this.setState({ isOpen: this.element.open });
 
 			// Refresh ScrollTrigger after the transition is expected to complete
 			// A 500ms timeout roughly matches the suggested CSS transition duration
@@ -143,8 +127,31 @@ class Accordion extends gia.Component {
 	handleAccordionOpen(event) {
 		const { instance, parent } = event.detail;
 
-		if (instance !== this && parent === this.element.parentElement && this.isOpen) {
-			this._setIsOpen(false);
+		if (instance !== this && parent === this.element.parentElement && this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
+	}
+
+	stateChange(stateChanges) {
+		if ('isOpen' in stateChanges) {
+			const { isOpen } = stateChanges;
+
+			// Sync DOM if necessary
+			if (this.element.open !== isOpen) {
+				this.element.open = isOpen;
+			}
+
+			// Dispatch event for other accordions
+			if (isOpen && this.options.closeOthers) {
+				const customEvent = new CustomEvent('accordion:open', {
+					detail: { instance: this, parent: this.element.parentElement }
+				});
+				window.dispatchEvent(customEvent);
+			}
+
+			// Dispatch a window resize event to trigger layout updates
+			// (e.g., for embla-carousel or other scripts that rely on window resizing)
+			window.dispatchEvent(new Event('resize'));
 		}
 	}
 }

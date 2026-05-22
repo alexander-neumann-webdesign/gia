@@ -530,7 +530,9 @@ export default class Component {
 						globalStateAttributeCache.set(key, attrName);
 					}
 
-					this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
+					if (!this._ignoredAttributes || !this._ignoredAttributes.includes(key)) {
+						this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
+					}
 				}
 			}
 		}
