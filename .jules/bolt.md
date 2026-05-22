@@ -57,3 +57,6 @@
 ## 2026-05-22 - Optimize View Transitions API Snapshotting
 **Learning:** When using the View Transitions API to animate filtering or updating large DOM lists, assigning a `view-transition-name` to all hidden elements forces the browser to unnecessarily snapshot and generate dummy pseudo-element trees for items that are completely invisible, causing severe performance degradation.
 **Action:** Always conditionally wrap the assignment of `view-transition-name` for hidden elements (e.g., `if (!element.hidden) { element.style.viewTransitionName = ... }`) to ensure only elements actively transitioning out are processed by the browser's animation engine.
+## 2024-05-22 - Refactor Duplicate Embla Slide Logic
+**Learning:** Found identical nested looping logic to calculate the diffToTarget for each slide across multiple setup functions (like `setupTween` and `setupParallax`) inside the `Slider` component. This increases maintenance surface area and cognitive load.
+**Action:** Extract the complex nested loops that iterate over Embla slides into a separate helper method (like `_applyEmblaEffect(embla, eventName, callback)`) to DRY out the code and reduce duplication, making it easier to add new scroll effects later.
