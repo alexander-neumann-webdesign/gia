@@ -636,12 +636,16 @@ class FilterableList extends gia.Component {
 			}
 		}
 		for (let i = 0; i < hiddenItems.length; i++) {
-			const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
-			hiddenItems[i].style.viewTransitionName = vName;
-			if (this.options.staggerDelay > 0) {
-				const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
-				staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
-				staggerIndex++;
+			// OPTIMIZATION: Only animate items that are currently visible and becoming hidden
+			// Applying viewTransitionName to already hidden items forces unnecessary snapshotting
+			if (!hiddenItems[i].hidden) {
+				const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
+				hiddenItems[i].style.viewTransitionName = vName;
+				if (this.options.staggerDelay > 0) {
+					const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
+					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
+					staggerIndex++;
+				}
 			}
 		}
 
