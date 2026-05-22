@@ -25,6 +25,9 @@
 **Pattern:** Splitting large iterative methods in array-processing loops (`_filterItems` in lists).
 **Learning:** For extremely large and deeply nested functions that do array traversal, extracting the conditional matching logic into isolated, state-free helper methods (`_isItemVisible`, `_itemMatchesFilter`) drastically improves code clarity and maintainability without incurring noticeable performance penalties, even in `requestAnimationFrame` contexts.
 **Application:** Keep boolean branching isolated from the loop iteration mechanism.
+## 2024-05-22 - Optimize DOM loadComponents in MutationObserver (Revisited)
+**Learning:** Calling `loadComponents` on every newly added node via `MutationObserver` in `autoMount.js` means overhead scales linearly with the number of DOM insertions. `loadComponents` calls `querySelectorAll` which is slow.
+**Action:** When tracking added nodes in the `MutationObserver`, filter them by checking if the node is or contains a component before adding them to the tracking set (`node.hasAttribute(attrName) || node.querySelector(...)`). This completely bypasses processing overhead for large blocks of plain HTML insertions.
 
 ## 2024-05-19 - Defer Event Bindings
 **Learning:** Attaching global `pointermove`, `pointerup`, and `pointercancel` listeners on the `window` constantly can cause performance degradation because events fire whenever the mouse moves, even if the user isn't actively interacting.
