@@ -632,6 +632,76 @@
         </div>
     </section>
 
+    <section id="MultiStepForm">
+        <h2>Multi Step Form</h2>
+        <div class="demo-block">
+            <div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action_multistep", "scrollToTopOnStep": false}'>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                  <div data-ref="stepIndicator" style="padding: 0.5rem; border: 1px solid #ccc; flex: 1; text-align: center;">Step 1: Personal</div>
+                  <div data-ref="stepIndicator" style="padding: 0.5rem; border: 1px solid #ccc; flex: 1; text-align: center;">Step 2: Details</div>
+                  <div data-ref="stepIndicator" style="padding: 0.5rem; border: 1px solid #ccc; flex: 1; text-align: center;">Step 3: Submit</div>
+                </div>
+
+                <form data-ref="form" method="POST">
+
+                  <div data-ref="step">
+                    <h3 style="margin-bottom: 1rem;">Personal Information</h3>
+                    <div style="margin-bottom: 1rem;">
+                      <label for="ms_name" style="display: block; margin-bottom: 0.5rem;">Name *</label>
+                      <input type="text" id="ms_name" name="ms_name" required style="width: 100%; padding: 0.5rem;" />
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                      <label for="ms_email" style="display: block; margin-bottom: 0.5rem;">Email *</label>
+                      <input type="email" id="ms_email" name="ms_email" required style="width: 100%; padding: 0.5rem;" />
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                      <button type="button" data-ref="nextBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Next Step</button>
+                    </div>
+                  </div>
+
+                  <div data-ref="step" hidden>
+                    <h3 style="margin-bottom: 1rem;">Additional Details</h3>
+                    <div style="margin-bottom: 1rem;">
+                      <label for="ms_age" style="display: block; margin-bottom: 0.5rem;">Age</label>
+                      <input type="number" id="ms_age" name="ms_age" min="18" max="100" style="width: 100%; padding: 0.5rem;" />
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                      <label for="ms_city" style="display: block; margin-bottom: 0.5rem;">City</label>
+                      <input type="text" id="ms_city" name="ms_city" style="width: 100%; padding: 0.5rem;" />
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+                      <button type="button" data-ref="prevBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Previous Step</button>
+                      <button type="button" data-ref="nextBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Next Step</button>
+                    </div>
+                  </div>
+
+                  <div data-ref="step" hidden>
+                    <h3 style="margin-bottom: 1rem;">Review & Submit</h3>
+                    <p style="margin-bottom: 1rem;">Please confirm your details and submit the form.</p>
+                    <div style="margin-bottom: 1rem;">
+                      <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="ms_terms" required /> I agree to the terms and conditions *
+                      </label>
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+                      <button type="button" data-ref="prevBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Previous Step</button>
+                      <button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Submit Form</button>
+                    </div>
+                  </div>
+
+                </form>
+
+                <div data-ref="successMessage" hidden class="form-success" role="status">
+                  Thank you! Your multi-step form has been submitted.
+                </div>
+                <div data-ref="errorMessage" hidden class="form-error" role="alert">
+                  There was an error. Please try again later.
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="Header">
         <h2>Header</h2>
         <div class="demo-block">
