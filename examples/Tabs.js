@@ -166,155 +166,143 @@ class Tabs extends gia.Component {
 		}
 	}
 
+	_updateDOM(activeIndex) {
+		this.updateIndicator();
+
+		// Update Tabs
+		this.ref.tab.forEach((tab, index) => {
+			const isSelected = index === activeIndex;
+			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+
+			if (isSelected) {
+				tab.setAttribute('tabindex', '0');
+			} else {
+				tab.setAttribute('tabindex', '-1');
+			}
+		});
+
+		// Update Panels
+		this.ref.panel.forEach((panel, index) => {
+			const activeTab = this.ref.tab[activeIndex];
+			const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
+
+			if (controlsId) {
+				panel.hidden = (panel.id !== controlsId);
+			} else {
+				panel.hidden = (index !== activeIndex);
+			}
+		});
+	}
+
+	_measureTargetHeight(panelsContainer, activeIndex) {
+		// Apply new state to measure
+		const previousHiddenStates = this.ref.panel.map(p => p.hidden);
+
+		// Temporarily disable transitions to get pure target height
+		this.ref.panel.forEach(p => {
+			p.style.transition = 'none';
+		});
+
+		// Update DOM without view transition just to measure
+		this._updateDOM(activeIndex);
+
+		const endHeight = panelsContainer.offsetHeight;
+
+		// Revert state
+		this.ref.panel.forEach((p, i) => p.hidden = previousHiddenStates[i]);
+
+		// Force a reflow before restoring transitions so the browser registers the revert
+		void panelsContainer.offsetHeight;
+
+		this.ref.panel.forEach(p => {
+			p.style.transition = '';
+		});
+
+		return endHeight;
+	}
+
+	_applyViewTransition(panelsContainer, activeIndex) {
+		if (!document.startViewTransition) {
+			this._updateDOM(activeIndex);
+			return null;
+		}
+
+		const activePanel = this.ref.panel[activeIndex];
+		const oldPanel = this.ref.panel.find(p => !p.hidden);
+
+		panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
+		if (oldPanel && oldPanel !== activePanel) {
+			oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
+		}
+		if (activePanel) {
+			activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
+		}
+
+		// Disable root transition to prevent full-page crossfade
+		document.documentElement.style.viewTransitionName = 'none';
+
+		const transition = document.startViewTransition(() => this._updateDOM(activeIndex));
+
+		transition.ready.catch(() => {});
+		transition.finished.catch(() => {
+			// Ignore AbortError when rapid clicks interrupt an ongoing transition
+		}).finally(() => {
+			panelsContainer.style.viewTransitionName = '';
+			if (oldPanel) {
+				oldPanel.style.viewTransitionName = '';
+			}
+			if (activePanel) {
+				activePanel.style.viewTransitionName = '';
+			}
+			document.documentElement.style.viewTransitionName = '';
+		});
+
+		return transition;
+	}
+
+	_animateContainerHeight(panelsContainer, startHeight, endHeight, transition) {
+		panelsContainer.style.overflow = 'hidden';
+		const animation = panelsContainer.animate(
+			[
+				{ height: `${startHeight}px` },
+				{ height: `${endHeight}px` }
+			],
+			{
+				duration: 400,
+				easing: 'ease',
+				fill: 'forwards'
+			}
+		);
+
+		const cleanup = () => {
+			animation.cancel();
+			panelsContainer.style.overflow = '';
+			panelsContainer.style.height = '';
+		};
+
+		if (transition) {
+			transition.finished.finally(cleanup);
+		} else {
+			setTimeout(cleanup, 450); // Defer cleanup to ensure CSS discrete transitions finish before removing height lock
+		}
+	}
+
 	stateChange(stateChanges) {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
-
-			const updateDOM = () => {
-				this.updateIndicator();
-
-				// Update Tabs
-				this.ref.tab.forEach((tab, index) => {
-					const isSelected = index === activeIndex;
-					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-
-					if (isSelected) {
-						tab.setAttribute('tabindex', '0');
-					} else {
-						tab.setAttribute('tabindex', '-1');
-					}
-				});
-
-				// Update Panels
-				this.ref.panel.forEach((panel, index) => {
-					// We assume panels are either 1:1 in index order, or matched by aria-controls.
-					// For the simplest stateful approach, we match by index, or if aria-controls exists, we could find it.
-					// Here we update based on index mapping if lengths match.
-					const activeTab = this.ref.tab[activeIndex];
-					const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
-
-					if (controlsId) {
-						panel.hidden = (panel.id !== controlsId);
-					} else {
-						panel.hidden = (index !== activeIndex);
-					}
-				});
-			};
-
-
 			const panelsContainer = this.ref.panel[0]?.parentElement;
 
 			if (panelsContainer) {
 				const startHeight = panelsContainer.offsetHeight;
-
-				let transition = null;
-				const doViewTransition = () => {
-					if (document.startViewTransition) {
-						const activePanel = this.ref.panel[activeIndex];
-						const oldPanel = this.ref.panel.find(p => !p.hidden);
-
-						panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
-						if (oldPanel && oldPanel !== activePanel) {
-							oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
-						}
-						if (activePanel) {
-							activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
-						}
-
-						// Disable root transition to prevent full-page crossfade
-						document.documentElement.style.viewTransitionName = 'none';
-
-						transition = document.startViewTransition(() => updateDOM());
-
-						transition.ready.catch(() => {});
-						transition.finished.catch(() => {
-							// Ignore AbortError when rapid clicks interrupt an ongoing transition
-						}).finally(() => {
-							panelsContainer.style.viewTransitionName = '';
-							if (oldPanel) {
-								oldPanel.style.viewTransitionName = '';
-							}
-							if (activePanel) {
-								activePanel.style.viewTransitionName = '';
-							}
-							document.documentElement.style.viewTransitionName = '';
-						});
-					} else {
-						updateDOM();
-					}
-				};
-
-				// To find the end height, we temporarily apply the new state, measure, then revert.
-				// Wait, if we use Web Animations API on panelsContainer, we can just do it.
-				// Let's force layout for start and end heights.
-				
-				// Apply new state to measure
-				const previousHiddenStates = this.ref.panel.map(p => p.hidden);
-				
-				// Temporarily disable transitions to get pure target height
-				this.ref.panel.forEach(p => {
-					p.style.transition = 'none';
-				});
-
-				// Update DOM without view transition just to measure
-				updateDOM();
-				
-				// The height might be affected by CSS transitions if display goes from block to none,
-				// but since display: none removes it from flow, the grid height should shrink. 
-				// However, if the old panel is still transitioning, its height might keep the grid tall.
-				// To get pure target height, we temporarily disable transitions to read the real offsetHeight.
-				const endHeight = panelsContainer.offsetHeight;
-
-				// Revert state
-				this.ref.panel.forEach((p, i) => p.hidden = previousHiddenStates[i]);
-
-				// Force a reflow before restoring transitions so the browser registers the revert
-				void panelsContainer.offsetHeight;
-
-				this.ref.panel.forEach(p => {
-					p.style.transition = '';
-				});
-
-				// Now apply state properly (with view transition)
-				doViewTransition();
+				const endHeight = this._measureTargetHeight(panelsContainer, activeIndex);
+				const transition = this._applyViewTransition(panelsContainer, activeIndex);
 
 				if (startHeight !== endHeight) {
-					// We need to animate the height.
-					// Since the old element might take time to fade out (due to CSS transition),
-					// and grid height takes the max, the container height naturally won't shrink 
-					// until the fade out completes if it was the taller element.
-					// If we animate the container height explicitly, it will force the container size.
-					panelsContainer.style.overflow = 'hidden';
-					const animation = panelsContainer.animate(
-						[
-							{ height: `${startHeight}px` },
-							{ height: `${endHeight}px` }
-						],
-						{
-							duration: 400,
-							easing: 'ease',
-							fill: 'forwards'
-						}
-					);
-
-					if (transition) {
-						transition.finished.finally(() => {
-							animation.cancel();
-							panelsContainer.style.overflow = '';
-							panelsContainer.style.height = '';
-						});
-					} else {
-						setTimeout(() => {
-							animation.cancel();
-							panelsContainer.style.overflow = '';
-							panelsContainer.style.height = '';
-						}, 450); // Defer cleanup to ensure CSS discrete transitions finish before removing height lock
-					}
+					this._animateContainerHeight(panelsContainer, startHeight, endHeight, transition);
 				}
 			} else {
-				updateDOM();
+				this._updateDOM(activeIndex);
 			}
-
 		}
 	}
 }

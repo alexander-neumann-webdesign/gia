@@ -25,3 +25,6 @@
 **Pattern:** Splitting large iterative methods in array-processing loops (`_filterItems` in lists).
 **Learning:** For extremely large and deeply nested functions that do array traversal, extracting the conditional matching logic into isolated, state-free helper methods (`_isItemVisible`, `_itemMatchesFilter`) drastically improves code clarity and maintainability without incurring noticeable performance penalties, even in `requestAnimationFrame` contexts.
 **Application:** Keep boolean branching isolated from the loop iteration mechanism.
+## 2026-05-22 - Refactored complex monolithic stateChange method in Tabs.js into smaller helper methods.
+**Learning:** Encapsulating complex logic (especially those that mix DOM updates, View Transitions, and procedural animations) into smaller, well-named helper methods drastically improves readability and maintainability without sacrificing performance.
+**Action:** When working with large `stateChange` or `render` functions, explicitly break down sequential tasks (e.g. `_updateDOM`, `_measureTargetHeight`, `_applyViewTransition`) into separate private methods.
