@@ -339,12 +339,7 @@ class FilterableList extends gia.Component {
 		window.history.pushState({ path: newUrl }, '', newUrl);
 	}
 
-	handleFilterChange(e) {
-		const el = e.target;
-		const filterType = el.name || el.getAttribute('data-filter-type');
-
-		if (!filterType) return;
-
+	_getFilterValues(el, filterType) {
 		let values = [];
 		if (el instanceof HTMLSelectElement) {
 			if (el.multiple) {
@@ -369,6 +364,16 @@ class FilterableList extends gia.Component {
 				values = [];
 			}
 		}
+		return values;
+	}
+
+	handleFilterChange(e) {
+		const el = e.target;
+		const filterType = el.name || el.getAttribute('data-filter-type');
+
+		if (!filterType) return;
+
+		let values = this._getFilterValues(el, filterType);
 
 		this.activeFilters[filterType] = values;
 
@@ -776,98 +781,109 @@ class FilterableList extends gia.Component {
 		});
 	}
 
+	_updateFilterElements() {
+		for (let i = 0; i < this.ref.filter.length; i++) {
+			const el = this.ref.filter[i];
+			const filterType = el.name || el.getAttribute('data-filter-type');
+			if (!filterType) continue;
+
+			const activeValues = this.activeFilters[filterType] || [];
+			this._updateFilterElement(el, activeValues);
+		}
+	}
+
+	_updateFilterElement(el, activeValues) {
+		if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
+			const filterValue = el.getAttribute('data-filter-value');
+			let isActive = false;
+			if (filterValue === '*' || filterValue === 'all' || !filterValue) {
+				isActive = activeValues.length === 0;
+			} else {
+				isActive = activeValues.includes(filterValue);
+			}
+
+			if (isActive) {
+				el.classList.add(this.options.activeFilterClass);
+				el.setAttribute('aria-pressed', 'true');
+			} else {
+				el.classList.remove(this.options.activeFilterClass);
+				el.setAttribute('aria-pressed', 'false');
+			}
+		} else if (el instanceof HTMLSelectElement) {
+			if (el.multiple) {
+				for (let j = 0; j < el.options.length; j++) {
+					const opt = el.options[j];
+					opt.selected = activeValues.includes(opt.value);
+				}
+			} else {
+				el.value = activeValues.length > 0 ? activeValues[0] : '';
+			}
+		} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+			el.checked = activeValues.includes(el.value);
+		} else if (el instanceof HTMLInputElement) {
+			// Text, search, range, etc.
+			let newVal = '';
+			if (activeValues.length > 0) {
+				newVal = activeValues[0];
+			} else {
+				newVal = el.type === 'range' ? (el.defaultValue || '') : '';
+			}
+
+			let isDifferent = false;
+			if (el.type === 'range' || el.type === 'number') {
+				const num1 = parseFloat(el.value);
+				const num2 = parseFloat(newVal);
+				// Handle empty strings causing NaN !== NaN
+				if (isNaN(num1) && isNaN(num2)) {
+					isDifferent = String(el.value) !== String(newVal);
+				} else {
+					isDifferent = num1 !== num2;
+				}
+			} else {
+				isDifferent = el.value !== String(newVal);
+			}
+
+			if (isDifferent) {
+				el.value = newVal;
+				el.dispatchEvent(new Event('change', { bubbles: true }));
+			}
+			// Update associated output if it exists (for range inputs)
+			if (el.type === 'range' && el.id) {
+				const outputEl = document.querySelector(`output[for="${el.id}"]`);
+				if (outputEl && outputEl.value !== el.value) {
+					outputEl.value = el.value;
+				}
+			}
+		}
+	}
+
+	_updateSorterElements() {
+		for (let i = 0; i < this.ref.sorter.length; i++) {
+			this._updateSorterElement(this.ref.sorter[i]);
+		}
+	}
+
+	_updateSorterElement(el) {
+		if (el instanceof HTMLSelectElement) {
+			el.value = this.activeSort;
+		} else if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
+			const sortValue = el.getAttribute('data-sort-value');
+			const isActive = this.activeSort === sortValue;
+
+			if (isActive) {
+				el.classList.add(this.options.activeFilterClass);
+				el.setAttribute('aria-selected', 'true');
+			} else {
+				el.classList.remove(this.options.activeFilterClass);
+				el.setAttribute('aria-selected', 'false');
+			}
+		}
+	}
+
 	stateChange(stateChanges) {
 		if ('filtersUpdated' in stateChanges) {
-			// Update filter elements
-			for (let i = 0; i < this.ref.filter.length; i++) {
-				const el = this.ref.filter[i];
-				const filterType = el.name || el.getAttribute('data-filter-type');
-				if (!filterType) continue;
-
-				const activeValues = this.activeFilters[filterType] || [];
-
-				if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
-					const filterValue = el.getAttribute('data-filter-value');
-					let isActive = false;
-					if (filterValue === '*' || filterValue === 'all' || !filterValue) {
-						isActive = activeValues.length === 0;
-					} else {
-						isActive = activeValues.includes(filterValue);
-					}
-
-					if (isActive) {
-						el.classList.add(this.options.activeFilterClass);
-						el.setAttribute('aria-pressed', 'true');
-					} else {
-						el.classList.remove(this.options.activeFilterClass);
-						el.setAttribute('aria-pressed', 'false');
-					}
-				} else if (el instanceof HTMLSelectElement) {
-					if (el.multiple) {
-						for (let j = 0; j < el.options.length; j++) {
-							const opt = el.options[j];
-							opt.selected = activeValues.includes(opt.value);
-						}
-					} else {
-						el.value = activeValues.length > 0 ? activeValues[0] : '';
-					}
-				} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
-					el.checked = activeValues.includes(el.value);
-				} else if (el instanceof HTMLInputElement) {
-					// Text, search, range, etc.
-					let newVal = '';
-					if (activeValues.length > 0) {
-						newVal = activeValues[0];
-					} else {
-						newVal = el.type === 'range' ? (el.defaultValue || '') : '';
-					}
-
-					let isDifferent = false;
-					if (el.type === 'range' || el.type === 'number') {
-						const num1 = parseFloat(el.value);
-						const num2 = parseFloat(newVal);
-						// Handle empty strings causing NaN !== NaN
-						if (isNaN(num1) && isNaN(num2)) {
-							isDifferent = String(el.value) !== String(newVal);
-						} else {
-							isDifferent = num1 !== num2;
-						}
-					} else {
-						isDifferent = el.value !== String(newVal);
-					}
-
-					if (isDifferent) {
-						el.value = newVal;
-						el.dispatchEvent(new Event('change', { bubbles: true }));
-					}
-					// Update associated output if it exists (for range inputs)
-					if (el.type === 'range' && el.id) {
-						const outputEl = document.querySelector(`output[for="${el.id}"]`);
-						if (outputEl && outputEl.value !== el.value) {
-							outputEl.value = el.value;
-						}
-					}
-				}
-			}
-
-			// Update sorter elements
-			for (let i = 0; i < this.ref.sorter.length; i++) {
-				const el = this.ref.sorter[i];
-				if (el instanceof HTMLSelectElement) {
-					el.value = this.activeSort;
-				} else if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
-					const sortValue = el.getAttribute('data-sort-value');
-					const isActive = this.activeSort === sortValue;
-
-					if (isActive) {
-						el.classList.add(this.options.activeFilterClass);
-						el.setAttribute('aria-selected', 'true');
-					} else {
-						el.classList.remove(this.options.activeFilterClass);
-						el.setAttribute('aria-selected', 'false');
-					}
-				}
-			}
+			this._updateFilterElements();
+			this._updateSorterElements();
 		}
 	}
 }
