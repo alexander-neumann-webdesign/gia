@@ -167,9 +167,7 @@ class CustomCursor extends gia.Component {
         this._wakeUp();
     }
 
-    _processInteractions(target) {
-        // Check states based on attributes
-        // Only run expensive DOM traversal if target changed
+    _updateTargetState(target) {
         if (this._lastInteractionTarget !== target) {
             this._lastInteractionTarget = target;
 
@@ -199,24 +197,13 @@ class CustomCursor extends gia.Component {
                 }
             }
         }
+    }
 
-        let targetState = this._cachedTargetState;
-        let targetText = this._cachedTargetText;
-        let targetIcon = this._cachedTargetIcon;
-        let targetImg = this._cachedTargetImg;
-        let targetVideo = this._cachedTargetVideo;
-
-        // Magnetic and Stick Hover logic
-        // We find the closest magnetic element from the cached bounds
+    _findClosestMagneticElement(docMouseX, docMouseY) {
         let closestMagneticEl = null;
         let isSnapped = false;
         let isStick = false;
         let minDistanceSq = Infinity;
-
-        const scrollX = this.scroll.x;
-        const scrollY = this.scroll.y;
-        const docMouseX = this.mouse.x + scrollX;
-        const docMouseY = this.mouse.y + scrollY;
 
         for (const item of this.cachedMagneticElements) {
             const { el, bounds, type } = item;
@@ -261,7 +248,10 @@ class CustomCursor extends gia.Component {
             }
         }
 
-        // Handle entering/changing magnetic element pull zone
+        return { closestMagneticEl, isSnapped, isStick };
+    }
+
+    _handleMagneticPullZone(closestMagneticEl) {
         if (closestMagneticEl && this.magneticTarget !== closestMagneticEl) {
             if (this.magneticTarget) {
                 this.magneticTarget.style.transform = '';
@@ -280,14 +270,9 @@ class CustomCursor extends gia.Component {
             this.magneticTarget = null;
             this.magneticBounds = null;
         }
+    }
 
-        // Determine final target state considering magnetic snapping
-        let finalState = targetState;
-        if (isSnapped) {
-            finalState = isStick ? 'stick' : 'magnetic';
-        }
-
-        // Handle state changes
+    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
         if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
             // Remove old media/icons if we are switching away from those specific contents
             if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
@@ -390,6 +375,36 @@ class CustomCursor extends gia.Component {
         }
     }
 
+    _processInteractions(target) {
+        // Check states based on attributes
+        // Only run expensive DOM traversal if target changed
+        this._updateTargetState(target);
+
+        let targetState = this._cachedTargetState;
+        let targetText = this._cachedTargetText;
+        let targetIcon = this._cachedTargetIcon;
+        let targetImg = this._cachedTargetImg;
+        let targetVideo = this._cachedTargetVideo;
+
+        // Magnetic and Stick Hover logic
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
+        const docMouseX = this.mouse.x + scrollX;
+        const docMouseY = this.mouse.y + scrollY;
+
+        const { closestMagneticEl, isSnapped, isStick } = this._findClosestMagneticElement(docMouseX, docMouseY);
+
+        this._handleMagneticPullZone(closestMagneticEl);
+
+        // Determine final target state considering magnetic snapping
+        let finalState = targetState;
+        if (isSnapped) {
+            finalState = isStick ? 'stick' : 'magnetic';
+        }
+
+        this._updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon);
+    }
+
     _preloadImages() {
         const imageElements = document.querySelectorAll('[data-cursor-img]');
         for (const el of imageElements) {
@@ -406,55 +421,7 @@ class CustomCursor extends gia.Component {
         if (!this._isRenderingFrame) return;
 
         if (this._needsAllBoundsUpdate) {
-            this._needsAllBoundsUpdate = false;
-
-            this._preloadImages();
-
-            // Rebuild the cache of all magnetic elements
-            const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
-            this.cachedMagneticElements = [];
-
-            const scrollX = this.scroll.x;
-            const scrollY = this.scroll.y;
-
-            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
-            for (const el of elements) {
-                // If it's the current target, we need to mathematically untransform it
-                let rect = el.getBoundingClientRect();
-
-                let left = rect.left + scrollX;
-                let top = rect.top + scrollY;
-                let width = rect.width;
-                let height = rect.height;
-
-                if (el === this.magneticTarget) {
-                    left -= this._currentPullX;
-                    top -= this._currentPullY;
-                }
-
-                const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
-
-                const bounds = {
-                    left: left,
-                    top: top,
-                    right: left + width,
-                    bottom: top + height,
-                    width: width,
-                    height: height,
-                    centerX: left + width / 2,
-                    centerY: top + height / 2
-                };
-
-                this.cachedMagneticElements.push({ el, bounds, type });
-
-                if (el === this.magneticTarget) {
-                    this.magneticBounds = bounds;
-                }
-            }
-
-            // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
-            // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
-            this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
+            this._updateBounds();
         }
 
         // Calculate delta time for frame-rate independent lerp
@@ -469,6 +436,80 @@ class CustomCursor extends gia.Component {
         let targetY = this.mouse.y;
 
         // If hovering magnetic element, pull the target to its center
+        const magneticPull = this._calculateMagneticPull(targetX, targetY);
+        targetX = magneticPull.targetX;
+        targetY = magneticPull.targetY;
+
+        // Frame-rate independent exponential smoothing
+        // Math.pow(1 - friction, timeScale) calculates remaining distance
+        const interpolationFactor = 1 - Math.pow(1 - this.options.friction, timeScale);
+
+        this.cursor.x += (targetX - this.cursor.x) * interpolationFactor;
+        this.cursor.y += (targetY - this.cursor.y) * interpolationFactor;
+
+        // Calculate Skew based on velocity
+        const skewStr = this._calculateSkew(interpolationFactor);
+
+        // Apply to DOM
+        this._applyDOMTransform(skewStr);
+
+        // Check if cursor has essentially reached the mouse to put loop to sleep
+        this._checkSleep(targetX, targetY);
+    }
+
+    _updateBounds() {
+        this._needsAllBoundsUpdate = false;
+
+        this._preloadImages();
+
+        // Rebuild the cache of all magnetic elements
+        const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
+        this.cachedMagneticElements = [];
+
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
+
+        // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
+        for (const el of elements) {
+            // If it's the current target, we need to mathematically untransform it
+            let rect = el.getBoundingClientRect();
+
+            let left = rect.left + scrollX;
+            let top = rect.top + scrollY;
+            let width = rect.width;
+            let height = rect.height;
+
+            if (el === this.magneticTarget) {
+                left -= this._currentPullX;
+                top -= this._currentPullY;
+            }
+
+            const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
+
+            const bounds = {
+                left: left,
+                top: top,
+                right: left + width,
+                bottom: top + height,
+                width: width,
+                height: height,
+                centerX: left + width / 2,
+                centerY: top + height / 2
+            };
+
+            this.cachedMagneticElements.push({ el, bounds, type });
+
+            if (el === this.magneticTarget) {
+                this.magneticBounds = bounds;
+            }
+        }
+
+        // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
+        // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
+        this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
+    }
+
+    _calculateMagneticPull(targetX, targetY) {
         if (this.magneticTarget && this.magneticBounds) {
             const scrollX = this.scroll.x;
             const scrollY = this.scroll.y;
@@ -504,15 +545,10 @@ class CustomCursor extends gia.Component {
                 this._lastMagneticTransform = magneticTransformStr;
             }
         }
+        return { targetX, targetY };
+    }
 
-        // Frame-rate independent exponential smoothing
-        // Math.pow(1 - friction, timeScale) calculates remaining distance
-        const interpolationFactor = 1 - Math.pow(1 - this.options.friction, timeScale);
-
-        this.cursor.x += (targetX - this.cursor.x) * interpolationFactor;
-        this.cursor.y += (targetY - this.cursor.y) * interpolationFactor;
-
-        // Calculate Skew based on velocity
+    _calculateSkew(interpolationFactor) {
         let skewStr = '';
         if (this.options.skewing) {
             // Determine active skew multiplier based on state
@@ -557,8 +593,10 @@ class CustomCursor extends gia.Component {
             this._lastPos.x = this.cursor.x;
             this._lastPos.y = this.cursor.y;
         }
+        return skewStr;
+    }
 
-        // Apply to DOM
+    _applyDOMTransform(skewStr) {
         if (this.ref.dot) {
             let dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
             if (skewStr) {
@@ -569,8 +607,9 @@ class CustomCursor extends gia.Component {
                 this._lastDotTransform = dotTransformStr;
             }
         }
+    }
 
-        // Check if cursor has essentially reached the mouse to put loop to sleep
+    _checkSleep(targetX, targetY) {
         const dx = targetX - this.cursor.x;
         const dy = targetY - this.cursor.y;
 

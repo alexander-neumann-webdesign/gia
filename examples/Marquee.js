@@ -173,9 +173,6 @@ class Marquee extends gia.Component {
 
 	initDrag() {
 		this.element.addEventListener('pointerdown', this.onPointerDown);
-		window.addEventListener('pointermove', this.onPointerMove, { passive: false });
-		window.addEventListener('pointerup', this.onPointerUp);
-		window.addEventListener('pointercancel', this.onPointerUp);
 
 		// Prevent default drag behaviors on images and links within track
 		this.ref.track.addEventListener('dragstart', this.preventDrag);
@@ -208,12 +205,16 @@ class Marquee extends gia.Component {
 		this.lastDragTime = performance.now();
 		this.dragVelocity = 0;
 
+		window.addEventListener('pointermove', this.onPointerMove, { passive: true });
+		window.addEventListener('pointerup', this.onPointerUp);
+		window.addEventListener('pointercancel', this.onPointerUp);
+
 		// Optional: add a grabbing cursor class
 		this.element.style.cursor = 'grabbing';
 	}
 
 	onPointerMove(e) {
-		if (!this.state.isDragging) return;
+		if (!this._state.isDragging) return;
 
 		const deltaX = e.clientX - this.lastDragX;
 		const now = performance.now();
@@ -236,10 +237,14 @@ class Marquee extends gia.Component {
 	}
 
 	onPointerUp(e) {
-		if (!this.state.isDragging) return;
+		if (!this._state.isDragging) return;
 
 		this.setState({ isDragging: false });
 		this.element.style.cursor = '';
+
+		window.removeEventListener('pointermove', this.onPointerMove);
+		window.removeEventListener('pointerup', this.onPointerUp);
+		window.removeEventListener('pointercancel', this.onPointerUp);
 
 		const timeSinceLastMove = performance.now() - this.lastDragTime;
 		if (timeSinceLastMove < 50) {
@@ -319,10 +324,12 @@ class Marquee extends gia.Component {
 
 		let frameOffset = 0;
 
-		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
+		const isPaused = this._state.isDragging || (this.options.pauseOnHover && this._state.isHovered);
 		const targetMultiplier = isPaused ? 0 : 1;
 
-		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - Math.pow(0.9, timeScale));
+		const decayMath = Math.pow(0.9, timeScale);
+
+		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - decayMath);
 
 		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
 			this.speedMultiplier = targetMultiplier;
@@ -335,7 +342,7 @@ class Marquee extends gia.Component {
 		if (Math.abs(this.scrollVelocity) > 0.01) {
 			frameOffset += this.scrollVelocity * timeScale;
 			// Decay the scroll velocity (friction) using frame-rate independent exponential smoothing
-			this.scrollVelocity *= Math.pow(0.9, timeScale);
+			this.scrollVelocity *= decayMath;
 		} else {
 			this.scrollVelocity = 0;
 		}
