@@ -1,3 +1,30 @@
+const activeImageHolders = new Set();
+let isGlobalScrollBound = false;
+
+function handleGlobalScroll(e) {
+	if (activeImageHolders.size === 0) return;
+
+	// Read scrollY once for all instances
+	let currentScrollY;
+	if (e && typeof e.scroll === 'number') {
+		currentScrollY = e.scroll;
+	} else {
+		currentScrollY = window.scrollY || window.pageYOffset;
+	}
+
+	for (const instance of activeImageHolders) {
+		// Only trigger updates for visible instances to save resources
+		// ⚡ BOLT OPTIMIZATION: Bypass getter overhead in high-frequency event handlers
+		if (!instance._state.isVisible) continue;
+
+		instance.currentScrollY = currentScrollY;
+		if (!instance.ticking) {
+			instance._frameId = window.requestAnimationFrame(instance.tickUpdate);
+			instance.ticking = true;
+		}
+	}
+}
+
 class ImageHolder extends gia.Component {
 	constructor(element) {
 		super(element);
@@ -123,10 +150,15 @@ class ImageHolder extends gia.Component {
 		if (this.isScrollBound) return;
 		this.isScrollBound = true;
 
-		if (window.lenis) {
-			window.lenis.on('scroll', this.handleScroll);
-		} else {
-			window.addEventListener('scroll', this.handleScroll, { passive: true });
+		activeImageHolders.add(this);
+
+		if (!isGlobalScrollBound) {
+			if (window.lenis) {
+				window.lenis.on('scroll', handleGlobalScroll);
+			} else {
+				window.addEventListener('scroll', handleGlobalScroll, { passive: true });
+			}
+			isGlobalScrollBound = true;
 		}
 	}
 
@@ -134,10 +166,15 @@ class ImageHolder extends gia.Component {
 		if (!this.isScrollBound) return;
 		this.isScrollBound = false;
 
-		if (window.lenis) {
-			window.lenis.off('scroll', this.handleScroll);
-		} else {
-			window.removeEventListener('scroll', this.handleScroll);
+		activeImageHolders.delete(this);
+
+		if (activeImageHolders.size === 0 && isGlobalScrollBound) {
+			if (window.lenis) {
+				window.lenis.off('scroll', handleGlobalScroll);
+			} else {
+				window.removeEventListener('scroll', handleGlobalScroll);
+			}
+			isGlobalScrollBound = false;
 		}
 	}
 
@@ -158,24 +195,6 @@ class ImageHolder extends gia.Component {
 		this.setState({
 			isVisible: entry.isIntersecting
 		});
-	}
-
-	handleScroll(e) {
-		if (!this.state.isVisible) return;
-
-		// If Lenis is firing this, intercept scroll directly from event.
-		// If Native scroll fired this, `e.scroll` is undefined, use window.scrollY.
-		// Important: We read scrollY synchronously OUTSIDE requestAnimationFrame to avoid thrashing.
-		if (e && typeof e.scroll === 'number') {
-			this.currentScrollY = e.scroll;
-		} else {
-			this.currentScrollY = window.scrollY || window.pageYOffset;
-		}
-
-		if (!this.ticking) {
-			this._frameId = window.requestAnimationFrame(this.tickUpdate);
-			this.ticking = true;
-		}
 	}
 
 	tickUpdate() {
