@@ -22,7 +22,7 @@ class FilterableListGSAP extends gia.Component {
 			activeFilterClass: 'is-active', // Class to apply to active filter buttons
 			staggerDelay: 20, // ms delay per item for the shuffle animation
 			maxStaggerDelay: null, // max delay in ms (defaults to staggerDelay * 12)
-			maxItemCount: -1, // max items to show initially, -1 for all
+			itemLimit: -1, // max items to show initially, -1 for all
 		};
 
 		// Define internal state variables that don't trigger batched DOM updates automatically
@@ -297,7 +297,7 @@ class FilterableListGSAP extends gia.Component {
 		}
 
 		if (params.get('all') === 'true') {
-			this.options.maxItemCount = -1;
+			this.options.itemLimit = -1;
 		}
 
 		for (const [key, value] of params.entries()) {
@@ -337,7 +337,7 @@ class FilterableListGSAP extends gia.Component {
 			params.delete('sort');
 		}
 
-		if (this.options.maxItemCount === -1 && this.ref.showMoreBtn) {
+		if (this.options.itemLimit === -1 && this.ref.showMoreBtn) {
 			params.set('all', 'true');
 		} else {
 			params.delete('all');
@@ -443,8 +443,8 @@ class FilterableListGSAP extends gia.Component {
 
 	handleShowMoreClick(e) {
 		e.preventDefault();
-		const maxItemCountBefore = this.options.maxItemCount;
-		this.options.maxItemCount = -1;
+		const itemLimitBefore = this.options.itemLimit;
+		this.options.itemLimit = -1;
 
 		if (this.ref.showMoreBtn) {
 			this.ref.showMoreBtn.style.display = "none";
@@ -458,7 +458,7 @@ class FilterableListGSAP extends gia.Component {
 			let visibleIndex = 0;
 			for (let i = 0; i < this.ref.item.length; i++) {
 				if (!this.ref.item[i].hidden) {
-					if (visibleIndex === maxItemCountBefore) {
+					if (visibleIndex === itemLimitBefore) {
 						const focusableElement = this.ref.item[i].querySelector("a, button, input, [tabindex]");
 						if (focusableElement) {
 							focusableElement.focus();
@@ -487,7 +487,7 @@ class FilterableListGSAP extends gia.Component {
 			const isVisible = this._isItemVisible(item);
 
 			if (isVisible) {
-				if (this.options.maxItemCount > 0 && currentItemsVisibleCount >= this.options.maxItemCount) {
+				if (this.options.itemLimit > 0 && currentItemsVisibleCount >= this.options.itemLimit) {
 					currentItemsHiddenBehindMoreButtonCount++;
 					hiddenItems.push(item);
 				} else {
@@ -563,7 +563,7 @@ class FilterableListGSAP extends gia.Component {
 
 	_updateShowMoreVisibility(hiddenBehindMoreCount) {
 		if (this.ref.showMoreBtn) {
-			if (this.options.maxItemCount === -1) {
+			if (this.options.itemLimit === -1) {
 				this.ref.showMoreBtn.classList.remove("visible");
 			} else if (hiddenBehindMoreCount > 0) {
 				this.ref.showMoreBtn.classList.add("visible");
