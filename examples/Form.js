@@ -334,23 +334,31 @@ class Form extends gia.Component {
 			}
 
 			if (conditionMet) {
-				el.hidden = false;
-				const inputs = el.querySelectorAll('input, select, textarea');
-				inputs.forEach(input => {
-					if (input.hasAttribute('data-disabled-by-condition')) {
-						input.disabled = false;
-						input.removeAttribute('data-disabled-by-condition');
-					}
-				});
+				this._showConditionElement(el);
 			} else {
-				el.hidden = true;
-				const inputs = el.querySelectorAll('input, select, textarea');
-				inputs.forEach(input => {
-					if (!input.disabled) {
-						input.disabled = true;
-						input.setAttribute('data-disabled-by-condition', 'true');
-					}
-				});
+				this._hideConditionElement(el);
+			}
+		});
+	}
+
+	_showConditionElement(el) {
+		el.hidden = false;
+		const inputs = el.querySelectorAll('input, select, textarea');
+		inputs.forEach(input => {
+			if (input.hasAttribute('data-disabled-by-condition')) {
+				input.disabled = false;
+				input.removeAttribute('data-disabled-by-condition');
+			}
+		});
+	}
+
+	_hideConditionElement(el) {
+		el.hidden = true;
+		const inputs = el.querySelectorAll('input, select, textarea');
+		inputs.forEach(input => {
+			if (!input.disabled) {
+				input.disabled = true;
+				input.setAttribute('data-disabled-by-condition', 'true');
 			}
 		});
 	}
@@ -389,11 +397,7 @@ class Form extends gia.Component {
 
 		if (this.state.isSubmitting) return;
 
-		// HTML5 Validation
-		if (!this.formElement.checkValidity()) {
-			this.formElement.reportValidity();
-			return;
-		}
+		if (!this._validateForm()) return;
 
 		this.setState({
 			isSubmitting: true,
@@ -401,18 +405,7 @@ class Form extends gia.Component {
 			isError: false
 		});
 
-		let rawData = new FormData(this.formElement);
-		let data = new FormData();
-
-		this._normalizeFormData(rawData, data);
-		this._detectNameAndEmail(data);
-
-		// If an action is provided in options, append it for WordPress AJAX compatibility
-		if (this.options.action) {
-			data.append('action', this.options.action);
-		}
-
-		// Use the option URL, or fallback to the form's action attribute
+		const data = this._prepareFormData();
 		const url = this.options.ajaxUrl || this.formElement.getAttribute('action');
 
 		if (!url) {
@@ -422,42 +415,67 @@ class Form extends gia.Component {
 		}
 
 		try {
-			// Always use POST, as a GET request cannot have a body and WordPress AJAX usually expects POST
-			let method = (this.formElement.getAttribute('method') || 'POST').toUpperCase();
-			if (method !== 'POST') {
-				console.warn("Form component: Forcing method to POST for AJAX submission.");
-				method = 'POST';
-			}
+			await this._submitRequest(url, data);
 
-			const response = await fetch(url, {
-				method: method,
-				body: data,
-				headers: {
-					'Accept': 'application/json',
-					'Cache-Control': 'no-cache'
-				}
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const result = await response.json();
-
-			// Assume success if the request succeeded, though WordPress AJAX often returns { success: true/false }
-			if (result.success !== false) {
-				this.setState({ isSubmitting: false, isSuccess: true });
-				this.formElement.reset();
-
-				this._resetDropzones();
-			} else {
-				throw new Error(result.data || "Form submission failed");
-			}
+			this.setState({ isSubmitting: false, isSuccess: true });
+			this.formElement.reset();
+			this._resetDropzones();
 
 		} catch (error) {
 			console.error("Form component error:", error);
 			this.setState({ isSubmitting: false, isError: true });
 		}
+	}
+
+	_validateForm() {
+		if (!this.formElement.checkValidity()) {
+			this.formElement.reportValidity();
+			return false;
+		}
+		return true;
+	}
+
+	_prepareFormData() {
+		let rawData = new FormData(this.formElement);
+		let data = new FormData();
+
+		this._normalizeFormData(rawData, data);
+		this._detectNameAndEmail(data);
+
+		if (this.options.action) {
+			data.append('action', this.options.action);
+		}
+
+		return data;
+	}
+
+	async _submitRequest(url, data) {
+		let method = (this.formElement.getAttribute('method') || 'POST').toUpperCase();
+		if (method !== 'POST') {
+			console.warn("Form component: Forcing method to POST for AJAX submission.");
+			method = 'POST';
+		}
+
+		const response = await fetch(url, {
+			method: method,
+			body: data,
+			headers: {
+				'Accept': 'application/json',
+				'Cache-Control': 'no-cache'
+			}
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const result = await response.json();
+
+		if (result.success === false) {
+			throw new Error(result.data || "Form submission failed");
+		}
+
+		return result;
 	}
 
 	_resetDropzones() {
