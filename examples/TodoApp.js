@@ -4,6 +4,7 @@ class TodoApp extends gia.Component {
 
 		this.options = {
 			storageKey: "gia-todo-app-data",
+			deleteText: "Delete",
 		};
 
 		this.ref = {
@@ -222,7 +223,7 @@ class TodoApp extends gia.Component {
 			deleteBtn.setAttribute('data-action', 'delete');
 			deleteBtn.setAttribute('data-id', task.id);
 			deleteBtn.setAttribute('aria-label', `Delete task: ${task.text}`);
-			deleteBtn.textContent = 'Delete';
+			deleteBtn.textContent = this.options.deleteText;
 
 			li.appendChild(label);
 			li.appendChild(deleteBtn);
