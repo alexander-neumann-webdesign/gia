@@ -6,7 +6,29 @@ const resizeCallbacks = new Map();
 
 const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
 
-const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]);
+// Global scroll observer for components
+let isGlobalScrollBound = false;
+const scrollCallbacks = new Set();
+let globalScrollEvent = { scrollY: 0, originalEvent: null };
+
+function handleGlobalScroll(e) {
+	if (scrollCallbacks.size === 0) return;
+
+	// Read layout exactly once
+	if (e && typeof e.scroll === 'number') {
+		globalScrollEvent.scrollY = e.scroll;
+	} else {
+		globalScrollEvent.scrollY = window.scrollY || window.pageYOffset;
+	}
+	globalScrollEvent.originalEvent = e;
+
+	// Dispatch to all subscribed components
+	for (const cb of scrollCallbacks) {
+		cb(globalScrollEvent);
+	}
+}
+
+const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle", "observeScroll", "unobserveScroll"]);
 const protoMethodsCache = new WeakMap();
 const globalStateAttributeCache = new Map();
 
@@ -170,6 +192,12 @@ export default class Component {
 				this.unobserveIntersection(element);
 			}
 		}
+
+		if (this._observedScrollCallbacks) {
+			for (const cb of this._observedScrollCallbacks) {
+				this.unobserveScroll(cb);
+			}
+		}
 	}
 
 	observeResize(element, callback) {
@@ -240,6 +268,49 @@ export default class Component {
 			if (globalResizeObserver) {
 				globalResizeObserver.unobserve(element);
 			}
+		}
+	}
+
+	observeScroll(callback) {
+		if (typeof window === "undefined") return;
+
+		scrollCallbacks.add(callback);
+
+		if (!this._observedScrollCallbacks) {
+			this._observedScrollCallbacks = new Set();
+		}
+		this._observedScrollCallbacks.add(callback);
+
+		if (!isGlobalScrollBound) {
+			if (window.lenis) {
+				window.lenis.on('scroll', handleGlobalScroll);
+			} else {
+				window.addEventListener('scroll', handleGlobalScroll, { passive: true });
+			}
+			isGlobalScrollBound = true;
+		}
+	}
+
+	unobserveScroll(callback = null) {
+		if (!this._observedScrollCallbacks) return;
+
+		if (callback) {
+			this._observedScrollCallbacks.delete(callback);
+			scrollCallbacks.delete(callback);
+		} else {
+			for (const cb of this._observedScrollCallbacks) {
+				scrollCallbacks.delete(cb);
+			}
+			this._observedScrollCallbacks.clear();
+		}
+
+		if (scrollCallbacks.size === 0 && isGlobalScrollBound) {
+			if (window.lenis) {
+				window.lenis.off('scroll', handleGlobalScroll);
+			} else {
+				window.removeEventListener('scroll', handleGlobalScroll);
+			}
+			isGlobalScrollBound = false;
 		}
 	}
 
