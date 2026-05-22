@@ -54,3 +54,7 @@
 ## 2024-05-22 - Avoid Layout Reads in rAF & Eliminate Getter Overhead
 **Learning:** Performing layout reads (like `getBoundingClientRect()`) inside `requestAnimationFrame` loops or using a dirty flag to defer them can cause severe layout thrashing. Additionally, accessing properties via getters (like `this.options` or `this.ref`) inside high-frequency animation loops adds unnecessary function call overhead on every frame.
 **Action:** Move layout reads out of rAF loops and perform them synchronously inside observer callbacks (like `ResizeObserver` or `IntersectionObserver`). In performance-critical hot paths, bypass getter methods and access underlying properties directly (e.g., `this._options`, `this._ref`) to eliminate overhead.
+
+## 2024-05-22 - Defer Layout-Trashing Events out of rAF
+**Learning:** Dispatching a global `resize` event synchronously from within a `requestAnimationFrame` loop (like inside a component's `stateChange` method) forces all resize listeners in the application to fire immediately. If any of those listeners perform DOM layout reads (e.g., `getBoundingClientRect()`), it causes synchronous layout thrashing and severe frame drops.
+**Action:** When a component needs to trigger a global layout update (like `window.dispatchEvent(new Event('resize'))`) in response to an animation or DOM change happening inside a `rAF` tick, always defer the event dispatch to the next task queue using `setTimeout(..., 0)`. This allows the browser to paint the current frame and complete the layout phase smoothly before listeners execute.

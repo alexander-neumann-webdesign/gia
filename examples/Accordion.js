@@ -148,7 +148,11 @@ class Accordion extends gia.Component {
 
 			// Dispatch a window resize event to trigger layout updates
 			// (e.g., for embla-carousel or other scripts that rely on window resizing)
-			window.dispatchEvent(new Event('resize'));
+			// ⚡ BOLT OPTIMIZATION: Defer resize event dispatch out of the stateChange (rAF) cycle
+			// Dispatching synchronously inside rAF causes layout thrashing if listeners perform layout reads.
+			setTimeout(() => {
+				window.dispatchEvent(new Event('resize'));
+			}, 0);
 		}
 	}
 }
