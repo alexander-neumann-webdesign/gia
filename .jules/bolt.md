@@ -54,3 +54,6 @@
 ## 2024-05-22 - Avoid Layout Reads in rAF & Eliminate Getter Overhead
 **Learning:** Performing layout reads (like `getBoundingClientRect()`) inside `requestAnimationFrame` loops or using a dirty flag to defer them can cause severe layout thrashing. Additionally, accessing properties via getters (like `this.options` or `this.ref`) inside high-frequency animation loops adds unnecessary function call overhead on every frame.
 **Action:** Move layout reads out of rAF loops and perform them synchronously inside observer callbacks (like `ResizeObserver` or `IntersectionObserver`). In performance-critical hot paths, bypass getter methods and access underlying properties directly (e.g., `this._options`, `this._ref`) to eliminate overhead.
+## 2024-05-22 - Refactor Duplicate Embla Slide Logic
+**Learning:** Found identical nested looping logic to calculate the diffToTarget for each slide across multiple setup functions (like `setupTween` and `setupParallax`) inside the `Slider` component. This increases maintenance surface area and cognitive load.
+**Action:** Extract the complex nested loops that iterate over Embla slides into a separate helper method (like `_applyEmblaEffect(embla, eventName, callback)`) to DRY out the code and reduce duplication, making it easier to add new scroll effects later.

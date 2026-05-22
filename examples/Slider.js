@@ -89,6 +89,42 @@ class Slider extends gia.Component {
 		this.onSelect();
 	}
 
+	_applyEmblaEffect(embla, eventName, applyCallback) {
+		const engine = embla.internalEngine();
+		const scrollProgress = embla.scrollProgress();
+		const slidesInView = embla.slidesInView();
+		const isScrollEvent = eventName === "scroll";
+
+		embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
+			const slidesInSnap = engine.slideRegistry[snapIndex];
+
+			slidesInSnap.forEach((slideIndex) => {
+				if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
+
+				let diffToTarget = scrollSnap - scrollProgress;
+
+				if (engine.options.loop) {
+					engine.slideLooper.loopPoints.forEach((loopItem) => {
+						const target = loopItem.target();
+
+						if (slideIndex === loopItem.index && target !== 0) {
+							const sign = Math.sign(target);
+
+							if (sign === -1) {
+								diffToTarget = scrollSnap - (1 + scrollProgress);
+							}
+							if (sign === 1) {
+								diffToTarget = scrollSnap + (1 - scrollProgress);
+							}
+						}
+					});
+				}
+
+				applyCallback(slideIndex, diffToTarget);
+			});
+		});
+	}
+
 	setupTween() {
 		if (!this.emblaApi) return;
 
@@ -107,39 +143,10 @@ class Slider extends gia.Component {
 		};
 
 		const tweenOpacity = (embla, eventName) => {
-			const engine = embla.internalEngine();
-			const scrollProgress = embla.scrollProgress();
-			const slidesInView = embla.slidesInView();
-			const isScrollEvent = eventName === "scroll";
-
-			embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
-				let diffToTarget = scrollSnap - scrollProgress;
-				const slidesInSnap = engine.slideRegistry[snapIndex];
-
-				slidesInSnap.forEach((slideIndex) => {
-					if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
-
-					if (engine.options.loop) {
-						engine.slideLooper.loopPoints.forEach((loopItem) => {
-							const target = loopItem.target();
-
-							if (slideIndex === loopItem.index && target !== 0) {
-								const sign = Math.sign(target);
-
-								if (sign === -1) {
-									diffToTarget = scrollSnap - (1 + scrollProgress);
-								}
-								if (sign === 1) {
-									diffToTarget = scrollSnap + (1 - scrollProgress);
-								}
-							}
-						});
-					}
-
-					const tweenValue = 1 - Math.abs(diffToTarget * tweenFactor);
-					const opacity = numberWithinRange(tweenValue, 0, 1).toString();
-					slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
-				});
+			this._applyEmblaEffect(embla, eventName, (slideIndex, diffToTarget) => {
+				const tweenValue = 1 - Math.abs(diffToTarget * tweenFactor);
+				const opacity = numberWithinRange(tweenValue, 0, 1).toString();
+				slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
 			});
 		};
 
@@ -171,38 +178,9 @@ class Slider extends gia.Component {
 		};
 
 		const applyParallax = (embla, eventName) => {
-			const engine = embla.internalEngine();
-			const scrollProgress = embla.scrollProgress();
-			const slidesInView = embla.slidesInView();
-			const isScrollEvent = eventName === "scroll";
-
-			embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
-				let diffToTarget = scrollSnap - scrollProgress;
-				const slidesInSnap = engine.slideRegistry[snapIndex];
-
-				slidesInSnap.forEach((slideIndex) => {
-					if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
-
-					if (engine.options.loop) {
-						engine.slideLooper.loopPoints.forEach((loopItem) => {
-							const target = loopItem.target();
-
-							if (slideIndex === loopItem.index && target !== 0) {
-								const sign = Math.sign(target);
-
-								if (sign === -1) {
-									diffToTarget = scrollSnap - (1 + scrollProgress);
-								}
-								if (sign === 1) {
-									diffToTarget = scrollSnap + (1 - scrollProgress);
-								}
-							}
-						});
-					}
-
-					const translate = diffToTarget * (-1 * parallaxMultiplier) * 100;
-					slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
-				});
+			this._applyEmblaEffect(embla, eventName, (slideIndex, diffToTarget) => {
+				const translate = diffToTarget * (-1 * parallaxMultiplier) * 100;
+				slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
 			});
 		};
 
