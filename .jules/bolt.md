@@ -25,3 +25,15 @@
 **Pattern:** Splitting large iterative methods in array-processing loops (`_filterItems` in lists).
 **Learning:** For extremely large and deeply nested functions that do array traversal, extracting the conditional matching logic into isolated, state-free helper methods (`_isItemVisible`, `_itemMatchesFilter`) drastically improves code clarity and maintainability without incurring noticeable performance penalties, even in `requestAnimationFrame` contexts.
 **Application:** Keep boolean branching isolated from the loop iteration mechanism.
+
+## 2024-05-19 - Defer Event Bindings
+**Learning:** Attaching global `pointermove`, `pointerup`, and `pointercancel` listeners on the `window` constantly can cause performance degradation because events fire whenever the mouse moves, even if the user isn't actively interacting.
+**Action:** When implementing drag interactions (like marquees or sliders), attach `pointermove`, `pointerup`, and `pointercancel` listeners to the `window` dynamically inside the `pointerdown` handler, and remove them on `pointerup`.
+
+## 2024-05-19 - Passive Pointermove Event Binding
+**Learning:** If an interaction does not need to cancel scrolling (e.g., using `touch-action: pan-y`), passing `{ passive: false }` to the event listener can still block the browser's scrolling thread and cause jank.
+**Action:** When attaching `pointermove` listeners for interactions that do not require calling `preventDefault()`, use `{ passive: true }` to avoid blocking the main scrolling thread.
+
+## 2024-05-19 - Bypass Property Getters in Hot Paths
+**Learning:** Accessing `this.state` via a getter that returns `this._state` adds a slight performance overhead. Over thousands of frames, this can become a minor bottleneck.
+**Action:** In performance-critical animation loops (e.g., `requestAnimationFrame`), bypass getter methods for state objects and directly access their underlying properties (like `this._state`) to eliminate unnecessary function call overhead on every frame.
