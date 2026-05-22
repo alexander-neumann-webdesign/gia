@@ -7,6 +7,7 @@ class Form extends gia.Component {
 			action: '', // Optional: action parameter for WordPress AJAX (e.g., 'submit_contact_form')
 			addMoreFilesText: '+ Add more files',
 			removeFileText: '🗑️',
+			scrollToTopOnStep: true,
 		};
 
 		this.ref = {
@@ -17,6 +18,10 @@ class Form extends gia.Component {
 			requiredInputs: [],
 			dropzone: [],
 			conditions: [],
+			step: [],
+			nextBtn: [],
+			prevBtn: [],
+			stepIndicator: [],
 		};
 
 		this.originalDropzoneLabels = new Map();
@@ -26,6 +31,7 @@ class Form extends gia.Component {
 			isSuccess: false,
 			isError: false,
 			requiredInputsFilled: false,
+			currentStep: 0,
 		});
 
 		this.spinnerAnimation = null;
@@ -51,6 +57,19 @@ class Form extends gia.Component {
 
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
+
+			this.handleNextStep = this.handleNextStep.bind(this);
+			this.handlePrevStep = this.handlePrevStep.bind(this);
+
+			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
+
+			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+
+			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
+				this._updateStepUI(this.state.currentStep);
+			}
 
 			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
 			this.ref.requiredInputs.forEach((input) => {
@@ -281,6 +300,71 @@ class Form extends gia.Component {
 		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
+	handleNextStep(event) {
+		event.preventDefault();
+
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		if (!steps.length || this.state.currentStep >= steps.length - 1) return;
+
+		const currentStepElement = steps[this.state.currentStep];
+
+		// Validate current step
+		const inputsToValidate = currentStepElement.querySelectorAll('input, select, textarea');
+		let isStepValid = true;
+
+		for (let i = 0; i < inputsToValidate.length; i++) {
+			const input = inputsToValidate[i];
+			if (!input.checkValidity()) {
+				isStepValid = false;
+				input.reportValidity();
+				break;
+			}
+		}
+
+		if (isStepValid) {
+			this.setState({ currentStep: this.state.currentStep + 1 });
+		}
+	}
+
+	handlePrevStep(event) {
+		event.preventDefault();
+		if (this.state.currentStep > 0) {
+			this.setState({ currentStep: this.state.currentStep - 1 });
+		}
+	}
+
+	_updateStepUI(currentStep) {
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		if (!steps || steps.length === 0) return;
+
+		steps.forEach((step, index) => {
+			step.hidden = index !== currentStep;
+		});
+
+		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		indicators.forEach((indicator, index) => {
+			if (index === currentStep) {
+				indicator.setAttribute('aria-current', 'step');
+				indicator.classList.add('is-active');
+			} else {
+				indicator.removeAttribute('aria-current');
+				indicator.classList.remove('is-active');
+			}
+		});
+
+		if (this.ref.submitBtn) {
+			this.ref.submitBtn.hidden = currentStep !== steps.length - 1;
+		}
+
+		if (this.options.scrollToTopOnStep && currentStep > 0) {
+			window.setTimeout(() => {
+				if (this.formElement) {
+					this.formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			}, 50);
+		}
+	}
+
 	unmount() {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
@@ -289,6 +373,11 @@ class Form extends gia.Component {
 				this.formElement.removeEventListener('input', this.evaluateConditions);
 			}
 		}
+		const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
+
+		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
@@ -394,6 +483,12 @@ class Form extends gia.Component {
 
 	async handleSubmit(event) {
 		event.preventDefault();
+
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+		if (steps.length > 0 && this.state.currentStep < steps.length - 1) {
+			this.handleNextStep(event);
+			return;
+		}
 
 		if (this.state.isSubmitting) return;
 
@@ -622,6 +717,10 @@ class Form extends gia.Component {
 
 		if ('isError' in stateChanges) {
 			this._showMessage(this.ref.errorMessage, stateChanges.isError);
+		}
+
+		if ('currentStep' in stateChanges) {
+			this._updateStepUI(stateChanges.currentStep);
 		}
 	}
 }
