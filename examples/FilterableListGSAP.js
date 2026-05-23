@@ -648,10 +648,12 @@ class FilterableListGSAP extends gia.Component {
 			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 
 			window.Flip.from(state, {
+				targets: [this.ref.container, ...this.ref.item],
 				duration: 0.4,
 				ease: "power2.inOut",
 				stagger: this.options.staggerDelay / 1000,
 				absolute: true,
+				absoluteOnLeave: true,
 				onEnter: elements => {
 					return window.gsap.fromTo(elements, {opacity: 0, scale: 0.8}, {opacity: 1, scale: 1, duration: 0.4});
 				},
@@ -659,7 +661,10 @@ class FilterableListGSAP extends gia.Component {
 					return window.gsap.to(elements, {opacity: 0, scale: 0.8, duration: 0.4});
 				},
 				onComplete: () => {
-					// cleanup after transition
+					for (let i = 0; i < hiddenItems.length; i++) {
+						hiddenItems[i].hidden = true;
+						hiddenItems[i].style.display = "";
+					}
 				}
 			});
 		} else {
@@ -673,11 +678,13 @@ class FilterableListGSAP extends gia.Component {
 	applyDOMChangesSynchronously(visibleItems, hiddenItems) {
 		// Update hidden state
 		for (let i = 0; i < hiddenItems.length; i++) {
-			hiddenItems[i].hidden = true;
+			hiddenItems[i].hidden = false;
+			hiddenItems[i].style.display = "none";
 		}
 
 		for (let i = 0; i < visibleItems.length; i++) {
 			visibleItems[i].hidden = false;
+			visibleItems[i].style.display = "";
 		}
 
 		// Reorder visible items in the DOM
