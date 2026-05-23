@@ -1987,6 +1987,9 @@ button[data-component="ClipboardCopy"] {
   }
 
   .step-indicator {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
     padding: 0.5rem;
     border: 1px solid #ccc;
     flex: 1;
@@ -1999,6 +2002,13 @@ button[data-component="ClipboardCopy"] {
       background: #007bff;
       color: white;
       border-color: #007bff;
+    }
+
+    &:disabled,
+    &.is-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
     }
   }
 }
