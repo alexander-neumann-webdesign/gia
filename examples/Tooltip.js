@@ -156,7 +156,7 @@ class Tooltip extends gia.Component {
 
 		// Compatibility: Lenis smooth scrolling (requires manual position updates because standard scroll events are virtualized)
 		if (window.lenis) {
-			window.lenis.on('scroll', this.updatePosition);
+			this.observeScroll(this.updatePosition);
 		}
 	}
 
@@ -200,7 +200,7 @@ class Tooltip extends gia.Component {
 		window.removeEventListener('keydown', this.handleEscape);
 
 		if (window.lenis) {
-			window.lenis.off('scroll', this.updatePosition);
+			this.unobserveScroll(this.updatePosition);
 		}
 	}
 
