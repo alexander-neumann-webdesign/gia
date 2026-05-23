@@ -1919,6 +1919,33 @@ button[data-component="ClipboardCopy"] {
     }
 }
 
+/* --- MultiStepForm --- */
+#MultiStepForm {
+  view-transition-name: multi-step-form;
+
+  .step-indicators {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .step-indicator {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    background: white;
+
+    &.is-active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+  }
+}
+
 /* --- RangeSlider (noUiSlider) Overrides --- */
 .noUi-target {
   background: #fafafa;
