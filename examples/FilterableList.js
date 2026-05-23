@@ -345,29 +345,43 @@ class FilterableList extends gia.Component {
 	}
 
 	_getFilterValues(el, filterType) {
-		let values = [];
 		if (el instanceof HTMLSelectElement) {
-			if (el.multiple) {
-				for (let i = 0; i < el.selectedOptions.length; i++) {
-					values.push(el.selectedOptions[i].value);
-				}
-			} else {
-				values = el.value ? [el.value] : [];
-			}
+			return this._getSelectValues(el);
 		} else if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-			// This handles a group of checkboxes with the same name
-			const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
-			for (let i = 0; i < checkboxes.length; i++) {
-				values.push(checkboxes[i].value);
-			}
+			return this._getCheckboxValues(filterType);
 		} else if (el instanceof HTMLInputElement && el.type === 'radio') {
-			values = el.value ? [el.value] : [];
+			return el.value ? [el.value] : [];
 		} else if (el instanceof HTMLInputElement) {
-			// Handle text, search, range, etc.
-			values = el.value ? [el.value] : [];
-			if (el.type === 'range' && el.value === el.defaultValue) {
-				values = [];
+			return this._getInputValues(el);
+		}
+		return [];
+	}
+
+	_getSelectValues(el) {
+		let values = [];
+		if (el.multiple) {
+			for (let i = 0; i < el.selectedOptions.length; i++) {
+				values.push(el.selectedOptions[i].value);
 			}
+		} else {
+			values = el.value ? [el.value] : [];
+		}
+		return values;
+	}
+
+	_getCheckboxValues(filterType) {
+		let values = [];
+		const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
+		for (let i = 0; i < checkboxes.length; i++) {
+			values.push(checkboxes[i].value);
+		}
+		return values;
+	}
+
+	_getInputValues(el) {
+		let values = el.value ? [el.value] : [];
+		if (el.type === 'range' && el.value === el.defaultValue) {
+			values = [];
 		}
 		return values;
 	}
@@ -619,6 +633,30 @@ class FilterableList extends gia.Component {
 		const initialHeight = this.ref.container.offsetHeight;
 
 		const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
+		const styleEl = this._setupViewTransitionNames(visibleItems, hiddenItems, componentId);
+
+		// Disable full page transitions so pointer events continue to work for controls outside the container
+		document.documentElement.style.viewTransitionName = 'none';
+
+		const transition = document.startViewTransition(() => {
+			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+		});
+		this._currentTransition = transition;
+
+		let heightAnimation = null;
+
+		transition.ready.then(() => {
+			heightAnimation = this._animateContainerHeight(initialHeight, transition);
+		}).catch(() => {});
+
+		transition.finished.catch(() => {
+			// Ignore AbortError when transition is skipped
+		}).finally(() => {
+			this._cleanupViewTransition(transition, heightAnimation, styleEl, visibleItems);
+		});
+	}
+
+	_setupViewTransitionNames(visibleItems, hiddenItems, componentId) {
 		let staggerCss = '';
 		let staggerIndex = 0;
 
@@ -666,65 +704,57 @@ class FilterableList extends gia.Component {
 			document.head.appendChild(styleEl);
 		}
 
-		// Disable full page transitions so pointer events continue to work for controls outside the container
-		document.documentElement.style.viewTransitionName = 'none';
+		return styleEl;
+	}
 
-		const transition = document.startViewTransition(() => {
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
-		});
-		this._currentTransition = transition;
-
+	_animateContainerHeight(initialHeight, transition) {
+		const targetHeight = this.ref.container.offsetHeight;
 		let heightAnimation = null;
-
-		transition.ready.then(() => {
-			const targetHeight = this.ref.container.offsetHeight;
-			if (initialHeight !== targetHeight) {
-				heightAnimation = this.ref.container.animate(
-					[
-						{ height: `${initialHeight}px` },
-						{ height: `${targetHeight}px` }
-					],
-					{
-						duration: 400,
-						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-						fill: 'forwards'
-					}
-				);
-				if (this._currentTransition === transition) {
-					this._heightAnimation = heightAnimation;
-				} else {
-					heightAnimation.cancel();
+		if (initialHeight !== targetHeight) {
+			heightAnimation = this.ref.container.animate(
+				[
+					{ height: `${initialHeight}px` },
+					{ height: `${targetHeight}px` }
+				],
+				{
+					duration: 400,
+					easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+					fill: 'forwards'
 				}
-			}
-		}).catch(() => {});
-
-		transition.finished.catch(() => {
-			// Ignore AbortError when transition is skipped
-		}).finally(() => {
+			);
 			if (this._currentTransition === transition) {
-				this.ref.container.style.transition = '';
-			}
-
-			if (this._heightAnimation === heightAnimation && heightAnimation) {
+				this._heightAnimation = heightAnimation;
+			} else {
 				heightAnimation.cancel();
-				this._heightAnimation = null;
 			}
+		}
+		return heightAnimation;
+	}
 
-			if (styleEl) {
-				styleEl.remove();
+	_cleanupViewTransition(transition, heightAnimation, styleEl, visibleItems) {
+		if (this._currentTransition === transition) {
+			this.ref.container.style.transition = '';
+		}
+
+		if (this._heightAnimation === heightAnimation && heightAnimation) {
+			heightAnimation.cancel();
+			this._heightAnimation = null;
+		}
+
+		if (styleEl) {
+			styleEl.remove();
+		}
+		if (this._currentTransition === transition) {
+			// Clean up to avoid global namespace pollution
+			for (let i = 0; i < visibleItems.length; i++) {
+				visibleItems[i].style.viewTransitionName = '';
 			}
-			if (this._currentTransition === transition) {
-				// Clean up to avoid global namespace pollution
-				for (let i = 0; i < visibleItems.length; i++) {
-					visibleItems[i].style.viewTransitionName = '';
-				}
-				if (this.ref.announcer) {
-					this.ref.announcer.style.viewTransitionName = '';
-				}
-				document.documentElement.style.viewTransitionName = '';
-				this._currentTransition = null;
+			if (this.ref.announcer) {
+				this.ref.announcer.style.viewTransitionName = '';
 			}
-		});
+			document.documentElement.style.viewTransitionName = '';
+			this._currentTransition = null;
+		}
 	}
 
 	updateList(animate = true) {
@@ -763,8 +793,10 @@ class FilterableList extends gia.Component {
 			this.ref.container.appendChild(visibleItems[i]);
 		}
 
-		const count = visibleItems.length;
+		this._updateAnnouncers(visibleItems.length);
+	}
 
+	_updateAnnouncers(count) {
 		for (let i = 0; i < this.ref.announcerCount.length; i++) {
 			this.ref.announcerCount[i].textContent = count;
 		}
@@ -802,65 +834,77 @@ class FilterableList extends gia.Component {
 
 	_updateFilterElement(el, activeValues) {
 		if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
-			const filterValue = el.getAttribute('data-filter-value');
-			let isActive = false;
-			if (filterValue === '*' || filterValue === 'all' || !filterValue) {
-				isActive = activeValues.length === 0;
-			} else {
-				isActive = activeValues.includes(filterValue);
-			}
-
-			if (isActive) {
-				el.classList.add(this.options.activeFilterClass);
-				el.setAttribute('aria-pressed', 'true');
-			} else {
-				el.classList.remove(this.options.activeFilterClass);
-				el.setAttribute('aria-pressed', 'false');
-			}
+			this._updateButtonFilter(el, activeValues);
 		} else if (el instanceof HTMLSelectElement) {
-			if (el.multiple) {
-				for (let j = 0; j < el.options.length; j++) {
-					const opt = el.options[j];
-					opt.selected = activeValues.includes(opt.value);
-				}
-			} else {
-				el.value = activeValues.length > 0 ? activeValues[0] : '';
-			}
+			this._updateSelectFilter(el, activeValues);
 		} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
 			el.checked = activeValues.includes(el.value);
 		} else if (el instanceof HTMLInputElement) {
-			// Text, search, range, etc.
-			let newVal = '';
-			if (activeValues.length > 0) {
-				newVal = activeValues[0];
-			} else {
-				newVal = el.type === 'range' ? (el.defaultValue || '') : '';
-			}
+			this._updateInputFilter(el, activeValues);
+		}
+	}
 
-			let isDifferent = false;
-			if (el.type === 'range' || el.type === 'number') {
-				const num1 = parseFloat(el.value);
-				const num2 = parseFloat(newVal);
-				// Handle empty strings causing NaN !== NaN
-				if (isNaN(num1) && isNaN(num2)) {
-					isDifferent = String(el.value) !== String(newVal);
-				} else {
-					isDifferent = num1 !== num2;
-				}
-			} else {
-				isDifferent = el.value !== String(newVal);
-			}
+	_updateButtonFilter(el, activeValues) {
+		const filterValue = el.getAttribute('data-filter-value');
+		let isActive = false;
+		if (filterValue === '*' || filterValue === 'all' || !filterValue) {
+			isActive = activeValues.length === 0;
+		} else {
+			isActive = activeValues.includes(filterValue);
+		}
 
-			if (isDifferent) {
-				el.value = newVal;
-				el.dispatchEvent(new Event('change', { bubbles: true }));
+		if (isActive) {
+			el.classList.add(this.options.activeFilterClass);
+			el.setAttribute('aria-pressed', 'true');
+		} else {
+			el.classList.remove(this.options.activeFilterClass);
+			el.setAttribute('aria-pressed', 'false');
+		}
+	}
+
+	_updateSelectFilter(el, activeValues) {
+		if (el.multiple) {
+			for (let j = 0; j < el.options.length; j++) {
+				const opt = el.options[j];
+				opt.selected = activeValues.includes(opt.value);
 			}
-			// Update associated output if it exists (for range inputs)
-			if (el.type === 'range' && el.id) {
-				const outputEl = document.querySelector(`output[for="${el.id}"]`);
-				if (outputEl && outputEl.value !== el.value) {
-					outputEl.value = el.value;
-				}
+		} else {
+			el.value = activeValues.length > 0 ? activeValues[0] : '';
+		}
+	}
+
+	_updateInputFilter(el, activeValues) {
+		// Text, search, range, etc.
+		let newVal = '';
+		if (activeValues.length > 0) {
+			newVal = activeValues[0];
+		} else {
+			newVal = el.type === 'range' ? (el.defaultValue || '') : '';
+		}
+
+		let isDifferent = false;
+		if (el.type === 'range' || el.type === 'number') {
+			const num1 = parseFloat(el.value);
+			const num2 = parseFloat(newVal);
+			// Handle empty strings causing NaN !== NaN
+			if (isNaN(num1) && isNaN(num2)) {
+				isDifferent = String(el.value) !== String(newVal);
+			} else {
+				isDifferent = num1 !== num2;
+			}
+		} else {
+			isDifferent = el.value !== String(newVal);
+		}
+
+		if (isDifferent) {
+			el.value = newVal;
+			el.dispatchEvent(new Event('change', { bubbles: true }));
+		}
+		// Update associated output if it exists (for range inputs)
+		if (el.type === 'range' && el.id) {
+			const outputEl = document.querySelector(`output[for="${el.id}"]`);
+			if (outputEl && outputEl.value !== el.value) {
+				outputEl.value = el.value;
 			}
 		}
 	}
