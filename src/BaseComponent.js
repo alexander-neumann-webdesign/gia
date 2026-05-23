@@ -5,6 +5,8 @@ import { queryAll } from "./utils.js";
 let globalScrollListenerBound = false;
 let globalResizeListenerBound = false;
 const scrollCallbacks = new Set();
+const isMobileBrowser = typeof navigator !== 'undefined' && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
+const resizeEventName = isMobileBrowser ? 'orientationchange' : 'resize';
 const windowResizeCallbacks = new Set();
 let globalLenisInstance = null;
 let lastScrollY = 0;
@@ -271,7 +273,7 @@ export default class Component {
 
 		if (!globalResizeListenerBound) {
 			globalResizeListenerBound = true;
-			window.addEventListener('resize', handleGlobalResize, { passive: true });
+			window.addEventListener(resizeEventName, handleGlobalResize, { passive: true });
 		}
 
 		if (!this._observedWindowResizeCallbacks) {
@@ -289,7 +291,7 @@ export default class Component {
 
 		if (windowResizeCallbacks.size === 0 && globalResizeListenerBound) {
 			globalResizeListenerBound = false;
-			window.removeEventListener('resize', handleGlobalResize);
+			window.removeEventListener(resizeEventName, handleGlobalResize);
 		}
 	}
 
