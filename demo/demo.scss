@@ -1994,6 +1994,12 @@ button[data-component="ClipboardCopy"] {
       color: white;
       border-color: #007bff;
     }
+
+    &.is-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
   }
 }
 

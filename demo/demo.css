@@ -1702,6 +1702,11 @@ button[data-component=ClipboardCopy][data-status=error] {
   color: white;
   border-color: #007bff;
 }
+#MultiStepForm .step-indicator.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 
 /* --- RangeSlider (noUiSlider) Overrides --- */
 .noUi-target {

@@ -35,6 +35,7 @@ class Form extends gia.Component {
 		});
 
 		this.spinnerAnimation = null;
+		this._updateIndicatorsState = this._updateIndicatorsState.bind(this);
 	}
 
 	mount() {
@@ -92,6 +93,7 @@ class Form extends gia.Component {
 			}
 
 			this.handleInputChange();
+			this._updateIndicatorsState();
 		} else {
 			console.warn("Form component: No form element found.");
 		}
@@ -306,9 +308,41 @@ class Form extends gia.Component {
 		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
+	_isStepValid(stepIndex) {
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+		if (!steps || stepIndex < 0 || stepIndex >= steps.length) return true;
+
+		const stepElement = steps[stepIndex];
+		const inputsToValidate = stepElement.querySelectorAll('input, select, textarea');
+
+		for (let i = 0; i < inputsToValidate.length; i++) {
+			if (!inputsToValidate[i].checkValidity()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	_updateIndicatorsState() {
+		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		let canNavigate = true;
+
+		indicators.forEach((indicator, index) => {
+			if (index > 0 && !this._isStepValid(index - 1)) {
+				canNavigate = false;
+			}
+
+			if (canNavigate) {
+				indicator.classList.remove('is-disabled');
+			} else {
+				indicator.classList.add('is-disabled');
+			}
+		});
+	}
+
 	handleStepIndicatorClick(event, index) {
 		event.preventDefault();
-		if (index < this.state.currentStep) {
+		if (!event.currentTarget.classList.contains('is-disabled')) {
 			this.setStep(index);
 		}
 	}
@@ -518,6 +552,8 @@ class Form extends gia.Component {
 		this.setState({
 			requiredInputsFilled: !requiredInputMissing,
 		});
+
+		this._updateIndicatorsState();
 	}
 
 	async handleSubmit(event) {
