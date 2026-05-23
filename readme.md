@@ -524,6 +524,9 @@ class VisibilityComponent extends Component {
 
         // Observe resize (uses a shared global ResizeObserver instance)
         this.observeResize(this.element, this.handleResize);
+
+        // Observe global scroll (uses a centralized window scroll listener to prevent layout thrashing)
+        this.observeScroll(this.handleScroll);
     }
 
     handleIntersection([entry]) {
@@ -536,6 +539,11 @@ class VisibilityComponent extends Component {
 
     handleResize([entry]) {
         console.log("Component resized:", entry.contentRect.width);
+    }
+
+    handleScroll(payload) {
+        // Read layout from payload instead of window.scrollY to prevent forced synchronous layout
+        console.log("Window scrolled to:", payload.scroll);
     }
 }
 ```
