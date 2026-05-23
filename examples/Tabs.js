@@ -238,11 +238,18 @@ class Tabs extends gia.Component {
 	}
 
 	_animateContainerHeight(panelsContainer, startHeight, transition) {
-		panelsContainer.style.overflow = 'hidden';
+		// Lock height before the View Transition snapshot replaces elements
+		panelsContainer.style.height = `${startHeight}px`;
 
 		if (transition) {
 			transition.ready.then(() => {
+				// Measure endHeight without overflow hidden to allow natural margin collapsing
+				panelsContainer.style.height = '';
 				const endHeight = panelsContainer.offsetHeight;
+
+				// Re-apply overflow hidden and startHeight for the smooth animation
+				panelsContainer.style.overflow = 'hidden';
+				panelsContainer.style.height = `${startHeight}px`;
 
 				if (startHeight !== endHeight) {
 					const animation = panelsContainer.animate(
@@ -264,13 +271,19 @@ class Tabs extends gia.Component {
 					});
 				} else {
 					panelsContainer.style.overflow = '';
+					panelsContainer.style.height = '';
 				}
 			}).catch(() => {
 				panelsContainer.style.overflow = '';
+				panelsContainer.style.height = '';
 			});
 		} else {
 			// Fallback if view transitions are not supported
+			panelsContainer.style.height = '';
 			const endHeight = panelsContainer.offsetHeight;
+			panelsContainer.style.overflow = 'hidden';
+			panelsContainer.style.height = `${startHeight}px`;
+
 			if (startHeight !== endHeight) {
 				const animation = panelsContainer.animate(
 					[
@@ -290,6 +303,7 @@ class Tabs extends gia.Component {
 				}, 450);
 			} else {
 				panelsContainer.style.overflow = '';
+				panelsContainer.style.height = '';
 			}
 		}
 	}
