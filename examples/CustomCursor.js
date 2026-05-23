@@ -272,18 +272,108 @@ class CustomCursor extends gia.Component {
         }
     }
 
-    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
-        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
-            // Remove old media/icons if we are switching away from those specific contents
-            if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
-                this.ref.mediaBox.replaceChildren();
-            }
-            if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
-                this.ref.icon.replaceChildren();
-            }
+    _cleanupPreviousState(finalState, targetState) {
+        // Remove old media/icons if we are switching away from those specific contents
+        if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
+            this.ref.mediaBox.replaceChildren();
+        }
+        if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
+            this.ref.icon.replaceChildren();
+        }
 
-            // Clear inline styles if we are leaving a snapped state
-            if ((this.currentState === 'magnetic' || this.currentState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
+        // Clear inline styles if we are leaving a snapped state
+        if ((this.currentState === 'magnetic' || this.currentState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
+            if (this.ref.dot) {
+                this.ref.dot.style.width = '';
+                this.ref.dot.style.height = '';
+                this.ref.dot.style.marginLeft = '';
+                this.ref.dot.style.marginTop = '';
+                this.ref.dot.style.borderRadius = '';
+            }
+            this._snappedTarget = null;
+        }
+    }
+
+    _updateStateProperties(finalState, targetText, targetImg, targetVideo, targetIcon) {
+        this.currentState = finalState;
+        this.currentText = targetText;
+        this.currentImg = targetImg;
+        this.currentVideo = targetVideo;
+        this.currentIcon = targetIcon;
+        this.element.setAttribute('data-cursor-state', finalState);
+    }
+
+    _renderMediaContent(targetImg, targetVideo) {
+        this.ref.mediaBox.replaceChildren();
+        let mediaElement;
+        if (targetImg) {
+            mediaElement = document.createElement('img');
+            mediaElement.src = targetImg;
+            mediaElement.alt = 'Cursor Media';
+        } else if (targetVideo) {
+            mediaElement = document.createElement('video');
+            mediaElement.src = targetVideo;
+            mediaElement.autoplay = true;
+            mediaElement.loop = true;
+            mediaElement.muted = true;
+            mediaElement.playsInline = true;
+        }
+
+        if (mediaElement) {
+            mediaElement.style.width = '100%';
+            mediaElement.style.height = '100%';
+            mediaElement.style.objectFit = 'cover';
+            mediaElement.style.borderRadius = '50%';
+            this.ref.mediaBox.appendChild(mediaElement);
+        }
+    }
+
+    _renderIconContent(targetIcon) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const xlinkNS = 'http://www.w3.org/1999/xlink';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', `mf-svgsprite mf-svgsprite-${targetIcon}`);
+        const use = document.createElementNS(svgNS, 'use');
+        use.setAttributeNS(xlinkNS, 'href', `#${targetIcon}`);
+        svg.appendChild(use);
+        this.ref.icon.replaceChildren(svg);
+    }
+
+    _updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon) {
+        // Update DOM inside cursor for content states
+        if (this.ref.text) {
+            this.ref.text.textContent = targetText;
+        }
+
+        if (this.ref.mediaBox && targetState === 'media') {
+            this._renderMediaContent(targetImg, targetVideo);
+        }
+
+        if (this.ref.icon && targetState === 'icon') {
+            this._renderIconContent(targetIcon);
+        }
+    }
+
+    _updateSnappingVisuals(finalState, closestMagneticEl) {
+        if (finalState === 'magnetic') {
+            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+            if (isNewSnapTarget) {
+                this._snappedTarget = closestMagneticEl;
+                if (this.ref.dot && this.magneticTarget) {
+                    const computedStyle = window.getComputedStyle(this.magneticTarget);
+                    const borderRadius = computedStyle.borderRadius || '0px';
+
+                    this.ref.dot.style.width = `${this.magneticBounds.width}px`;
+                    this.ref.dot.style.height = `${this.magneticBounds.height}px`;
+                    this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
+                    this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
+                    this.ref.dot.style.borderRadius = borderRadius;
+                }
+            }
+        } else if (finalState === 'stick') {
+            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
+            if (isNewSnapTarget) {
+                this._snappedTarget = closestMagneticEl;
                 if (this.ref.dot) {
                     this.ref.dot.style.width = '';
                     this.ref.dot.style.height = '';
@@ -291,87 +381,16 @@ class CustomCursor extends gia.Component {
                     this.ref.dot.style.marginTop = '';
                     this.ref.dot.style.borderRadius = '';
                 }
-                this._snappedTarget = null;
             }
+        }
+    }
 
-            this.currentState = finalState;
-            this.currentText = targetText;
-            this.currentImg = targetImg;
-            this.currentVideo = targetVideo;
-            this.currentIcon = targetIcon;
-
-            this.element.setAttribute('data-cursor-state', finalState);
-
-            // Update DOM inside cursor for content states
-            if (this.ref.text) {
-                this.ref.text.textContent = targetText;
-            }
-
-            if (this.ref.mediaBox && targetState === 'media') {
-                this.ref.mediaBox.replaceChildren();
-                let mediaElement;
-                if (targetImg) {
-                    mediaElement = document.createElement('img');
-                    mediaElement.src = targetImg;
-                    mediaElement.alt = 'Cursor Media';
-                } else if (targetVideo) {
-                    mediaElement = document.createElement('video');
-                    mediaElement.src = targetVideo;
-                    mediaElement.autoplay = true;
-                    mediaElement.loop = true;
-                    mediaElement.muted = true;
-                    mediaElement.playsInline = true;
-                }
-
-                if (mediaElement) {
-                    mediaElement.style.width = '100%';
-                    mediaElement.style.height = '100%';
-                    mediaElement.style.objectFit = 'cover';
-                    mediaElement.style.borderRadius = '50%';
-                    this.ref.mediaBox.appendChild(mediaElement);
-                }
-            }
-
-            if (this.ref.icon && targetState === 'icon') {
-                const svgNS = 'http://www.w3.org/2000/svg';
-                const xlinkNS = 'http://www.w3.org/1999/xlink';
-                const svg = document.createElementNS(svgNS, 'svg');
-                svg.setAttribute('class', `mf-svgsprite mf-svgsprite-${targetIcon}`);
-                const use = document.createElementNS(svgNS, 'use');
-                use.setAttributeNS(xlinkNS, 'href', `#${targetIcon}`);
-                svg.appendChild(use);
-                this.ref.icon.replaceChildren(svg);
-            }
-
-            // Handle Snapping Visual State Updates
-            if (finalState === 'magnetic') {
-                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
-                if (isNewSnapTarget) {
-                    this._snappedTarget = closestMagneticEl;
-                    if (this.ref.dot && this.magneticTarget) {
-                        const computedStyle = window.getComputedStyle(this.magneticTarget);
-                        const borderRadius = computedStyle.borderRadius || '0px';
-
-                        this.ref.dot.style.width = `${this.magneticBounds.width}px`;
-                        this.ref.dot.style.height = `${this.magneticBounds.height}px`;
-                        this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
-                        this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
-                        this.ref.dot.style.borderRadius = borderRadius;
-                    }
-                }
-            } else if (finalState === 'stick') {
-                const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
-                if (isNewSnapTarget) {
-                    this._snappedTarget = closestMagneticEl;
-                    if (this.ref.dot) {
-                        this.ref.dot.style.width = '';
-                        this.ref.dot.style.height = '';
-                        this.ref.dot.style.marginLeft = '';
-                        this.ref.dot.style.marginTop = '';
-                        this.ref.dot.style.borderRadius = '';
-                    }
-                }
-            }
+    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
+        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
+            this._cleanupPreviousState(finalState, targetState);
+            this._updateStateProperties(finalState, targetText, targetImg, targetVideo, targetIcon);
+            this._updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon);
+            this._updateSnappingVisuals(finalState, closestMagneticEl);
         }
     }
 
