@@ -1135,6 +1135,7 @@ div[data-component="Tabs"] {
     border: 1px solid var(--tabs-border);
     border-radius: 8px;
     padding: 1rem;
+    view-transition-name: tab-panels;
 
     > * {
       grid-row-start: 1;
@@ -1219,10 +1220,6 @@ html[data-tabs-direction] {
   ::view-transition-old(tabs-panel-old),
   ::view-transition-new(tabs-panel-new) {
     mix-blend-mode: normal;
-  }
-  ::view-transition-old(tab-panels),
-  ::view-transition-new(tab-panels) {
-    height: 100%;
   }
 }
 
@@ -1987,9 +1984,6 @@ button[data-component="ClipboardCopy"] {
   }
 
   .step-indicator {
-    font-family: inherit;
-    font-size: inherit;
-    color: inherit;
     padding: 0.5rem;
     border: 1px solid #ccc;
     flex: 1;
@@ -2002,13 +1996,6 @@ button[data-component="ClipboardCopy"] {
       background: #007bff;
       color: white;
       border-color: #007bff;
-    }
-
-    &:disabled,
-    &.is-disabled {
-      opacity: 0.5;
-      pointer-events: none;
-      cursor: not-allowed;
     }
   }
 }
