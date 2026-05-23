@@ -12,6 +12,7 @@ let globalLenisInstance = null;
 let lastScrollY = 0;
 let lastVelocity = 0;
 
+const globalScrollPayload = { scroll: 0, velocity: 0 };
 function handleGlobalScroll(e) {
 	let scrollY, velocity;
 	if (globalLenisInstance) {
@@ -28,26 +29,29 @@ function handleGlobalScroll(e) {
 	lastScrollY = scrollY;
 	lastVelocity = velocity;
 
-	const payload = { scroll: scrollY, velocity: velocity };
+	globalScrollPayload.scroll = scrollY;
+	globalScrollPayload.velocity = velocity;
+
 	for (const cb of scrollCallbacks) {
-		cb(payload);
+		cb(globalScrollPayload);
 	}
 }
 
+const globalResizePayload = { width: 0, height: 0 };
 function handleGlobalResize(e) {
-	const payload = {
-		width: window.innerWidth,
-		height: window.innerHeight
-	};
+	globalResizePayload.width = window.innerWidth;
+	globalResizePayload.height = window.innerHeight;
 	for (const cb of windowResizeCallbacks) {
-		cb(payload);
+		cb(globalResizePayload);
 	}
 }
 
 let globalResizeObserver = null;
 const resizeCallbacks = new Map();
+const globalResizeEntryArr = [null];
 
 const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
+const globalIntersectionEntryArr = [null];
 
 const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]);
 const protoMethodsCache = new WeakMap();
@@ -305,9 +309,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
-						const entryArr = [entry];
+						globalResizeEntryArr[0] = entry;
 						for (const cb of callbacks) {
-							cb(entryArr);
+							cb(globalResizeEntryArr);
 						}
 					}
 				}
@@ -379,9 +383,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
-						const entryArr = [entry];
+						globalIntersectionEntryArr[0] = entry;
 						for (const cb of callbacks) {
-							cb(entryArr);
+							cb(globalIntersectionEntryArr);
 						}
 					}
 				}

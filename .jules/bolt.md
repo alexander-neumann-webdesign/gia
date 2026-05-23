@@ -71,3 +71,7 @@
 ## 2026-05-23 - Nested ForEach Closures in Hot Paths
 **Learning:** High-frequency methods (like Embla `scroll` handlers or `requestAnimationFrame` loops) using nested array iteration methods like `.forEach()` allocate multiple inline closure functions on every frame. Over time, this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Always optimize high-frequency lifecycle and event loops by replacing `.forEach()` with standard `for` loops to completely eliminate closure function allocations.
+
+## 2024-05-25 - Zero-allocation Event Payloads
+**Learning:** High-frequency framework event loops (like global `scroll` or `resize` dispatchers, and `ResizeObserver`/`IntersectionObserver` wrappers) often allocate short-lived wrapper arrays or payload objects (e.g., `{ scroll, velocity }` or `[entry]`) for every active component on every frame. Over thousands of frames, these inline allocations rapidly fill memory, triggering expensive garbage collection (GC) pauses that cause noticeable micro-stutters, especially on high refresh rate (120Hz+) displays.
+**Action:** Implement zero-allocation event payloads in performance-critical dispatcher paths. Declare shared global payload objects/arrays at the module level (e.g., `const globalScrollPayload = { scroll: 0, velocity: 0 };`) and continually reuse them across callbacks instead of instantiating new objects, drastically reducing GC churn and ensuring buttery smooth 60-120+ FPS rendering.
