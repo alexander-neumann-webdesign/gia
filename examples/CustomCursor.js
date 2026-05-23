@@ -52,7 +52,6 @@ class CustomCursor extends gia.Component {
         // Animation loop control
         this._rafId = null;
         this._isRenderingFrame = false;
-        this._needsAllBoundsUpdate = true;
         this._lastTime = performance.now();
         this._lastDotTransform = '';
         this._lastMagneticTransform = '';
@@ -99,12 +98,15 @@ class CustomCursor extends gia.Component {
                     }
                 }
                 if (shouldUpdate) {
-                    this._needsAllBoundsUpdate = true;
+                    this._updateBounds();
                     this._wakeUp();
                 }
             });
             this.mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-magnetic', 'data-cursor-stick', 'data-cursor-img', 'class'] });
         }
+
+        // Ensure bounds are calculated before starting the render loop
+        this._updateBounds();
 
         // Start the render loop initially
         this._lastTime = performance.now();
@@ -163,7 +165,7 @@ class CustomCursor extends gia.Component {
     }
 
     handleResize() {
-        this._needsAllBoundsUpdate = true;
+        this._updateBounds();
         this._wakeUp();
     }
 
@@ -420,10 +422,6 @@ class CustomCursor extends gia.Component {
     render(time) {
         if (!this._isRenderingFrame) return;
 
-        if (this._needsAllBoundsUpdate) {
-            this._updateBounds();
-        }
-
         // Calculate delta time for frame-rate independent lerp
         // Cap deltaTime to 100ms to avoid huge jumps on tab switch
         const deltaTime = Math.min(time - this._lastTime, 100);
@@ -458,8 +456,6 @@ class CustomCursor extends gia.Component {
     }
 
     _updateBounds() {
-        this._needsAllBoundsUpdate = false;
-
         this._preloadImages();
 
         // Rebuild the cache of all magnetic elements
