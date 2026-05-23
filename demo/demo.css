@@ -1017,6 +1017,7 @@ div[data-component=Tabs][data-direction=forward] [role=tabpanel][hidden] {
 }
 @starting-style {
   div[data-component=Tabs][data-direction=forward] [role=tabpanel]:not([hidden]) {
+    opacity: 0;
     transform: translateX(20px);
   }
 }
@@ -1025,6 +1026,7 @@ div[data-component=Tabs][data-direction=backward] [role=tabpanel][hidden] {
 }
 @starting-style {
   div[data-component=Tabs][data-direction=backward] [role=tabpanel]:not([hidden]) {
+    opacity: 0;
     transform: translateX(-20px);
   }
 }
@@ -1057,6 +1059,10 @@ div[data-component=Tabs][data-direction=backward] [role=tabpanel][hidden] {
 html[data-tabs-direction] ::view-transition-old(tabs-panel-old),
 html[data-tabs-direction] ::view-transition-new(tabs-panel-new) {
   mix-blend-mode: normal;
+}
+html[data-tabs-direction] ::view-transition-old(tab-panels),
+html[data-tabs-direction] ::view-transition-new(tab-panels) {
+  height: 100%;
 }
 
 html[data-tabs-direction=forward] ::view-transition-old(tabs-panel-old) {

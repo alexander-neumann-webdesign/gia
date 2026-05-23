@@ -194,10 +194,6 @@ class Tabs extends gia.Component {
 			return null;
 		}
 
-		if (panelsContainer) {
-			panelsContainer.style.viewTransitionName = 'tab-panels';
-		}
-
 		const activePanel = this.ref.panel[activeIndex];
 		const oldPanel = this.ref.panel.find(p => !p.hidden);
 
@@ -226,9 +222,6 @@ class Tabs extends gia.Component {
 			}
 			if (activePanel) {
 				activePanel.style.viewTransitionName = '';
-			}
-			if (panelsContainer) {
-				panelsContainer.style.viewTransitionName = '';
 			}
 			document.documentElement.style.viewTransitionName = '';
 			document.documentElement.removeAttribute('data-tabs-direction');
