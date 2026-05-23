@@ -109,7 +109,12 @@ class FilterableListGSAP extends gia.Component {
 
 		if (maxTypos === 0) return false;
 
-		// Simple edit distance algorithm
+		const minEditDistance = this.calculateMinEditDistance(str, pattern);
+
+		return minEditDistance <= maxTypos;
+	}
+
+	calculateMinEditDistance(str, pattern) {
 		const m = pattern.length;
 		const n = str.length;
 
@@ -151,7 +156,7 @@ class FilterableListGSAP extends gia.Component {
 			}
 		}
 
-		return minEditDistance <= maxTypos;
+		return minEditDistance;
 	}
 
 	mount() {
