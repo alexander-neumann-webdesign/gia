@@ -308,7 +308,13 @@
         }
       }
 
-      if (Object.keys(activeFilters).length > 0) {
+      var hasFilters = false;
+      for (var _k in activeFilters) {
+        hasFilters = true;
+        break;
+      }
+
+      if (hasFilters) {
         items.forEach(function(item) {
           var isVisible = true;
           for (var type in activeFilters) {
@@ -494,7 +500,13 @@
         }
       }
 
-      if (Object.keys(activeFilters).length > 0) {
+      var hasFiltersGsap = false;
+      for (var _k in activeFilters) {
+        hasFiltersGsap = true;
+        break;
+      }
+
+      if (hasFiltersGsap) {
         items.forEach(function(item) {
           var isVisible = true;
           for (var type in activeFilters) {

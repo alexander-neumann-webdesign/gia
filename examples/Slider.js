@@ -95,16 +95,23 @@ class Slider extends gia.Component {
 		const slidesInView = embla.slidesInView();
 		const isScrollEvent = eventName === "scroll";
 
-		embla.scrollSnapList().forEach((scrollSnap, snapIndex) => {
+		const scrollSnapList = embla.scrollSnapList();
+		const loopPoints = engine.options.loop ? engine.slideLooper.loopPoints : null;
+
+		for (let snapIndex = 0; snapIndex < scrollSnapList.length; snapIndex++) {
+			const scrollSnap = scrollSnapList[snapIndex];
 			const slidesInSnap = engine.slideRegistry[snapIndex];
 
-			slidesInSnap.forEach((slideIndex) => {
-				if (isScrollEvent && !slidesInView.includes(slideIndex)) return;
+			for (let i = 0; i < slidesInSnap.length; i++) {
+				const slideIndex = slidesInSnap[i];
+
+				if (isScrollEvent && !slidesInView.includes(slideIndex)) continue;
 
 				let diffToTarget = scrollSnap - scrollProgress;
 
-				if (engine.options.loop) {
-					engine.slideLooper.loopPoints.forEach((loopItem) => {
+				if (loopPoints) {
+					for (let j = 0; j < loopPoints.length; j++) {
+						const loopItem = loopPoints[j];
 						const target = loopItem.target();
 
 						if (slideIndex === loopItem.index && target !== 0) {
@@ -112,17 +119,16 @@ class Slider extends gia.Component {
 
 							if (sign === -1) {
 								diffToTarget = scrollSnap - (1 + scrollProgress);
-							}
-							if (sign === 1) {
+							} else if (sign === 1) {
 								diffToTarget = scrollSnap + (1 - scrollProgress);
 							}
 						}
-					});
+					}
 				}
 
 				applyCallback(slideIndex, diffToTarget);
-			});
-		});
+			}
+		}
 	}
 
 	setupTween() {
