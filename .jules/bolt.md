@@ -71,3 +71,6 @@
 ## 2026-05-23 - Nested ForEach Closures in Hot Paths
 **Learning:** High-frequency methods (like Embla `scroll` handlers or `requestAnimationFrame` loops) using nested array iteration methods like `.forEach()` allocate multiple inline closure functions on every frame. Over time, this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Always optimize high-frequency lifecycle and event loops by replacing `.forEach()` with standard `for` loops to completely eliminate closure function allocations.
+## 2026-05-23 - Duplicate utility functions in classes
+**Learning:** Having identical utility methods like `debounce` and `fuzzyMatch` inside separate component classes increases boilerplate and maintenance overhead.
+**Action:** When refactoring reusable utility functions (e.g., `debounce`, `fuzzyMatch`) out of `gia.Component` examples, move them to `src/utils.js` and export them via `lib/main.js` to make them globally accessible through the `gia.utils` namespace, rather than leaving duplicated logic inside component classes.
