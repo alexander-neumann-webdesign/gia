@@ -348,29 +348,43 @@ class FilterableListGSAP extends gia.Component {
 	}
 
 	_getFilterValues(el, filterType) {
-		let values = [];
 		if (el instanceof HTMLSelectElement) {
-			if (el.multiple) {
-				for (let i = 0; i < el.selectedOptions.length; i++) {
-					values.push(el.selectedOptions[i].value);
-				}
-			} else {
-				values = el.value ? [el.value] : [];
-			}
+			return this._getSelectValues(el);
 		} else if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-			// This handles a group of checkboxes with the same name
-			const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
-			for (let i = 0; i < checkboxes.length; i++) {
-				values.push(checkboxes[i].value);
-			}
+			return this._getCheckboxValues(filterType);
 		} else if (el instanceof HTMLInputElement && el.type === 'radio') {
-			values = el.value ? [el.value] : [];
+			return el.value ? [el.value] : [];
 		} else if (el instanceof HTMLInputElement) {
-			// Handle text, search, range, etc.
-			values = el.value ? [el.value] : [];
-			if (el.type === 'range' && el.value === el.defaultValue) {
-				values = [];
+			return this._getInputValues(el);
+		}
+		return [];
+	}
+
+	_getSelectValues(el) {
+		let values = [];
+		if (el.multiple) {
+			for (let i = 0; i < el.selectedOptions.length; i++) {
+				values.push(el.selectedOptions[i].value);
 			}
+		} else {
+			values = el.value ? [el.value] : [];
+		}
+		return values;
+	}
+
+	_getCheckboxValues(filterType) {
+		let values = [];
+		const checkboxes = this.element.querySelectorAll(`input[name="${filterType}"]:checked`);
+		for (let i = 0; i < checkboxes.length; i++) {
+			values.push(checkboxes[i].value);
+		}
+		return values;
+	}
+
+	_getInputValues(el) {
+		let values = el.value ? [el.value] : [];
+		if (el.type === 'range' && el.value === el.defaultValue) {
+			values = [];
 		}
 		return values;
 	}
@@ -667,8 +681,10 @@ class FilterableListGSAP extends gia.Component {
 			this.ref.container.appendChild(visibleItems[i]);
 		}
 
-		const count = visibleItems.length;
+		this._updateAnnouncers(visibleItems.length);
+	}
 
+	_updateAnnouncers(count) {
 		for (let i = 0; i < this.ref.announcerCount.length; i++) {
 			this.ref.announcerCount[i].textContent = count;
 		}
@@ -706,51 +722,63 @@ class FilterableListGSAP extends gia.Component {
 
 	_updateFilterElement(el, activeValues) {
 		if (el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement) {
-			const filterValue = el.getAttribute('data-filter-value');
-			let isActive = false;
-			if (filterValue === '*' || filterValue === 'all' || !filterValue) {
-				isActive = activeValues.length === 0;
-			} else {
-				isActive = activeValues.includes(filterValue);
-			}
-
-			if (isActive) {
-				el.classList.add(this.options.activeFilterClass);
-				el.setAttribute('aria-pressed', 'true');
-			} else {
-				el.classList.remove(this.options.activeFilterClass);
-				el.setAttribute('aria-pressed', 'false');
-			}
+			this._updateButtonFilter(el, activeValues);
 		} else if (el instanceof HTMLSelectElement) {
-			if (el.multiple) {
-				for (let j = 0; j < el.options.length; j++) {
-					const opt = el.options[j];
-					opt.selected = activeValues.includes(opt.value);
-				}
-			} else {
-				el.value = activeValues.length > 0 ? activeValues[0] : '';
-			}
+			this._updateSelectFilter(el, activeValues);
 		} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
 			el.checked = activeValues.includes(el.value);
 		} else if (el instanceof HTMLInputElement) {
-			// Text, search, range, etc.
-			let newVal = '';
-			if (activeValues.length > 0) {
-				newVal = activeValues[0];
-			} else {
-				newVal = el.type === 'range' ? (el.defaultValue || '') : '';
-			}
+			this._updateInputFilter(el, activeValues);
+		}
+	}
 
-			if (el.value !== newVal) {
-				el.value = newVal;
-				el.dispatchEvent(new Event('change', { bubbles: true }));
+	_updateButtonFilter(el, activeValues) {
+		const filterValue = el.getAttribute('data-filter-value');
+		let isActive = false;
+		if (filterValue === '*' || filterValue === 'all' || !filterValue) {
+			isActive = activeValues.length === 0;
+		} else {
+			isActive = activeValues.includes(filterValue);
+		}
+
+		if (isActive) {
+			el.classList.add(this.options.activeFilterClass);
+			el.setAttribute('aria-pressed', 'true');
+		} else {
+			el.classList.remove(this.options.activeFilterClass);
+			el.setAttribute('aria-pressed', 'false');
+		}
+	}
+
+	_updateSelectFilter(el, activeValues) {
+		if (el.multiple) {
+			for (let j = 0; j < el.options.length; j++) {
+				const opt = el.options[j];
+				opt.selected = activeValues.includes(opt.value);
 			}
-			// Update associated output if it exists (for range inputs)
-			if (el.type === 'range' && el.id) {
-				const outputEl = document.querySelector(`output[for="${el.id}"]`);
-				if (outputEl && outputEl.value !== el.value) {
-					outputEl.value = el.value;
-				}
+		} else {
+			el.value = activeValues.length > 0 ? activeValues[0] : '';
+		}
+	}
+
+	_updateInputFilter(el, activeValues) {
+		// Text, search, range, etc.
+		let newVal = '';
+		if (activeValues.length > 0) {
+			newVal = activeValues[0];
+		} else {
+			newVal = el.type === 'range' ? (el.defaultValue || '') : '';
+		}
+
+		if (el.value !== newVal) {
+			el.value = newVal;
+			el.dispatchEvent(new Event('change', { bubbles: true }));
+		}
+		// Update associated output if it exists (for range inputs)
+		if (el.type === 'range' && el.id) {
+			const outputEl = document.querySelector(`output[for="${el.id}"]`);
+			if (outputEl && outputEl.value !== el.value) {
+				outputEl.value = el.value;
 			}
 		}
 	}

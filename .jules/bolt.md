@@ -64,3 +64,7 @@
 ## 2024-05-22 - Refactor Duplicate Embla Slide Logic
 **Learning:** Found identical nested looping logic to calculate the diffToTarget for each slide across multiple setup functions (like `setupTween` and `setupParallax`) inside the `Slider` component. This increases maintenance surface area and cognitive load.
 **Action:** Extract the complex nested loops that iterate over Embla slides into a separate helper method (like `_applyEmblaEffect(embla, eventName, callback)`) to DRY out the code and reduce duplication, making it easier to add new scroll effects later.
+
+## 2024-05-23 - Extracted ViewTransition Helper Methods
+**Learning:** Functions like `_applyViewTransition` can quickly become overly complex when mixing DOM manipulations, setup for transition names and animations, and cleanup logic. Breaking these apart into smaller, distinct helper methods (`_setupViewTransitionNames`, `_animateContainerHeight`, `_cleanupViewTransition`) significantly improves readability and maintainability of the core animation flow.
+**Action:** Always attempt to split complex, monolithic functions into smaller, single-purpose helper functions to ensure codebase maintainability.
