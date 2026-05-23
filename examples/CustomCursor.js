@@ -533,15 +533,26 @@ class CustomCursor extends gia.Component {
 
             // Intensity is 1 when inside the element bounds (maxDistToEdge = 0),
             // and approaches 0 as we reach the padding boundary
-            const intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
+            let intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
+
+
+            // Apply smoothstep to intensity for a more natural, non-linear magnetic falloff
+            intensity = intensity * intensity * (3 - 2 * intensity);
 
             const pullX = (docMouseX - this.magneticBounds.centerX) * this.options.magneticStrength * intensity;
+
             const pullY = (docMouseY - this.magneticBounds.centerY) * this.options.magneticStrength * intensity;
 
             // Only snap the cursor target to the element if actually snapped (magnetic or stick)
-            if (this.currentState === 'magnetic' || this.currentState === 'stick') {
+            if (this.currentState === 'magnetic') {
                 targetX = (this.magneticBounds.centerX - scrollX) + pullX;
                 targetY = (this.magneticBounds.centerY - scrollY) + pullY;
+            } else if (this.currentState === 'stick') {
+                // Parallax effect for stick: let the cursor follow the mouse slightly more than the element
+                const dx = docMouseX - this.magneticBounds.centerX;
+                const dy = docMouseY - this.magneticBounds.centerY;
+                targetX = (this.magneticBounds.centerX - scrollX) + pullX + (dx - pullX) * 0.2;
+                targetY = (this.magneticBounds.centerY - scrollY) + pullY + (dy - pullY) * 0.2;
             }
 
             this._currentPullX = pullX;
