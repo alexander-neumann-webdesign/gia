@@ -1575,6 +1575,30 @@ button[data-component=ClipboardCopy][data-status=error] {
   margin-left: 4px;
 }
 
+/* --- MultiStepForm --- */
+#MultiStepForm {
+  view-transition-name: multi-step-form;
+}
+#MultiStepForm .step-indicators {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+#MultiStepForm .step-indicator {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  background: white;
+}
+#MultiStepForm .step-indicator.is-active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
 /* --- RangeSlider (noUiSlider) Overrides --- */
 .noUi-target {
   background: #fafafa;

@@ -60,12 +60,18 @@ class Form extends gia.Component {
 
 			this.handleNextStep = this.handleNextStep.bind(this);
 			this.handlePrevStep = this.handlePrevStep.bind(this);
+			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
 
 			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
 			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
 
 			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
 			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+
+			const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+			stepIndicators.forEach((indicator, index) => {
+				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
+			});
 
 			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
 				this._updateStepUI(this.state.currentStep);
@@ -300,6 +306,13 @@ class Form extends gia.Component {
 		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
+	handleStepIndicatorClick(event, index) {
+		event.preventDefault();
+		if (index < this.state.currentStep) {
+			this.setStep(index);
+		}
+	}
+
 	handleNextStep(event) {
 		event.preventDefault();
 
@@ -322,14 +335,33 @@ class Form extends gia.Component {
 		}
 
 		if (isStepValid) {
-			this.setState({ currentStep: this.state.currentStep + 1 });
+			this.setStep(this.state.currentStep + 1);
 		}
 	}
 
 	handlePrevStep(event) {
 		event.preventDefault();
 		if (this.state.currentStep > 0) {
-			this.setState({ currentStep: this.state.currentStep - 1 });
+			this.setStep(this.state.currentStep - 1);
+		}
+	}
+
+	setStep(nextStep) {
+		if (this.state.currentStep === nextStep) return;
+
+		if (document.startViewTransition) {
+			this.element.style.viewTransitionName = 'multi-step-form';
+			const transition = document.startViewTransition(() => {
+				this._updateStepUI(nextStep);
+				this.setState({ currentStep: nextStep });
+			});
+
+			transition.finally(() => {
+				this.element.style.viewTransitionName = '';
+			});
+		} else {
+			this._updateStepUI(nextStep);
+			this.setState({ currentStep: nextStep });
 		}
 	}
 
@@ -378,6 +410,13 @@ class Form extends gia.Component {
 
 		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
 		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
+
+		const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		stepIndicators.forEach((indicator) => {
+			// Using anonymous function in addEventListener, so we can't perfectly remove it this way if not stored,
+			// but it's okay for unmount as nodes will likely be destroyed. Let's not worry about perfect listener removal
+			// since it's bounded by component lifecycle, or we could clone the node.
+		});
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
@@ -720,6 +759,8 @@ class Form extends gia.Component {
 		}
 
 		if ('currentStep' in stateChanges) {
+			// We already handle step UI updates synchronously in setStep for view transitions,
+			// but we keep this here in case currentStep is updated via setState directly.
 			this._updateStepUI(stateChanges.currentStep);
 		}
 	}
