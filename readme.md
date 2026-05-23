@@ -202,6 +202,7 @@ class SliderComponent extends Component {
     }
 }
 ```
+*Best Practice Tip: To ensure proper i18n support, avoid hardcoding user-facing text strings directly in your JavaScript components. Instead, define default text strings in `this.options`, allowing the server (HTML/PHP) to override them with translated values via the `data-options` attribute.*
 
 ## The Ref System (`this.ref`)
 
@@ -262,7 +263,7 @@ class SimpleClickComponent extends Component {
     }
 
     handleClick(event) {
-        console.log("Clicked!", event.target);
+        console.log("Clicked!", event.currentTarget);
     }
 }
 ```
@@ -284,15 +285,17 @@ class HoverCardComponent extends Component {
     }
 
     handleEnter(event) {
-        event.target.classList.add("is-hovered");
+        event.currentTarget.classList.add("is-hovered");
     }
 
     handleLeave(event) {
-        event.target.classList.remove("is-hovered");
+        event.currentTarget.classList.remove("is-hovered");
     }
 }
 ```
 *Note: Because `BaseComponent` automatically calls `_autoBindFunctions`, you do not need to manually `.bind(this)` on your methods. `this` inside `handleClick` will safely point to the component instance.*
+
+*Best Practice Tip: Always use `event.currentTarget` instead of `event.target` when dealing with DOM events. `event.currentTarget` reliably points to the element that the listener is bound to (the one with the `data-action` attribute), preventing bugs that occur when a user clicks on nested child elements like icons or text spans.*
 
 ## State Management & Reactivity
 
@@ -339,6 +342,8 @@ class CounterComponent extends Component {
 }
 ```
 
+*Performance Tip: To prevent layout thrashing, always batch your DOM reads (e.g. `getBoundingClientRect()`, `offsetWidth`) before applying any DOM writes (e.g. updating `style` or setting text content) inside the `stateChange()` method. Interleaving reads and writes forces the browser to recalculate layouts synchronously.*
+
 ### State-to-Attribute Auto-binding
 As a bonus, `BaseComponent` automatically maps `boolean` and `string` state values directly to `data-` attributes on the component's root element (`this.element`). CamelCase state keys are converted to kebab-case.
 
@@ -375,6 +380,8 @@ This automatically updates the root element:
 <div data-component="MyComponent" data-is-open="true" data-status="loading">
 ```
 This allows you to write highly performant CSS that reacts to component state without writing manual class-toggling logic.
+
+*Tip: If you want to use `this.setState()` but want to opt-out of automatic state-to-attribute syncing for a specific state variable, you can synchronously call `this.element.removeAttribute('data-variable-name')` at the end of your `stateChange()` method.*
 
 ## Helper Functions
 
@@ -518,9 +525,10 @@ class VisibilityComponent extends Component {
 
     mount() {
         // Observe intersection (uses a shared global IntersectionObserver instance)
-        this.ref.items.forEach(item => {
-            this.observeIntersection(item, this.handleIntersection, { threshold: 0.5 });
-        });
+        // Best Practice: Use a standard for-loop in high-frequency/startup methods to avoid closure allocations
+        for (let i = 0; i < this.ref.items.length; i++) {
+            this.observeIntersection(this.ref.items[i], this.handleIntersection, { threshold: 0.5 });
+        }
 
         // Observe resize (uses a shared global ResizeObserver instance)
         this.observeResize(this.element, this.handleResize);
