@@ -956,17 +956,73 @@ div[data-component=Tabs] [role=tab][aria-selected=true] {
   color: var(--tab-active-text);
 }
 div[data-component=Tabs] [role=tabpanel] {
-  transition: opacity 0.4s ease, display 0.4s allow-discrete;
+  transition: opacity 0.4s ease, transform 0.4s ease, display 0.4s allow-discrete;
   opacity: 1;
+  transform: translateX(0);
 }
 div[data-component=Tabs] [role=tabpanel][hidden] {
   opacity: 0;
   display: none;
 }
+div[data-component=Tabs][data-direction=forward] [role=tabpanel][hidden] {
+  transform: translateX(-20px);
+}
 @starting-style {
-  div[data-component=Tabs] [role=tabpanel]:not([hidden]) {
+  div[data-component=Tabs][data-direction=forward] [role=tabpanel]:not([hidden]) {
+    transform: translateX(20px);
+  }
+}
+div[data-component=Tabs][data-direction=backward] [role=tabpanel][hidden] {
+  transform: translateX(20px);
+}
+@starting-style {
+  div[data-component=Tabs][data-direction=backward] [role=tabpanel]:not([hidden]) {
+    transform: translateX(-20px);
+  }
+}
+
+/* --- Tabs View Transitions --- */
+@keyframes tabs-slide-out-left {
+  to {
+    transform: translateX(-20px);
     opacity: 0;
   }
+}
+@keyframes tabs-slide-in-right {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+}
+@keyframes tabs-slide-out-right {
+  to {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+}
+@keyframes tabs-slide-in-left {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+}
+html[data-tabs-direction] ::view-transition-old(tabs-panel-old),
+html[data-tabs-direction] ::view-transition-new(tabs-panel-new) {
+  mix-blend-mode: normal;
+}
+
+html[data-tabs-direction=forward] ::view-transition-old(tabs-panel-old) {
+  animation: tabs-slide-out-left 0.4s ease forwards;
+}
+html[data-tabs-direction=forward] ::view-transition-new(tabs-panel-new) {
+  animation: tabs-slide-in-right 0.4s ease forwards;
+}
+
+html[data-tabs-direction=backward] ::view-transition-old(tabs-panel-old) {
+  animation: tabs-slide-out-right 0.4s ease forwards;
+}
+html[data-tabs-direction=backward] ::view-transition-new(tabs-panel-new) {
+  animation: tabs-slide-in-left 0.4s ease forwards;
 }
 
 /* --- ThemeToggle --- */
