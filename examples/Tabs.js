@@ -77,19 +77,13 @@ class Tabs extends gia.Component {
 		}
 
 		if (this.ref.tabList) {
-			this.resizeObserver = new ResizeObserver(() => {
+			this.observeResize(this.ref.tabList, () => {
 				this.updateIndicator();
 			});
-			this.resizeObserver.observe(this.ref.tabList);
 		}
 	}
 
 	unmount() {
-		if (this.resizeObserver) {
-			this.resizeObserver.disconnect();
-			this.resizeObserver = null;
-		}
-
 		this.ref.tab.forEach((tab, index) => {
 			if (this.tabClickHandlers[index]) {
 				tab.removeEventListener('click', this.tabClickHandlers[index]);
@@ -194,34 +188,7 @@ class Tabs extends gia.Component {
 		});
 	}
 
-	_measureTargetHeight(panelsContainer, activeIndex) {
-		// Apply new state to measure
-		const previousHiddenStates = this.ref.panel.map(p => p.hidden);
-
-		// Temporarily disable transitions to get pure target height
-		this.ref.panel.forEach(p => {
-			p.style.transition = 'none';
-		});
-
-		// Update DOM without view transition just to measure
-		this._updateDOM(activeIndex);
-
-		const endHeight = panelsContainer.offsetHeight;
-
-		// Revert state
-		this.ref.panel.forEach((p, i) => p.hidden = previousHiddenStates[i]);
-
-		// Force a reflow before restoring transitions so the browser registers the revert
-		void panelsContainer.offsetHeight;
-
-		this.ref.panel.forEach(p => {
-			p.style.transition = '';
-		});
-
-		return endHeight;
-	}
-
-	_applyViewTransition(panelsContainer, activeIndex) {
+	_applyViewTransition(panelsContainer, activeIndex, direction) {
 		if (!document.startViewTransition) {
 			this._updateDOM(activeIndex);
 			return null;
@@ -230,16 +197,19 @@ class Tabs extends gia.Component {
 		const activePanel = this.ref.panel[activeIndex];
 		const oldPanel = this.ref.panel.find(p => !p.hidden);
 
-		panelsContainer.style.viewTransitionName = `tabs-container-${this._id}`;
 		if (oldPanel && oldPanel !== activePanel) {
-			oldPanel.style.viewTransitionName = `tabs-panel-${this._id}-old`;
+			oldPanel.style.viewTransitionName = `tabs-panel-old`;
 		}
 		if (activePanel) {
-			activePanel.style.viewTransitionName = `tabs-panel-${this._id}-new`;
+			activePanel.style.viewTransitionName = `tabs-panel-new`;
 		}
 
 		// Disable root transition to prevent full-page crossfade
 		document.documentElement.style.viewTransitionName = 'none';
+
+		if (direction !== 0) {
+			document.documentElement.setAttribute('data-tabs-direction', direction > 0 ? 'forward' : 'backward');
+		}
 
 		const transition = document.startViewTransition(() => this._updateDOM(activeIndex));
 
@@ -247,7 +217,6 @@ class Tabs extends gia.Component {
 		transition.finished.catch(() => {
 			// Ignore AbortError when rapid clicks interrupt an ongoing transition
 		}).finally(() => {
-			panelsContainer.style.viewTransitionName = '';
 			if (oldPanel) {
 				oldPanel.style.viewTransitionName = '';
 			}
@@ -255,51 +224,86 @@ class Tabs extends gia.Component {
 				activePanel.style.viewTransitionName = '';
 			}
 			document.documentElement.style.viewTransitionName = '';
+			document.documentElement.removeAttribute('data-tabs-direction');
 		});
 
 		return transition;
 	}
 
-	_animateContainerHeight(panelsContainer, startHeight, endHeight, transition) {
+	_animateContainerHeight(panelsContainer, startHeight, transition) {
 		panelsContainer.style.overflow = 'hidden';
-		const animation = panelsContainer.animate(
-			[
-				{ height: `${startHeight}px` },
-				{ height: `${endHeight}px` }
-			],
-			{
-				duration: 400,
-				easing: 'ease',
-				fill: 'forwards'
-			}
-		);
-
-		const cleanup = () => {
-			animation.cancel();
-			panelsContainer.style.overflow = '';
-			panelsContainer.style.height = '';
-		};
 
 		if (transition) {
-			transition.finished.finally(cleanup);
+			transition.ready.then(() => {
+				const endHeight = panelsContainer.offsetHeight;
+
+				if (startHeight !== endHeight) {
+					const animation = panelsContainer.animate(
+						[
+							{ height: `${startHeight}px` },
+							{ height: `${endHeight}px` }
+						],
+						{
+							duration: 400,
+							easing: 'ease',
+							fill: 'forwards'
+						}
+					);
+
+					transition.finished.finally(() => {
+						animation.cancel();
+						panelsContainer.style.overflow = '';
+						panelsContainer.style.height = '';
+					});
+				} else {
+					panelsContainer.style.overflow = '';
+				}
+			}).catch(() => {
+				panelsContainer.style.overflow = '';
+			});
 		} else {
-			setTimeout(cleanup, 450); // Defer cleanup to ensure CSS discrete transitions finish before removing height lock
+			// Fallback if view transitions are not supported
+			const endHeight = panelsContainer.offsetHeight;
+			if (startHeight !== endHeight) {
+				const animation = panelsContainer.animate(
+					[
+						{ height: `${startHeight}px` },
+						{ height: `${endHeight}px` }
+					],
+					{
+						duration: 400,
+						easing: 'ease',
+						fill: 'forwards'
+					}
+				);
+				setTimeout(() => {
+					animation.cancel();
+					panelsContainer.style.overflow = '';
+					panelsContainer.style.height = '';
+				}, 450);
+			} else {
+				panelsContainer.style.overflow = '';
+			}
 		}
 	}
 
 	stateChange(stateChanges) {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
+
+			const direction = this._currentActiveIndex !== undefined ? (activeIndex > this._currentActiveIndex ? 1 : (activeIndex < this._currentActiveIndex ? -1 : 0)) : 0;
+			this._currentActiveIndex = activeIndex;
+
+			if (direction !== 0) {
+				this.element.setAttribute('data-direction', direction > 0 ? 'forward' : 'backward');
+			}
+
 			const panelsContainer = this.ref.panel[0]?.parentElement;
 
 			if (panelsContainer) {
 				const startHeight = panelsContainer.offsetHeight;
-				const endHeight = this._measureTargetHeight(panelsContainer, activeIndex);
-				const transition = this._applyViewTransition(panelsContainer, activeIndex);
-
-				if (startHeight !== endHeight) {
-					this._animateContainerHeight(panelsContainer, startHeight, endHeight, transition);
-				}
+				const transition = this._applyViewTransition(panelsContainer, activeIndex, direction);
+				this._animateContainerHeight(panelsContainer, startHeight, transition);
 			} else {
 				this._updateDOM(activeIndex);
 			}

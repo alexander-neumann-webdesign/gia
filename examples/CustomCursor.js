@@ -83,10 +83,7 @@ class CustomCursor extends gia.Component {
         this.observeWindowResize(this.handleResize);
 
         // Setup observers to trigger bounds updates
-        if (window.ResizeObserver) {
-            this.resizeObserver = new ResizeObserver(this.handleResize);
-            this.resizeObserver.observe(document.body);
-        }
+        this.observeResize(document.body, this.handleResize);
 
         if (window.MutationObserver) {
             this.mutationObserver = new MutationObserver((mutations) => {
@@ -119,9 +116,6 @@ class CustomCursor extends gia.Component {
         this.unobserveScroll(this.handleScroll);
         this.unobserveWindowResize(this.handleResize);
 
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-        }
         if (this.mutationObserver) {
             this.mutationObserver.disconnect();
         }
