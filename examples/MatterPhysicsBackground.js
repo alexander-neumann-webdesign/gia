@@ -107,8 +107,6 @@ class MatterPhysicsBackground extends gia.Component {
             }
         });
 
-        Render.run(this.render);
-
         // create runner
         this.runner = Runner.create();
 
@@ -378,8 +376,10 @@ class MatterPhysicsBackground extends gia.Component {
 
         if (this.isVisible && !this.state.isPaused) {
             window.Matter.Runner.start(this.runner, this.engine);
+            if (this.render) window.Matter.Render.run(this.render);
         } else {
             window.Matter.Runner.stop(this.runner);
+            if (this.render) window.Matter.Render.stop(this.render);
         }
     }
 }
