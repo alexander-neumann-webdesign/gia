@@ -334,15 +334,21 @@ class Form extends gia.Component {
 
 			if (canNavigate) {
 				indicator.classList.remove('is-disabled');
+				if (indicator.tagName === 'BUTTON') {
+					indicator.disabled = false;
+				}
 			} else {
 				indicator.classList.add('is-disabled');
+				if (indicator.tagName === 'BUTTON') {
+					indicator.disabled = true;
+				}
 			}
 		});
 	}
 
 	handleStepIndicatorClick(event, index) {
 		event.preventDefault();
-		if (!event.currentTarget.classList.contains('is-disabled')) {
+		if (!event.currentTarget.disabled && !event.currentTarget.classList.contains('is-disabled')) {
 			this.setStep(index);
 		}
 	}
