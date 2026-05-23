@@ -1,6 +1,47 @@
 import config from "./config.js";
 import { queryAll } from "./utils.js";
 
+
+let globalScrollListenerBound = false;
+let globalResizeListenerBound = false;
+const scrollCallbacks = new Set();
+const windowResizeCallbacks = new Set();
+let globalLenisInstance = null;
+let lastScrollY = 0;
+let lastVelocity = 0;
+
+function handleGlobalScroll(e) {
+	let scrollY, velocity;
+	if (globalLenisInstance) {
+		scrollY = globalLenisInstance.scroll;
+		velocity = globalLenisInstance.velocity;
+	} else if (e && typeof e.scroll === 'number') {
+		scrollY = e.scroll;
+		velocity = e.velocity || 0;
+	} else {
+		scrollY = window.scrollY || window.pageYOffset;
+		velocity = 0; // Native scroll lacks reliable instant velocity
+	}
+
+	lastScrollY = scrollY;
+	lastVelocity = velocity;
+
+	const payload = { scroll: scrollY, velocity: velocity };
+	for (const cb of scrollCallbacks) {
+		cb(payload);
+	}
+}
+
+function handleGlobalResize(e) {
+	const payload = {
+		width: window.innerWidth,
+		height: window.innerHeight
+	};
+	for (const cb of windowResizeCallbacks) {
+		cb(payload);
+	}
+}
+
 let globalResizeObserver = null;
 const resizeCallbacks = new Map();
 
@@ -159,6 +200,19 @@ export default class Component {
 	_destroy() {
 		this.unmount();
 
+
+		if (this._observedScrollCallbacks) {
+			for (const cb of this._observedScrollCallbacks) {
+				this.unobserveScroll(cb);
+			}
+		}
+
+		if (this._observedWindowResizeCallbacks) {
+			for (const cb of this._observedWindowResizeCallbacks) {
+				this.unobserveWindowResize(cb);
+			}
+		}
+
 		if (this._observedResizeElements) {
 			for (const element of this._observedResizeElements.keys()) {
 				this.unobserveResize(element);
@@ -169,6 +223,73 @@ export default class Component {
 			for (const element of this._observedIntersectionElements.keys()) {
 				this.unobserveIntersection(element);
 			}
+		}
+	}
+
+
+
+	observeScroll(callback) {
+		if (typeof window === "undefined") return;
+
+		if (!globalScrollListenerBound) {
+			globalScrollListenerBound = true;
+			// Lazy check for lenis to hook into its raf scroll
+			if (window.lenis) {
+				globalLenisInstance = window.lenis;
+				globalLenisInstance.on('scroll', handleGlobalScroll);
+			} else {
+				window.addEventListener('scroll', handleGlobalScroll, { passive: true });
+			}
+		}
+
+		if (!this._observedScrollCallbacks) {
+			this._observedScrollCallbacks = new Set();
+		}
+		this._observedScrollCallbacks.add(callback);
+		scrollCallbacks.add(callback);
+	}
+
+	unobserveScroll(callback) {
+		if (this._observedScrollCallbacks) {
+			this._observedScrollCallbacks.delete(callback);
+		}
+		scrollCallbacks.delete(callback);
+
+		if (scrollCallbacks.size === 0 && globalScrollListenerBound) {
+			globalScrollListenerBound = false;
+			if (globalLenisInstance) {
+				globalLenisInstance.off('scroll', handleGlobalScroll);
+				globalLenisInstance = null;
+			} else {
+				window.removeEventListener('scroll', handleGlobalScroll);
+			}
+		}
+	}
+
+	observeWindowResize(callback) {
+		if (typeof window === "undefined") return;
+
+		if (!globalResizeListenerBound) {
+			globalResizeListenerBound = true;
+			window.addEventListener('resize', handleGlobalResize, { passive: true });
+		}
+
+		if (!this._observedWindowResizeCallbacks) {
+			this._observedWindowResizeCallbacks = new Set();
+		}
+		this._observedWindowResizeCallbacks.add(callback);
+		windowResizeCallbacks.add(callback);
+	}
+
+	unobserveWindowResize(callback) {
+		if (this._observedWindowResizeCallbacks) {
+			this._observedWindowResizeCallbacks.delete(callback);
+		}
+		windowResizeCallbacks.delete(callback);
+
+		if (windowResizeCallbacks.size === 0 && globalResizeListenerBound) {
+			globalResizeListenerBound = false;
+			window.removeEventListener('resize', handleGlobalResize);
 		}
 	}
 

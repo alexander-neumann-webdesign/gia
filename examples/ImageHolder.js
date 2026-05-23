@@ -123,22 +123,14 @@ class ImageHolder extends gia.Component {
 		if (this.isScrollBound) return;
 		this.isScrollBound = true;
 
-		if (window.lenis) {
-			window.lenis.on('scroll', this.handleScroll);
-		} else {
-			window.addEventListener('scroll', this.handleScroll, { passive: true });
-		}
+		this.observeScroll(this.handleScroll);
 	}
 
 	unbindScroll() {
 		if (!this.isScrollBound) return;
 		this.isScrollBound = false;
 
-		if (window.lenis) {
-			window.lenis.off('scroll', this.handleScroll);
-		} else {
-			window.removeEventListener('scroll', this.handleScroll);
-		}
+		this.unobserveScroll(this.handleScroll);
 	}
 
 	handleLoad(e) {

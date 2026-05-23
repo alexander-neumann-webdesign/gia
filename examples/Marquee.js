@@ -116,7 +116,7 @@ class Marquee extends gia.Component {
 		// Only bind scroll if lenis is active
 		if (window.lenis) {
 			this.isScrollBound = true;
-			window.lenis.on('scroll', this.handleScroll);
+			this.observeScroll(this.handleScroll);
 		}
 	}
 
@@ -124,7 +124,7 @@ class Marquee extends gia.Component {
 		if (!this.isScrollBound) return;
 
 		if (window.lenis) {
-			window.lenis.off('scroll', this.handleScroll);
+			this.unobserveScroll(this.handleScroll);
 			this.isScrollBound = false;
 		}
 	}

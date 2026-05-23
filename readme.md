@@ -499,8 +499,8 @@ class MyComponent extends Component {
 }
 ```
 
-### Observer API (Resize & Intersection)
-Gia provides unified, global observers for intersection and resize events via `observeIntersection` and `observeResize` inherited from `BaseComponent`. By using a shared `IntersectionObserver` or `ResizeObserver` across multiple components, it significantly reduces memory overhead and improves performance over instantiating observers inside individual components. Best of all, Gia automatically unobserves elements during the `unmount` phase.
+### Observer API (Scroll, Resize & Intersection)
+Gia provides unified, global listeners for high-frequency events like scroll and window resize, as well as observers for intersection and element resize via `observeScroll`, `observeWindowResize`, `observeIntersection`, and `observeResize` inherited from `BaseComponent`. By using centralized global listeners and shared `IntersectionObserver`/`ResizeObserver` instances across multiple components, it significantly reduces layout thrashing, minimizes memory overhead, and maximizes frame rates. Gia automatically cleans up all observers and listeners during the `unmount` phase.
 
 ```html
 <div data-component="VisibilityComponent">
@@ -524,6 +524,9 @@ class VisibilityComponent extends Component {
 
         // Observe resize (uses a shared global ResizeObserver instance)
         this.observeResize(this.element, this.handleResize);
+
+        // Observe global scroll (uses a centralized window scroll listener to prevent layout thrashing)
+        this.observeScroll(this.handleScroll);
     }
 
     handleIntersection([entry]) {
@@ -536,6 +539,11 @@ class VisibilityComponent extends Component {
 
     handleResize([entry]) {
         console.log("Component resized:", entry.contentRect.width);
+    }
+
+    handleScroll(payload) {
+        // Read layout from payload instead of window.scrollY to prevent forced synchronous layout
+        console.log("Window scrolled to:", payload.scroll);
     }
 }
 ```

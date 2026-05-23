@@ -135,7 +135,7 @@
         <span class="sizer" aria-hidden="true">Copied!</span>
         <span data-ref="buttonText">SAVE20</span>
     </span>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon" aria-hidden="true">
         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
         <path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"></path>
@@ -308,7 +308,13 @@
         }
       }
 
-      if (Object.keys(activeFilters).length > 0) {
+      var hasFilters = false;
+      for (var _k in activeFilters) {
+        hasFilters = true;
+        break;
+      }
+
+      if (hasFilters) {
         items.forEach(function(item) {
           var isVisible = true;
           for (var type in activeFilters) {
@@ -494,7 +500,13 @@
         }
       }
 
-      if (Object.keys(activeFilters).length > 0) {
+      var hasFiltersGsap = false;
+      for (var _k in activeFilters) {
+        hasFiltersGsap = true;
+        break;
+      }
+
+      if (hasFiltersGsap) {
         items.forEach(function(item) {
           var isVisible = true;
           for (var type in activeFilters) {
@@ -925,7 +937,7 @@
 
         <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation">
             <!-- Icon will be injected by component state -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
     </div>
 </section>
@@ -1012,11 +1024,11 @@
 
                   <div class="slider-controls">
                     <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
                     </button>
                     <div class="embla__dots" data-ref="dotsContainer"></div>
                     <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1062,11 +1074,11 @@
 
                   <div class="slider-controls">
                     <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
                     </button>
                     <div class="embla__dots" data-ref="dotsContainer"></div>
                     <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1122,11 +1134,11 @@
 
                   <div class="slider-controls">
                     <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
                     </button>
                     <div class="embla__dots" data-ref="dotsContainer"></div>
                     <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1166,11 +1178,11 @@
 
                   <div class="slider-controls">
                     <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
                     </button>
                     <div class="embla__dots" data-ref="dotsContainer"></div>
                     <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
                   </div>
                 </div>

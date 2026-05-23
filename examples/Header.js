@@ -22,12 +22,7 @@ class Header extends gia.Component {
 
 	mount() {
 		if (this.options.scrollEvents) {
-			// Lenis scroll listener or fallback to Native scroll
-			if (window.lenis) {
-				window.lenis.on('scroll', this.handleLenisScroll);
-			} else {
-				window.addEventListener('scroll', this.handleScroll, { passive: true });
-			}
+			this.observeScroll(this.handleScroll);
 
 			// Initial check
 			this.currentScrollY = window.scrollY || window.pageYOffset;
@@ -42,11 +37,7 @@ class Header extends gia.Component {
 
 	unmount() {
 		if (this.options.scrollEvents) {
-			if (window.lenis) {
-				window.lenis.off('scroll', this.handleLenisScroll);
-			} else {
-				window.removeEventListener('scroll', this.handleScroll);
-			}
+			this.unobserveScroll(this.handleScroll);
 
 			if (window.swup) {
 				window.swup.hooks.off("page:view", this.handleSwupPageChange);
@@ -54,19 +45,12 @@ class Header extends gia.Component {
 		}
 	}
 
-	handleScroll() {
-		// Read scroll synchronously before rAF to avoid thrashing
-		this.currentScrollY = window.scrollY || window.pageYOffset;
-
-		if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
-			this.ticking = true;
+	handleScroll(payload) {
+		if (payload && typeof payload.scroll === 'number') {
+			this.currentScrollY = payload.scroll;
+		} else {
+			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
-	}
-
-	handleLenisScroll(e) {
-		// Bypass reading window.scrollY entirely
-		this.currentScrollY = e.scroll;
 
 		if (!this.ticking) {
 			window.requestAnimationFrame(this.tickUpdate);

@@ -68,3 +68,6 @@
 ## 2024-05-23 - Extracted ViewTransition Helper Methods
 **Learning:** Functions like `_applyViewTransition` can quickly become overly complex when mixing DOM manipulations, setup for transition names and animations, and cleanup logic. Breaking these apart into smaller, distinct helper methods (`_setupViewTransitionNames`, `_animateContainerHeight`, `_cleanupViewTransition`) significantly improves readability and maintainability of the core animation flow.
 **Action:** Always attempt to split complex, monolithic functions into smaller, single-purpose helper functions to ensure codebase maintainability.
+## 2026-05-23 - Nested ForEach Closures in Hot Paths
+**Learning:** High-frequency methods (like Embla `scroll` handlers or `requestAnimationFrame` loops) using nested array iteration methods like `.forEach()` allocate multiple inline closure functions on every frame. Over time, this creates measurable garbage collection overhead leading to micro-stutters.
+**Action:** Always optimize high-frequency lifecycle and event loops by replacing `.forEach()` with standard `for` loops to completely eliminate closure function allocations.
