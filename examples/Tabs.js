@@ -77,19 +77,13 @@ class Tabs extends gia.Component {
 		}
 
 		if (this.ref.tabList) {
-			this.resizeObserver = new ResizeObserver(() => {
+			this.observeResize(this.ref.tabList, () => {
 				this.updateIndicator();
 			});
-			this.resizeObserver.observe(this.ref.tabList);
 		}
 	}
 
 	unmount() {
-		if (this.resizeObserver) {
-			this.resizeObserver.disconnect();
-			this.resizeObserver = null;
-		}
-
 		this.ref.tab.forEach((tab, index) => {
 			if (this.tabClickHandlers[index]) {
 				tab.removeEventListener('click', this.tabClickHandlers[index]);
