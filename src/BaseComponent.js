@@ -12,6 +12,10 @@ let globalLenisInstance = null;
 let lastScrollY = 0;
 let lastVelocity = 0;
 
+const _scrollPayload = { scroll: 0, velocity: 0 };
+const _resizePayload = { width: 0, height: 0 };
+const _observerEntryArr = [null];
+
 function handleGlobalScroll(e) {
 	let scrollY, velocity;
 	if (globalLenisInstance) {
@@ -28,19 +32,18 @@ function handleGlobalScroll(e) {
 	lastScrollY = scrollY;
 	lastVelocity = velocity;
 
-	const payload = { scroll: scrollY, velocity: velocity };
+	_scrollPayload.scroll = scrollY;
+	_scrollPayload.velocity = velocity;
 	for (const cb of scrollCallbacks) {
-		cb(payload);
+		cb(_scrollPayload);
 	}
 }
 
 function handleGlobalResize(e) {
-	const payload = {
-		width: window.innerWidth,
-		height: window.innerHeight
-	};
+	_resizePayload.width = window.innerWidth;
+	_resizePayload.height = window.innerHeight;
 	for (const cb of windowResizeCallbacks) {
-		cb(payload);
+		cb(_resizePayload);
 	}
 }
 
@@ -305,9 +308,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
-						const entryArr = [entry];
+						_observerEntryArr[0] = entry;
 						for (const cb of callbacks) {
-							cb(entryArr);
+							cb(_observerEntryArr);
 						}
 					}
 				}
@@ -379,9 +382,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
-						const entryArr = [entry];
+						_observerEntryArr[0] = entry;
 						for (const cb of callbacks) {
-							cb(entryArr);
+							cb(_observerEntryArr);
 						}
 					}
 				}
