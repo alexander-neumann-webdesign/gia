@@ -7,7 +7,8 @@ class Slider extends gia.Component {
 			align: "center",
 			skipSnaps: true,
 			tween: false,
-			parallax: false
+			parallax: false,
+			wheelGestures: true
 		};
 
 		this.ref = {
@@ -41,6 +42,14 @@ class Slider extends gia.Component {
 		} catch (error) {
 			console.error("Slider: Failed to load Embla Carousel.", error);
 		}
+
+		if (this.options.wheelGestures) {
+			try {
+				await this.loadScript("embla-carousel-wheel-gestures-js", "EmblaCarouselWheelGestures");
+			} catch (error) {
+				console.error("Slider: Failed to load Embla Carousel Wheel Gestures.", error);
+			}
+		}
 	}
 
 	mount() {
@@ -54,12 +63,18 @@ class Slider extends gia.Component {
 			return;
 		}
 
+		// Plugins
+		const plugins = [];
+		if (this.options.wheelGestures && typeof window.EmblaCarouselWheelGestures !== "undefined") {
+			plugins.push(window.EmblaCarouselWheelGestures());
+		}
+
 		// Initialize Embla
 		this.emblaApi = window.EmblaCarousel(this.ref.viewport, {
 			loop: this.options.loop,
 			align: this.options.align,
 			skipSnaps: this.options.skipSnaps
-		});
+		}, plugins);
 
 		// Setup Buttons
 		if (this.ref.prevBtn) {
