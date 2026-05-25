@@ -239,6 +239,7 @@ class Tabs extends gia.Component {
 
 	_measureEndHeight(panelsContainer) {
 		panelsContainer.style.height = '';
+		panelsContainer.style.overflow = '';
 		return panelsContainer.offsetHeight;
 	}
 
@@ -269,7 +270,9 @@ class Tabs extends gia.Component {
 				this._resetContainerStyles(panelsContainer);
 			});
 		} else {
-			this._resetContainerStyles(panelsContainer);
+			cleanupCb(() => {
+				this._resetContainerStyles(panelsContainer);
+			});
 		}
 	}
 
