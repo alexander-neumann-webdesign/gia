@@ -142,35 +142,7 @@ class FilterableList extends gia.Component {
 
 		// Save the original index of each item to preserve stable sorting when values are equal
 		for (let index = 0; index < this.ref.item.length; index++) {
-			const item = this.ref.item[index];
-			item._originalIndex = index;
-			item._dataCache = {};
-
-			for (let i = 0; i < item.attributes.length; i++) {
-				const attr = item.attributes[i];
-				if (attr.name.startsWith('data-')) {
-					const key = attr.name.replace('data-', '');
-					const val = attr.value;
-
-					let parsedVal;
-					if (val.startsWith('[') && val.endsWith(']')) {
-						try {
-							parsedVal = JSON.parse(val);
-							if (!Array.isArray(parsedVal)) parsedVal = [parsedVal.toString()];
-						} catch (e) {
-							parsedVal = [val];
-						}
-					} else {
-						parsedVal = [val];
-					}
-
-					item._dataCache[key] = {
-						array: parsedVal,
-						raw: val,
-						num: parseFloat(val)
-					};
-				}
-			}
+			this._cacheItemData(this.ref.item[index], index);
 		}
 
 		// Parse initial state from URL
@@ -181,6 +153,37 @@ class FilterableList extends gia.Component {
 
 		// Initial synchronous DOM update (no animation)
 		this.updateList(false);
+	}
+
+	_cacheItemData(item, index) {
+		item._originalIndex = index;
+		item._dataCache = {};
+
+		for (let i = 0; i < item.attributes.length; i++) {
+			const attr = item.attributes[i];
+			if (attr.name.startsWith('data-')) {
+				const key = attr.name.replace('data-', '');
+				const val = attr.value;
+
+				let parsedVal;
+				if (val.startsWith('[') && val.endsWith(']')) {
+					try {
+						parsedVal = JSON.parse(val);
+						if (!Array.isArray(parsedVal)) parsedVal = [parsedVal.toString()];
+					} catch (e) {
+						parsedVal = [val];
+					}
+				} else {
+					parsedVal = [val];
+				}
+
+				item._dataCache[key] = {
+					array: parsedVal,
+					raw: val,
+					num: parseFloat(val)
+				};
+			}
+		}
 	}
 
 	unmount() {
