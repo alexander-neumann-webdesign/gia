@@ -29,7 +29,7 @@ class FilterableListGSAP extends gia.Component {
 		this.activeFilters = {};
 		this.activeSort = this.options.defaultSort;
 
-		this.applyChangesDebounced = this.debounce(this.applyChanges.bind(this), 300);
+		this.applyChangesDebounced = gia.utils.debounce(this.applyChanges.bind(this), 300);
 
 		this._pendingOutputs = new Map();
 		this._outputRafId = null;
@@ -56,28 +56,6 @@ class FilterableListGSAP extends gia.Component {
 		this._pendingOutputs.clear();
 		this._outputRafId = null;
 	}
-
-	debounce(func, wait) {
-		let timeout;
-		let lastArgs = null;
-		const later = () => {
-			clearTimeout(timeout);
-			if (lastArgs) {
-				func(...lastArgs);
-			}
-		};
-		const executedFunction = function(...args) {
-			lastArgs = args;
-			clearTimeout(timeout);
-			timeout = setTimeout(later, wait);
-		};
-		executedFunction.cancel = function() {
-			clearTimeout(timeout);
-			lastArgs = null;
-		};
-		return executedFunction;
-	}
-
 
 	normalizeSearch(str) {
 		if (!str) return "";
