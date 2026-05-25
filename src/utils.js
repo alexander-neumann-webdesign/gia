@@ -59,3 +59,24 @@ export function triggerEvent(
 	const event = new CustomEvent(eventType, options);
 	element.dispatchEvent(event);
 }
+
+export function debounce(func, wait) {
+	let timeout;
+	let lastArgs = null;
+	const later = () => {
+		clearTimeout(timeout);
+		if (lastArgs) {
+			func(...lastArgs);
+		}
+	};
+	const executedFunction = function(...args) {
+		lastArgs = args;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+	};
+	executedFunction.cancel = function() {
+		clearTimeout(timeout);
+		lastArgs = null;
+	};
+	return executedFunction;
+}

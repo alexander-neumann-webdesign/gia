@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = i;
 });
-class D {
+class q {
   constructor() {
     R(this, "_options", {
       log: !1,
@@ -121,7 +121,7 @@ function q(i) {
   const e = i.root || null, t = i.rootMargin || "0px 0px 0px 0px", n = i.threshold || 0, s = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${s}`;
 }
-let G = class {
+let Q = class {
   constructor(e, t) {
     this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._flushStateChanges = this._flushStateChanges.bind(this), this._autoBindFunctions(), f.get("autoBindActions") && this._autoBindActions();
   }
@@ -174,7 +174,7 @@ let G = class {
       const s = t.trim();
       if (s.startsWith("{") || s.startsWith("["))
         try {
-          n = JSON.parse(s);
+          n = JSON.parse(o);
         } catch (r) {
           console.error(`Failed to parse options for component "${this._name}": ${r.message}`);
         }
@@ -309,7 +309,7 @@ let G = class {
    * @return {Promise}
    */
   loadScript(e, t) {
-    if (t && window[t] && !(window[t] instanceof Node))
+    if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && !(window[t] instanceof Window))
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
     return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((s, r) => {
@@ -338,19 +338,19 @@ let G = class {
       if (t.onload = () => {
         r(), n(!0);
       }, t.onerror = () => {
-        r(), delete t._loadPromise, s(new Error(`Failed to load style: ${e}`));
+        r(), delete t._loadPromise, o(new Error(`Failed to load style: ${e}`));
       }, !t.href && t.hasAttribute("data-href"))
         t.href = t.getAttribute("data-href"), t.removeAttribute("data-href");
       else if (!t.href && !t.hasAttribute("data-href"))
-        r(), s(new Error(`Link tag '${e}' has no href or data-href.`));
+        r(), o(new Error(`Link tag '${e}' has no href or data-href.`));
       else if (t.href && !t.hasAttribute("data-href")) {
-        let o = !1;
+        let i = !1;
         for (let a = 0; a < document.styleSheets.length; a++)
           if (document.styleSheets[a].href === t.href) {
-            o = !0;
+            i = !0;
             break;
           }
-        o && (r(), n(!0));
+        i && (r(), n(!0));
       }
     })), t._loadPromise) : Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
   }
@@ -406,24 +406,24 @@ let G = class {
     }
   }
   _autoBindActions() {
-    const e = p("[data-action]", this.element), t = e.length;
+    const e = _("[data-action]", this.element), t = e.length;
     for (let n = 0; n < t; n++) {
-      const s = e[n], r = s.getAttribute("data-action");
+      const o = e[n], r = o.getAttribute("data-action");
       if (!r) continue;
-      let o = 0;
-      for (; o < r.length; ) {
-        let a = r.indexOf(" ", o);
-        if (a === -1 && (a = r.length), a > o) {
-          const l = r.substring(o, a), c = l.indexOf("->");
-          let u, d;
-          c !== -1 ? (u = l.substring(0, c), d = l.substring(c + 2)) : (u = l, d = void 0), this[d] && typeof this[d] == "function" && !d.startsWith("_") && !L.has(d) ? s.addEventListener(u, this[d]) : console.warn(`Method "${d}" not found, is restricted, or is not a function in component.`);
+      let i = 0;
+      for (; i < r.length; ) {
+        let a = r.indexOf(" ", i);
+        if (a === -1 && (a = r.length), a > i) {
+          const l = r.substring(i, a), c = l.indexOf("->");
+          let d, f;
+          c !== -1 ? (d = l.substring(0, c), f = l.substring(c + 2)) : (d = l, f = void 0), this[f] && typeof this[f] == "function" && !f.startsWith("_") && !I.has(f) ? o.addEventListener(d, this[f]) : console.warn(`Method "${f}" not found, is restricted, or is not a function in component.`);
         }
-        o = a + 1;
+        i = a + 1;
       }
     }
   }
 };
-class X extends G {
+class ae extends Q {
   async require() {
   }
   _load() {
@@ -465,7 +465,7 @@ function K(i) {
       const a = r.removedNodes[o];
       if (a.nodeType === Node.ELEMENT_NODE) {
         a.hasAttribute(e) && z(a);
-        const l = p(`[${e}]`, a);
+        const l = _(`[${e}]`, a);
         for (let c = 0; c < l.length; c++)
           z(l[c]);
       }
@@ -488,7 +488,7 @@ const U = f.set;
 f.set = function(i, e) {
   U.call(this, i, e), i === "autoMountComponents" && B();
 };
-typeof window < "u" && setTimeout(B, 0);
+typeof window < "u" && setTimeout(W, 0);
 export {
   G as BaseComponent,
   X as Component,
