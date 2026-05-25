@@ -39,7 +39,19 @@ class Form extends gia.Component {
 	}
 
 	mount() {
-		// If the component is attached to the <form> itself
+		this._initializeFormElement();
+		this._setupAccessibilityRoles();
+
+		if (this.formElement) {
+			this._bindFormEvents();
+		} else {
+			console.warn("Form component: No form element found.");
+		}
+
+		this._setupDropzones();
+	}
+
+	_initializeFormElement() {
 		if (this.element instanceof HTMLFormElement) {
 			this.formElement = this.element;
 		} else if (this.ref.form) {
@@ -47,65 +59,58 @@ class Form extends gia.Component {
 		} else {
 			this.formElement = this.element.querySelector('form');
 		}
+	}
 
-		// Accessibility: Enhance form feedback with live region roles
+	_setupAccessibilityRoles() {
 		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
 			this.ref.successMessage.setAttribute('role', 'status');
 		}
 		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
 			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
+	}
 
-		if (this.formElement) {
-			this.formElement.addEventListener('submit', this.handleSubmit);
+	_bindFormEvents() {
+		this.formElement.addEventListener('submit', this.handleSubmit);
 
-			this.handleNextStep = this.handleNextStep.bind(this);
-			this.handlePrevStep = this.handlePrevStep.bind(this);
-			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
+		this.handleNextStep = this.handleNextStep.bind(this);
+		this.handlePrevStep = this.handlePrevStep.bind(this);
+		this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
 
-			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
-			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
+		const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+		nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
 
-			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
-			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+		prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
 
-			const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
-			stepIndicators.forEach((indicator, index) => {
-				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
-			});
+		const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		stepIndicators.forEach((indicator, index) => {
+			indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
+		});
 
-			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
-				this._updateStepUI(this.state.currentStep);
-			}
-
-			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
-			this.ref.requiredInputs.forEach((input) => {
-				input.addEventListener('change', this.handleInputChange);
-				input.addEventListener('input', this.handleInputChange);
-			});
-
-			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
-			if (this.ref.conditions.length > 0) {
-				this.evaluateConditions = this.evaluateConditions.bind(this);
-				this.formElement.addEventListener('change', this.evaluateConditions);
-				this.formElement.addEventListener('input', this.evaluateConditions);
-				this.evaluateConditions();
-			}
-
-			this.handleInputChange();
-			this._updateIndicatorsState();
-		} else {
-			console.warn("Form component: No form element found.");
+		if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
+			this._updateStepUI(this.state.currentStep);
 		}
 
-		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
-			this.ref.successMessage.setAttribute('role', 'status');
+		this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
+		this.ref.requiredInputs.forEach((input) => {
+			input.addEventListener('change', this.handleInputChange);
+			input.addEventListener('input', this.handleInputChange);
+		});
+
+		this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
+		if (this.ref.conditions.length > 0) {
+			this.evaluateConditions = this.evaluateConditions.bind(this);
+			this.formElement.addEventListener('change', this.evaluateConditions);
+			this.formElement.addEventListener('input', this.evaluateConditions);
+			this.evaluateConditions();
 		}
 
-		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
-			this.ref.errorMessage.setAttribute('role', 'alert');
-		}
+		this.handleInputChange();
+		this._updateIndicatorsState();
+	}
 
+	_setupDropzones() {
 		if (this.ref.dropzone) {
 			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
 			dropzones.forEach((dropzone) => {
@@ -435,6 +440,11 @@ class Form extends gia.Component {
 	}
 
 	unmount() {
+		this._unbindFormEvents();
+		this._teardownDropzones();
+	}
+
+	_unbindFormEvents() {
 		if (this.formElement) {
 			this.formElement.removeEventListener('submit', this.handleSubmit);
 			if (this.evaluateConditions) {
@@ -458,6 +468,9 @@ class Form extends gia.Component {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
 		});
+	}
+
+	_teardownDropzones() {
 		if (this.ref.dropzone) {
 			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
 			dropzones.forEach((dropzone) => {
