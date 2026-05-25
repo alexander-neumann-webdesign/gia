@@ -43,15 +43,74 @@
     <p>Enable auto-mounting or bind actions globally to test.</p>
 
 
-    <section id="QRCode">
-        <h2>QR Code</h2>
+    <section id="Header">
+        <h2>Header</h2>
         <div class="demo-block">
-            <div data-component="QRCode"
-                 data-contents="https://github.com/web-padawan/awesome-web-components"
-                 data-type-number="4"
-                 data-error-correction-level="L"
-                 style="width: 200px; height: 200px;">
-            </div>
+            <header data-component="Header" id="main-header">
+  <div class="header-inner">
+    <div class="logo">Logo</div>
+    <nav>Nav Items</nav>
+  </div>
+</header>
+
+
+        </div>
+    </section>
+
+    <section id="OffCanvasMenu">
+        <h2>OffCanvasMenu</h2>
+        <div class="demo-block">
+            <!-- Trigger inside Header, e.g., a burger button -->
+<header>
+  <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
+</header>
+
+<!-- The OffCanvasMenu itself -->
+<dialog data-component="OffCanvasMenu" id="main-menu">
+  <div class="offcanvas-content">
+    <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </nav>
+  </div>
+</dialog>
+
+
+        </div>
+    </section>
+
+    <section id="Tabs">
+        <h2>Tabs</h2>
+        <div class="demo-block">
+            <div data-component="Tabs">
+  <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
+    <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
+    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
+    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" tabindex="-1">Tab 3</button>
+  </div>
+  <div class="tab-panels">
+    <div data-ref="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+      <h3>Full-width Tab 1</h3>
+      <p>This tabs layout adapts to different screen sizes using grid. We added some extra content here so you can see how heights change depending on what's active.</p>
+    </div>
+    <div data-ref="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+      <h3>Shorter Tab 2</h3>
+      <p>Just a small amount of text here.</p>
+    </div>
+    <div data-ref="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+      <h3>Tab 3 with ImageHolder</h3>
+      <p>This panel contains the requested ImageHolder component.</p>
+      <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}' style="height: 300px; width: 100%;">
+        <img data-ref="img" src="gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</div>
+
+
         </div>
     </section>
 
@@ -104,24 +163,57 @@
         </div>
     </section>
 
-    <section id="MatterPhysicsBackground">
-        <h2>MatterPhysicsBackground</h2>
+    <section id="Modal">
+        <h2>Modal</h2>
         <div class="demo-block">
+            <!-- Triggers can be anywhere -->
+<button data-modal-target="my-modal">Open Modal</button>
 
-<section class="physics-section" data-component="MatterPhysicsBackground">
-    <!-- The canvas sits in the background -->
-    <canvas class="physics-canvas" data-ref="MatterPhysicsBackground:canvas" aria-hidden="true"></canvas>
+<!-- The modal itself -->
+<dialog data-component="Modal" id="my-modal">
+  <div class="modal-content">
+    <h2>Modal Title</h2>
+    <button data-ref="closeButton">Close</button>
+  </div>
+</dialog>
 
-    <!-- Content overlay -->
-    <div class="physics-content">
-        <h2>Physics Background</h2>
-        <p>Powered by Matter.js. Click anywhere to drop shapes!</p>
 
-        <button type="button" class="btn" data-action="click->togglePause">
-            Toggle Physics
-        </button>
-    </div>
-</section>
+        </div>
+    </section>
+
+    <section id="Tooltip">
+        <h2>Tooltip</h2>
+        <div class="demo-block">
+            <!-- Required External Script: -->
+<!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
+
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; padding: 2rem;">
+  <button data-component="Tooltip" data-tooltip="Tooltip on Top" data-position="top">
+    Top
+  </button>
+  <button data-component="Tooltip" data-tooltip="Tooltip on Right" data-position="right">
+    Right
+  </button>
+  <button data-component="Tooltip" data-tooltip="Tooltip on Bottom" data-position="bottom">
+    Bottom
+  </button>
+  <button data-component="Tooltip" data-tooltip="Tooltip on Left" data-position="left">
+    Left
+  </button>
+</div>
+
+
+        </div>
+    </section>
+
+    <section id="ThemeToggle">
+        <h2>ThemeToggle</h2>
+        <div class="demo-block">
+            <button data-component="ThemeToggle" aria-label="Toggle dark mode">
+  <span class="icon-light" aria-hidden="true">☀️</span>
+  <span class="icon-dark" aria-hidden="true">🌙</span>
+</button>
+
 
         </div>
     </section>
@@ -144,6 +236,557 @@
 </button>
             </span>
 
+        </div>
+    </section>
+
+    <section id="CustomCursor">
+        <h2>CustomCursor</h2>
+        <div class="demo-block">
+            <div style="padding: 2rem; border: 1px solid #ccc; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <article class="news-card" data-cursor-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Text Cursor</h3>
+                        <p>Hover me for a text cursor state.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Image Cursor</h3>
+                        <p>Hover me to see an image inside the cursor.</p>
+                    </article>
+
+                    <article class="news-card" data-cursor-icon="icon-play" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
+                        <h3>Icon Cursor</h3>
+                        <p>Hover me to see an SVG icon inside the cursor.</p>
+                    </article>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                    <div data-cursor-stick style="padding: 3rem; background: #f0f0f0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <span>data-cursor-stick</span>
+                    </div>
+
+                    <div style="padding: 3rem; background: #e0e0e0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <button type="button" data-magnetic style="padding: 1rem 2rem; background: #333; color: #fff; border: none; border-radius: 30px;">
+                            data-magnetic
+                        </button>
+                    </div>
+                </div>
+
+                <div style="width: 100%; text-align: center; font-style: italic;">
+                    <p>Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="TextFit">
+        <h2>TextFit</h2>
+        <div class="demo-block" style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
+            <div style="width: 100%;">
+                <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}' style="display: inline-block; white-space: nowrap;">
+                    Resize this container to see text scaling
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="QRCode">
+        <h2>QR Code</h2>
+        <div class="demo-block">
+            <div data-component="QRCode"
+                 data-contents="https://github.com/web-padawan/awesome-web-components"
+                 data-type-number="4"
+                 data-error-correction-level="L"
+                 style="width: 200px; height: 200px;">
+            </div>
+        </div>
+    </section>
+
+        <section id="Slider">
+        <h2>Slider</h2>
+        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
+            <!-- Remember to add the vendor script at the bottom of the body: -->
+<!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
+
+            <div>
+                <h3>Default Slider (Loop: true, Align: center)</h3>
+                <div class="slider-wrapper" data-component="Slider">
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+                          <div class="card-caption">Slide 1</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+                          <div class="card-caption">Slide 2</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+                          <div class="card-caption">Slide 3</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+                          <div class="card-caption">Slide 4</div>
+                        </div>
+                      </div>
+
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-1.jpg" alt="Gallery Image 5" loading="lazy" />
+                          <div class="card-caption">Slide 5</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-2.jpg" alt="Gallery Image 6" loading="lazy" />
+                          <div class="card-caption">Slide 6</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-3.jpg" alt="Gallery Image 7" loading="lazy" />
+                          <div class="card-caption">Slide 7</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-4.jpg" alt="Gallery Image 8" loading="lazy" />
+                          <div class="card-caption">Slide 8</div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="slider-controls">
+                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div class="embla__dots" data-ref="dotsContainer"></div>
+                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Tween Slider (Loop: true, Align: center, Tween: true)</h3>
+                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": true, "align": "center", "tween": true}'>
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
+                          <div class="card-caption">Tween Slide 1</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
+                          <div class="card-caption">Tween Slide 2</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
+                          <div class="card-caption">Tween Slide 3</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
+                          <div class="card-caption">Tween Slide 4</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
+                          <div class="card-caption">Tween Slide 5</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="slider-controls">
+                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div class="embla__dots" data-ref="dotsContainer"></div>
+                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3>
+                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": true, "align": "center", "parallax": true}'>
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 1</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 2</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 3</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 4</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <div class="embla__parallax">
+                            <img class="embla__parallax-img" src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+                          </div>
+                          <div class="card-caption">Parallax Slide 5</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="slider-controls">
+                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div class="embla__dots" data-ref="dotsContainer"></div>
+                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Custom Slider (Loop: false, Align: start)</h3>
+                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": false, "align": "start"}'>
+                  <div class="embla" data-ref="viewport">
+                    <div class="embla__container" data-ref="container">
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+                          <div class="card-caption">Slide A</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
+                          <div class="card-caption">Slide B</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
+                          <div class="card-caption">Slide C</div>
+                        </div>
+                      </div>
+                      <div class="embla__slide" data-ref="slide">
+                        <div class="card-content">
+                          <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
+                          <div class="card-caption">Slide D</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="slider-controls">
+                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div class="embla__dots" data-ref="dotsContainer"></div>
+                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="LightboxGallery">
+        <h2>LightboxGallery</h2>
+        <div class="demo-block">
+            <div data-component="LightboxGallery">
+    <a href="gallery-1.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-2.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-3.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-4.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-5.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-6.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-7.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-8.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-9.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-10.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-11.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
+        </div>
+    </a>
+    <a href="gallery-12.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
+        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
+            <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
+        </div>
+    </a>
+
+</div>
+
+
+        </div>
+    </section>
+
+    <section id="ImageHolder">
+        <h2>ImageHolder</h2>
+        <div class="demo-block">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+                </div>
+                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
+                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="VideoHolder">
+        <h2>VideoHolder</h2>
+        <div class="demo-block">
+            <div data-component="VideoHolder">
+  <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata"></video>
+  <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
+    <!-- Icons injected via JS -->
+  </button>
+</div>
+
+
+        </div>
+    </section>
+
+    <section id="ImageComparison">
+        <div class="container">
+            <h2>Image Comparison</h2>
+            <div class="demo-block">
+                <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
+                    <!-- Left/Before side -->
+                    <div class="image-comparison__before">
+                        <img src="sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
+                    </div>
+                    <!-- Right/After side -->
+                    <div class="image-comparison__after">
+                        <img src="sample-image.jpg" alt="After" />
+                    </div>
+
+                    <input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50" aria-label="Image comparison slider" data-ref="slider" />
+
+                    <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
+                        <div class="image-comparison__handle-line"></div>
+                        <div class="image-comparison__handle-button"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="Reveal">
+        <h2>Reveal</h2>
+        <div class="demo-block">
+            <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
+  <h2 class="reveal-item">Fade me in</h2>
+  <p class="reveal-item" style="transition-delay: 0.1s;">When I scroll into view.</p>
+</div>
+
+
+        </div>
+    </section>
+
+    <section id="Marquee">
+        <h2>Marquee</h2>
+        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
+            <div>
+                <h3>Left Direction</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+                  <div data-ref="track" class="marquee-track">
+                    <div class="marquee-item">Item 1</div>
+                    <div class="marquee-item">Item 2</div>
+                    <div class="marquee-item">Item 3</div>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Right Direction</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
+                  <div data-ref="track" class="marquee-track">
+                    <div class="marquee-item">Item A</div>
+                    <div class="marquee-item">Item B</div>
+                    <div class="marquee-item">Item C</div>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>With Images and Text</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}' class="marquee-demo">
+                  <div data-ref="track" class="marquee-track">
+                    <div class="marquee-item">
+                      <img src="gallery-1.jpg" alt="Gallery 1" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="marquee-item">
+                      <span>Beautiful Landscapes</span>
+                    </div>
+                    <div class="marquee-item">
+                      <img src="gallery-2.jpg" alt="Gallery 2" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="marquee-item">
+                      <span>City Vibes</span>
+                    </div>
+                    <div class="marquee-item">
+                      <img src="gallery-3.jpg" alt="Gallery 3" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="marquee-item">
+                      <span>Nature Discovery</span>
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Cards Variant</h3>
+                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+                  <div data-ref="track" class="marquee-track marquee-cards-track">
+                    <div class="marquee-item marquee-card">
+                      <img src="gallery-1.jpg" alt="Gallery 1">
+                      <div class="marquee-card-content">
+                        <h4>Mountain Retreat</h4>
+                        <p>Discover the serene beauty of the mountains.</p>
+                      </div>
+                    </div>
+                    <div class="marquee-item marquee-card">
+                      <img src="gallery-2.jpg" alt="Gallery 2">
+                      <div class="marquee-card-content">
+                        <h4>City Exploration</h4>
+                        <p>Experience the bustling life of the city.</p>
+                      </div>
+                    </div>
+                    <div class="marquee-item marquee-card">
+                      <img src="gallery-3.jpg" alt="Gallery 3">
+                      <div class="marquee-card-content">
+                        <h4>Forest Adventure</h4>
+                        <p>Wander through lush green forests.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="SplitText">
+        <h2>SplitText</h2>
+        <div class="demo-block">
+            <div style="display: flex; flex-direction: column; gap: 4rem;">
+                <!-- Splitting Lines -->
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
+                    <h3>Splitting Lines</h3>
+                    <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"]}'>
+                        This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
+                        or <em>italic</em> words in-between to show that formatting is preserved. As you scroll down and this comes into view, the lines will animate in one by one.
+                    </p>
+                </div>
+
+                <!-- Splitting Words -->
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
+                    <h3>Splitting Words</h3>
+                    <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
+                        Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block reaches the viewport threshold.
+                    </p>
+                </div>
+
+                <!-- Splitting Characters -->
+                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
+                    <h3>Splitting Characters</h3>
+                    <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
+                        Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like 👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates each letter.
+                    </p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -531,26 +1174,6 @@
         </div>
     </section>
 
-    <section id="RangeSlider">
-        <h2>RangeSlider</h2>
-        <div class="demo-block">
-            <div data-component="RangeSlider" data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
-                <div data-ref="slider"></div>
-
-                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
-                        Min Value
-                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-                    </label>
-                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
-                        Max Value
-                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-                    </label>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="Form">
         <h2>Form</h2>
         <div class="demo-block">
@@ -716,253 +1339,87 @@
         </div>
     </section>
 
-    <section id="Header">
-        <h2>Header</h2>
+    <section id="RangeSlider">
+        <h2>RangeSlider</h2>
         <div class="demo-block">
-            <header data-component="Header" id="main-header">
-  <div class="header-inner">
-    <div class="logo">Logo</div>
-    <nav>Nav Items</nav>
-  </div>
-</header>
+            <div data-component="RangeSlider" data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
+                <div data-ref="slider"></div>
 
-
-        </div>
-    </section>
-
-    <section id="ImageComparison">
-        <div class="container">
-            <h2>Image Comparison</h2>
-            <div class="demo-block">
-                <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
-                    <!-- Left/Before side -->
-                    <div class="image-comparison__before">
-                        <img src="sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
-                    </div>
-                    <!-- Right/After side -->
-                    <div class="image-comparison__after">
-                        <img src="sample-image.jpg" alt="After" />
-                    </div>
-
-                    <input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50" aria-label="Image comparison slider" data-ref="slider" />
-
-                    <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
-                        <div class="image-comparison__handle-line"></div>
-                        <div class="image-comparison__handle-button"></div>
-                    </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
+                        Min Value
+                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                    </label>
+                    <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
+                        Max Value
+                        <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                    </label>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="ImageHolder">
-        <h2>ImageHolder</h2>
+    <section id="MapLibreMap">
+        <h2>MapLibreMap</h2>
         <div class="demo-block">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
-                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
-                </div>
-                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
-                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
-                </div>
-                <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
-                    <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
-                </div>
+            <div data-component="MapLibreMap"
+                 data-options='{"projection": "globe", "centerCoords": [12.550343, 55.665957], "initialZoomLevel": 2, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
+                 style="width: 100%; height: 500px;">
             </div>
         </div>
     </section>
 
-    <section id="LightboxGallery">
-        <h2>LightboxGallery</h2>
+    <section id="OpenStreetMap">
+        <h2>OpenStreetMap</h2>
         <div class="demo-block">
-            <div data-component="LightboxGallery">
-    <a href="gallery-1.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+            <div
+              data-component="OpenStreetMap"
+              data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12, "useAnimatedDot": true}'
+              style="height: 400px; width: 100%;">
+            </div>
         </div>
-    </a>
-    <a href="gallery-2.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-3.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-4.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-5.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-6.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-7.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-8.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-9.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-10.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-11.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
-        </div>
-    </a>
-    <a href="gallery-12.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true" target="_blank" rel="noopener noreferrer">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
-        </div>
-    </a>
+    </section>
 
+    <section id="MatterPhysicsBackground">
+        <h2>MatterPhysicsBackground</h2>
+        <div class="demo-block">
+
+<section class="physics-section" data-component="MatterPhysicsBackground">
+    <!-- The canvas sits in the background -->
+    <canvas class="physics-canvas" data-ref="MatterPhysicsBackground:canvas" aria-hidden="true"></canvas>
+
+    <!-- Content overlay -->
+    <div class="physics-content">
+        <h2>Physics Background</h2>
+        <p>Powered by Matter.js. Click anywhere to drop shapes!</p>
+
+        <button type="button" class="btn" data-action="click->togglePause">
+            Toggle Physics
+        </button>
+    </div>
+</section>
+
+        </div>
+    </section>
+
+    <section id="TodoApp">
+        <h2>TodoApp</h2>
+        <div class="demo-block">
+            <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
+<div data-component="TodoApp" class="todo-app">
+  <!-- Screen reader announcer for accessibility -->
+  <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
+
+  <form data-action="submit->handleFormSubmit" class="todo-form">
+    <label for="new-todo" class="sr-only">Add new task</label>
+    <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required />
+    <button type="submit" class="todo-submit-btn">Add Task</button>
+  </form>
+
+  <ul data-ref="list" class="todo-list" aria-label="Task list">
+    <!-- Tasks will be rendered here dynamically -->
+  </ul>
 </div>
-
-
-        </div>
-    </section>
-
-    <section id="Marquee">
-        <h2>Marquee</h2>
-        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-            <div>
-                <h3>Left Direction</h3>
-                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
-                  <div data-ref="track" class="marquee-track">
-                    <div class="marquee-item">Item 1</div>
-                    <div class="marquee-item">Item 2</div>
-                    <div class="marquee-item">Item 3</div>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>Right Direction</h3>
-                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
-                  <div data-ref="track" class="marquee-track">
-                    <div class="marquee-item">Item A</div>
-                    <div class="marquee-item">Item B</div>
-                    <div class="marquee-item">Item C</div>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>With Images and Text</h3>
-                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}' class="marquee-demo">
-                  <div data-ref="track" class="marquee-track">
-                    <div class="marquee-item">
-                      <img src="gallery-1.jpg" alt="Gallery 1" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-                    </div>
-                    <div class="marquee-item">
-                      <span>Beautiful Landscapes</span>
-                    </div>
-                    <div class="marquee-item">
-                      <img src="gallery-2.jpg" alt="Gallery 2" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-                    </div>
-                    <div class="marquee-item">
-                      <span>City Vibes</span>
-                    </div>
-                    <div class="marquee-item">
-                      <img src="gallery-3.jpg" alt="Gallery 3" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-                    </div>
-                    <div class="marquee-item">
-                      <span>Nature Discovery</span>
-                    </div>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>Cards Variant</h3>
-                <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
-                  <div data-ref="track" class="marquee-track marquee-cards-track">
-                    <div class="marquee-item marquee-card">
-                      <img src="gallery-1.jpg" alt="Gallery 1">
-                      <div class="marquee-card-content">
-                        <h4>Mountain Retreat</h4>
-                        <p>Discover the serene beauty of the mountains.</p>
-                      </div>
-                    </div>
-                    <div class="marquee-item marquee-card">
-                      <img src="gallery-2.jpg" alt="Gallery 2">
-                      <div class="marquee-card-content">
-                        <h4>City Exploration</h4>
-                        <p>Experience the bustling life of the city.</p>
-                      </div>
-                    </div>
-                    <div class="marquee-item marquee-card">
-                      <img src="gallery-3.jpg" alt="Gallery 3">
-                      <div class="marquee-card-content">
-                        <h4>Forest Adventure</h4>
-                        <p>Wander through lush green forests.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="Modal">
-        <h2>Modal</h2>
-        <div class="demo-block">
-            <!-- Triggers can be anywhere -->
-<button data-modal-target="my-modal">Open Modal</button>
-
-<!-- The modal itself -->
-<dialog data-component="Modal" id="my-modal">
-  <div class="modal-content">
-    <h2>Modal Title</h2>
-    <button data-ref="closeButton">Close</button>
-  </div>
-</dialog>
-
-
-        </div>
-    </section>
-
-    <section id="OffCanvasMenu">
-        <h2>OffCanvasMenu</h2>
-        <div class="demo-block">
-            <!-- Trigger inside Header, e.g., a burger button -->
-<header>
-  <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
-</header>
-
-<!-- The OffCanvasMenu itself -->
-<dialog data-component="OffCanvasMenu" id="main-menu">
-  <div class="offcanvas-content">
-    <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/about">About</a></li>
-      </ul>
-    </nav>
-  </div>
-</dialog>
 
 
         </div>
@@ -1003,420 +1460,61 @@
         </div>
     </section>
 
-    <section id="Reveal">
-        <h2>Reveal</h2>
-        <div class="demo-block">
-            <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
-  <h2 class="reveal-item">Fade me in</h2>
-  <p class="reveal-item" style="transition-delay: 0.1s;">When I scroll into view.</p>
-</div>
 
 
-        </div>
-    </section>
-
-        <section id="Slider">
-        <h2>Slider</h2>
-        <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-            <!-- Remember to add the vendor script at the bottom of the body: -->
-<!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
-
-            <div>
-                <h3>Default Slider (Loop: true, Align: center)</h3>
-                <div class="slider-wrapper" data-component="Slider">
-                  <div class="embla" data-ref="viewport">
-                    <div class="embla__container" data-ref="container">
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
-                          <div class="card-caption">Slide 1</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-                          <div class="card-caption">Slide 2</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-                          <div class="card-caption">Slide 3</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-                          <div class="card-caption">Slide 4</div>
-                        </div>
-                      </div>
-
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-1.jpg" alt="Gallery Image 5" loading="lazy" />
-                          <div class="card-caption">Slide 5</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-2.jpg" alt="Gallery Image 6" loading="lazy" />
-                          <div class="card-caption">Slide 6</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-3.jpg" alt="Gallery Image 7" loading="lazy" />
-                          <div class="card-caption">Slide 7</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-4.jpg" alt="Gallery Image 8" loading="lazy" />
-                          <div class="card-caption">Slide 8</div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div class="slider-controls">
-                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <div class="embla__dots" data-ref="dotsContainer"></div>
-                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>Tween Slider (Loop: true, Align: center, Tween: true)</h3>
-                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": true, "align": "center", "tween": true}'>
-                  <div class="embla" data-ref="viewport">
-                    <div class="embla__container" data-ref="container">
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-                          <div class="card-caption">Tween Slide 1</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
-                          <div class="card-caption">Tween Slide 2</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
-                          <div class="card-caption">Tween Slide 3</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
-                          <div class="card-caption">Tween Slide 4</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
-                          <div class="card-caption">Tween Slide 5</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="slider-controls">
-                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <div class="embla__dots" data-ref="dotsContainer"></div>
-                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3>
-                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": true, "align": "center", "parallax": true}'>
-                  <div class="embla" data-ref="viewport">
-                    <div class="embla__container" data-ref="container">
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <div class="embla__parallax">
-                            <img class="embla__parallax-img" src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
-                          </div>
-                          <div class="card-caption">Parallax Slide 1</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <div class="embla__parallax">
-                            <img class="embla__parallax-img" src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-                          </div>
-                          <div class="card-caption">Parallax Slide 2</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <div class="embla__parallax">
-                            <img class="embla__parallax-img" src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-                          </div>
-                          <div class="card-caption">Parallax Slide 3</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <div class="embla__parallax">
-                            <img class="embla__parallax-img" src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-                          </div>
-                          <div class="card-caption">Parallax Slide 4</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <div class="embla__parallax">
-                            <img class="embla__parallax-img" src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-                          </div>
-                          <div class="card-caption">Parallax Slide 5</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="slider-controls">
-                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <div class="embla__dots" data-ref="dotsContainer"></div>
-                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
-                  </div>
-                </div>
-            </div>
-
-            <div>
-                <h3>Custom Slider (Loop: false, Align: start)</h3>
-                <div class="slider-wrapper" data-component="Slider" data-options='{"loop": false, "align": "start"}'>
-                  <div class="embla" data-ref="viewport">
-                    <div class="embla__container" data-ref="container">
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-                          <div class="card-caption">Slide A</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
-                          <div class="card-caption">Slide B</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
-                          <div class="card-caption">Slide C</div>
-                        </div>
-                      </div>
-                      <div class="embla__slide" data-ref="slide">
-                        <div class="card-content">
-                          <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-                          <div class="card-caption">Slide D</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="slider-controls">
-                    <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <div class="embla__dots" data-ref="dotsContainer"></div>
-                    <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
-                  </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="OpenStreetMap">
-        <h2>OpenStreetMap</h2>
-        <div class="demo-block">
-            <div
-              data-component="OpenStreetMap"
-              data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12, "useAnimatedDot": true}'
-              style="height: 400px; width: 100%;">
-            </div>
-        </div>
-    </section>
-
-    <section id="MapLibreMap">
-        <h2>MapLibreMap</h2>
-        <div class="demo-block">
-            <div data-component="MapLibreMap"
-                 data-options='{"projection": "globe", "centerCoords": [12.550343, 55.665957], "initialZoomLevel": 2, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
-                 style="width: 100%; height: 500px;">
-            </div>
-        </div>
-    </section>
-
-    <section id="SplitText">
-        <h2>SplitText</h2>
-        <div class="demo-block">
-            <div style="display: flex; flex-direction: column; gap: 4rem;">
-                <!-- Splitting Lines -->
-                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-                    <h3>Splitting Lines</h3>
-                    <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"]}'>
-                        This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
-                        or <em>italic</em> words in-between to show that formatting is preserved. As you scroll down and this comes into view, the lines will animate in one by one.
-                    </p>
-                </div>
-
-                <!-- Splitting Words -->
-                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-                    <h3>Splitting Words</h3>
-                    <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
-                        Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block reaches the viewport threshold.
-                    </p>
-                </div>
-
-                <!-- Splitting Characters -->
-                <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-                    <h3>Splitting Characters</h3>
-                    <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
-                        Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like 👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates each letter.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="Tabs">
-        <h2>Tabs</h2>
-        <div class="demo-block">
-            <div data-component="Tabs">
-  <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
-    <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
-    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
-    <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" tabindex="-1">Tab 3</button>
-  </div>
-  <div class="tab-panels">
-    <div data-ref="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
-      <h3>Full-width Tab 1</h3>
-      <p>This tabs layout adapts to different screen sizes using grid. We added some extra content here so you can see how heights change depending on what's active.</p>
-    </div>
-    <div data-ref="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
-      <h3>Shorter Tab 2</h3>
-      <p>Just a small amount of text here.</p>
-    </div>
-    <div data-ref="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
-      <h3>Tab 3 with ImageHolder</h3>
-      <p>This panel contains the requested ImageHolder component.</p>
-      <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}' style="height: 300px; width: 100%;">
-        <img data-ref="img" src="gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
-      </div>
-    </div>
-  </div>
-</div>
 
 
-        </div>
-    </section>
-
-    <section id="TextFit">
-        <h2>TextFit</h2>
-        <div class="demo-block" style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
-            <div style="width: 100%;">
-                <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}' style="display: inline-block; white-space: nowrap;">
-                    Resize this container to see text scaling
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="ThemeToggle">
-        <h2>ThemeToggle</h2>
-        <div class="demo-block">
-            <button data-component="ThemeToggle" aria-label="Toggle dark mode">
-  <span class="icon-light" aria-hidden="true">☀️</span>
-  <span class="icon-dark" aria-hidden="true">🌙</span>
-</button>
 
 
-        </div>
-    </section>
-
-    <section id="TodoApp">
-        <h2>TodoApp</h2>
-        <div class="demo-block">
-            <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
-<div data-component="TodoApp" class="todo-app">
-  <!-- Screen reader announcer for accessibility -->
-  <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
-
-  <form data-action="submit->handleFormSubmit" class="todo-form">
-    <label for="new-todo" class="sr-only">Add new task</label>
-    <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required />
-    <button type="submit" class="todo-submit-btn">Add Task</button>
-  </form>
-
-  <ul data-ref="list" class="todo-list" aria-label="Task list">
-    <!-- Tasks will be rendered here dynamically -->
-  </ul>
-</div>
 
 
-        </div>
-    </section>
-
-    <section id="Tooltip">
-        <h2>Tooltip</h2>
-        <div class="demo-block">
-            <!-- Required External Script: -->
-<!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
-
-<div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; padding: 2rem;">
-  <button data-component="Tooltip" data-tooltip="Tooltip on Top" data-position="top">
-    Top
-  </button>
-  <button data-component="Tooltip" data-tooltip="Tooltip on Right" data-position="right">
-    Right
-  </button>
-  <button data-component="Tooltip" data-tooltip="Tooltip on Bottom" data-position="bottom">
-    Bottom
-  </button>
-  <button data-component="Tooltip" data-tooltip="Tooltip on Left" data-position="left">
-    Left
-  </button>
-</div>
 
 
-        </div>
-    </section>
-
-    <section id="VideoHolder">
-        <h2>VideoHolder</h2>
-        <div class="demo-block">
-            <div data-component="VideoHolder">
-  <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata"></video>
-  <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
-    <!-- Icons injected via JS -->
-  </button>
-</div>
 
 
-        </div>
-    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <!-- Invisible SVG definitions for Icons -->
     <svg style="display: none;">
@@ -1425,47 +1523,7 @@
         </symbol>
     </svg>
 
-    <section id="CustomCursor">
-        <h2>CustomCursor</h2>
-        <div class="demo-block">
-            <div style="padding: 2rem; border: 1px solid #ccc; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
 
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <article class="news-card" data-cursor-text="Read more" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
-                        <h3>Text Cursor</h3>
-                        <p>Hover me for a text cursor state.</p>
-                    </article>
-
-                    <article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
-                        <h3>Image Cursor</h3>
-                        <p>Hover me to see an image inside the cursor.</p>
-                    </article>
-
-                    <article class="news-card" data-cursor-icon="icon-play" style="padding: 1rem; border: 1px dashed #666; cursor: pointer; flex: 1;">
-                        <h3>Icon Cursor</h3>
-                        <p>Hover me to see an SVG icon inside the cursor.</p>
-                    </article>
-                </div>
-
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
-                    <div data-cursor-stick style="padding: 3rem; background: #f0f0f0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
-                        <span>data-cursor-stick</span>
-                    </div>
-
-                    <div style="padding: 3rem; background: #e0e0e0; border-radius: 8px; flex: 1; display: flex; align-items: center; justify-content: center;">
-                        <button type="button" data-magnetic style="padding: 1rem 2rem; background: #333; color: #fff; border: none; border-radius: 30px;">
-                            data-magnetic
-                        </button>
-                    </div>
-                </div>
-
-                <div style="width: 100%; text-align: center; font-style: italic;">
-                    <p>Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
 
     <!-- Place this outside your main content wrapper near the body tag -->
     <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
