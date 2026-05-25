@@ -1,3 +1,4 @@
+(function() {
 
 function normalizeSearch(str) {
 	if (!str) return "";
@@ -915,3 +916,5 @@ gia.register(FilterableListGSAP);
  *   }
  * }
  */
+
+})();
