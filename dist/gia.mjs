@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = r;
 });
-class D {
+class T {
   constructor() {
     P(this, "_options", {
       log: !1,
@@ -32,7 +32,7 @@ class D {
     return this._options[e];
   }
 }
-const u = new D();
+const u = new T();
 function M(r, e, t, n) {
   if (r.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), r.__gia_component__;
@@ -49,7 +49,7 @@ function V(r) {
 function p(r, e = document) {
   return typeof r != "string" ? r : e.querySelectorAll(r);
 }
-function T(r = {}, e = document.documentElement) {
+function D(r = {}, e = document.documentElement) {
   if (!r) {
     console.warn("App has no components");
     return;
@@ -100,7 +100,7 @@ function Z(r = document.documentElement) {
   for (let t = 0; t < e.length; t++)
     z(e[t]);
 }
-let m = !1, w = !1;
+let w = !1, m = !1;
 const C = /* @__PURE__ */ new Set(), F = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), O = F ? "orientationchange" : "resize", S = /* @__PURE__ */ new Set();
 let h = null;
 const k = { scroll: 0, velocity: 0 }, A = { width: 0, height: 0 }, v = [null];
@@ -116,7 +116,7 @@ function I(r) {
     e(A);
 }
 let _ = null;
-const g = /* @__PURE__ */ new Map(), E = /* @__PURE__ */ new Map(), L = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), x = /* @__PURE__ */ new WeakMap(), N = /* @__PURE__ */ new Map();
+const g = /* @__PURE__ */ new Map(), E = /* @__PURE__ */ new Map(), L = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), x = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new Map();
 function q(r) {
   const e = r.root || null, t = r.rootMargin || "0px 0px 0px 0px", n = r.threshold || 0, o = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${o}`;
@@ -210,16 +210,16 @@ let G = class {
         this.unobserveIntersection(e);
   }
   observeScroll(e) {
-    typeof window > "u" || (m || (m = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), C.add(e));
+    typeof window > "u" || (w || (w = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), C.add(e));
   }
   unobserveScroll(e) {
-    this._observedScrollCallbacks && this._observedScrollCallbacks.delete(e), C.delete(e), C.size === 0 && m && (m = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y));
+    this._observedScrollCallbacks && this._observedScrollCallbacks.delete(e), C.delete(e), C.size === 0 && w && (w = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y));
   }
   observeWindowResize(e) {
-    typeof window > "u" || (w || (w = !0, window.addEventListener(O, I, { passive: !0 })), this._observedWindowResizeCallbacks || (this._observedWindowResizeCallbacks = /* @__PURE__ */ new Set()), this._observedWindowResizeCallbacks.add(e), S.add(e));
+    typeof window > "u" || (m || (m = !0, window.addEventListener(O, I, { passive: !0 })), this._observedWindowResizeCallbacks || (this._observedWindowResizeCallbacks = /* @__PURE__ */ new Set()), this._observedWindowResizeCallbacks.add(e), S.add(e));
   }
   unobserveWindowResize(e) {
-    this._observedWindowResizeCallbacks && this._observedWindowResizeCallbacks.delete(e), S.delete(e), S.size === 0 && w && (w = !1, window.removeEventListener(O, I));
+    this._observedWindowResizeCallbacks && this._observedWindowResizeCallbacks.delete(e), S.delete(e), S.size === 0 && m && (m = !1, window.removeEventListener(O, I));
   }
   observeResize(e, t) {
     if (typeof window > "u" || !window.ResizeObserver) return;
@@ -310,7 +310,7 @@ let G = class {
    * @return {Promise}
    */
   loadScript(e, t) {
-    if (t && window[t] && !(window[t] instanceof Node))
+    if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && !(window[t] instanceof Window))
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
     return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((o, i) => {
@@ -370,8 +370,8 @@ let G = class {
         this._state[o] = i, this._pendingStateChanges || (this._pendingStateChanges = {}, this._pendingAttributeChanges = {}, requestAnimationFrame(this._flushStateChanges)), this._pendingStateChanges[o] = i;
         const s = typeof i;
         if (s === "boolean" || s === "string") {
-          let a = N.get(o);
-          a || (a = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, N.set(o, a)), this._pendingAttributeChanges[a] = s === "boolean" ? i ? "true" : "false" : i;
+          let a = B.get(o);
+          a || (a = `data-${o.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, B.set(o, a)), this._pendingAttributeChanges[a] = s === "boolean" ? i ? "true" : "false" : i;
         }
       }
     }
@@ -477,9 +477,9 @@ function Y(r) {
     }
   }
   for (const o of n)
-    o.isConnected && T(t, o);
+    o.isConnected && D(t, o);
 }
-function B() {
+function N() {
   typeof document > "u" || (u.get("autoMountComponents") && !b ? (b = new MutationObserver(Y), b.observe(document.body, {
     childList: !0,
     subtree: !0
@@ -487,9 +487,9 @@ function B() {
 }
 const U = u.set;
 u.set = function(r, e) {
-  U.call(this, r, e), r === "autoMountComponents" && B();
+  U.call(this, r, e), r === "autoMountComponents" && N();
 };
-typeof window < "u" && setTimeout(B, 0);
+typeof window < "u" && setTimeout(N, 0);
 export {
   G as BaseComponent,
   X as Component,
@@ -498,6 +498,6 @@ export {
   Z as destroyInstance,
   ee as eventbus,
   V as getComponentFromElement,
-  T as loadComponents,
+  D as loadComponents,
   Z as removeComponents
 };
