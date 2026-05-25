@@ -237,74 +237,61 @@ class Tabs extends gia.Component {
 		return transition;
 	}
 
+	_measureEndHeight(panelsContainer) {
+		panelsContainer.style.height = '';
+		return panelsContainer.offsetHeight;
+	}
+
+	_resetContainerStyles(panelsContainer) {
+		panelsContainer.style.overflow = '';
+		panelsContainer.style.height = '';
+	}
+
+	_executeHeightAnimation(panelsContainer, startHeight, endHeight, cleanupCb) {
+		panelsContainer.style.overflow = 'hidden';
+		panelsContainer.style.height = `${startHeight}px`;
+
+		if (startHeight !== endHeight) {
+			const animation = panelsContainer.animate(
+				[
+					{ height: `${startHeight}px` },
+					{ height: `${endHeight}px` }
+				],
+				{
+					duration: 400,
+					easing: 'ease',
+					fill: 'forwards'
+				}
+			);
+
+			cleanupCb(() => {
+				animation.cancel();
+				this._resetContainerStyles(panelsContainer);
+			});
+		} else {
+			this._resetContainerStyles(panelsContainer);
+		}
+	}
+
 	_animateContainerHeight(panelsContainer, startHeight, transition) {
 		// Lock height before the View Transition snapshot replaces elements
 		panelsContainer.style.height = `${startHeight}px`;
 
 		if (transition) {
 			transition.ready.then(() => {
-				// Measure endHeight without overflow hidden to allow natural margin collapsing
-				panelsContainer.style.height = '';
-				const endHeight = panelsContainer.offsetHeight;
-
-				// Re-apply overflow hidden and startHeight for the smooth animation
-				panelsContainer.style.overflow = 'hidden';
-				panelsContainer.style.height = `${startHeight}px`;
-
-				if (startHeight !== endHeight) {
-					const animation = panelsContainer.animate(
-						[
-							{ height: `${startHeight}px` },
-							{ height: `${endHeight}px` }
-						],
-						{
-							duration: 400,
-							easing: 'ease',
-							fill: 'forwards'
-						}
-					);
-
-					transition.finished.finally(() => {
-						animation.cancel();
-						panelsContainer.style.overflow = '';
-						panelsContainer.style.height = '';
-					});
-				} else {
-					panelsContainer.style.overflow = '';
-					panelsContainer.style.height = '';
-				}
+				const endHeight = this._measureEndHeight(panelsContainer);
+				this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
+					transition.finished.finally(cleanup);
+				});
 			}).catch(() => {
-				panelsContainer.style.overflow = '';
-				panelsContainer.style.height = '';
+				this._resetContainerStyles(panelsContainer);
 			});
 		} else {
 			// Fallback if view transitions are not supported
-			panelsContainer.style.height = '';
-			const endHeight = panelsContainer.offsetHeight;
-			panelsContainer.style.overflow = 'hidden';
-			panelsContainer.style.height = `${startHeight}px`;
-
-			if (startHeight !== endHeight) {
-				const animation = panelsContainer.animate(
-					[
-						{ height: `${startHeight}px` },
-						{ height: `${endHeight}px` }
-					],
-					{
-						duration: 400,
-						easing: 'ease',
-						fill: 'forwards'
-					}
-				);
-				setTimeout(() => {
-					animation.cancel();
-					panelsContainer.style.overflow = '';
-					panelsContainer.style.height = '';
-				}, 450);
-			} else {
-				panelsContainer.style.overflow = '';
-				panelsContainer.style.height = '';
-			}
+			const endHeight = this._measureEndHeight(panelsContainer);
+			this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
+				setTimeout(cleanup, 450);
+			});
 		}
 	}
 
