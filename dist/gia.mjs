@@ -31,8 +31,7 @@ class q {
   get(e) {
     return this._options[e];
   }
-}
-const u = new q();
+}const u = new q();
 function M(s, e, t, n) {
   if (s.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), s.__gia_component__;
@@ -49,59 +48,8 @@ function oe(s) {
 function D(s, e = document) {
   return typeof s != "string" ? s : e.querySelector(s);
 }
-function _(s, e = document) {
-  return typeof s != "string" ? s : e.querySelectorAll(s);
-}
-function F(s, e, t = null) {
-  t === null ? s.classList.toggle(e) : s.classList.toggle(e, !!t);
-}
-function N(s, e, t) {
-  if (!s) return s;
-  if (s.length !== void 0 && s.nodeType === void 0)
-    for (let n = 0; n < s.length; n++)
-      s[n].classList[t](e);
-  else
-    s.classList[t](e);
-  return s;
-}
-function G(s, e) {
-  return N(s, e, "remove");
-}
-function K(s, e) {
-  return N(s, e, "add");
-}
-function Y(s, e, t = null, n = {
-  bubbles: !0,
-  cancelable: !0,
-  detail: null
-}) {
-  n.detail = t;
-  const o = new CustomEvent(e, n);
-  s.dispatchEvent(o);
-}
-function U(s, e) {
-  let t, n = null;
-  const o = () => {
-    clearTimeout(t), n && s(...n);
-  }, r = function(...i) {
-    n = i, clearTimeout(t), t = setTimeout(o, e);
-  };
-  return r.cancel = function() {
-    clearTimeout(t), n = null;
-  }, r;
-}
-const se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  addClass: K,
-  debounce: U,
-  query: D,
-  queryAll: _,
-  removeClass: G,
-  toggleClass: F,
-  triggerEvent: Y
-}, Symbol.toStringTag, { value: "Module" }));
-function J(s = {}, e = document.documentElement) {
-  if (!s) {
+function D(r = {}, e = document.documentElement) {
+  if (!r) {
     console.warn("App has no components");
     return;
   }
@@ -261,10 +209,10 @@ let Q = class {
         this.unobserveIntersection(e);
   }
   observeScroll(e) {
-    typeof window > "u" || (m || (m = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), C.add(e));
+    typeof window > "u" || (w || (w = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this._observedScrollCallbacks || (this._observedScrollCallbacks = /* @__PURE__ */ new Set()), this._observedScrollCallbacks.add(e), C.add(e));
   }
   unobserveScroll(e) {
-    this._observedScrollCallbacks && this._observedScrollCallbacks.delete(e), C.delete(e), C.size === 0 && m && (m = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y));
+    this._observedScrollCallbacks && this._observedScrollCallbacks.delete(e), C.delete(e), C.size === 0 && w && (w = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y));
   }
   observeWindowResize(e) {
     typeof window > "u" || (w || (w = !0, window.addEventListener(O, L, { passive: !0 })), this._observedWindowResizeCallbacks || (this._observedWindowResizeCallbacks = /* @__PURE__ */ new Set()), this._observedWindowResizeCallbacks.add(e), S.add(e));
@@ -361,7 +309,7 @@ let Q = class {
    * @return {Promise}
    */
   loadScript(e, t) {
-    if (t && window[t] && !(window[t] instanceof Node))
+    if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && !(window[t] instanceof Window))
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
     return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((o, r) => {
