@@ -200,43 +200,9 @@ class Form extends gia.Component {
 				fileList.appendChild(fileItem);
 			});
 
-			const addMoreBtn = document.createElement('button');
-			addMoreBtn.type = 'button';
-			addMoreBtn.className = 'add-more-files-btn';
-			addMoreBtn.textContent = this.options.addMoreFilesText;
-			addMoreBtn.style.marginTop = '1rem';
-			addMoreBtn.style.padding = '0.5rem 1rem';
-			addMoreBtn.style.cursor = 'pointer';
-			addMoreBtn.style.position = 'relative';
-			addMoreBtn.style.zIndex = '10';
-
-			addMoreBtn.addEventListener('click', (e) => {
-				e.preventDefault();
-				const tempInput = document.createElement('input');
-				tempInput.type = 'file';
-				if (fileInput.multiple) tempInput.multiple = true;
-				if (fileInput.accept) tempInput.accept = fileInput.accept;
-
-				tempInput.addEventListener('change', (e) => {
-					if (tempInput.files && tempInput.files.length > 0) {
-						const dt = new DataTransfer();
-						if (fileInput.files) {
-							for (let i = 0; i < fileInput.files.length; i++) {
-								dt.items.add(fileInput.files[i]);
-							}
-						}
-						for (let i = 0; i < tempInput.files.length; i++) {
-							dt.items.add(tempInput.files[i]);
-						}
-						fileInput.files = dt.files;
-						fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-					}
-				});
-
-				tempInput.click();
-			});
-
+			const addMoreBtn = this._createAddMoreButton(fileInput);
 			fileList.appendChild(addMoreBtn);
+
 			dropzone.appendChild(fileList);
 		} else {
 			if (label) {
@@ -246,6 +212,48 @@ class Form extends gia.Component {
 					label.textContent = originalText;
 				}
 			}
+		}
+	}
+
+	_createAddMoreButton(fileInput) {
+		const addMoreBtn = document.createElement('button');
+		addMoreBtn.type = 'button';
+		addMoreBtn.className = 'add-more-files-btn';
+		addMoreBtn.textContent = this.options.addMoreFilesText;
+		addMoreBtn.style.marginTop = '1rem';
+		addMoreBtn.style.padding = '0.5rem 1rem';
+		addMoreBtn.style.cursor = 'pointer';
+		addMoreBtn.style.position = 'relative';
+		addMoreBtn.style.zIndex = '10';
+
+		addMoreBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const tempInput = document.createElement('input');
+			tempInput.type = 'file';
+			if (fileInput.multiple) tempInput.multiple = true;
+			if (fileInput.accept) tempInput.accept = fileInput.accept;
+
+			tempInput.addEventListener('change', () => this._handleAddMoreFiles(tempInput, fileInput));
+
+			tempInput.click();
+		});
+
+		return addMoreBtn;
+	}
+
+	_handleAddMoreFiles(tempInput, fileInput) {
+		if (tempInput.files && tempInput.files.length > 0) {
+			const dt = new DataTransfer();
+			if (fileInput.files) {
+				for (let i = 0; i < fileInput.files.length; i++) {
+					dt.items.add(fileInput.files[i]);
+				}
+			}
+			for (let i = 0; i < tempInput.files.length; i++) {
+				dt.items.add(tempInput.files[i]);
+			}
+			fileInput.files = dt.files;
+			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 		}
 	}
 
@@ -308,7 +316,7 @@ class Form extends gia.Component {
 		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
-	_isStepValid(stepIndex) {
+	_isStepValid(stepIndex, report = false) {
 		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
 		if (!steps || stepIndex < 0 || stepIndex >= steps.length) return true;
 
@@ -316,7 +324,11 @@ class Form extends gia.Component {
 		const inputsToValidate = stepElement.querySelectorAll('input, select, textarea');
 
 		for (let i = 0; i < inputsToValidate.length; i++) {
-			if (!inputsToValidate[i].checkValidity()) {
+			const input = inputsToValidate[i];
+			if (!input.checkValidity()) {
+				if (report) {
+					input.reportValidity();
+				}
 				return false;
 			}
 		}
@@ -359,22 +371,7 @@ class Form extends gia.Component {
 		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
 		if (!steps.length || this.state.currentStep >= steps.length - 1) return;
 
-		const currentStepElement = steps[this.state.currentStep];
-
-		// Validate current step
-		const inputsToValidate = currentStepElement.querySelectorAll('input, select, textarea');
-		let isStepValid = true;
-
-		for (let i = 0; i < inputsToValidate.length; i++) {
-			const input = inputsToValidate[i];
-			if (!input.checkValidity()) {
-				isStepValid = false;
-				input.reportValidity();
-				break;
-			}
-		}
-
-		if (isStepValid) {
+		if (this._isStepValid(this.state.currentStep, true)) {
 			this.setStep(this.state.currentStep + 1);
 		}
 	}
