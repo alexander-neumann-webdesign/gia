@@ -120,9 +120,7 @@ export default class Component {
 		}
 
 		if (itemsEmpty) {
-			const refKeys = Object.keys(refsByName);
-			for (let i = 0; i < refKeys.length; i++) {
-				const refName = refKeys[i];
+			for (const refName in refsByName) {
 				const colonIndex = refName.indexOf(":");
 				if (colonIndex !== -1) {
 					const componentName = refName.substring(0, colonIndex);
@@ -138,10 +136,9 @@ export default class Component {
 			}
 		} else {
 			this._ref = {};
-			const itemsKeys = items ? Object.keys(items) : [];
-			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
-			for (let i = 0; i < itemsKeys.length; i++) {
-				const key = itemsKeys[i];
+			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
+			for (const key in items) {
+				if (!Object.prototype.hasOwnProperty.call(items, key)) continue;
 				const isArray = Array.isArray(items[key]);
 
 				if (items[key] !== null && isArray && items[key].length > 0) {
@@ -628,10 +625,10 @@ export default class Component {
 		// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
 		// inside the primary validation loop to avoid allocating an intermediate `stateChanges`
 		// object and iterating twice over the keys.
-		// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
-		const keys = changes ? Object.keys(changes) : [];
-		for (let i = 0; i < keys.length; i++) {
-			const key = keys[i];
+		// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
+		if (changes) {
+			for (const key in changes) {
+				if (!Object.prototype.hasOwnProperty.call(changes, key)) continue;
 			const newValue = changes[key];
 			if (this._state[key] !== newValue) {
 				this._state[key] = newValue;
@@ -661,6 +658,7 @@ export default class Component {
 			}
 		}
 	}
+	}
 
 	_flushStateChanges() {
 		// Apply batched attribute changes
@@ -673,10 +671,9 @@ export default class Component {
 		}
 
 		if (hasAttrChanges) {
-			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
-			const attrKeys = Object.keys(this._pendingAttributeChanges);
-			for (let i = 0; i < attrKeys.length; i++) {
-				const attrName = attrKeys[i];
+			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
+			for (const attrName in this._pendingAttributeChanges) {
+				if (!Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) continue;
 				const value = this._pendingAttributeChanges[attrName];
 				if (this.element.getAttribute(attrName) !== value) {
 					this.element.setAttribute(attrName, value);
