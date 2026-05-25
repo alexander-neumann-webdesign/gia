@@ -71,3 +71,6 @@
 ## 2026-05-23 - Nested ForEach Closures in Hot Paths
 **Learning:** High-frequency methods (like Embla `scroll` handlers or `requestAnimationFrame` loops) using nested array iteration methods like `.forEach()` allocate multiple inline closure functions on every frame. Over time, this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Always optimize high-frequency lifecycle and event loops by replacing `.forEach()` with standard `for` loops to completely eliminate closure function allocations.
+## 2026-05-23 - Build artifacts in commits
+**Learning:** Do not commit compiled output files like dist/gia.mjs or dist/gia.umd.js during performance refactoring, as these files will get rebuilt automatically when merging.
+**Action:** Always make sure to reset or checkout modified files in the dist/ folder before committing changes.
