@@ -5,9 +5,6 @@ class Form extends gia.Component {
 		this.options = {
 			ajaxUrl: '', // URL to send the AJAX request to, often provided by WordPress (e.g., via wp_localize_script or data attribute)
 			action: '', // Optional: action parameter for WordPress AJAX (e.g., 'submit_contact_form')
-			addMoreFilesText: '+ Add more files',
-			removeFileText: '🗑️',
-			scrollToTopOnStep: true,
 		};
 
 		this.ref = {
@@ -16,26 +13,17 @@ class Form extends gia.Component {
 			successMessage: null,
 			errorMessage: null,
 			requiredInputs: [],
-			dropzone: [],
 			conditions: [],
-			step: [],
-			nextBtn: [],
-			prevBtn: [],
-			stepIndicator: [],
 		};
-
-		this.originalDropzoneLabels = new Map();
 
 		this.setState({
 			isSubmitting: false,
 			isSuccess: false,
 			isError: false,
 			requiredInputsFilled: false,
-			currentStep: 0,
 		});
 
 		this.spinnerAnimation = null;
-		this._updateIndicatorsState = this._updateIndicatorsState.bind(this);
 	}
 
 	mount() {
@@ -59,25 +47,6 @@ class Form extends gia.Component {
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
 
-			this.handleNextStep = this.handleNextStep.bind(this);
-			this.handlePrevStep = this.handlePrevStep.bind(this);
-			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
-
-			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
-			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
-
-			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
-			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
-
-			const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
-			stepIndicators.forEach((indicator, index) => {
-				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
-			});
-
-			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
-				this._updateStepUI(this.state.currentStep);
-			}
-
 			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
 			this.ref.requiredInputs.forEach((input) => {
 				input.addEventListener('change', this.handleInputChange);
@@ -93,7 +62,6 @@ class Form extends gia.Component {
 			}
 
 			this.handleInputChange();
-			this._updateIndicatorsState();
 		} else {
 			console.warn("Form component: No form element found.");
 		}
@@ -105,333 +73,6 @@ class Form extends gia.Component {
 		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
 			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
-
-		if (this.ref.dropzone) {
-			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
-			dropzones.forEach((dropzone) => {
-				dropzone.addEventListener('dragover', this.handleDragOver);
-				dropzone.addEventListener('dragleave', this.handleDragLeave);
-				dropzone.addEventListener('drop', this.handleDrop);
-
-				const fileInput = dropzone.querySelector('input[type="file"]');
-				if (fileInput) {
-					fileInput.addEventListener('change', this.handleFileChange);
-				}
-
-				const label = dropzone.querySelector('.form-dropzone-label');
-				if (label) {
-					this.originalDropzoneLabels.set(dropzone, label.textContent);
-				}
-			});
-		}
-	}
-
-	handleDragOver(event) {
-		event.preventDefault();
-		const dropzone = event.currentTarget;
-		dropzone.classList.add('is-dragover');
-	}
-
-	handleDragLeave(event) {
-		event.preventDefault();
-		const dropzone = event.currentTarget;
-		dropzone.classList.remove('is-dragover');
-	}
-
-	handleDrop(event) {
-		event.preventDefault();
-		const dropzone = event.currentTarget;
-		dropzone.classList.remove('is-dragover');
-
-		const fileInput = dropzone.querySelector('input[type="file"]');
-		if (fileInput && event.dataTransfer.files.length > 0) {
-			const dt = new DataTransfer();
-			if (fileInput.files) {
-				for (let i = 0; i < fileInput.files.length; i++) {
-					dt.items.add(fileInput.files[i]);
-				}
-			}
-			for (let i = 0; i < event.dataTransfer.files.length; i++) {
-				dt.items.add(event.dataTransfer.files[i]);
-			}
-			fileInput.files = dt.files;
-			// Manually dispatch change event so handleFileChange fires
-			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-		}
-	}
-
-	handleFileChange(event) {
-		const fileInput = event.target;
-		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
-		if (!dropzone) return;
-
-		this.renderFileList(dropzone, fileInput);
-	}
-
-	formatFileSize(bytes) {
-		if (bytes === 0) return '0 Bytes';
-		const k = 1024;
-		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-	}
-
-	renderFileList(dropzone, fileInput) {
-		const label = dropzone.querySelector('.form-dropzone-label');
-
-		// Remove existing file list if any
-		const existingList = dropzone.querySelector('.form-file-list');
-		if (existingList) {
-			existingList.remove();
-		}
-
-		if (fileInput.files && fileInput.files.length > 0) {
-			if (label) label.hidden = true;
-
-			const fileList = document.createElement('div');
-			fileList.className = 'form-file-list';
-			fileList.style.marginTop = '1rem';
-			fileList.style.textAlign = 'left';
-			fileList.style.position = 'relative';
-			fileList.style.zIndex = '10';
-
-			Array.from(fileInput.files).forEach(file => {
-				const fileItem = this._createFileItem(file, dropzone, fileInput);
-				fileList.appendChild(fileItem);
-			});
-
-			const addMoreBtn = this._createAddMoreButton(fileInput);
-			fileList.appendChild(addMoreBtn);
-
-			dropzone.appendChild(fileList);
-		} else {
-			if (label) {
-				label.hidden = false;
-				const originalText = this.originalDropzoneLabels.get(dropzone);
-				if (originalText) {
-					label.textContent = originalText;
-				}
-			}
-		}
-	}
-
-	_createAddMoreButton(fileInput) {
-		const addMoreBtn = document.createElement('button');
-		addMoreBtn.type = 'button';
-		addMoreBtn.className = 'add-more-files-btn';
-		addMoreBtn.textContent = this.options.addMoreFilesText;
-		addMoreBtn.style.marginTop = '1rem';
-		addMoreBtn.style.padding = '0.5rem 1rem';
-		addMoreBtn.style.cursor = 'pointer';
-		addMoreBtn.style.position = 'relative';
-		addMoreBtn.style.zIndex = '10';
-
-		addMoreBtn.addEventListener('click', (e) => {
-			e.preventDefault();
-			const tempInput = document.createElement('input');
-			tempInput.type = 'file';
-			if (fileInput.multiple) tempInput.multiple = true;
-			if (fileInput.accept) tempInput.accept = fileInput.accept;
-
-			tempInput.addEventListener('change', () => this._handleAddMoreFiles(tempInput, fileInput));
-
-			tempInput.click();
-		});
-
-		return addMoreBtn;
-	}
-
-	_handleAddMoreFiles(tempInput, fileInput) {
-		if (tempInput.files && tempInput.files.length > 0) {
-			const dt = new DataTransfer();
-			if (fileInput.files) {
-				for (let i = 0; i < fileInput.files.length; i++) {
-					dt.items.add(fileInput.files[i]);
-				}
-			}
-			for (let i = 0; i < tempInput.files.length; i++) {
-				dt.items.add(tempInput.files[i]);
-			}
-			fileInput.files = dt.files;
-			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-		}
-	}
-
-	_createFileItem(file, dropzone, fileInput) {
-		const fileItem = document.createElement('div');
-		fileItem.className = 'form-file-item';
-		fileItem.style.display = 'flex';
-		fileItem.style.justifyContent = 'space-between';
-		fileItem.style.alignItems = 'center';
-		fileItem.style.padding = '0.5rem';
-		fileItem.style.borderBottom = '1px solid #ccc';
-
-		const fileInfo = document.createElement('div');
-		fileInfo.className = 'form-file-info';
-
-		const fileName = document.createElement('strong');
-		fileName.textContent = file.name;
-		fileName.style.display = 'block';
-
-		const fileMeta = document.createElement('small');
-		fileMeta.textContent = `${file.type || 'Unknown type'} • ${this.formatFileSize(file.size)}`;
-		fileMeta.style.color = '#666';
-
-		fileInfo.appendChild(fileName);
-		fileInfo.appendChild(fileMeta);
-
-		const removeBtn = document.createElement('button');
-		removeBtn.type = 'button';
-		removeBtn.className = 'remove-file-btn';
-		removeBtn.textContent = this.options.removeFileText;
-		removeBtn.style.background = 'none';
-		removeBtn.style.border = 'none';
-		removeBtn.style.cursor = 'pointer';
-		removeBtn.style.fontSize = '1.2rem';
-		removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
-
-		removeBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			e.preventDefault();
-			this.removeFile(dropzone, fileInput, file);
-		});
-
-		fileItem.appendChild(fileInfo);
-		fileItem.appendChild(removeBtn);
-
-		return fileItem;
-	}
-
-	removeFile(dropzone, fileInput, fileToRemove) {
-		const dt = new DataTransfer();
-		if (fileInput.files) {
-			for (let i = 0; i < fileInput.files.length; i++) {
-				const file = fileInput.files[i];
-				if (file !== fileToRemove) {
-					dt.items.add(file);
-				}
-			}
-		}
-		fileInput.files = dt.files;
-		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-	}
-
-	_isStepValid(stepIndex, report = false) {
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
-		if (!steps || stepIndex < 0 || stepIndex >= steps.length) return true;
-
-		const stepElement = steps[stepIndex];
-		const inputsToValidate = stepElement.querySelectorAll('input, select, textarea');
-
-		for (let i = 0; i < inputsToValidate.length; i++) {
-			const input = inputsToValidate[i];
-			if (!input.checkValidity()) {
-				if (report) {
-					input.reportValidity();
-				}
-				return false;
-			}
-		}
-		return true;
-	}
-
-	_updateIndicatorsState() {
-		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
-		let canNavigate = true;
-
-		indicators.forEach((indicator, index) => {
-			if (index > 0 && !this._isStepValid(index - 1)) {
-				canNavigate = false;
-			}
-
-			if (canNavigate) {
-				indicator.classList.remove('is-disabled');
-				if (indicator.tagName === 'BUTTON') {
-					indicator.disabled = false;
-				}
-			} else {
-				indicator.classList.add('is-disabled');
-				if (indicator.tagName === 'BUTTON') {
-					indicator.disabled = true;
-				}
-			}
-		});
-	}
-
-	handleStepIndicatorClick(event, index) {
-		event.preventDefault();
-		if (!event.currentTarget.disabled && !event.currentTarget.classList.contains('is-disabled')) {
-			this.setStep(index);
-		}
-	}
-
-	handleNextStep(event) {
-		event.preventDefault();
-
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
-		if (!steps.length || this.state.currentStep >= steps.length - 1) return;
-
-		if (this._isStepValid(this.state.currentStep, true)) {
-			this.setStep(this.state.currentStep + 1);
-		}
-	}
-
-	handlePrevStep(event) {
-		event.preventDefault();
-		if (this.state.currentStep > 0) {
-			this.setStep(this.state.currentStep - 1);
-		}
-	}
-
-	setStep(nextStep) {
-		if (this.state.currentStep === nextStep) return;
-
-		if (document.startViewTransition) {
-			this.element.style.viewTransitionName = 'multi-step-form';
-			const transition = document.startViewTransition(() => {
-				this._updateStepUI(nextStep);
-				this.setState({ currentStep: nextStep });
-			});
-
-			transition.finally(() => {
-				this.element.style.viewTransitionName = '';
-			});
-		} else {
-			this._updateStepUI(nextStep);
-			this.setState({ currentStep: nextStep });
-		}
-	}
-
-	_updateStepUI(currentStep) {
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
-		if (!steps || steps.length === 0) return;
-
-		steps.forEach((step, index) => {
-			step.hidden = index !== currentStep;
-		});
-
-		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
-		indicators.forEach((indicator, index) => {
-			if (index === currentStep) {
-				indicator.setAttribute('aria-current', 'step');
-				indicator.classList.add('is-active');
-			} else {
-				indicator.removeAttribute('aria-current');
-				indicator.classList.remove('is-active');
-			}
-		});
-
-		if (this.ref.submitBtn) {
-			this.ref.submitBtn.hidden = currentStep !== steps.length - 1;
-		}
-
-		if (this.options.scrollToTopOnStep && currentStep > 0) {
-			window.setTimeout(() => {
-				if (this.formElement) {
-					this.formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				}
-			}, 50);
-		}
 	}
 
 	unmount() {
@@ -442,35 +83,10 @@ class Form extends gia.Component {
 				this.formElement.removeEventListener('input', this.evaluateConditions);
 			}
 		}
-		const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
-		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
-
-		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
-		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
-
-		const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
-		stepIndicators.forEach((indicator) => {
-			// Using anonymous function in addEventListener, so we can't perfectly remove it this way if not stored,
-			// but it's okay for unmount as nodes will likely be destroyed. Let's not worry about perfect listener removal
-			// since it's bounded by component lifecycle, or we could clone the node.
-		});
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
 		});
-		if (this.ref.dropzone) {
-			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
-			dropzones.forEach((dropzone) => {
-				dropzone.removeEventListener('dragover', this.handleDragOver);
-				dropzone.removeEventListener('dragleave', this.handleDragLeave);
-				dropzone.removeEventListener('drop', this.handleDrop);
-
-				const fileInput = dropzone.querySelector('input[type="file"]');
-				if (fileInput) {
-					fileInput.removeEventListener('change', this.handleFileChange);
-				}
-			});
-		}
 	}
 
 	evaluateConditions() {
@@ -555,18 +171,10 @@ class Form extends gia.Component {
 		this.setState({
 			requiredInputsFilled: !requiredInputMissing,
 		});
-
-		this._updateIndicatorsState();
 	}
 
 	async handleSubmit(event) {
 		event.preventDefault();
-
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
-		if (steps.length > 0 && this.state.currentStep < steps.length - 1) {
-			this.handleNextStep(event);
-			return;
-		}
 
 		if (this.state.isSubmitting) return;
 
@@ -592,7 +200,6 @@ class Form extends gia.Component {
 
 			this.setState({ isSubmitting: false, isSuccess: true });
 			this.formElement.reset();
-			this._resetDropzones();
 
 		} catch (error) {
 			console.error("Form component error:", error);
@@ -649,24 +256,6 @@ class Form extends gia.Component {
 		}
 
 		return result;
-	}
-
-	_resetDropzones() {
-		if (!this.ref.dropzone) return;
-
-		const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
-		dropzones.forEach(dropzone => {
-			const label = dropzone.querySelector('.form-dropzone-label');
-			const originalText = this.originalDropzoneLabels.get(dropzone);
-			if (label && originalText) {
-				label.textContent = originalText;
-			}
-
-			const existingList = dropzone.querySelector('.form-file-list');
-			if (existingList) {
-				existingList.remove();
-			}
-		});
 	}
 
 	_normalizeFormData(rawData, data) {
@@ -795,12 +384,6 @@ class Form extends gia.Component {
 
 		if ('isError' in stateChanges) {
 			this._showMessage(this.ref.errorMessage, stateChanges.isError);
-		}
-
-		if ('currentStep' in stateChanges) {
-			// We already handle step UI updates synchronously in setStep for view transitions,
-			// but we keep this here in case currentStep is updated via setState directly.
-			this._updateStepUI(stateChanges.currentStep);
 		}
 	}
 }

@@ -574,7 +574,7 @@
                 </div>
                 <div style="margin-bottom: 1rem;">
                   <label for="file-upload" style="display: block; margin-bottom: 0.5rem;">Upload Files</label>
-                  <div data-ref="dropzone" class="form-dropzone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
+                  <div data-component="UploadField" class="form-dropzone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
                     <input type="file" id="file-upload" name="files[]" multiple style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" />
                     <span class="form-dropzone-label">Drag and drop files here or click to browse</span>
                   </div>
@@ -648,7 +648,7 @@
     <section id="MultiStepForm">
         <h2>Multi Step Form</h2>
         <div class="demo-block">
-            <div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action_multistep", "scrollToTopOnStep": false}'>
+            <div data-component="MultiStepForm" data-options='{"scrollToTopOnStep": false}'><div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action_multistep"}'>
 
                 <div class="step-indicators">
                   <button type="button" data-ref="stepIndicator" class="step-indicator">Step 1: Personal</button>
@@ -711,6 +711,7 @@
                 <div data-ref="errorMessage" hidden class="form-error" role="alert">
                   There was an error. Please try again later.
                 </div>
+            </div>
             </div>
         </div>
     </section>
@@ -1487,6 +1488,8 @@
     <script src="../examples/ClipboardCopy.js"></script>
     <script src="../examples/FilterableList.js"></script>
     <script src="../examples/Form.js"></script>
+    <script src="../examples/UploadField.js"></script>
+    <script src="../examples/MultiStepForm.js"></script>
     <script src="../examples/Header.js"></script>
     <script src="../examples/ImageComparison.js"></script>
     <script src="../examples/ImageHolder.js"></script>
