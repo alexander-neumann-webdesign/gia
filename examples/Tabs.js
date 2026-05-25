@@ -240,7 +240,18 @@ class Tabs extends gia.Component {
 	_measureEndHeight(panelsContainer) {
 		panelsContainer.style.height = '';
 		panelsContainer.style.overflow = '';
-		return panelsContainer.offsetHeight;
+
+		// Because of `allow-discrete` transitions, hidden panels might still be `display: block` and take up grid space.
+		// Temporarily absolute position them so they don't affect the container's height measurement.
+		const hiddenPanels = Array.from(panelsContainer.querySelectorAll('[hidden]'));
+		const originalPositions = hiddenPanels.map(p => p.style.position);
+		hiddenPanels.forEach(p => p.style.position = 'absolute');
+
+		const endHeight = panelsContainer.offsetHeight;
+
+		hiddenPanels.forEach((p, i) => p.style.position = originalPositions[i]);
+
+		return endHeight;
 	}
 
 	_resetContainerStyles(panelsContainer) {
