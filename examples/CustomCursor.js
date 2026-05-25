@@ -468,6 +468,35 @@ class CustomCursor extends gia.Component {
         this._checkSleep(targetX, targetY);
     }
 
+    _calculateElementBounds(el, scrollX, scrollY) {
+        let rect = el.getBoundingClientRect();
+
+        let left = rect.left + scrollX;
+        let top = rect.top + scrollY;
+        let width = rect.width;
+        let height = rect.height;
+
+        if (el === this.magneticTarget) {
+            left -= this._currentPullX;
+            top -= this._currentPullY;
+        }
+
+        const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
+
+        const bounds = {
+            left: left,
+            top: top,
+            right: left + width,
+            bottom: top + height,
+            width: width,
+            height: height,
+            centerX: left + width / 2,
+            centerY: top + height / 2
+        };
+
+        return { bounds, type };
+    }
+
     _updateBounds() {
         this._preloadImages();
 
@@ -480,31 +509,7 @@ class CustomCursor extends gia.Component {
 
         // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
         for (const el of elements) {
-            // If it's the current target, we need to mathematically untransform it
-            let rect = el.getBoundingClientRect();
-
-            let left = rect.left + scrollX;
-            let top = rect.top + scrollY;
-            let width = rect.width;
-            let height = rect.height;
-
-            if (el === this.magneticTarget) {
-                left -= this._currentPullX;
-                top -= this._currentPullY;
-            }
-
-            const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
-
-            const bounds = {
-                left: left,
-                top: top,
-                right: left + width,
-                bottom: top + height,
-                width: width,
-                height: height,
-                centerX: left + width / 2,
-                centerY: top + height / 2
-            };
+            const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
 
             this.cachedMagneticElements.push({ el, bounds, type });
 
