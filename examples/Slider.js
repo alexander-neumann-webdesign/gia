@@ -254,7 +254,8 @@ class Slider extends gia.Component {
 			}
 		}
 
-		this.ref.dot.forEach((dot, index) => {
+		for (let index = 0; index < this.ref.dot.length; index++) {
+			const dot = this.ref.dot[index];
 			if (index === selected) {
 				dot.classList.add('is-selected');
 				dot.setAttribute('aria-current', 'true');
@@ -264,7 +265,7 @@ class Slider extends gia.Component {
 				dot.removeAttribute('aria-current');
 				dot.tabIndex = 0;
 			}
-		});
+		}
 	}
 
 	unmount() {
@@ -280,7 +281,9 @@ class Slider extends gia.Component {
 		}
 
 		if (this.ref.dotsContainer && this.ref.dot) {
-			this.ref.dot.forEach(dot => dot.remove());
+			for (let i = 0; i < this.ref.dot.length; i++) {
+				this.ref.dot[i].remove();
+			}
 			this.ref.dot = [];
 		}
 	}

@@ -71,3 +71,6 @@
 ## 2026-05-23 - Nested ForEach Closures in Hot Paths
 **Learning:** High-frequency methods (like Embla `scroll` handlers or `requestAnimationFrame` loops) using nested array iteration methods like `.forEach()` allocate multiple inline closure functions on every frame. Over time, this creates measurable garbage collection overhead leading to micro-stutters.
 **Action:** Always optimize high-frequency lifecycle and event loops by replacing `.forEach()` with standard `for` loops to completely eliminate closure function allocations.
+## 2024-05-23 - Optimize Array allocations in component unmount lifecycle
+**Learning:** `Array.prototype.forEach` creates closure functions for every item in the array, introducing unnecessary memory allocation. Converting it into a standard `for` loop in lifecycle methods like `unmount` or event hooks like `updateDots` prevents garbage collection (GC) churn.
+**Action:** Replace `.forEach` with `for` loops in performance-sensitive places.
