@@ -37,12 +37,14 @@ class TextFit extends gia.Component {
 
 gia.register(TextFit);
 
-/**
- * Expected HTML Structure:
- *
- * <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100}'>
- *   Text that will fit to its container perfectly!
- * </div>
- *
- * Ensure that fitty is loaded globally before using this component.
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100}'>
+  Text that will fit to its container perfectly!
+</div>
+
+Ensure that fitty is loaded globally before using this component.
+*/

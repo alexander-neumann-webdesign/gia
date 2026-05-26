@@ -325,54 +325,58 @@ class Slider extends gia.Component {
 
 gia.register(Slider);
 
-/**
- * Expected HTML Structure:
- *
- * <!-- Remember to add the vendor script at the bottom of the body: -->
- * <!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
- *
- * <div class="slider-wrapper" data-component="Slider">
- *   <div class="embla" data-ref="viewport">
- *     <div class="embla__container" data-ref="container">
- *       <div class="embla__slide" data-ref="slide">Slide 1</div>
- *       <div class="embla__slide" data-ref="slide">Slide 2</div>
- *       <div class="embla__slide" data-ref="slide">Slide 3</div>
- *     </div>
- *   </div>
- *
- *   <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
- *   <button data-ref="nextBtn" aria-label="Next slide">Next</button>
- * </div>
- *
- * Suggested SCSS:
- *
- * .slider-wrapper[data-component="Slider"] {
- *   position: relative;
- *   max-width: 100%;
- *
- *   .embla {
- *     overflow: hidden;
- *   }
- *
- *   .embla__container {
- *     display: flex;
- *     touch-action: pan-y pinch-zoom;
- *   }
- *
- *   .embla__slide {
- *     flex: 0 0 100%;
- *     min-width: 0;
- *
- *     @media (min-width: 768px) {
- *       flex: 0 0 50%;
- *     }
- *   }
- *
- *   button {
- *     &:disabled {
- *       opacity: 0.5;
- *       cursor: not-allowed;
- *     }
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<!-- Remember to add the vendor script at the bottom of the body: -->
+<!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
+
+<div class="slider-wrapper" data-component="Slider">
+  <div class="embla" data-ref="viewport">
+    <div class="embla__container" data-ref="container">
+      <div class="embla__slide" data-ref="slide">Slide 1</div>
+      <div class="embla__slide" data-ref="slide">Slide 2</div>
+      <div class="embla__slide" data-ref="slide">Slide 3</div>
+    </div>
+  </div>
+
+  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
+  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
+</div>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+.slider-wrapper[data-component="Slider"] {
+  position: relative;
+  max-width: 100%;
+
+  .embla {
+    overflow: hidden;
+  }
+
+  .embla__container {
+    display: flex;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .embla__slide {
+    flex: 0 0 100%;
+    min-width: 0;
+
+    @media (min-width: 768px) {
+      flex: 0 0 50%;
+    }
+  }
+
+  button {
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+*/

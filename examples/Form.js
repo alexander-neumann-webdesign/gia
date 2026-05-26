@@ -390,72 +390,76 @@ class Form extends gia.Component {
 
 gia.register(Form);
 
-/**
- * Expected HTML Structure:
- *
- * <div data-component="Form" data-options='{"ajaxUrl": "/wp-admin/admin-ajax.php", "action": "my_contact_form"}'>
- *   <form data-ref="form" method="POST">
- *     <div class="form-group">
- *       <label for="name">Name</label>
- *       <input type="text" id="name" name="name" required />
- *     </div>
- *     <div class="form-group">
- *       <label for="email">Email</label>
- *       <input type="email" id="email" name="email" required />
- *     </div>
- *     <div class="form-group">
- *       <label for="message">Message</label>
- *       <textarea id="message" name="message" required></textarea>
- *     </div>
- *     <div class="form-group">
- *       <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
- *     </div>
- *     <div class="form-group" data-condition="subscribe:yes">
- *       <label for="newsletter_email">Newsletter Email</label>
- *       <input type="email" id="newsletter_email" name="newsletter_email" required />
- *     </div>
- *     <button type="submit" data-ref="submitBtn">Send Message</button>
- *   </form>
- *
- *   <div data-ref="successMessage" hidden class="form-success" role="status">
- *     Thank you for your message. It has been sent.
- *   </div>
- *   <div data-ref="errorMessage" hidden class="form-error" role="alert">
- *     There was an error trying to send your message. Please try again later.
- *   </div>
- * </div>
- *
- * Suggested SCSS:
- *
- * .form-success {
- *   color: green;
- *   padding: 1rem;
- *   border: 1px solid green;
- *   margin-top: 1rem;
- * }
- *
- * .form-error {
- *   color: red;
- *   padding: 1rem;
- *   border: 1px solid red;
- *   margin-top: 1rem;
- * }
- *
- * .is-submitting {
- *   opacity: 0.5;
- *   pointer-events: none;
- * }
- *
- * .form-spinner-icon {
- *   margin-right: 0.5rem;
- *   vertical-align: middle;
- * }
- *
- * .input-missing {
- *   border-color: red;
- * }
- *
- * [hidden] {
- *   display: none !important;
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<div data-component="Form" data-options='{"ajaxUrl": "/wp-admin/admin-ajax.php", "action": "my_contact_form"}'>
+  <form data-ref="form" method="POST">
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required />
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" name="message" required></textarea>
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
+    </div>
+    <div class="form-group" data-condition="subscribe:yes">
+      <label for="newsletter_email">Newsletter Email</label>
+      <input type="email" id="newsletter_email" name="newsletter_email" required />
+    </div>
+    <button type="submit" data-ref="submitBtn">Send Message</button>
+  </form>
+
+  <div data-ref="successMessage" hidden class="form-success" role="status">
+    Thank you for your message. It has been sent.
+  </div>
+  <div data-ref="errorMessage" hidden class="form-error" role="alert">
+    There was an error trying to send your message. Please try again later.
+  </div>
+</div>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+.form-success {
+  color: green;
+  padding: 1rem;
+  border: 1px solid green;
+  margin-top: 1rem;
+}
+
+.form-error {
+  color: red;
+  padding: 1rem;
+  border: 1px solid red;
+  margin-top: 1rem;
+}
+
+.is-submitting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.form-spinner-icon {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.input-missing {
+  border-color: red;
+}
+
+[hidden] {
+  display: none !important;
+}
+*/

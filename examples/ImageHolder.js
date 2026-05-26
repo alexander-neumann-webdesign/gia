@@ -312,46 +312,50 @@ class ImageHolder extends gia.Component {
 
 gia.register(ImageHolder);
 
-/**
- * Expected HTML Structure:
- *
- * <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
- *   <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="ImageHolder"] {
- *   overflow: hidden;
- *   position: relative;
- *
- *   img {
- *     position: absolute;
- *     top: 0;
- *     left: 0;
- *     width: 100%;
- *     height: 100%;
- *     object-fit: cover;
- *     object-position: center;
- *     display: block;
- *     opacity: 0;
- *     will-change: transform;
- *
- *     transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
- *   }
- *
- *   &[data-is-visible="true"][data-is-loaded="true"] img {
- *     opacity: 1;
- *   }
- *
- *   // --- Advanced Usage: parallaxCssVar ---
- *   // If "parallaxCssVar": true is passed, JS will NOT apply inline transforms.
- *   // Instead it sets --parallax-scroll-progress (0.0000 to 1.0000) on the ImageHolder element.
- *   // You can use this to drive opacity, scale, rotations, etc:
- *   //
- *   // &[data-options*='"parallaxCssVar": true'] img,
- *   // &[data-options*='"parallaxCssVar":true'] img {
- *   //   transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.2)));
- *   // }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'>
+  <img data-ref="img" src="fallback.jpg" srcset="..." sizes="100vw" alt="A nice image" loading="lazy" />
+</div>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+div[data-component="ImageHolder"] {
+  overflow: hidden;
+  position: relative;
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    opacity: 0;
+    will-change: transform;
+
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  &[data-is-visible="true"][data-is-loaded="true"] img {
+    opacity: 1;
+  }
+
+  // --- Advanced Usage: parallaxCssVar ---
+  // If "parallaxCssVar": true is passed, JS will NOT apply inline transforms.
+  // Instead it sets --parallax-scroll-progress (0.0000 to 1.0000) on the ImageHolder element.
+  // You can use this to drive opacity, scale, rotations, etc:
+  //
+  // &[data-options*='"parallaxCssVar": true'] img,
+  // &[data-options*='"parallaxCssVar":true'] img {
+  //   transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.2)));
+  // }
+}
+*/

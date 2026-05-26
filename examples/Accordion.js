@@ -160,6 +160,7 @@ class Accordion extends gia.Component {
 
 gia.register(Accordion);
 
+
 /**
  * Expected HTML Structure:
  *
