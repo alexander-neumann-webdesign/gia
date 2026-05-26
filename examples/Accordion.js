@@ -160,45 +160,49 @@ class Accordion extends gia.Component {
 
 gia.register(Accordion);
 
-/**
- * Expected HTML Structure:
- *
- * <details data-component="Accordion" id="faq-1">
- *   <summary>Question title</summary>
- *   <div class="content">
- *     <p>Answer content goes here.</p>
- *   </div>
- * </details>
- *
- * Suggested SCSS:
- *
- * // Ensure interpolate-size is available globally for parsers
- * :root {
- *   interpolate-size: allow-keywords;
- * }
- *
- * details[data-component="Accordion"] {
- *   @supports (interpolate-size: allow-keywords) {
- *     &::details-content {
- *       transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
- *       height: 0;
- *       opacity: 0;
- *       overflow: clip;
- *       display: block;
- *     }
- *   }
- *
- *   &[open]::details-content {
- *     height: auto;
- *     opacity: 1;
- *   }
- *
- *   summary {
- *     cursor: pointer;
- *     user-select: none;
- *     // Remove default marker if desired
- *     // list-style: none;
- *     // &::-webkit-details-marker { display: none; }
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<details data-component="Accordion" id="faq-1">
+  <summary>Question title</summary>
+  <div class="content">
+    <p>Answer content goes here.</p>
+  </div>
+</details>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+// Ensure interpolate-size is available globally for parsers
+:root {
+  interpolate-size: allow-keywords;
+}
+
+details[data-component="Accordion"] {
+  @supports (interpolate-size: allow-keywords) {
+    &::details-content {
+      transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+      height: 0;
+      opacity: 0;
+      overflow: clip;
+      display: block;
+    }
+  }
+
+  &[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+
+  summary {
+    cursor: pointer;
+    user-select: none;
+    // Remove default marker if desired
+    // list-style: none;
+    // &::-webkit-details-marker { display: none; }
+  }
+}
+*/

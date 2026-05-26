@@ -180,88 +180,92 @@ class OffCanvasMenu extends gia.Component {
 
 gia.register(OffCanvasMenu);
 
-/**
- * Expected HTML Structure:
- *
- * <!-- Trigger inside Header, e.g., a burger button -->
- * <header>
- *   <button data-offcanvas-target="main-menu" aria-label="Open menu" aria-expanded="false" aria-controls="main-menu">☰</button>
- * </header>
- *
- * <!-- The OffCanvasMenu itself -->
- * <dialog data-component="OffCanvasMenu" id="main-menu">
- *   <div class="offcanvas-content">
- *     <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
- *     <nav>
- *       <ul>
- *         <li><a href="/">Home</a></li>
- *         <li><a href="/about">About</a></li>
- *       </ul>
- *     </nav>
- *   </div>
- * </dialog>
- *
- * Suggested SCSS:
- *
- * dialog[data-component="OffCanvasMenu"] {
- *   position: fixed;
- *   top: 0;
- *   left: 0;
- *   width: 100%;
- *   max-width: 400px;
- *   height: 100vh;
- *   max-height: 100vh;
- *   margin: 0;
- *   border: none;
- *   padding: 0;
- *   background: white;
- *   box-shadow: 2px 0 10px rgba(0,0,0,0.1);
- *
- *   // Slide from left by default
- *   transform: translateX(-100%);
- *   transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
- *   opacity: 0;
- *
- *   &::backdrop {
- *     background-color: rgba(0,0,0,0.5);
- *     backdrop-filter: blur(4px);
- *     transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
- *     opacity: 0;
- *   }
- *
- *   &[open] {
- *     transform: translateX(0);
- *     opacity: 1;
- *
- *     &::backdrop {
- *       opacity: 1;
- *     }
- *   }
- *
- *   @starting-style {
- *     &[open] {
- *       transform: translateX(-100%);
- *       opacity: 0;
- *
- *       &::backdrop {
- *         opacity: 0;
- *       }
- *     }
- *   }
- *
- *   &[data-is-closing="true"] {
- *     opacity: 0;
- *     transform: translateX(-100%);
- *
- *     &::backdrop {
- *       opacity: 0;
- *     }
- *   }
- *
- *   .offcanvas-content {
- *     padding: 2rem;
- *     height: 100%;
- *     overflow-y: auto;
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<!-- Trigger inside Header, e.g., a burger button -->
+<header>
+  <button data-offcanvas-target="main-menu" aria-label="Open menu" aria-expanded="false" aria-controls="main-menu">☰</button>
+</header>
+
+<!-- The OffCanvasMenu itself -->
+<dialog data-component="OffCanvasMenu" id="main-menu">
+  <div class="offcanvas-content">
+    <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </nav>
+  </div>
+</dialog>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+dialog[data-component="OffCanvasMenu"] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border: none;
+  padding: 0;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+
+  // Slide from left by default
+  transform: translateX(-100%);
+  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+  opacity: 0;
+
+  &::backdrop {
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+    opacity: 0;
+  }
+
+  &[open] {
+    transform: translateX(0);
+    opacity: 1;
+
+    &::backdrop {
+      opacity: 1;
+    }
+  }
+
+  @starting-style {
+    &[open] {
+      transform: translateX(-100%);
+      opacity: 0;
+
+      &::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  &[data-is-closing="true"] {
+    opacity: 0;
+    transform: translateX(-100%);
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .offcanvas-content {
+    padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+*/

@@ -291,43 +291,47 @@ class SplitText extends gia.Component {
 
 gia.register(SplitText);
 
-/**
- * Expected HTML Structure:
- *
- * <h1 data-component="SplitText" data-options='{"split": ["lines", "words", "chars"]}'>
- *   This is a <strong>sample text</strong> with an 👨‍👩‍👧‍👦 emoji to be split!
- * </h1>
- *
- * Suggested SCSS:
- *
- * [data-component="SplitText"] {
- *   // Hide the text initially to prevent Flash of Unstyled Content (FOUC)
- *   opacity: 0;
- *   visibility: hidden;
- *
- *   &[data-initialized="true"] {
- *     opacity: 1;
- *     visibility: visible;
- *   }
- *
- *   // Example staggered animation using the generated CSS variables
- *   .split-char {
- *     opacity: 0;
- *     transform: translateY(20px);
- *     animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
- *     animation-delay: calc(var(--char-index) * 0.03s);
- *   }
- *
- *   .split-word {
- *      // Prevent awkward wrapping mid-word
- *      display: inline-block;
- *   }
- * }
- *
- * @keyframes slideUp {
- *   to {
- *     opacity: 1;
- *     transform: translateY(0);
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<h1 data-component="SplitText" data-options='{"split": ["lines", "words", "chars"]}'>
+  This is a <strong>sample text</strong> with an 👨‍👩‍👧‍👦 emoji to be split!
+</h1>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+[data-component="SplitText"] {
+  // Hide the text initially to prevent Flash of Unstyled Content (FOUC)
+  opacity: 0;
+  visibility: hidden;
+
+  &[data-initialized="true"] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  // Example staggered animation using the generated CSS variables
+  .split-char {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation-delay: calc(var(--char-index) * 0.03s);
+  }
+
+  .split-word {
+     // Prevent awkward wrapping mid-word
+     display: inline-block;
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+*/

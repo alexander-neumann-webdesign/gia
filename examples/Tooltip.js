@@ -251,60 +251,64 @@ class Tooltip extends gia.Component {
 
 gia.register(Tooltip);
 
-/**
- * Expected HTML Structure:
- *
- * <!-- Required External Script: -->
- * <!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
- *
- * <button data-component="Tooltip" data-tooltip="This is a helpful tip" data-position="top">
- *   Hover or Focus Me
- * </button>
- *
- * Suggested SCSS:
- *
- * .gia-tooltip-popover {
- *   background-color: #333;
- *   color: #fff;
- *   padding: 0.5rem 0.75rem;
- *   border-radius: 4px;
- *   font-size: 0.875rem;
- *   white-space: nowrap;
- *   z-index: 1000;
- *   overflow: visible; // Prevent tooltip from being scrollable
- *
- *   // Modern popovers reset
- *   margin: 0;
- *   inset: auto;
- *   border: none;
- *
- *   // Modern discrete animation logic
- *   transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), overlay 0.15s allow-discrete, display 0.15s allow-discrete;
- *   opacity: 0;
- *   transform: scale(0.9);
- *
- *   &:popover-open {
- *     opacity: 1;
- *     transform: scale(1);
- *   }
- *
- *   @starting-style {
- *     &:popover-open {
- *       opacity: 0;
- *       transform: scale(0.9);
- *     }
- *   }
- *
- *   &::backdrop {
- *     display: none;
- *   }
- *
- *   .gia-tooltip-arrow {
- *     position: absolute;
- *     background-color: #333;
- *     width: 8px;
- *     height: 8px;
- *     transform: rotate(45deg);
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<!-- Required External Script: -->
+<!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
+
+<button data-component="Tooltip" data-tooltip="This is a helpful tip" data-position="top">
+  Hover or Focus Me
+</button>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+.gia-tooltip-popover {
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  overflow: visible; // Prevent tooltip from being scrollable
+
+  // Modern popovers reset
+  margin: 0;
+  inset: auto;
+  border: none;
+
+  // Modern discrete animation logic
+  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), overlay 0.15s allow-discrete, display 0.15s allow-discrete;
+  opacity: 0;
+  transform: scale(0.9);
+
+  &:popover-open {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  @starting-style {
+    &:popover-open {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+
+  &::backdrop {
+    display: none;
+  }
+
+  .gia-tooltip-arrow {
+    position: absolute;
+    background-color: #333;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+  }
+}
+*/

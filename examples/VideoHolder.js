@@ -175,63 +175,67 @@ class VideoHolder extends gia.Component {
 
 gia.register(VideoHolder);
 
-/**
- * Expected HTML Structure:
- *
- * <div data-component="VideoHolder">
- *   <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
- *   <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
- *     <!-- Icons injected via JS -->
- *   </button>
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="VideoHolder"] {
- *   position: relative;
- *
- *   video {
- *     width: 100%;
- *     height: auto;
- *     display: block;
- *   }
- *
- *   button[data-ref="playPauseButton"] {
- *     position: absolute;
- *     bottom: 16px;
- *     right: 16px;
- *     background: rgba(0,0,0,0.5);
- *     color: white;
- *     border: none;
- *     border-radius: 50%;
- *     width: 48px;
- *     height: 48px;
- *     cursor: pointer;
- *     display: flex;
- *     align-items: center;
- *     justify-content: center;
- *     opacity: 0;
- *     pointer-events: none;
- *     transition: opacity 0.3s ease, background-color 0.3s ease;
- *
- *     svg path.icon-shape {
- *       transition: d 0.3s ease;
- *     }
- *
- *     &:hover {
- *       background: rgba(0,0,0,0.8);
- *     }
- *
- *     &:focus-visible {
- *       outline: 2px solid white;
- *       outline-offset: 2px;
- *     }
- *   }
- *
- *   &:hover button[data-ref="playPauseButton"],
- *   &:focus-within button[data-ref="playPauseButton"] {
- *     opacity: 1;
- *     pointer-events: auto;
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<div data-component="VideoHolder">
+  <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
+  <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
+    <!-- Icons injected via JS -->
+  </button>
+</div>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+div[data-component="VideoHolder"] {
+  position: relative;
+
+  video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button[data-ref="playPauseButton"] {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+
+    svg path.icon-shape {
+      transition: d 0.3s ease;
+    }
+
+    &:hover {
+      background: rgba(0,0,0,0.8);
+    }
+
+    &:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 2px;
+    }
+  }
+
+  &:hover button[data-ref="playPauseButton"],
+  &:focus-within button[data-ref="playPauseButton"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+*/

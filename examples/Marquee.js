@@ -405,40 +405,44 @@ class Marquee extends gia.Component {
 
 gia.register(Marquee);
 
-/**
- * Expected HTML Structure:
- *
- * <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
- *   <div data-ref="track" class="marquee-track">
- *     <div class="marquee-item">Item 1</div>
- *     <div class="marquee-item">Item 2</div>
- *     <div class="marquee-item">Item 3</div>
- *   </div>
- * </div>
- *
- * Suggested SCSS:
- *
- * div[data-component="Marquee"] {
- *   overflow: hidden;
- *   position: relative;
- *   width: 100%;
- *   display: flex;
- *   user-select: none;
- *   touch-action: pan-y;
- *
- *   &.masked {
- *     mask: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
- *   }
- *
- *   .marquee-track {
- *     display: flex;
- *     flex-wrap: nowrap;
- *     will-change: transform;
- *   }
- *
- *   .marquee-item {
- *     flex-shrink: 0;
- *     padding: 0 2rem;
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+  <div data-ref="track" class="marquee-track">
+    <div class="marquee-item">Item 1</div>
+    <div class="marquee-item">Item 2</div>
+    <div class="marquee-item">Item 3</div>
+  </div>
+</div>
+
+========================================
+SUGGESTED SCSS
+========================================
+
+div[data-component="Marquee"] {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  display: flex;
+  user-select: none;
+  touch-action: pan-y;
+
+  &.masked {
+    mask: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    flex-wrap: nowrap;
+    will-change: transform;
+  }
+
+  .marquee-item {
+    flex-shrink: 0;
+    padding: 0 2rem;
+  }
+}
+*/

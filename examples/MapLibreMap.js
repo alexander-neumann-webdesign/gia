@@ -146,21 +146,23 @@ class MapLibreMap extends gia.Component {
 
 gia.register(MapLibreMap);
 
-/**
- * Expected HTML Structure:
- *
- * <head>
- *   <!-- Include MapLibre GL JS library script with data-src for lazy loading and specific ID -->
- *   <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
- *   <!-- Include MapLibre GL CSS -->
- *   <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
- * </head>
- *
- * <body>
- *   <!-- Note: the options attribute value must be valid JSON, so strictly use double quotes for strings and keys -->
- *   <div data-component="MapLibreMap"
- *        data-options='{"centerCoords": [12.550343, 55.665957], "initialZoomLevel": 6, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
- *        style="width: 100%; height: 500px;">
- *   </div>
- * </body>
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<head>
+  <!-- Include MapLibre GL JS library script with data-src for lazy loading and specific ID -->
+  <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <!-- Include MapLibre GL CSS -->
+  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+</head>
+
+<body>
+  <!-- Note: the options attribute value must be valid JSON, so strictly use double quotes for strings and keys -->
+  <div data-component="MapLibreMap"
+       data-options='{"centerCoords": [12.550343, 55.665957], "initialZoomLevel": 6, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
+       style="width: 100%; height: 500px;">
+  </div>
+</body>
+*/

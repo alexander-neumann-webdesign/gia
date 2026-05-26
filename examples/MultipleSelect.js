@@ -45,15 +45,17 @@ class MultipleSelect extends gia.Component {
 
 gia.register(MultipleSelect);
 
-/**
- * Expected HTML Structure:
- *
- * <!-- Add the vendor script/styles at the bottom of the body: -->
- * <!-- <link rel="stylesheet" id="multiple-select-css" data-href="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/styles/css/multiple-select.css"> -->
- * <!-- <script id="multiple-select-js" data-src="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/multiple-select.js"></script> -->
- *
- * <select class="multiple-select" data-component="MultipleSelect">
- *   <option value="1">First</option>
- *   <option value="2">Second</option>
- * </select>
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<!-- Add the vendor script/styles at the bottom of the body: -->
+<!-- <link rel="stylesheet" id="multiple-select-css" data-href="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/styles/css/multiple-select.css"> -->
+<!-- <script id="multiple-select-js" data-src="https://unpkg.com/multiple-select-vanilla@5.2.0/dist/multiple-select.js"></script> -->
+
+<select class="multiple-select" data-component="MultipleSelect">
+  <option value="1">First</option>
+  <option value="2">Second</option>
+</select>
+*/

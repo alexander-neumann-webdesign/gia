@@ -64,19 +64,21 @@ class QRCode extends gia.Component {
 
 gia.register(QRCode);
 
-/**
- * Expected HTML Structure:
- *
- * <head>
- *   <!-- Include qrcode-generator library script with data-src for lazy loading and specific ID -->
- *   <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
- * </head>
- *
- * <body>
- *   <div data-component="QRCode"
- *        data-contents="https://github.com/web-padawan/awesome-web-components"
- *        data-type-number="4"
- *        data-error-correction-level="L">
- *   </div>
- * </body>
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<head>
+  <!-- Include qrcode-generator library script with data-src for lazy loading and specific ID -->
+  <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+</head>
+
+<body>
+  <div data-component="QRCode"
+       data-contents="https://github.com/web-padawan/awesome-web-components"
+       data-type-number="4"
+       data-error-correction-level="L">
+  </div>
+</body>
+*/

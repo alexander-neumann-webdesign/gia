@@ -86,40 +86,42 @@ class ThemeToggle extends gia.Component {
 
 gia.register(ThemeToggle);
 
-/**
- * Expected HTML Structure:
- *
- * <button data-component="ThemeToggle" aria-label="Toggle dark mode">
- *   <span class="icon-light" aria-hidden="true">☀️</span>
- *   <span class="icon-dark" aria-hidden="true">🌙</span>
- * </button>
- *
- * Suggested SCSS (For the whole site):
- *
- * :root {
- *   --bg-color: #ffffff;
- *   --text-color: #000000;
- * }
- *
- * :root[data-theme="dark"] {
- *   --bg-color: #121212;
- *   --text-color: #ffffff;
- * }
- *
- * body {
- *   background-color: var(--bg-color);
- *   color: var(--text-color);
- *   transition: background-color 0.3s ease, color 0.3s ease;
- * }
- *
- * // For the button itself:
- * button[data-component="ThemeToggle"] {
- *   .icon-light { display: none; }
- *   .icon-dark { display: block; }
- *
- *   &[data-theme="dark"] {
- *     .icon-light { display: block; }
- *     .icon-dark { display: none; }
- *   }
- * }
- */
+/*
+========================================
+EXPECTED HTML
+========================================
+
+<button data-component="ThemeToggle" aria-label="Toggle dark mode">
+  <span class="icon-light" aria-hidden="true">☀️</span>
+  <span class="icon-dark" aria-hidden="true">🌙</span>
+</button>
+
+Suggested SCSS (For the whole site):
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// For the button itself:
+button[data-component="ThemeToggle"] {
+  .icon-light { display: none; }
+  .icon-dark { display: block; }
+
+  &[data-theme="dark"] {
+    .icon-light { display: block; }
+    .icon-dark { display: none; }
+  }
+}
+*/
