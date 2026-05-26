@@ -7,7 +7,8 @@ class Header extends gia.Component {
 			scrollThreshold: 50, // Distance over which to scrub
 			scrubTransition: false,
 			hideOnScroll: true,
-			hideThreshold: 50 // Minimum scroll amount before hiding/showing
+			hideThreshold: 50, // Minimum scroll amount before hiding/showing
+			showAtBottom: false
 		};
 
 		this.lastScrollY = 0;
@@ -108,6 +109,11 @@ class Header extends gia.Component {
 				isHidden = true;
 			} else if (this.currentScrollY < this.lastScrollY) {
 				// Scrolling up
+				isHidden = false;
+			}
+
+			// Show at bottom if option is enabled
+			if (this.options.showAtBottom && (this.currentScrollY + window.innerHeight) >= document.documentElement.scrollHeight) {
 				isHidden = false;
 			}
 		} else {

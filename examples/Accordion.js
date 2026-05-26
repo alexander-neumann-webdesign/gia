@@ -160,49 +160,52 @@ class Accordion extends gia.Component {
 
 gia.register(Accordion);
 
-/*
-========================================
-EXPECTED HTML
-========================================
 
-<details data-component="Accordion" id="faq-1">
-  <summary>Question title</summary>
-  <div class="content">
-    <p>Answer content goes here.</p>
-  </div>
-</details>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-// Ensure interpolate-size is available globally for parsers
-:root {
-  interpolate-size: allow-keywords;
-}
-
-details[data-component="Accordion"] {
-  @supports (interpolate-size: allow-keywords) {
-    &::details-content {
-      transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
-      height: 0;
-      opacity: 0;
-      overflow: clip;
-      display: block;
-    }
-  }
-
-  &[open]::details-content {
-    height: auto;
-    opacity: 1;
-  }
-
-  summary {
-    cursor: pointer;
-    user-select: none;
-    // Remove default marker if desired
-    // list-style: none;
-    // &::-webkit-details-marker { display: none; }
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <div itemscope="" itemtype="https://schema.org/FAQPage">
+ *   <details data-component="Accordion" id="faq-1" itemscope="" itemprop="mainEntity" itemtype="https://schema.org/Question">
+ *     <summary data-ref="title">
+ *       <p itemprop="name">Lorem ipsum dolor sit amet?</p>
+ *     </summary>
+ *     <div class="content" data-ref="contentWrapper" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+ *       <div itemprop="text">
+ *         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+ *       </div>
+ *     </div>
+ *   </details>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * // Ensure interpolate-size is available globally for parsers
+ * :root {
+ *   interpolate-size: allow-keywords;
+ * }
+ *
+ * details[data-component="Accordion"] {
+ *   @supports (interpolate-size: allow-keywords) {
+ *     &::details-content {
+ *       transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+ *       height: 0;
+ *       opacity: 0;
+ *       overflow: clip;
+ *       display: block;
+ *     }
+ *   }
+ *
+ *   &[open]::details-content {
+ *     height: auto;
+ *     opacity: 1;
+ *   }
+ *
+ *   summary {
+ *     cursor: pointer;
+ *     user-select: none;
+ *     // Remove default marker if desired
+ *     // list-style: none;
+ *     // &::-webkit-details-marker { display: none; }
+ *   }
+ * }
+ */
