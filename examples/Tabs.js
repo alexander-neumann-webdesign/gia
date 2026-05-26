@@ -237,75 +237,60 @@ class Tabs extends gia.Component {
 		return transition;
 	}
 
-	_measureEndHeight(panelsContainer) {
-		panelsContainer.style.height = '';
-		panelsContainer.style.overflow = '';
-
-		// Because of `allow-discrete` transitions, hidden panels might still be `display: block` and take up grid space.
-		// Temporarily absolute position them so they don't affect the container's height measurement.
-		const hiddenPanels = Array.from(panelsContainer.querySelectorAll('[hidden]'));
-		const originalPositions = hiddenPanels.map(p => p.style.position);
-		hiddenPanels.forEach(p => p.style.position = 'absolute');
-
-		const endHeight = panelsContainer.offsetHeight;
-
-		hiddenPanels.forEach((p, i) => p.style.position = originalPositions[i]);
-
-		return endHeight;
-	}
-
-	_resetContainerStyles(panelsContainer) {
-		panelsContainer.style.overflow = '';
-		panelsContainer.style.height = '';
-	}
-
-	_executeHeightAnimation(panelsContainer, startHeight, endHeight, cleanupCb) {
-		panelsContainer.style.overflow = 'hidden';
-		panelsContainer.style.height = `${startHeight}px`;
-
-		if (startHeight !== endHeight) {
-			const animation = panelsContainer.animate(
-				[
-					{ height: `${startHeight}px` },
-					{ height: `${endHeight}px` }
-				],
-				{
-					duration: 400,
-					easing: 'ease',
-					fill: 'forwards'
-				}
-			);
-
-			cleanupCb(() => {
-				animation.cancel();
-				this._resetContainerStyles(panelsContainer);
-			});
-		} else {
-			cleanupCb(() => {
-				this._resetContainerStyles(panelsContainer);
-			});
-		}
-	}
-
 	_animateContainerHeight(panelsContainer, startHeight, transition) {
-		// Lock height before the View Transition snapshot replaces elements
-		panelsContainer.style.height = `${startHeight}px`;
+		panelsContainer.style.overflow = 'hidden';
 
 		if (transition) {
 			transition.ready.then(() => {
-				const endHeight = this._measureEndHeight(panelsContainer);
-				this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
-					transition.finished.finally(cleanup);
-				});
+				const endHeight = panelsContainer.offsetHeight;
+
+				if (startHeight !== endHeight) {
+					const animation = panelsContainer.animate(
+						[
+							{ height: `${startHeight}px` },
+							{ height: `${endHeight}px` }
+						],
+						{
+							duration: 400,
+							easing: 'ease',
+							fill: 'forwards'
+						}
+					);
+
+					transition.finished.finally(() => {
+						animation.cancel();
+						panelsContainer.style.overflow = '';
+						panelsContainer.style.height = '';
+					});
+				} else {
+					panelsContainer.style.overflow = '';
+				}
 			}).catch(() => {
-				this._resetContainerStyles(panelsContainer);
+				panelsContainer.style.overflow = '';
 			});
 		} else {
 			// Fallback if view transitions are not supported
-			const endHeight = this._measureEndHeight(panelsContainer);
-			this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
-				setTimeout(cleanup, 450);
-			});
+			const endHeight = panelsContainer.offsetHeight;
+			if (startHeight !== endHeight) {
+				const animation = panelsContainer.animate(
+					[
+						{ height: `${startHeight}px` },
+						{ height: `${endHeight}px` }
+					],
+					{
+						duration: 400,
+						easing: 'ease',
+						fill: 'forwards'
+					}
+				);
+				setTimeout(() => {
+					animation.cancel();
+					panelsContainer.style.overflow = '';
+					panelsContainer.style.height = '';
+				}, 450);
+			} else {
+				panelsContainer.style.overflow = '';
+			}
 		}
 	}
 
@@ -335,67 +320,63 @@ class Tabs extends gia.Component {
 
 gia.register(Tabs);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<div data-component="Tabs">
-  <div role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
-    <button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
-    <button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
-  </div>
-  <div class="tab-panels">
-    <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
-      <p>Panel 1 content</p>
-    </div>
-    <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
-      <p>Panel 2 content</p>
-    </div>
-  </div>
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-div[data-component="Tabs"] {
-  .tab-panels {
-    display: grid;
-    grid-template-columns: 1fr;
-
-    > * {
-      grid-row-start: 1;
-      grid-column-start: 1;
-    }
-  }
-
-  [role="tab"] {
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.3s ease, color 0.3s ease;
-
-    &[aria-selected="true"] {
-      border-color: currentColor;
-      font-weight: bold;
-    }
-  }
-
-  [role="tabpanel"] {
-    // Modern discrete transition
-    transition: opacity 0.4s ease, display 0.4s allow-discrete;
-    opacity: 1;
-
-    &[hidden] {
-      opacity: 0;
-      display: none;
-    }
-
-    @starting-style {
-      &:not([hidden]) {
-        opacity: 0;
-      }
-    }
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="Tabs">
+ *   <div role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
+ *     <button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
+ *     <button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab 2</button>
+ *   </div>
+ *   <div class="tab-panels">
+ *     <div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+ *       <p>Panel 1 content</p>
+ *     </div>
+ *     <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+ *       <p>Panel 2 content</p>
+ *     </div>
+ *   </div>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * div[data-component="Tabs"] {
+ *   .tab-panels {
+ *     display: grid;
+ *     grid-template-columns: 1fr;
+ *
+ *     > * {
+ *       grid-row-start: 1;
+ *       grid-column-start: 1;
+ *     }
+ *   }
+ *
+ *   [role="tab"] {
+ *     cursor: pointer;
+ *     border-bottom: 2px solid transparent;
+ *     transition: border-color 0.3s ease, color 0.3s ease;
+ *
+ *     &[aria-selected="true"] {
+ *       border-color: currentColor;
+ *       font-weight: bold;
+ *     }
+ *   }
+ *
+ *   [role="tabpanel"] {
+ *     // Modern discrete transition
+ *     transition: opacity 0.4s ease, display 0.4s allow-discrete;
+ *     opacity: 1;
+ *
+ *     &[hidden] {
+ *       opacity: 0;
+ *       display: none;
+ *     }
+ *
+ *     @starting-style {
+ *       &:not([hidden]) {
+ *         opacity: 0;
+ *       }
+ *     }
+ *   }
+ * }
+ */

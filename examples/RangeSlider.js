@@ -104,9 +104,7 @@ class RangeSlider extends gia.Component {
 gia.register(RangeSlider);
 
 /*
-========================================
-EXPECTED HTML
-========================================
+Expected HTML Structure:
 
 <div data-component="RangeSlider" data-options='{"start": [20, 80], "range": {"min": 0, "max": 100}}'>
     <div data-ref="slider"></div>

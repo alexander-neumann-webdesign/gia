@@ -7,8 +7,7 @@ class Header extends gia.Component {
 			scrollThreshold: 50, // Distance over which to scrub
 			scrubTransition: false,
 			hideOnScroll: true,
-			hideThreshold: 50, // Minimum scroll amount before hiding/showing
-			showAtBottom: false
+			hideThreshold: 50 // Minimum scroll amount before hiding/showing
 		};
 
 		this.lastScrollY = 0;
@@ -111,11 +110,6 @@ class Header extends gia.Component {
 				// Scrolling up
 				isHidden = false;
 			}
-
-			// Show at bottom if option is enabled
-			if (this.options.showAtBottom && (this.currentScrollY + window.innerHeight) >= document.documentElement.scrollHeight) {
-				isHidden = false;
-			}
 		} else {
 			isHidden = false;
 		}
@@ -138,56 +132,52 @@ class Header extends gia.Component {
 
 gia.register(Header);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<header data-component="Header" id="main-header">
-  <div class="header-inner">
-    <div class="logo">Logo</div>
-    <nav>Nav Items</nav>
-  </div>
-</header>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-header[data-component="Header"] {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
-
-  // Recommended: give header a view-transition-name and elevate it
-  // so it stays above transitioning elements
-  view-transition-name: main-header;
-
-  // Default values when scrubTransition is false
-  padding: 2rem 0;
-  background-color: transparent;
-
-  // If scrubTransition: true is used, you can use --header-progress (0 to 1)
-  // to smoothly interpolate styles instead of relying on the data-is-scrolled transition:
-  // padding: calc(2rem - (1rem * var(--header-progress, 0))) 0;
-  // background-color: rgba(255, 255, 255, var(--header-progress, 0));
-  // box-shadow: 0 2px 10px rgba(0,0,0, calc(0.1 * var(--header-progress, 0)));
-
-  &[data-is-scrolled="true"] {
-    // Only needed if scrubTransition is false
-    // padding: 1rem 0;
-    // background-color: white;
-    // box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-
-  &[data-is-hidden="true"] {
-    transform: translateY(-100%);
-  }
-}
-
-::view-transition-group(main-header) {
-  z-index: 9999;
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <header data-component="Header" id="main-header">
+ *   <div class="header-inner">
+ *     <div class="logo">Logo</div>
+ *     <nav>Nav Items</nav>
+ *   </div>
+ * </header>
+ *
+ * Suggested SCSS:
+ *
+ * header[data-component="Header"] {
+ *   position: fixed;
+ *   top: 0;
+ *   left: 0;
+ *   width: 100%;
+ *   transition: transform 0.3s ease, background-color 0.3s ease, padding 0.3s ease;
+ *
+ *   // Recommended: give header a view-transition-name and elevate it
+ *   // so it stays above transitioning elements
+ *   view-transition-name: main-header;
+ *
+ *   // Default values when scrubTransition is false
+ *   padding: 2rem 0;
+ *   background-color: transparent;
+ *
+ *   // If scrubTransition: true is used, you can use --header-progress (0 to 1)
+ *   // to smoothly interpolate styles instead of relying on the data-is-scrolled transition:
+ *   // padding: calc(2rem - (1rem * var(--header-progress, 0))) 0;
+ *   // background-color: rgba(255, 255, 255, var(--header-progress, 0));
+ *   // box-shadow: 0 2px 10px rgba(0,0,0, calc(0.1 * var(--header-progress, 0)));
+ *
+ *   &[data-is-scrolled="true"] {
+ *     // Only needed if scrubTransition is false
+ *     // padding: 1rem 0;
+ *     // background-color: white;
+ *     // box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+ *   }
+ *
+ *   &[data-is-hidden="true"] {
+ *     transform: translateY(-100%);
+ *   }
+ * }
+ *
+ * ::view-transition-group(main-header) {
+ *   z-index: 9999;
+ * }
+ */

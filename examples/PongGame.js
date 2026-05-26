@@ -201,13 +201,6 @@ class PongGame extends gia.Component {
         this.ballX += this.ballVelocityX * timeScale;
         this.ballY += this.ballVelocityY * timeScale;
 
-        this._updateAIPosition(timeScale);
-        this._handleWallCollisions();
-        this._handlePaddleCollisions();
-        this._handleScoring();
-    }
-
-    _updateAIPosition(timeScale) {
         // AI Logic: follow the ball
         const aiCenter = this.aiY + (this.options.paddleHeight / 2);
 
@@ -226,18 +219,14 @@ class PongGame extends gia.Component {
 
         // Clamp AI paddle
         this.aiY = Math.max(0, Math.min(this.aiY, this.height - this.options.paddleHeight));
-    }
 
-    _handleWallCollisions() {
         // Top/Bottom wall collision
         if (this.ballY <= 0 || this.ballY >= this.height - this.options.ballSize) {
             this.ballVelocityY *= -1;
             // Keep ball in bounds
             this.ballY = this.ballY <= 0 ? 0 : this.height - this.options.ballSize;
         }
-    }
 
-    _handlePaddleCollisions() {
         // Paddle collision
         const hitPlayer =
             this.ballX <= this.options.paddlePadding + this.options.paddleWidth &&
@@ -270,9 +259,7 @@ class PongGame extends gia.Component {
                 this.ballX = this.width - this.options.paddlePadding - this.options.paddleWidth - this.options.ballSize;
             }
         }
-    }
 
-    _handleScoring() {
         // Scoring
         if (this.ballX < 0) {
             // AI Scored

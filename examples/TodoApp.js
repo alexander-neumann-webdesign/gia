@@ -239,130 +239,126 @@ class TodoApp extends gia.Component {
 
 gia.register(TodoApp);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
-<div data-component="TodoApp" class="todo-app">
-  <!-- Screen reader announcer for accessibility -->
-  <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
-
-  <form data-action="submit->handleFormSubmit" class="todo-form">
-    <label for="new-todo" class="sr-only">Add new task</label>
-    <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required />
-    <button type="submit" class="todo-submit-btn">Add Task</button>
-  </form>
-
-  <ul data-ref="list" class="todo-list" aria-label="Task list">
-    <!-- Tasks will be rendered here dynamically -->
-  </ul>
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-// View transitions styles (must be global, not scoped)
-::view-transition-group(*) {
-  animation-duration: 0.3s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.todo-app {
-  max-width: 500px;
-  margin: 0 auto;
-  font-family: system-ui, sans-serif;
-
-  // Styles when app has tasks via BaseComponent data attribute binding
-  &[data-has-tasks="true"] {
-    .todo-list {
-      border-top: 1px solid #eee;
-      margin-top: 1rem;
-      padding-top: 1rem;
-    }
-  }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.todo-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.todo-input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.todo-submit-btn, .todo-delete-btn {
-  padding: 0.5rem 1rem;
-  background-color: #0056b3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #004494;
-  }
-}
-
-.todo-delete-btn {
-  background-color: #dc3545;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-
-  &:hover {
-    background-color: #c82333;
-  }
-}
-
-.todo-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.todo-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-
-  &.is-completed {
-    .todo-text {
-      text-decoration: line-through;
-      color: #6c757d;
-    }
-  }
-}
-
-.todo-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  flex: 1;
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
+ * <div data-component="TodoApp" class="todo-app">
+ *   <!-- Screen reader announcer for accessibility -->
+ *   <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
+ *
+ *   <form data-action="submit->handleFormSubmit" class="todo-form">
+ *     <label for="new-todo" class="sr-only">Add new task</label>
+ *     <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required />
+ *     <button type="submit" class="todo-submit-btn">Add Task</button>
+ *   </form>
+ *
+ *   <ul data-ref="list" class="todo-list" aria-label="Task list">
+ *     <!-- Tasks will be rendered here dynamically -->
+ *   </ul>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * // View transitions styles (must be global, not scoped)
+ * ::view-transition-group(*) {
+ *   animation-duration: 0.3s;
+ *   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+ * }
+ *
+ * .todo-app {
+ *   max-width: 500px;
+ *   margin: 0 auto;
+ *   font-family: system-ui, sans-serif;
+ *
+ *   // Styles when app has tasks via BaseComponent data attribute binding
+ *   &[data-has-tasks="true"] {
+ *     .todo-list {
+ *       border-top: 1px solid #eee;
+ *       margin-top: 1rem;
+ *       padding-top: 1rem;
+ *     }
+ *   }
+ * }
+ *
+ * .sr-only {
+ *   position: absolute;
+ *   width: 1px;
+ *   height: 1px;
+ *   padding: 0;
+ *   margin: -1px;
+ *   overflow: hidden;
+ *   clip: rect(0, 0, 0, 0);
+ *   white-space: nowrap;
+ *   border: 0;
+ * }
+ *
+ * .todo-form {
+ *   display: flex;
+ *   gap: 0.5rem;
+ * }
+ *
+ * .todo-input {
+ *   flex: 1;
+ *   padding: 0.5rem;
+ *   border: 1px solid #ccc;
+ *   border-radius: 4px;
+ * }
+ *
+ * .todo-submit-btn, .todo-delete-btn {
+ *   padding: 0.5rem 1rem;
+ *   background-color: #0056b3;
+ *   color: white;
+ *   border: none;
+ *   border-radius: 4px;
+ *   cursor: pointer;
+ *   transition: background-color 0.2s;
+ *
+ *   &:hover {
+ *     background-color: #004494;
+ *   }
+ * }
+ *
+ * .todo-delete-btn {
+ *   background-color: #dc3545;
+ *   padding: 0.25rem 0.5rem;
+ *   font-size: 0.875rem;
+ *
+ *   &:hover {
+ *     background-color: #c82333;
+ *   }
+ * }
+ *
+ * .todo-list {
+ *   list-style: none;
+ *   padding: 0;
+ *   margin: 0;
+ *   display: flex;
+ *   flex-direction: column;
+ *   gap: 0.5rem;
+ * }
+ *
+ * .todo-item {
+ *   display: flex;
+ *   justify-content: space-between;
+ *   align-items: center;
+ *   padding: 0.5rem;
+ *   background: #f8f9fa;
+ *   border-radius: 4px;
+ *
+ *   &.is-completed {
+ *     .todo-text {
+ *       text-decoration: line-through;
+ *       color: #6c757d;
+ *     }
+ *   }
+ * }
+ *
+ * .todo-label {
+ *   display: flex;
+ *   align-items: center;
+ *   gap: 0.5rem;
+ *   cursor: pointer;
+ *   flex: 1;
+ * }
+ */

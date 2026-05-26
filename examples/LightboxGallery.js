@@ -152,9 +152,7 @@ class CustomObjectPosition {
 gia.register(LightboxGallery);
 
 /*
-========================================
-EXPECTED HTML
-========================================
+Expected HTML Structure:
 
 <div data-component="LightboxGallery">
 	<a href="path/to/large/image.jpg"
@@ -175,9 +173,7 @@ Example PHP (WordPress):
 	</a>
 </div>
 
-========================================
-SUGGESTED SCSS
-========================================
+Suggested SCSS:
 
 [data-component="LightboxGallery"] {
 	display: grid;

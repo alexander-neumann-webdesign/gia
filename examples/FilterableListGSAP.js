@@ -29,7 +29,7 @@ class FilterableListGSAP extends gia.Component {
 		this.activeFilters = {};
 		this.activeSort = this.options.defaultSort;
 
-		this.applyChangesDebounced = gia.utils.debounce(this.applyChanges.bind(this), 300);
+		this.applyChangesDebounced = this.debounce(this.applyChanges.bind(this), 300);
 
 		this._pendingOutputs = new Map();
 		this._outputRafId = null;
@@ -56,6 +56,28 @@ class FilterableListGSAP extends gia.Component {
 		this._pendingOutputs.clear();
 		this._outputRafId = null;
 	}
+
+	debounce(func, wait) {
+		let timeout;
+		let lastArgs = null;
+		const later = () => {
+			clearTimeout(timeout);
+			if (lastArgs) {
+				func(...lastArgs);
+			}
+		};
+		const executedFunction = function(...args) {
+			lastArgs = args;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+		executedFunction.cancel = function() {
+			clearTimeout(timeout);
+			lastArgs = null;
+		};
+		return executedFunction;
+	}
+
 
 	normalizeSearch(str) {
 		if (!str) return "";
@@ -150,7 +172,35 @@ class FilterableListGSAP extends gia.Component {
 
 		// Save the original index of each item to preserve stable sorting when values are equal
 		for (let index = 0; index < this.ref.item.length; index++) {
-			this._cacheItemData(this.ref.item[index], index);
+			const item = this.ref.item[index];
+			item._originalIndex = index;
+			item._dataCache = {};
+
+			for (let i = 0; i < item.attributes.length; i++) {
+				const attr = item.attributes[i];
+				if (attr.name.startsWith('data-')) {
+					const key = attr.name.replace('data-', '');
+					const val = attr.value;
+
+					let parsedVal;
+					if (val.startsWith('[') && val.endsWith(']')) {
+						try {
+							parsedVal = JSON.parse(val);
+							if (!Array.isArray(parsedVal)) parsedVal = [parsedVal.toString()];
+						} catch (e) {
+							parsedVal = [val];
+						}
+					} else {
+						parsedVal = [val];
+					}
+
+					item._dataCache[key] = {
+						array: parsedVal,
+						raw: val,
+						num: parseFloat(val)
+					};
+				}
+			}
 		}
 
 		// Parse initial state from URL
@@ -161,37 +211,6 @@ class FilterableListGSAP extends gia.Component {
 
 		// Initial synchronous DOM update (no animation)
 		this.updateList(false);
-	}
-
-	_cacheItemData(item, index) {
-		item._originalIndex = index;
-		item._dataCache = {};
-
-		for (let i = 0; i < item.attributes.length; i++) {
-			const attr = item.attributes[i];
-			if (attr.name.startsWith('data-')) {
-				const key = attr.name.replace('data-', '');
-				const val = attr.value;
-
-				let parsedVal;
-				if (val.startsWith('[') && val.endsWith(']')) {
-					try {
-						parsedVal = JSON.parse(val);
-						if (!Array.isArray(parsedVal)) parsedVal = [parsedVal.toString()];
-					} catch (e) {
-						parsedVal = [val];
-					}
-				} else {
-					parsedVal = [val];
-				}
-
-				item._dataCache[key] = {
-					array: parsedVal,
-					raw: val,
-					num: parseFloat(val)
-				};
-			}
-		}
 	}
 
 	unmount() {
@@ -520,23 +539,6 @@ class FilterableListGSAP extends gia.Component {
 	}
 
 	_itemMatchesFilter(item, type, activeValues) {
-		const { baseType, operator } = this._parseFilterType(type);
-
-		const cached = item._dataCache[baseType];
-		if (!cached) {
-			return false;
-		}
-
-		for (let i = 0; i < activeValues.length; i++) {
-			if (this._evaluateFilterCondition(cached, operator, activeValues[i])) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	_parseFilterType(type) {
 		let baseType = type;
 		let operator = 'eq';
 
@@ -551,29 +553,35 @@ class FilterableListGSAP extends gia.Component {
 			operator = 'includes';
 		}
 
-		return { baseType, operator };
-	}
+		const cached = item._dataCache[baseType];
+		if (!cached) {
+			return false;
+		}
 
-	_evaluateFilterCondition(cached, operator, filterVal) {
-		if (operator === 'min') {
-			const numFilterVal = parseFloat(filterVal);
-			if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
-				return true;
-			}
-		} else if (operator === 'max') {
-			const numFilterVal = parseFloat(filterVal);
-			if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
-				return true;
-			}
-		} else if (operator === 'includes') {
-			if (this.fuzzyMatch(cached.raw, filterVal)) {
-				return true;
-			}
-		} else {
-			if (cached.array.includes(filterVal)) {
-				return true;
+		for (let i = 0; i < activeValues.length; i++) {
+			const filterVal = activeValues[i];
+
+			if (operator === 'min') {
+				const numFilterVal = parseFloat(filterVal);
+				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
+					return true;
+				}
+			} else if (operator === 'max') {
+				const numFilterVal = parseFloat(filterVal);
+				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
+					return true;
+				}
+			} else if (operator === 'includes') {
+				if (this.fuzzyMatch(cached.raw, filterVal)) {
+					return true;
+				}
+			} else {
+				if (cached.array.includes(filterVal)) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
@@ -730,14 +738,10 @@ class FilterableListGSAP extends gia.Component {
 		} else if (el instanceof HTMLSelectElement) {
 			this._updateSelectFilter(el, activeValues);
 		} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
-			this._updateCheckboxRadioFilter(el, activeValues);
+			el.checked = activeValues.includes(el.value);
 		} else if (el instanceof HTMLInputElement) {
 			this._updateInputFilter(el, activeValues);
 		}
-	}
-
-	_updateCheckboxRadioFilter(el, activeValues) {
-		el.checked = activeValues.includes(el.value);
 	}
 
 	_updateButtonFilter(el, activeValues) {
@@ -824,115 +828,108 @@ class FilterableListGSAP extends gia.Component {
 
 gia.register(FilterableListGSAP);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<div data-component="FilterableList" data-options='{"defaultSort": "name:asc"}'>
-  <div class="controls">
-    <!-- Filter Controls -->
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="*">All Shapes</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="circle">Circle</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="square">Square</button>
-    <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle">Triangle</button>
-
-    <button data-ref="filter" data-filter-type="color" data-filter-value="red">Red</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="blue">Blue</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="green">Green</button>
-    <button data-ref="filter" data-filter-type="color" data-filter-value="yellow">Yellow</button>
-
-    <!-- Sorter Controls -->
-    <select data-ref="sorter">
-      <option value="name:asc">Name (A-Z)</option>
-      <option value="name:desc">Name (Z-A)</option>
-      <option value="price:asc">Price (Low-High)</option>
-      <option value="price:desc">Price (High-Low)</option>
-    </select>
-  </div>
-
-  <div data-ref="container" class="grid">
-    <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
-      <div class="shape-visual" data-shape="circle" data-color="red"></div>
-      <div class="item-details">
-        <span class="item-name">Apple</span>
-        <span class="price-tag">$10</span>
-      </div>
-    </div>
-    <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
-      <div class="shape-visual" data-shape="square" data-color="blue"></div>
-      <div class="item-details">
-        <span class="item-name">Box</span>
-        <span class="price-tag">$20</span>
-      </div>
-    </div>
-    <!-- Add more items as needed (min 12 for good demo) -->
-  </div>
-</div>
-
-Preventing Layout Shift on Initial Load:
-When the component loads with URL parameters, the browser will initially paint all items,
-and then the JS will hide the mismatched items, causing a layout shift.
-To prevent this, you should pre-filter the items on the server before rendering the HTML.
-
-========================================
-EXPECTED PHP (Server-Side Pre-filtering)
-========================================
-
-<?php
-// Parse active filters dynamically based on the 'filter-' prefix
-$active_filters = [];
-foreach ($_GET as $key => $value) {
-  if (strpos($key, 'filter-') === 0 && !empty($value)) {
-    $filter_type = str_replace('filter-', '', $key);
-    $active_filters[$filter_type] = explode(',', $value);
-  }
-}
-?>
-<!-- Inside your loop -->
-<?php
-$is_hidden = false;
-foreach ($active_filters as $type => $values) {
-  $item_value = get_field($type); // Or however you retrieve item attributes
-  if (!in_array($item_value, $values)) {
-    $is_hidden = true;
-    break;
-  }
-}
-?>
-<div class="item" <?php if ($is_hidden) echo 'hidden'; ?> data-shape="<?php echo get_field('shape'); ?>">...</div>
-
-Alternatively, if server-side filtering is not possible, place a blocking inline <script>
-right before the component to inject a <style> tag that hides mismatched items.
-
-========================================
-SUGGESTED SCSS
-========================================
-
-:root {
-  interpolate-size: allow-keywords;
-}
-
-div[data-component="FilterableList"] {
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    transition: height 0.4s ease;
-  }
-
-  .item[hidden] {
-    display: none !important;
-  }
-
-  // View transitions styles
-  ::view-transition {
-    pointer-events: none;
-  }
-
-  ::view-transition-group(*) {
-    animation-duration: 0.4s;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="FilterableList" data-options='{"defaultSort": "name:asc"}'>
+ *   <div class="controls">
+ *     <!-- Filter Controls -->
+ *     <button data-ref="filter" data-filter-type="shape" data-filter-value="*">All Shapes</button>
+ *     <button data-ref="filter" data-filter-type="shape" data-filter-value="circle">Circle</button>
+ *     <button data-ref="filter" data-filter-type="shape" data-filter-value="square">Square</button>
+ *     <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle">Triangle</button>
+ *
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="red">Red</button>
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="blue">Blue</button>
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="green">Green</button>
+ *     <button data-ref="filter" data-filter-type="color" data-filter-value="yellow">Yellow</button>
+ *
+ *     <!-- Sorter Controls -->
+ *     <select data-ref="sorter">
+ *       <option value="name:asc">Name (A-Z)</option>
+ *       <option value="name:desc">Name (Z-A)</option>
+ *       <option value="price:asc">Price (Low-High)</option>
+ *       <option value="price:desc">Price (High-Low)</option>
+ *     </select>
+ *   </div>
+ *
+ *   <div data-ref="container" class="grid">
+ *     <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
+ *       <div class="shape-visual" data-shape="circle" data-color="red"></div>
+ *       <div class="item-details">
+ *         <span class="item-name">Apple</span>
+ *         <span class="price-tag">$10</span>
+ *       </div>
+ *     </div>
+ *     <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
+ *       <div class="shape-visual" data-shape="square" data-color="blue"></div>
+ *       <div class="item-details">
+ *         <span class="item-name">Box</span>
+ *         <span class="price-tag">$20</span>
+ *       </div>
+ *     </div>
+ *     <!-- Add more items as needed (min 12 for good demo) -->
+ *   </div>
+ * </div>
+ *
+ * Preventing Layout Shift on Initial Load:
+ * When the component loads with URL parameters, the browser will initially paint all items,
+ * and then the JS will hide the mismatched items, causing a layout shift.
+ * To prevent this, you should pre-filter the items on the server before rendering the HTML.
+ *
+ * Example PHP (WordPress) Server-Side Pre-filtering:
+ * <?php
+ * // Parse active filters dynamically based on the 'filter-' prefix
+ * $active_filters = [];
+ * foreach ($_GET as $key => $value) {
+ *   if (strpos($key, 'filter-') === 0 && !empty($value)) {
+ *     $filter_type = str_replace('filter-', '', $key);
+ *     $active_filters[$filter_type] = explode(',', $value);
+ *   }
+ * }
+ * ?>
+ * <!-- Inside your loop -->
+ * <?php
+ * $is_hidden = false;
+ * foreach ($active_filters as $type => $values) {
+ *   $item_value = get_field($type); // Or however you retrieve item attributes
+ *   if (!in_array($item_value, $values)) {
+ *     $is_hidden = true;
+ *     break;
+ *   }
+ * }
+ * ?>
+ * <div class="item" <?php if ($is_hidden) echo 'hidden'; ?> data-shape="<?php echo get_field('shape'); ?>">...</div>
+ *
+ * Alternatively, if server-side filtering is not possible, place a blocking inline <script>
+ * right before the component to inject a <style> tag that hides mismatched items.
+ *
+ * Suggested SCSS:
+ *
+ * :root {
+ *   interpolate-size: allow-keywords;
+ * }
+ *
+ * div[data-component="FilterableList"] {
+ *   .grid {
+ *     display: grid;
+ *     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+ *     gap: 1rem;
+ *     transition: height 0.4s ease;
+ *   }
+ *
+ *   .item[hidden] {
+ *     display: none !important;
+ *   }
+ *
+ *   // View transitions styles
+ *   ::view-transition {
+ *     pointer-events: none;
+ *   }
+ *
+ *   ::view-transition-group(*) {
+ *     animation-duration: 0.4s;
+ *     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+ *   }
+ * }
+ */

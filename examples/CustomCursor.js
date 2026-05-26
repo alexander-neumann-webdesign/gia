@@ -28,7 +28,6 @@ class CustomCursor extends gia.Component {
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.scroll = { x: typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset) : 0, y: typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset) : 0 };
-        this._needsUpdate = false;
 
         // For magnetic target
         this.magneticTarget = null;
@@ -96,7 +95,7 @@ class CustomCursor extends gia.Component {
                     }
                 }
                 if (shouldUpdate) {
-                    this._needsUpdate = true;
+                    this._updateBounds();
                     this._wakeUp();
                 }
             });
@@ -160,7 +159,7 @@ class CustomCursor extends gia.Component {
     }
 
     handleResize() {
-        this._needsUpdate = true;
+        this._updateBounds();
         this._wakeUp();
     }
 
@@ -436,11 +435,6 @@ class CustomCursor extends gia.Component {
     render(time) {
         if (!this._isRenderingFrame) return;
 
-        if (this._needsUpdate) {
-            this._updateBounds();
-            this._needsUpdate = false;
-        }
-
         // Calculate delta time for frame-rate independent lerp
         // Cap deltaTime to 100ms to avoid huge jumps on tab switch
         const deltaTime = Math.min(time - this._lastTime, 100);
@@ -474,35 +468,6 @@ class CustomCursor extends gia.Component {
         this._checkSleep(targetX, targetY);
     }
 
-    _calculateElementBounds(el, scrollX, scrollY) {
-        let rect = el.getBoundingClientRect();
-
-        let left = rect.left + scrollX;
-        let top = rect.top + scrollY;
-        let width = rect.width;
-        let height = rect.height;
-
-        if (el === this.magneticTarget) {
-            left -= this._currentPullX;
-            top -= this._currentPullY;
-        }
-
-        const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
-
-        const bounds = {
-            left: left,
-            top: top,
-            right: left + width,
-            bottom: top + height,
-            width: width,
-            height: height,
-            centerX: left + width / 2,
-            centerY: top + height / 2
-        };
-
-        return { bounds, type };
-    }
-
     _updateBounds() {
         this._preloadImages();
 
@@ -515,7 +480,31 @@ class CustomCursor extends gia.Component {
 
         // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
         for (const el of elements) {
-            const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
+            // If it's the current target, we need to mathematically untransform it
+            let rect = el.getBoundingClientRect();
+
+            let left = rect.left + scrollX;
+            let top = rect.top + scrollY;
+            let width = rect.width;
+            let height = rect.height;
+
+            if (el === this.magneticTarget) {
+                left -= this._currentPullX;
+                top -= this._currentPullY;
+            }
+
+            const type = el.hasAttribute('data-cursor-stick') ? 'stick' : 'magnetic';
+
+            const bounds = {
+                left: left,
+                top: top,
+                right: left + width,
+                bottom: top + height,
+                width: width,
+                height: height,
+                centerX: left + width / 2,
+                centerY: top + height / 2
+            };
 
             this.cachedMagneticElements.push({ el, bounds, type });
 

@@ -160,22 +160,15 @@ class Accordion extends gia.Component {
 
 gia.register(Accordion);
 
-
 /**
  * Expected HTML Structure:
  *
- * <div itemscope="" itemtype="https://schema.org/FAQPage">
- *   <details data-component="Accordion" id="faq-1" itemscope="" itemprop="mainEntity" itemtype="https://schema.org/Question">
- *     <summary data-ref="title">
- *       <p itemprop="name">Lorem ipsum dolor sit amet?</p>
- *     </summary>
- *     <div class="content" data-ref="contentWrapper" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
- *       <div itemprop="text">
- *         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
- *       </div>
- *     </div>
- *   </details>
- * </div>
+ * <details data-component="Accordion" id="faq-1">
+ *   <summary>Question title</summary>
+ *   <div class="content">
+ *     <p>Answer content goes here.</p>
+ *   </div>
+ * </details>
  *
  * Suggested SCSS:
  *

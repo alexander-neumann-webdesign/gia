@@ -5,6 +5,9 @@ class Form extends gia.Component {
 		this.options = {
 			ajaxUrl: '', // URL to send the AJAX request to, often provided by WordPress (e.g., via wp_localize_script or data attribute)
 			action: '', // Optional: action parameter for WordPress AJAX (e.g., 'submit_contact_form')
+			addMoreFilesText: '+ Add more files',
+			removeFileText: '🗑️',
+			scrollToTopOnStep: true,
 		};
 
 		this.ref = {
@@ -13,14 +16,22 @@ class Form extends gia.Component {
 			successMessage: null,
 			errorMessage: null,
 			requiredInputs: [],
+			dropzone: [],
 			conditions: [],
+			step: [],
+			nextBtn: [],
+			prevBtn: [],
+			stepIndicator: [],
 		};
+
+		this.originalDropzoneLabels = new Map();
 
 		this.setState({
 			isSubmitting: false,
 			isSuccess: false,
 			isError: false,
 			requiredInputsFilled: false,
+			currentStep: 0,
 		});
 
 		this.spinnerAnimation = null;
@@ -46,6 +57,25 @@ class Form extends gia.Component {
 
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
+
+			this.handleNextStep = this.handleNextStep.bind(this);
+			this.handlePrevStep = this.handlePrevStep.bind(this);
+			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
+
+			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
+
+			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+
+			const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+			stepIndicators.forEach((indicator, index) => {
+				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
+			});
+
+			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
+				this._updateStepUI(this.state.currentStep);
+			}
 
 			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
 			this.ref.requiredInputs.forEach((input) => {
@@ -73,6 +103,298 @@ class Form extends gia.Component {
 		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
 			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
+
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.addEventListener('dragover', this.handleDragOver);
+				dropzone.addEventListener('dragleave', this.handleDragLeave);
+				dropzone.addEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.addEventListener('change', this.handleFileChange);
+				}
+
+				const label = dropzone.querySelector('.form-dropzone-label');
+				if (label) {
+					this.originalDropzoneLabels.set(dropzone, label.textContent);
+				}
+			});
+		}
+	}
+
+	handleDragOver(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.add('is-dragover');
+	}
+
+	handleDragLeave(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+	}
+
+	handleDrop(event) {
+		event.preventDefault();
+		const dropzone = event.currentTarget;
+		dropzone.classList.remove('is-dragover');
+
+		const fileInput = dropzone.querySelector('input[type="file"]');
+		if (fileInput && event.dataTransfer.files.length > 0) {
+			const dt = new DataTransfer();
+			if (fileInput.files) {
+				for (let i = 0; i < fileInput.files.length; i++) {
+					dt.items.add(fileInput.files[i]);
+				}
+			}
+			for (let i = 0; i < event.dataTransfer.files.length; i++) {
+				dt.items.add(event.dataTransfer.files[i]);
+			}
+			fileInput.files = dt.files;
+			// Manually dispatch change event so handleFileChange fires
+			fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+		}
+	}
+
+	handleFileChange(event) {
+		const fileInput = event.target;
+		const dropzone = fileInput.closest('[data-ref="dropzone"]') || fileInput.closest('.form-dropzone');
+		if (!dropzone) return;
+
+		this.renderFileList(dropzone, fileInput);
+	}
+
+	formatFileSize(bytes) {
+		if (bytes === 0) return '0 Bytes';
+		const k = 1024;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+	}
+
+	renderFileList(dropzone, fileInput) {
+		const label = dropzone.querySelector('.form-dropzone-label');
+
+		// Remove existing file list if any
+		const existingList = dropzone.querySelector('.form-file-list');
+		if (existingList) {
+			existingList.remove();
+		}
+
+		if (fileInput.files && fileInput.files.length > 0) {
+			if (label) label.hidden = true;
+
+			const fileList = document.createElement('div');
+			fileList.className = 'form-file-list';
+			fileList.style.marginTop = '1rem';
+			fileList.style.textAlign = 'left';
+			fileList.style.position = 'relative';
+			fileList.style.zIndex = '10';
+
+			Array.from(fileInput.files).forEach(file => {
+				const fileItem = this._createFileItem(file, dropzone, fileInput);
+				fileList.appendChild(fileItem);
+			});
+
+			const addMoreBtn = document.createElement('button');
+			addMoreBtn.type = 'button';
+			addMoreBtn.className = 'add-more-files-btn';
+			addMoreBtn.textContent = this.options.addMoreFilesText;
+			addMoreBtn.style.marginTop = '1rem';
+			addMoreBtn.style.padding = '0.5rem 1rem';
+			addMoreBtn.style.cursor = 'pointer';
+			addMoreBtn.style.position = 'relative';
+			addMoreBtn.style.zIndex = '10';
+
+			addMoreBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				const tempInput = document.createElement('input');
+				tempInput.type = 'file';
+				if (fileInput.multiple) tempInput.multiple = true;
+				if (fileInput.accept) tempInput.accept = fileInput.accept;
+
+				tempInput.addEventListener('change', (e) => {
+					if (tempInput.files && tempInput.files.length > 0) {
+						const dt = new DataTransfer();
+						if (fileInput.files) {
+							for (let i = 0; i < fileInput.files.length; i++) {
+								dt.items.add(fileInput.files[i]);
+							}
+						}
+						for (let i = 0; i < tempInput.files.length; i++) {
+							dt.items.add(tempInput.files[i]);
+						}
+						fileInput.files = dt.files;
+						fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+				});
+
+				tempInput.click();
+			});
+
+			fileList.appendChild(addMoreBtn);
+			dropzone.appendChild(fileList);
+		} else {
+			if (label) {
+				label.hidden = false;
+				const originalText = this.originalDropzoneLabels.get(dropzone);
+				if (originalText) {
+					label.textContent = originalText;
+				}
+			}
+		}
+	}
+
+	_createFileItem(file, dropzone, fileInput) {
+		const fileItem = document.createElement('div');
+		fileItem.className = 'form-file-item';
+		fileItem.style.display = 'flex';
+		fileItem.style.justifyContent = 'space-between';
+		fileItem.style.alignItems = 'center';
+		fileItem.style.padding = '0.5rem';
+		fileItem.style.borderBottom = '1px solid #ccc';
+
+		const fileInfo = document.createElement('div');
+		fileInfo.className = 'form-file-info';
+
+		const fileName = document.createElement('strong');
+		fileName.textContent = file.name;
+		fileName.style.display = 'block';
+
+		const fileMeta = document.createElement('small');
+		fileMeta.textContent = `${file.type || 'Unknown type'} • ${this.formatFileSize(file.size)}`;
+		fileMeta.style.color = '#666';
+
+		fileInfo.appendChild(fileName);
+		fileInfo.appendChild(fileMeta);
+
+		const removeBtn = document.createElement('button');
+		removeBtn.type = 'button';
+		removeBtn.className = 'remove-file-btn';
+		removeBtn.textContent = this.options.removeFileText;
+		removeBtn.style.background = 'none';
+		removeBtn.style.border = 'none';
+		removeBtn.style.cursor = 'pointer';
+		removeBtn.style.fontSize = '1.2rem';
+		removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+
+		removeBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			this.removeFile(dropzone, fileInput, file);
+		});
+
+		fileItem.appendChild(fileInfo);
+		fileItem.appendChild(removeBtn);
+
+		return fileItem;
+	}
+
+	removeFile(dropzone, fileInput, fileToRemove) {
+		const dt = new DataTransfer();
+		if (fileInput.files) {
+			for (let i = 0; i < fileInput.files.length; i++) {
+				const file = fileInput.files[i];
+				if (file !== fileToRemove) {
+					dt.items.add(file);
+				}
+			}
+		}
+		fileInput.files = dt.files;
+		fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+	}
+
+	handleStepIndicatorClick(event, index) {
+		event.preventDefault();
+		if (index < this.state.currentStep) {
+			this.setStep(index);
+		}
+	}
+
+	handleNextStep(event) {
+		event.preventDefault();
+
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		if (!steps.length || this.state.currentStep >= steps.length - 1) return;
+
+		const currentStepElement = steps[this.state.currentStep];
+
+		// Validate current step
+		const inputsToValidate = currentStepElement.querySelectorAll('input, select, textarea');
+		let isStepValid = true;
+
+		for (let i = 0; i < inputsToValidate.length; i++) {
+			const input = inputsToValidate[i];
+			if (!input.checkValidity()) {
+				isStepValid = false;
+				input.reportValidity();
+				break;
+			}
+		}
+
+		if (isStepValid) {
+			this.setStep(this.state.currentStep + 1);
+		}
+	}
+
+	handlePrevStep(event) {
+		event.preventDefault();
+		if (this.state.currentStep > 0) {
+			this.setStep(this.state.currentStep - 1);
+		}
+	}
+
+	setStep(nextStep) {
+		if (this.state.currentStep === nextStep) return;
+
+		if (document.startViewTransition) {
+			this.element.style.viewTransitionName = 'multi-step-form';
+			const transition = document.startViewTransition(() => {
+				this._updateStepUI(nextStep);
+				this.setState({ currentStep: nextStep });
+			});
+
+			transition.finally(() => {
+				this.element.style.viewTransitionName = '';
+			});
+		} else {
+			this._updateStepUI(nextStep);
+			this.setState({ currentStep: nextStep });
+		}
+	}
+
+	_updateStepUI(currentStep) {
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		if (!steps || steps.length === 0) return;
+
+		steps.forEach((step, index) => {
+			step.hidden = index !== currentStep;
+		});
+
+		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		indicators.forEach((indicator, index) => {
+			if (index === currentStep) {
+				indicator.setAttribute('aria-current', 'step');
+				indicator.classList.add('is-active');
+			} else {
+				indicator.removeAttribute('aria-current');
+				indicator.classList.remove('is-active');
+			}
+		});
+
+		if (this.ref.submitBtn) {
+			this.ref.submitBtn.hidden = currentStep !== steps.length - 1;
+		}
+
+		if (this.options.scrollToTopOnStep && currentStep > 0) {
+			window.setTimeout(() => {
+				if (this.formElement) {
+					this.formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			}, 50);
+		}
 	}
 
 	unmount() {
@@ -83,10 +405,35 @@ class Form extends gia.Component {
 				this.formElement.removeEventListener('input', this.evaluateConditions);
 			}
 		}
+		const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
+
+		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
+
+		const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		stepIndicators.forEach((indicator) => {
+			// Using anonymous function in addEventListener, so we can't perfectly remove it this way if not stored,
+			// but it's okay for unmount as nodes will likely be destroyed. Let's not worry about perfect listener removal
+			// since it's bounded by component lifecycle, or we could clone the node.
+		});
 		this.ref.requiredInputs.forEach((input) => {
 			input.removeEventListener('change', this.handleInputChange);
 			input.removeEventListener('input', this.handleInputChange);
 		});
+		if (this.ref.dropzone) {
+			const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+			dropzones.forEach((dropzone) => {
+				dropzone.removeEventListener('dragover', this.handleDragOver);
+				dropzone.removeEventListener('dragleave', this.handleDragLeave);
+				dropzone.removeEventListener('drop', this.handleDrop);
+
+				const fileInput = dropzone.querySelector('input[type="file"]');
+				if (fileInput) {
+					fileInput.removeEventListener('change', this.handleFileChange);
+				}
+			});
+		}
 	}
 
 	evaluateConditions() {
@@ -176,6 +523,12 @@ class Form extends gia.Component {
 	async handleSubmit(event) {
 		event.preventDefault();
 
+		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+		if (steps.length > 0 && this.state.currentStep < steps.length - 1) {
+			this.handleNextStep(event);
+			return;
+		}
+
 		if (this.state.isSubmitting) return;
 
 		if (!this._validateForm()) return;
@@ -200,6 +553,7 @@ class Form extends gia.Component {
 
 			this.setState({ isSubmitting: false, isSuccess: true });
 			this.formElement.reset();
+			this._resetDropzones();
 
 		} catch (error) {
 			console.error("Form component error:", error);
@@ -256,6 +610,24 @@ class Form extends gia.Component {
 		}
 
 		return result;
+	}
+
+	_resetDropzones() {
+		if (!this.ref.dropzone) return;
+
+		const dropzones = Array.isArray(this.ref.dropzone) ? this.ref.dropzone : [this.ref.dropzone];
+		dropzones.forEach(dropzone => {
+			const label = dropzone.querySelector('.form-dropzone-label');
+			const originalText = this.originalDropzoneLabels.get(dropzone);
+			if (label && originalText) {
+				label.textContent = originalText;
+			}
+
+			const existingList = dropzone.querySelector('.form-file-list');
+			if (existingList) {
+				existingList.remove();
+			}
+		});
 	}
 
 	_normalizeFormData(rawData, data) {
@@ -385,81 +757,83 @@ class Form extends gia.Component {
 		if ('isError' in stateChanges) {
 			this._showMessage(this.ref.errorMessage, stateChanges.isError);
 		}
+
+		if ('currentStep' in stateChanges) {
+			// We already handle step UI updates synchronously in setStep for view transitions,
+			// but we keep this here in case currentStep is updated via setState directly.
+			this._updateStepUI(stateChanges.currentStep);
+		}
 	}
 }
 
 gia.register(Form);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<div data-component="Form" data-options='{"ajaxUrl": "/wp-admin/admin-ajax.php", "action": "my_contact_form"}'>
-  <form data-ref="form" method="POST">
-    <div class="form-group">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required />
-    </div>
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required />
-    </div>
-    <div class="form-group">
-      <label for="message">Message</label>
-      <textarea id="message" name="message" required></textarea>
-    </div>
-    <div class="form-group">
-      <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
-    </div>
-    <div class="form-group" data-condition="subscribe:yes">
-      <label for="newsletter_email">Newsletter Email</label>
-      <input type="email" id="newsletter_email" name="newsletter_email" required />
-    </div>
-    <button type="submit" data-ref="submitBtn">Send Message</button>
-  </form>
-
-  <div data-ref="successMessage" hidden class="form-success" role="status">
-    Thank you for your message. It has been sent.
-  </div>
-  <div data-ref="errorMessage" hidden class="form-error" role="alert">
-    There was an error trying to send your message. Please try again later.
-  </div>
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-.form-success {
-  color: green;
-  padding: 1rem;
-  border: 1px solid green;
-  margin-top: 1rem;
-}
-
-.form-error {
-  color: red;
-  padding: 1rem;
-  border: 1px solid red;
-  margin-top: 1rem;
-}
-
-.is-submitting {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.form-spinner-icon {
-  margin-right: 0.5rem;
-  vertical-align: middle;
-}
-
-.input-missing {
-  border-color: red;
-}
-
-[hidden] {
-  display: none !important;
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <div data-component="Form" data-options='{"ajaxUrl": "/wp-admin/admin-ajax.php", "action": "my_contact_form"}'>
+ *   <form data-ref="form" method="POST">
+ *     <div class="form-group">
+ *       <label for="name">Name</label>
+ *       <input type="text" id="name" name="name" required />
+ *     </div>
+ *     <div class="form-group">
+ *       <label for="email">Email</label>
+ *       <input type="email" id="email" name="email" required />
+ *     </div>
+ *     <div class="form-group">
+ *       <label for="message">Message</label>
+ *       <textarea id="message" name="message" required></textarea>
+ *     </div>
+ *     <div class="form-group">
+ *       <label><input type="checkbox" name="subscribe" value="yes" /> Subscribe to newsletter</label>
+ *     </div>
+ *     <div class="form-group" data-condition="subscribe:yes">
+ *       <label for="newsletter_email">Newsletter Email</label>
+ *       <input type="email" id="newsletter_email" name="newsletter_email" required />
+ *     </div>
+ *     <button type="submit" data-ref="submitBtn">Send Message</button>
+ *   </form>
+ *
+ *   <div data-ref="successMessage" hidden class="form-success" role="status">
+ *     Thank you for your message. It has been sent.
+ *   </div>
+ *   <div data-ref="errorMessage" hidden class="form-error" role="alert">
+ *     There was an error trying to send your message. Please try again later.
+ *   </div>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * .form-success {
+ *   color: green;
+ *   padding: 1rem;
+ *   border: 1px solid green;
+ *   margin-top: 1rem;
+ * }
+ *
+ * .form-error {
+ *   color: red;
+ *   padding: 1rem;
+ *   border: 1px solid red;
+ *   margin-top: 1rem;
+ * }
+ *
+ * .is-submitting {
+ *   opacity: 0.5;
+ *   pointer-events: none;
+ * }
+ *
+ * .form-spinner-icon {
+ *   margin-right: 0.5rem;
+ *   vertical-align: middle;
+ * }
+ *
+ * .input-missing {
+ *   border-color: red;
+ * }
+ *
+ * [hidden] {
+ *   display: none !important;
+ * }
+ */

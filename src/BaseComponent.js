@@ -5,16 +5,10 @@ import { queryAll } from "./utils.js";
 let globalScrollListenerBound = false;
 let globalResizeListenerBound = false;
 const scrollCallbacks = new Set();
-const isMobileBrowser = typeof navigator !== 'undefined' && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
-const resizeEventName = isMobileBrowser ? 'orientationchange' : 'resize';
 const windowResizeCallbacks = new Set();
 let globalLenisInstance = null;
 let lastScrollY = 0;
 let lastVelocity = 0;
-
-const _scrollPayload = { scroll: 0, velocity: 0 };
-const _resizePayload = { width: 0, height: 0 };
-const _observerEntryArr = [null];
 
 function handleGlobalScroll(e) {
 	let scrollY, velocity;
@@ -32,18 +26,19 @@ function handleGlobalScroll(e) {
 	lastScrollY = scrollY;
 	lastVelocity = velocity;
 
-	_scrollPayload.scroll = scrollY;
-	_scrollPayload.velocity = velocity;
+	const payload = { scroll: scrollY, velocity: velocity };
 	for (const cb of scrollCallbacks) {
-		cb(_scrollPayload);
+		cb(payload);
 	}
 }
 
 function handleGlobalResize(e) {
-	_resizePayload.width = window.innerWidth;
-	_resizePayload.height = window.innerHeight;
+	const payload = {
+		width: window.innerWidth,
+		height: window.innerHeight
+	};
 	for (const cb of windowResizeCallbacks) {
-		cb(_resizePayload);
+		cb(payload);
 	}
 }
 
@@ -120,7 +115,9 @@ export default class Component {
 		}
 
 		if (itemsEmpty) {
-			for (const refName in refsByName) {
+			const refKeys = Object.keys(refsByName);
+			for (let i = 0; i < refKeys.length; i++) {
+				const refName = refKeys[i];
 				const colonIndex = refName.indexOf(":");
 				if (colonIndex !== -1) {
 					const componentName = refName.substring(0, colonIndex);
@@ -136,9 +133,10 @@ export default class Component {
 			}
 		} else {
 			this._ref = {};
-			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
-			for (const key in items) {
-				if (!Object.prototype.hasOwnProperty.call(items, key)) continue;
+			const itemsKeys = items ? Object.keys(items) : [];
+			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+			for (let i = 0; i < itemsKeys.length; i++) {
+				const key = itemsKeys[i];
 				const isArray = Array.isArray(items[key]);
 
 				if (items[key] !== null && isArray && items[key].length > 0) {
@@ -273,7 +271,7 @@ export default class Component {
 
 		if (!globalResizeListenerBound) {
 			globalResizeListenerBound = true;
-			window.addEventListener(resizeEventName, handleGlobalResize, { passive: true });
+			window.addEventListener('resize', handleGlobalResize, { passive: true });
 		}
 
 		if (!this._observedWindowResizeCallbacks) {
@@ -291,7 +289,7 @@ export default class Component {
 
 		if (windowResizeCallbacks.size === 0 && globalResizeListenerBound) {
 			globalResizeListenerBound = false;
-			window.removeEventListener(resizeEventName, handleGlobalResize);
+			window.removeEventListener('resize', handleGlobalResize);
 		}
 	}
 
@@ -305,9 +303,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
-						_observerEntryArr[0] = entry;
+						const entryArr = [entry];
 						for (const cb of callbacks) {
-							cb(_observerEntryArr);
+							cb(entryArr);
 						}
 					}
 				}
@@ -379,9 +377,9 @@ export default class Component {
 					const entry = entries[i];
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
-						_observerEntryArr[0] = entry;
+						const entryArr = [entry];
 						for (const cb of callbacks) {
-							cb(_observerEntryArr);
+							cb(entryArr);
 						}
 					}
 				}
@@ -474,7 +472,7 @@ export default class Component {
 	loadScript(scriptId, globalName) {
 		// SAFETY CHECK: Is the library already active globally?
 		// If 'window.multipleSelect' exists, we don't need to do anything.
-		if (globalName && window[globalName] && !(window[globalName] instanceof Node) && !(window[globalName] instanceof HTMLCollection) && !(window[globalName] instanceof Window)) {
+		if (globalName && window[globalName] && !(window[globalName] instanceof Node)) {
 			return Promise.resolve(window[globalName]);
 		}
 
@@ -625,10 +623,10 @@ export default class Component {
 		// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
 		// inside the primary validation loop to avoid allocating an intermediate `stateChanges`
 		// object and iterating twice over the keys.
-		// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
-		if (changes) {
-			for (const key in changes) {
-				if (!Object.prototype.hasOwnProperty.call(changes, key)) continue;
+		// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+		const keys = changes ? Object.keys(changes) : [];
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
 			const newValue = changes[key];
 			if (this._state[key] !== newValue) {
 				this._state[key] = newValue;
@@ -658,7 +656,6 @@ export default class Component {
 			}
 		}
 	}
-	}
 
 	_flushStateChanges() {
 		// Apply batched attribute changes
@@ -671,9 +668,10 @@ export default class Component {
 		}
 
 		if (hasAttrChanges) {
-			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
-			for (const attrName in this._pendingAttributeChanges) {
-				if (!Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) continue;
+			// ⚡ BOLT OPTIMIZATION: Object.keys() + for loop is faster than for...in + hasOwnProperty
+			const attrKeys = Object.keys(this._pendingAttributeChanges);
+			for (let i = 0; i < attrKeys.length; i++) {
+				const attrName = attrKeys[i];
 				const value = this._pendingAttributeChanges[attrName];
 				if (this.element.getAttribute(attrName) !== value) {
 					this.element.setAttribute(attrName, value);
