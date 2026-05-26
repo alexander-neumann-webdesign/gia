@@ -545,8 +545,6 @@ class CustomCursor extends gia.Component {
             // Intensity is 1 when inside the element bounds (maxDistToEdge = 0),
             // and approaches 0 as we reach the padding boundary
             let intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
-
-
             // Apply smoothstep to intensity for a more natural, non-linear magnetic falloff
             intensity = intensity * intensity * (3 - 2 * intensity);
 
@@ -562,8 +560,8 @@ class CustomCursor extends gia.Component {
                 // Parallax effect for stick: let the cursor follow the mouse slightly more than the element
                 const dx = docMouseX - this.magneticBounds.centerX;
                 const dy = docMouseY - this.magneticBounds.centerY;
-                targetX = (this.magneticBounds.centerX - scrollX) + pullX + (dx - pullX) * 0.2;
-                targetY = (this.magneticBounds.centerY - scrollY) + pullY + (dy - pullY) * 0.2;
+                targetX = (this.magneticBounds.centerX - scrollX) + pullX + (dx - pullX) * 0.2; // parallax effect
+                targetY = (this.magneticBounds.centerY - scrollY) + pullY + (dy - pullY) * 0.2; // parallax effect
             }
 
             this._currentPullX = pullX;
