@@ -520,6 +520,23 @@ class FilterableListGSAP extends gia.Component {
 	}
 
 	_itemMatchesFilter(item, type, activeValues) {
+		const { baseType, operator } = this._parseFilterType(type);
+
+		const cached = item._dataCache[baseType];
+		if (!cached) {
+			return false;
+		}
+
+		for (let i = 0; i < activeValues.length; i++) {
+			if (this._evaluateFilterCondition(cached, operator, activeValues[i])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	_parseFilterType(type) {
 		let baseType = type;
 		let operator = 'eq';
 
@@ -534,35 +551,29 @@ class FilterableListGSAP extends gia.Component {
 			operator = 'includes';
 		}
 
-		const cached = item._dataCache[baseType];
-		if (!cached) {
-			return false;
-		}
+		return { baseType, operator };
+	}
 
-		for (let i = 0; i < activeValues.length; i++) {
-			const filterVal = activeValues[i];
-
-			if (operator === 'min') {
-				const numFilterVal = parseFloat(filterVal);
-				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
-					return true;
-				}
-			} else if (operator === 'max') {
-				const numFilterVal = parseFloat(filterVal);
-				if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
-					return true;
-				}
-			} else if (operator === 'includes') {
-				if (this.fuzzyMatch(cached.raw, filterVal)) {
-					return true;
-				}
-			} else {
-				if (cached.array.includes(filterVal)) {
-					return true;
-				}
+	_evaluateFilterCondition(cached, operator, filterVal) {
+		if (operator === 'min') {
+			const numFilterVal = parseFloat(filterVal);
+			if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num >= numFilterVal) {
+				return true;
+			}
+		} else if (operator === 'max') {
+			const numFilterVal = parseFloat(filterVal);
+			if (!isNaN(cached.num) && !isNaN(numFilterVal) && cached.num <= numFilterVal) {
+				return true;
+			}
+		} else if (operator === 'includes') {
+			if (this.fuzzyMatch(cached.raw, filterVal)) {
+				return true;
+			}
+		} else {
+			if (cached.array.includes(filterVal)) {
+				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -719,10 +730,14 @@ class FilterableListGSAP extends gia.Component {
 		} else if (el instanceof HTMLSelectElement) {
 			this._updateSelectFilter(el, activeValues);
 		} else if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
-			el.checked = activeValues.includes(el.value);
+			this._updateCheckboxRadioFilter(el, activeValues);
 		} else if (el instanceof HTMLInputElement) {
 			this._updateInputFilter(el, activeValues);
 		}
+	}
+
+	_updateCheckboxRadioFilter(el, activeValues) {
+		el.checked = activeValues.includes(el.value);
 	}
 
 	_updateButtonFilter(el, activeValues) {
