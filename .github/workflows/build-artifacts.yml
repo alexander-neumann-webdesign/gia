@@ -19,7 +19,6 @@ jobs:
         with:
           # For PRs we need to checkout the head branch so we can push back to it
           # For pushes we can just rely on the default behavior
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Setup Node.js
