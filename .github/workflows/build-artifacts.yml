@@ -36,7 +36,7 @@ jobs:
 
       - name: Commit build artifacts
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v5.1.0
         with:
           commit_message: "chore: update build artifacts"
           file_pattern: 'dist/*'
