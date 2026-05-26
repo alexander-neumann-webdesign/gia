@@ -44,41 +44,37 @@ class Reveal extends gia.Component {
 
 gia.register(Reveal);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<noscript>
-  <style>
-    [data-component="Reveal"] {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      transform: translateY(0) !important;
-    }
-  </style>
-</noscript>
-
-<div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
-  <h2>Fade me in</h2>
-  <p>When I scroll into view.</p>
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-[data-component="Reveal"] {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(30px);
-  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: opacity, transform;
-
-  &[data-is-inview="true"] {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <noscript>
+ *   <style>
+ *     [data-component="Reveal"] {
+ *       opacity: 1 !important;
+ *       pointer-events: auto !important;
+ *       transform: translateY(0) !important;
+ *     }
+ *   </style>
+ * </noscript>
+ *
+ * <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
+ *   <h2>Fade me in</h2>
+ *   <p>When I scroll into view.</p>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * [data-component="Reveal"] {
+ *   opacity: 0;
+ *   pointer-events: none;
+ *   transform: translateY(30px);
+ *   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+ *   will-change: opacity, transform;
+ *
+ *   &[data-is-inview="true"] {
+ *     opacity: 1;
+ *     pointer-events: auto;
+ *     transform: translateY(0);
+ *   }
+ * }
+ */

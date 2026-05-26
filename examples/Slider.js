@@ -7,8 +7,7 @@ class Slider extends gia.Component {
 			align: "center",
 			skipSnaps: true,
 			tween: false,
-			parallax: false,
-			wheelGestures: true
+			parallax: false
 		};
 
 		this.ref = {
@@ -42,14 +41,6 @@ class Slider extends gia.Component {
 		} catch (error) {
 			console.error("Slider: Failed to load Embla Carousel.", error);
 		}
-
-		if (this.options.wheelGestures) {
-			try {
-				await this.loadScript("embla-carousel-wheel-gestures-js", "EmblaCarouselWheelGestures");
-			} catch (error) {
-				console.error("Slider: Failed to load Embla Carousel Wheel Gestures.", error);
-			}
-		}
 	}
 
 	mount() {
@@ -63,18 +54,12 @@ class Slider extends gia.Component {
 			return;
 		}
 
-		// Plugins
-		const plugins = [];
-		if (this.options.wheelGestures && typeof window.EmblaCarouselWheelGestures !== "undefined") {
-			plugins.push(window.EmblaCarouselWheelGestures());
-		}
-
 		// Initialize Embla
 		this.emblaApi = window.EmblaCarousel(this.ref.viewport, {
 			loop: this.options.loop,
 			align: this.options.align,
 			skipSnaps: this.options.skipSnaps
-		}, plugins);
+		});
 
 		// Setup Buttons
 		if (this.ref.prevBtn) {
@@ -254,8 +239,7 @@ class Slider extends gia.Component {
 			}
 		}
 
-		for (let index = 0; index < this.ref.dot.length; index++) {
-			const dot = this.ref.dot[index];
+		this.ref.dot.forEach((dot, index) => {
 			if (index === selected) {
 				dot.classList.add('is-selected');
 				dot.setAttribute('aria-current', 'true');
@@ -265,7 +249,7 @@ class Slider extends gia.Component {
 				dot.removeAttribute('aria-current');
 				dot.tabIndex = 0;
 			}
-		}
+		});
 	}
 
 	unmount() {
@@ -281,9 +265,7 @@ class Slider extends gia.Component {
 		}
 
 		if (this.ref.dotsContainer && this.ref.dot) {
-			for (let i = 0; i < this.ref.dot.length; i++) {
-				this.ref.dot[i].remove();
-			}
+			this.ref.dot.forEach(dot => dot.remove());
 			this.ref.dot = [];
 		}
 	}
@@ -328,58 +310,54 @@ class Slider extends gia.Component {
 
 gia.register(Slider);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<!-- Remember to add the vendor script at the bottom of the body: -->
-<!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
-
-<div class="slider-wrapper" data-component="Slider">
-  <div class="embla" data-ref="viewport">
-    <div class="embla__container" data-ref="container">
-      <div class="embla__slide" data-ref="slide">Slide 1</div>
-      <div class="embla__slide" data-ref="slide">Slide 2</div>
-      <div class="embla__slide" data-ref="slide">Slide 3</div>
-    </div>
-  </div>
-
-  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
-  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-.slider-wrapper[data-component="Slider"] {
-  position: relative;
-  max-width: 100%;
-
-  .embla {
-    overflow: hidden;
-  }
-
-  .embla__container {
-    display: flex;
-    touch-action: pan-y pinch-zoom;
-  }
-
-  .embla__slide {
-    flex: 0 0 100%;
-    min-width: 0;
-
-    @media (min-width: 768px) {
-      flex: 0 0 50%;
-    }
-  }
-
-  button {
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <!-- Remember to add the vendor script at the bottom of the body: -->
+ * <!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
+ *
+ * <div class="slider-wrapper" data-component="Slider">
+ *   <div class="embla" data-ref="viewport">
+ *     <div class="embla__container" data-ref="container">
+ *       <div class="embla__slide" data-ref="slide">Slide 1</div>
+ *       <div class="embla__slide" data-ref="slide">Slide 2</div>
+ *       <div class="embla__slide" data-ref="slide">Slide 3</div>
+ *     </div>
+ *   </div>
+ *
+ *   <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
+ *   <button data-ref="nextBtn" aria-label="Next slide">Next</button>
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * .slider-wrapper[data-component="Slider"] {
+ *   position: relative;
+ *   max-width: 100%;
+ *
+ *   .embla {
+ *     overflow: hidden;
+ *   }
+ *
+ *   .embla__container {
+ *     display: flex;
+ *     touch-action: pan-y pinch-zoom;
+ *   }
+ *
+ *   .embla__slide {
+ *     flex: 0 0 100%;
+ *     min-width: 0;
+ *
+ *     @media (min-width: 768px) {
+ *       flex: 0 0 50%;
+ *     }
+ *   }
+ *
+ *   button {
+ *     &:disabled {
+ *       opacity: 0.5;
+ *       cursor: not-allowed;
+ *     }
+ *   }
+ * }
+ */

@@ -198,75 +198,71 @@ class Modal extends gia.Component {
 
 gia.register(Modal);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<!-- Triggers can be anywhere -->
-<button data-modal-target="my-modal" aria-controls="my-modal" aria-expanded="false">Open Modal</button>
-
-<!-- The modal itself -->
-<dialog data-component="Modal" id="my-modal">
-  <div class="modal-content">
-    <h2>Modal Title</h2>
-    <button data-ref="closeButton">Close</button>
-  </div>
-</dialog>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-dialog[data-component="Modal"] {
-  // Center it via standard dialog rules, or custom
-  margin: auto;
-  inset: 0;
-  border: none;
-  border-radius: 8px;
-  padding: 0;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-
-  &::backdrop {
-    background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
-
-    transition: opacity 0.4s ease, backdrop-filter 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
-    opacity: 0;
-  }
-
-  // Modern discrete animation logic
-  transition: opacity 0.4s ease, transform 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
-  opacity: 0;
-  transform: translateY(10px);
-
-  &[open] {
-    opacity: 1;
-    transform: translateY(0);
-
-    &::backdrop {
-      opacity: 1;
-    }
-  }
-
-  @starting-style {
-    &[open] {
-      opacity: 0;
-      transform: translateY(10px);
-
-      &::backdrop {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[data-is-closing="true"] {
-    opacity: 0;
-    transform: translateY(10px);
-
-    &::backdrop {
-      opacity: 0;
-    }
-  }
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <!-- Triggers can be anywhere -->
+ * <button data-modal-target="my-modal" aria-controls="my-modal" aria-expanded="false">Open Modal</button>
+ *
+ * <!-- The modal itself -->
+ * <dialog data-component="Modal" id="my-modal">
+ *   <div class="modal-content">
+ *     <h2>Modal Title</h2>
+ *     <button data-ref="closeButton">Close</button>
+ *   </div>
+ * </dialog>
+ *
+ * Suggested SCSS:
+ *
+ * dialog[data-component="Modal"] {
+ *   // Center it via standard dialog rules, or custom
+ *   margin: auto;
+ *   inset: 0;
+ *   border: none;
+ *   border-radius: 8px;
+ *   padding: 0;
+ *   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+ *
+ *   &::backdrop {
+ *     background-color: rgba(0,0,0,0.5);
+ *     backdrop-filter: blur(4px);
+ *
+ *     transition: opacity 0.4s ease, backdrop-filter 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+ *     opacity: 0;
+ *   }
+ *
+ *   // Modern discrete animation logic
+ *   transition: opacity 0.4s ease, transform 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
+ *   opacity: 0;
+ *   transform: translateY(10px);
+ *
+ *   &[open] {
+ *     opacity: 1;
+ *     transform: translateY(0);
+ *
+ *     &::backdrop {
+ *       opacity: 1;
+ *     }
+ *   }
+ *
+ *   @starting-style {
+ *     &[open] {
+ *       opacity: 0;
+ *       transform: translateY(10px);
+ *
+ *       &::backdrop {
+ *         opacity: 0;
+ *       }
+ *     }
+ *   }
+ *
+ *   &[data-is-closing="true"] {
+ *     opacity: 0;
+ *     transform: translateY(10px);
+ *
+ *     &::backdrop {
+ *       opacity: 0;
+ *     }
+ *   }
+ * }
+ */

@@ -118,111 +118,107 @@ class OpenStreetMap extends gia.Component {
 
 gia.register(OpenStreetMap);
 
-/*
-========================================
-EXPECTED HTML
-========================================
-
-<!-- Required External Resources in <head> or before component: -->
-<!-- <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" /> -->
-
-<!-- Required External Script (usually at end of <body>): -->
-<!-- <script id="leaflet-js" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> -->
-
-<div
-  data-component="OpenStreetMap"
-  data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12}'
-  style="height: 400px; width: 100%;">
-</div>
-
-========================================
-SUGGESTED SCSS
-========================================
-
-[data-component="OpenStreetMap"] {
-  // Ensure the map container has a height, otherwise Leaflet won't render properly.
-  min-height: 400px;
-  background: #eee;
-}
-
-// Animated Dot Styles
-.animated-dot {
-  width: 1em;
-  height: 1em;
-  font-size: 20px;
-  position: relative;
-
-  .middle-dot {
-    width: 0.8em;
-    height: 0.8em;
-    background-color: #007bff;
-    border-radius: 50%;
-    position: absolute;
-    left: 0.1em;
-    top: 0.1em;
-    z-index: 2;
-  }
-
-  .signal, .signal2 {
-    width: 3em;
-    height: 3em;
-    background-color: #007bff;
-    border-radius: 50%;
-    position: absolute;
-    left: -1em;
-    top: -1em;
-    opacity: 0;
-    animation: animationSignal cubic-bezier(0, .55, .55, 1) 2s infinite forwards;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .signal { animation-delay: 0.78s; }
-  .signal2 { animation-delay: 1s; }
-}
-
-@keyframes animationSignal {
-  0% { opacity: 0; transform: scale(0); }
-  1% { opacity: 0.25; }
-  20% { opacity: 0.25; }
-  60% { transform: scale(1); opacity: 0; }
-}
-
-// Attribution Styles
-.leaflet-control-attribution.leaflet-control {
-  background: none;
-  padding: 0;
-  margin: 0;
-}
-.osm-attribution-details {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-}
-.osm-attribution-details[open] {
-  padding: 0 5px;
-}
-.osm-attribution-summary {
-  list-style: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
-}
-.osm-attribution-summary::-webkit-details-marker {
-  display: none;
-}
-.osm-attribution-text {
-  margin-left: 4px;
-  display: none;
-}
-.osm-attribution-details[open] .osm-attribution-text {
-  display: inline;
-}
-*/
+/**
+ * Expected HTML Structure:
+ *
+ * <!-- Required External Resources in <head> or before component: -->
+ * <!-- <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" /> -->
+ *
+ * <!-- Required External Script (usually at end of <body>): -->
+ * <!-- <script id="leaflet-js" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> -->
+ *
+ * <div
+ *   data-component="OpenStreetMap"
+ *   data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12}'
+ *   style="height: 400px; width: 100%;">
+ * </div>
+ *
+ * Suggested SCSS:
+ *
+ * [data-component="OpenStreetMap"] {
+ *   // Ensure the map container has a height, otherwise Leaflet won't render properly.
+ *   min-height: 400px;
+ *   background: #eee;
+ * }
+ *
+ * // Animated Dot Styles
+ * .animated-dot {
+ *   width: 1em;
+ *   height: 1em;
+ *   font-size: 20px;
+ *   position: relative;
+ *
+ *   .middle-dot {
+ *     width: 0.8em;
+ *     height: 0.8em;
+ *     background-color: #007bff;
+ *     border-radius: 50%;
+ *     position: absolute;
+ *     left: 0.1em;
+ *     top: 0.1em;
+ *     z-index: 2;
+ *   }
+ *
+ *   .signal, .signal2 {
+ *     width: 3em;
+ *     height: 3em;
+ *     background-color: #007bff;
+ *     border-radius: 50%;
+ *     position: absolute;
+ *     left: -1em;
+ *     top: -1em;
+ *     opacity: 0;
+ *     animation: animationSignal cubic-bezier(0, .55, .55, 1) 2s infinite forwards;
+ *     pointer-events: none;
+ *     z-index: 1;
+ *   }
+ *
+ *   .signal { animation-delay: 0.78s; }
+ *   .signal2 { animation-delay: 1s; }
+ * }
+ *
+ * @keyframes animationSignal {
+ *   0% { opacity: 0; transform: scale(0); }
+ *   1% { opacity: 0.25; }
+ *   20% { opacity: 0.25; }
+ *   60% { transform: scale(1); opacity: 0; }
+ * }
+ *
+ * // Attribution Styles
+ * .leaflet-control-attribution.leaflet-control {
+ *   background: none;
+ *   padding: 0;
+ *   margin: 0;
+ * }
+ * .osm-attribution-details {
+ *   background: rgba(255, 255, 255, 0.8);
+ *   border-radius: 4px;
+ *   padding: 0;
+ *   margin: 0;
+ *   display: flex;
+ *   align-items: center;
+ * }
+ * .osm-attribution-details[open] {
+ *   padding: 0 5px;
+ * }
+ * .osm-attribution-summary {
+ *   list-style: none;
+ *   cursor: pointer;
+ *   display: inline-flex;
+ *   align-items: center;
+ *   justify-content: center;
+ *   padding: 4px;
+ *   background: rgba(255, 255, 255, 0.8);
+ *   border-radius: 4px;
+ * }
+ * .osm-attribution-summary::-webkit-details-marker {
+ *   display: none;
+ * }
+ * .osm-attribution-text {
+ *   margin-left: 4px;
+ *   display: none;
+ * }
+ * .osm-attribution-details[open] .osm-attribution-text {
+ *   display: inline;
+ * }
+ */
