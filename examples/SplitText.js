@@ -131,73 +131,29 @@ class SplitText extends gia.Component {
 
 		const fragment = document.createDocumentFragment();
 
-		// Use Intl.Segmenter for word boundaries if available, fallback to regex
-		let words = [];
-		if (SplitText._wordSegmenter) {
-			const segments = SplitText._wordSegmenter.segment(text);
-			for (const segment of segments) {
-				words.push({ text: segment.segment, isWordLike: segment.isWordLike });
-			}
-		} else {
-			// Fallback: Split by whitespace but keep the whitespace as separate segments
-			// Regex splits by whitespace, capturing the whitespace itself
-			const parts = text.split(/(\s+)/);
-			for (const part of parts) {
-				if (part.length > 0) {
-					words.push({ text: part, isWordLike: /\S/.test(part) });
-				}
-			}
-		}
+		const words = this._segmentWords(text);
 
 		for (const wordObj of words) {
 			const wordText = wordObj.text;
 
 			if (!wordObj.isWordLike || (!wordText.trim() && wordText.length > 0)) {
-				// It's whitespace or punctuation that shouldn't be wrapped as a "word" in the animation sense
-				// Wait, punctuation attached to words is handled by Segmenter (often separately).
-				// If it's just spaces, we definitely just append as text to preserve flow.
 				if (!wordText.trim()) {
 					fragment.appendChild(document.createTextNode(wordText));
 					continue;
 				}
 			}
 
-			// Even if it's punctuation, we probably want it wrapped as a word/char so it animates.
-			// Let's treat non-whitespace as a wrappable element.
-
 			let wordEl;
 			if (doWords || doChars) {
-				wordEl = document.createElement("span");
-				wordEl.className = "split-word";
-				wordEl.setAttribute("aria-hidden", "true");
-				wordEl.style.display = "inline-block"; // Necessary for word measuring
-				wordEl.style.setProperty("--word-index", this._wordIndex++);
-				this.words.push(wordEl);
+				wordEl = this._createWordElement();
 			}
 
 			if (doChars) {
-				// Use Intl.Segmenter for graphemes (characters/emojis)
-				let chars = [];
-				if (SplitText._graphemeSegmenter) {
-					const segments = SplitText._graphemeSegmenter.segment(wordText);
-					for (const segment of segments) {
-						chars.push(segment.segment);
-					}
-				} else {
-					// Fallback: array spread handles some emojis, but not complex grapheme clusters
-					chars = [...wordText];
-				}
+				const chars = this._segmentChars(wordText);
 
 				for (let j = 0; j < chars.length; j++) {
-					const charEl = document.createElement("span");
-					charEl.className = "split-char";
-					charEl.setAttribute("aria-hidden", "true");
-					charEl.textContent = chars[j];
-					charEl.style.display = "inline-block";
-					charEl.style.setProperty("--char-index", this._charIndex++);
-
+					const charEl = this._createCharElement(chars[j]);
 					wordEl.appendChild(charEl);
-					this.chars.push(charEl);
 				}
 			} else if (doWords) {
 				wordEl.textContent = wordText;
@@ -209,6 +165,58 @@ class SplitText extends gia.Component {
 		}
 
 		return fragment;
+	}
+
+	_segmentWords(text) {
+		let words = [];
+		if (SplitText._wordSegmenter) {
+			const segments = SplitText._wordSegmenter.segment(text);
+			for (const segment of segments) {
+				words.push({ text: segment.segment, isWordLike: segment.isWordLike });
+			}
+		} else {
+			const parts = text.split(/(\s+)/);
+			for (const part of parts) {
+				if (part.length > 0) {
+					words.push({ text: part, isWordLike: /\S/.test(part) });
+				}
+			}
+		}
+		return words;
+	}
+
+	_segmentChars(wordText) {
+		let chars = [];
+		if (SplitText._graphemeSegmenter) {
+			const segments = SplitText._graphemeSegmenter.segment(wordText);
+			for (const segment of segments) {
+				chars.push(segment.segment);
+			}
+		} else {
+			chars = [...wordText];
+		}
+		return chars;
+	}
+
+	_createWordElement() {
+		const wordEl = document.createElement("span");
+		wordEl.className = "split-word";
+		wordEl.setAttribute("aria-hidden", "true");
+		wordEl.style.display = "inline-block";
+		wordEl.style.setProperty("--word-index", this._wordIndex++);
+		this.words.push(wordEl);
+		return wordEl;
+	}
+
+	_createCharElement(char) {
+		const charEl = document.createElement("span");
+		charEl.className = "split-char";
+		charEl.setAttribute("aria-hidden", "true");
+		charEl.textContent = char;
+		charEl.style.display = "inline-block";
+		charEl.style.setProperty("--char-index", this._charIndex++);
+		this.chars.push(charEl);
+		return charEl;
 	}
 
 	calculateLines() {
