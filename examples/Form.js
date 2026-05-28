@@ -26,6 +26,12 @@ class Form extends gia.Component {
 		this.spinnerAnimation = null;
 	}
 
+	_setRoleIfMissing(element, role) {
+		if (element && !element.hasAttribute('role')) {
+			element.setAttribute('role', role);
+		}
+	}
+
 	mount() {
 		// If the component is attached to the <form> itself
 		if (this.element instanceof HTMLFormElement) {
@@ -37,12 +43,8 @@ class Form extends gia.Component {
 		}
 
 		// Accessibility: Enhance form feedback with live region roles
-		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
-			this.ref.successMessage.setAttribute('role', 'status');
-		}
-		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
-			this.ref.errorMessage.setAttribute('role', 'alert');
-		}
+		this._setRoleIfMissing(this.ref.successMessage, 'status');
+		this._setRoleIfMissing(this.ref.errorMessage, 'alert');
 
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
@@ -64,14 +66,6 @@ class Form extends gia.Component {
 			this.handleInputChange();
 		} else {
 			console.warn("Form component: No form element found.");
-		}
-
-		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
-			this.ref.successMessage.setAttribute('role', 'status');
-		}
-
-		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
-			this.ref.errorMessage.setAttribute('role', 'alert');
 		}
 	}
 
