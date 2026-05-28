@@ -270,13 +270,8 @@ class MatterPhysicsBackground extends gia.Component {
         }, 500);
     }
 
-    handlePointerDown(e) {
-        // Only spawn if we aren't dragging an existing object
-        if (this.mouseConstraint && this.mouseConstraint.body) return;
-
-        // Get relative coordinates using cached bounds
+    _getPointerCoordinates(e) {
         let pageX, pageY;
-
         if (e.touches && e.touches.length > 0) {
             pageX = e.touches[0].pageX;
             pageY = e.touches[0].pageY;
@@ -284,6 +279,15 @@ class MatterPhysicsBackground extends gia.Component {
             pageX = e.pageX;
             pageY = e.pageY;
         }
+        return { pageX, pageY };
+    }
+
+    handlePointerDown(e) {
+        // Only spawn if we aren't dragging an existing object
+        if (this.mouseConstraint && this.mouseConstraint.body) return;
+
+        // Get relative coordinates using cached bounds
+        const { pageX, pageY } = this._getPointerCoordinates(e);
 
         const x = pageX - this.offsetLeft;
         const y = pageY - this.offsetTop;
@@ -296,15 +300,7 @@ class MatterPhysicsBackground extends gia.Component {
         if (!this.engine || this.state.isPaused) return;
 
         // Get relative coordinates using cached bounds
-        let pageX, pageY;
-
-        if (e.touches && e.touches.length > 0) {
-            pageX = e.touches[0].pageX;
-            pageY = e.touches[0].pageY;
-        } else {
-            pageX = e.pageX;
-            pageY = e.pageY;
-        }
+        const { pageX, pageY } = this._getPointerCoordinates(e);
 
         const mouseX = pageX - this.offsetLeft;
         const mouseY = pageY - this.offsetTop;
