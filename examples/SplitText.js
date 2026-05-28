@@ -125,13 +125,7 @@ class SplitText extends gia.Component {
 		}
 	}
 
-	_processTextNode(text) {
-		const doChars = this.options.split.indexOf("chars") !== -1;
-		const doWords = this.options.split.indexOf("words") !== -1 || this.options.split.indexOf("lines") !== -1;
-
-		const fragment = document.createDocumentFragment();
-
-		// Use Intl.Segmenter for word boundaries if available, fallback to regex
+	_tokenizeWords(text) {
 		let words = [];
 		if (SplitText._wordSegmenter) {
 			const segments = SplitText._wordSegmenter.segment(text);
@@ -139,8 +133,6 @@ class SplitText extends gia.Component {
 				words.push({ text: segment.segment, isWordLike: segment.isWordLike });
 			}
 		} else {
-			// Fallback: Split by whitespace but keep the whitespace as separate segments
-			// Regex splits by whitespace, capturing the whitespace itself
 			const parts = text.split(/(\s+)/);
 			for (const part of parts) {
 				if (part.length > 0) {
@@ -148,6 +140,30 @@ class SplitText extends gia.Component {
 				}
 			}
 		}
+		return words;
+	}
+
+	_tokenizeChars(wordText) {
+		let chars = [];
+		if (SplitText._graphemeSegmenter) {
+			const segments = SplitText._graphemeSegmenter.segment(wordText);
+			for (const segment of segments) {
+				chars.push(segment.segment);
+			}
+		} else {
+			chars = [...wordText];
+		}
+		return chars;
+	}
+
+	_processTextNode(text) {
+		const doChars = this.options.split.indexOf("chars") !== -1;
+		const doWords = this.options.split.indexOf("words") !== -1 || this.options.split.indexOf("lines") !== -1;
+
+		const fragment = document.createDocumentFragment();
+
+		// Use Intl.Segmenter for word boundaries if available, fallback to regex
+		let words = this._tokenizeWords(text);
 
 		for (const wordObj of words) {
 			const wordText = wordObj.text;
@@ -177,16 +193,7 @@ class SplitText extends gia.Component {
 
 			if (doChars) {
 				// Use Intl.Segmenter for graphemes (characters/emojis)
-				let chars = [];
-				if (SplitText._graphemeSegmenter) {
-					const segments = SplitText._graphemeSegmenter.segment(wordText);
-					for (const segment of segments) {
-						chars.push(segment.segment);
-					}
-				} else {
-					// Fallback: array spread handles some emojis, but not complex grapheme clusters
-					chars = [...wordText];
-				}
+				let chars = this._tokenizeChars(wordText);
 
 				for (let j = 0; j < chars.length; j++) {
 					const charEl = document.createElement("span");
