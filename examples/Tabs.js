@@ -129,6 +129,13 @@ class Tabs extends gia.Component {
 				event.preventDefault();
 				newIndex = tabCount - 1;
 				break;
+			case 'Enter':
+			case ' ':
+				event.preventDefault();
+				if (this.state.activeTabIndex !== currentIndex) {
+					this.setState({ activeTabIndex: currentIndex });
+				}
+				return;
 		}
 
 		if (newIndex !== currentIndex) {

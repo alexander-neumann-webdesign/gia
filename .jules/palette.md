@@ -4,3 +4,6 @@
 ## 2026-05-25 - Accessible Hidden File Dropzones
 **Learning:** When styling file dropzones with a visually hidden `<input type="file">` (using `opacity: 0`), keyboard users lose the visual focus indicator when tabbing to the input. Additionally, the label must be explicitly linked with `for` and `id` for screen readers.
 **Action:** Use the `:focus-within` pseudo-class on the parent dropzone container to provide a visible focus ring (e.g., outline) when the hidden input receives keyboard focus, and always ensure `<label for="id">` matches the input.
+## 2026-06-06 - Keyboard Activation for Custom Tab Interfaces
+**Learning:** When custom interfaces like tabs are built (and potentially allow non-button elements to be assigned `role="tab"`), they must manually handle keyboard activation. While arrow keys typically change focus or selection, users navigating via the `Tab` key expect to activate a focused tab using `Enter` or `Space`. Failing to handle these keys leaves keyboard users stranded on focusable but inactive elements.
+**Action:** Always verify `keydown` listeners on custom interactive components. Ensure `Enter` and `Space` (`' '`) keys are explicitly mapped to the component's primary activation logic (e.g., `handleClick`), and always call `event.preventDefault()` to stop the browser from scrolling down when `Space` is pressed.
