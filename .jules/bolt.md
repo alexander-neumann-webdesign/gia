@@ -74,3 +74,7 @@
 ## 2024-05-23 - Optimize Array allocations in component unmount lifecycle
 **Learning:** `Array.prototype.forEach` creates closure functions for every item in the array, introducing unnecessary memory allocation. Converting it into a standard `for` loop in lifecycle methods like `unmount` or event hooks like `updateDots` prevents garbage collection (GC) churn.
 **Action:** Replace `.forEach` with `for` loops in performance-sensitive places.
+
+## 2024-05-24 - Debounce High Frequency Global Events in BaseComponent
+**Learning:** Attaching native DOM listeners to high frequency events like `scroll` and `resize` without debouncing can cause the main thread to block, especially when there are many registered callbacks iterating synchronously.
+**Action:** Always wrap the actual payload extraction and callback execution of high frequency global event listeners in a `requestAnimationFrame` call to decouple the event firing from the processing logic, thus preventing layout thrashing and jank.
