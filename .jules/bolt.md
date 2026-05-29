@@ -74,6 +74,9 @@
 ## 2024-05-23 - Optimize Array allocations in component unmount lifecycle
 **Learning:** `Array.prototype.forEach` creates closure functions for every item in the array, introducing unnecessary memory allocation. Converting it into a standard `for` loop in lifecycle methods like `unmount` or event hooks like `updateDots` prevents garbage collection (GC) churn.
 **Action:** Replace `.forEach` with `for` loops in performance-sensitive places.
+## 2024-05-24 - Layout Thrashing in CustomCursor requestAnimationFrame
+**Learning:** Checking layout properties (like `getBoundingClientRect()`) via deferred function calls (e.g. `_updateBounds`) triggered by a dirty flag (`_needsUpdate`) inside a `requestAnimationFrame` loop forces synchronous layout recalculations and causes thrashing.
+**Action:** Remove the `_needsUpdate` dirty flag and its checking logic from the `rAF` render loop. Instead, call `_updateBounds()` synchronously inside `handleResize` and `MutationObserver` callbacks so that layout reads happen outside of the high-frequency animation loop.
 
 ## 2024-05-24 - Debounce High Frequency Global Events in BaseComponent
 **Learning:** Attaching native DOM listeners to high frequency events like `scroll` and `resize` without debouncing can cause the main thread to block, especially when there are many registered callbacks iterating synchronously.
