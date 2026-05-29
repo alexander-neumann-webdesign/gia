@@ -16,7 +16,12 @@ const _scrollPayload = { scroll: 0, velocity: 0 };
 const _resizePayload = { width: 0, height: 0 };
 const _observerEntryArr = [null];
 
-function handleGlobalScroll(e) {
+let _isScrollTicking = false;
+let _scrollEventData = null;
+
+function _processScroll() {
+	_isScrollTicking = false;
+	const e = _scrollEventData;
 	let scrollY, velocity;
 	if (globalLenisInstance) {
 		scrollY = globalLenisInstance.scroll;
@@ -39,11 +44,29 @@ function handleGlobalScroll(e) {
 	}
 }
 
-function handleGlobalResize(e) {
+function handleGlobalScroll(e) {
+	_scrollEventData = e;
+	if (!_isScrollTicking) {
+		_isScrollTicking = true;
+		window.requestAnimationFrame(_processScroll);
+	}
+}
+
+let _isResizeTicking = false;
+
+function _processResize() {
+	_isResizeTicking = false;
 	_resizePayload.width = window.innerWidth;
 	_resizePayload.height = window.innerHeight;
 	for (const cb of windowResizeCallbacks) {
 		cb(_resizePayload);
+	}
+}
+
+function handleGlobalResize(e) {
+	if (!_isResizeTicking) {
+		_isResizeTicking = true;
+		window.requestAnimationFrame(_processResize);
 	}
 }
 
