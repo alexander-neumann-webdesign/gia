@@ -129,6 +129,25 @@ class MultiStepForm extends gia.Component {
 				}
 			}
 		});
+
+		if (this.ref.submitBtn) {
+			const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+			let allValid = true;
+			for (let i = 0; i < steps.length; i++) {
+				if (!this._isStepValid(i)) {
+					allValid = false;
+					break;
+				}
+			}
+
+			if (allValid) {
+				this.ref.submitBtn.disabled = false;
+				this.ref.submitBtn.classList.remove('is-disabled');
+			} else {
+				this.ref.submitBtn.disabled = true;
+				this.ref.submitBtn.classList.add('is-disabled');
+			}
+		}
 	}
 
 	handleStepIndicatorClick(event, index) {
