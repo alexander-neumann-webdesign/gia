@@ -28,7 +28,6 @@ class CustomCursor extends gia.Component {
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.scroll = { x: typeof window !== 'undefined' ? (window.scrollX || window.pageXOffset) : 0, y: typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset) : 0 };
-        this._needsUpdate = false;
 
         // For magnetic target
         this.magneticTarget = null;
@@ -96,7 +95,9 @@ class CustomCursor extends gia.Component {
                     }
                 }
                 if (shouldUpdate) {
-                    this._needsUpdate = true;
+                    // ⚡ BOLT OPTIMIZATION: Call _updateBounds synchronously here instead of deferring
+                    // via a boolean flag to prevent layout thrashing in the requestAnimationFrame loop.
+                    this._updateBounds();
                     this._wakeUp();
                 }
             });
@@ -160,7 +161,9 @@ class CustomCursor extends gia.Component {
     }
 
     handleResize() {
-        this._needsUpdate = true;
+        // ⚡ BOLT OPTIMIZATION: Call _updateBounds synchronously here instead of deferring
+        // via a boolean flag to prevent layout thrashing in the requestAnimationFrame loop.
+        this._updateBounds();
         this._wakeUp();
     }
 
@@ -436,10 +439,7 @@ class CustomCursor extends gia.Component {
     render(time) {
         if (!this._isRenderingFrame) return;
 
-        if (this._needsUpdate) {
-            this._updateBounds();
-            this._needsUpdate = false;
-        }
+
 
         // Calculate delta time for frame-rate independent lerp
         // Cap deltaTime to 100ms to avoid huge jumps on tab switch
@@ -545,8 +545,6 @@ class CustomCursor extends gia.Component {
             // Intensity is 1 when inside the element bounds (maxDistToEdge = 0),
             // and approaches 0 as we reach the padding boundary
             let intensity = Math.max(0, 1 - (maxDistToEdge / this.options.magneticPadding));
-
-
             // Apply smoothstep to intensity for a more natural, non-linear magnetic falloff
             intensity = intensity * intensity * (3 - 2 * intensity);
 
@@ -562,8 +560,8 @@ class CustomCursor extends gia.Component {
                 // Parallax effect for stick: let the cursor follow the mouse slightly more than the element
                 const dx = docMouseX - this.magneticBounds.centerX;
                 const dy = docMouseY - this.magneticBounds.centerY;
-                targetX = (this.magneticBounds.centerX - scrollX) + pullX + (dx - pullX) * 0.2;
-                targetY = (this.magneticBounds.centerY - scrollY) + pullY + (dy - pullY) * 0.2;
+                targetX = (this.magneticBounds.centerX - scrollX) + pullX + (dx - pullX) * 0.2; // parallax effect
+                targetY = (this.magneticBounds.centerY - scrollY) + pullY + (dy - pullY) * 0.2; // parallax effect
             }
 
             this._currentPullX = pullX;

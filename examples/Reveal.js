@@ -21,7 +21,9 @@ class Reveal extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		entries.forEach((entry) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
+		for (let i = 0; i < entries.length; i++) {
+			const entry = entries[i];
 			if (entry.isIntersecting) {
 				this.setState({ isInview: true });
 
@@ -31,7 +33,7 @@ class Reveal extends gia.Component {
 			} else if (!this.options.once) {
 				this.setState({ isInview: false });
 			}
-		});
+		}
 	}
 
 	unmount() {

@@ -7,3 +7,6 @@
 ## 2026-06-06 - Keyboard Activation for Custom Tab Interfaces
 **Learning:** When custom interfaces like tabs are built (and potentially allow non-button elements to be assigned `role="tab"`), they must manually handle keyboard activation. While arrow keys typically change focus or selection, users navigating via the `Tab` key expect to activate a focused tab using `Enter` or `Space`. Failing to handle these keys leaves keyboard users stranded on focusable but inactive elements.
 **Action:** Always verify `keydown` listeners on custom interactive components. Ensure `Enter` and `Space` (`' '`) keys are explicitly mapped to the component's primary activation logic (e.g., `handleClick`), and always call `event.preventDefault()` to stop the browser from scrolling down when `Space` is pressed.
+## 2026-05-27 - Disabled State on Multi-Step Form Submit Button
+**Learning:** Adding a disabled state to the final submit button in a multi-step form when required fields are missing prevents users from clicking it only to see native browser validation messages that might jump the scroll position back up the page, improving the overall UX of complex forms.
+**Action:** When working on complex or multi-step forms, dynamically validate the form fields on input changes and disable the submit button until all required fields meet their validity constraints.
