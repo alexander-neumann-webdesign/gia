@@ -663,31 +663,13 @@ class FilterableList extends gia.Component {
 			: this.options.staggerDelay * 12;
 
 		// Apply unique names before transition
-		for (let i = 0; i < visibleItems.length; i++) {
-			const vName = `${componentId}-${visibleItems[i]._originalIndex}`;
-			visibleItems[i].style.viewTransitionName = vName;
-			const zIndex = visibleItems.length - i;
-			staggerCss += `::view-transition-group(${vName}) { z-index: ${zIndex}; }\n`;
+		const visibleResult = this._applyItemViewTransitionNames(visibleItems, componentId, staggerIndex, staggerCss, maxDelay, true);
+		staggerCss = visibleResult.staggerCss;
+		staggerIndex = visibleResult.staggerIndex;
 
-			if (this.options.staggerDelay > 0) {
-				const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
-				staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
-				staggerIndex++;
-			}
-		}
-		for (let i = 0; i < hiddenItems.length; i++) {
-			// OPTIMIZATION: Only animate items that are currently visible and becoming hidden
-			// Applying viewTransitionName to already hidden items forces unnecessary snapshotting
-			if (!hiddenItems[i].hidden) {
-				const vName = `${componentId}-${hiddenItems[i]._originalIndex}`;
-				hiddenItems[i].style.viewTransitionName = vName;
-				if (this.options.staggerDelay > 0) {
-					const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
-					staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
-					staggerIndex++;
-				}
-			}
-		}
+		const hiddenResult = this._applyItemViewTransitionNames(hiddenItems, componentId, staggerIndex, staggerCss, maxDelay, false);
+		staggerCss = hiddenResult.staggerCss;
+		staggerIndex = hiddenResult.staggerIndex;
 
 		let styleEl = null;
 		if (staggerCss) {
@@ -697,6 +679,30 @@ class FilterableList extends gia.Component {
 		}
 
 		return styleEl;
+	}
+
+	_applyItemViewTransitionNames(items, componentId, staggerIndex, staggerCss, maxDelay, isVisible) {
+		for (let i = 0; i < items.length; i++) {
+			if (!isVisible && items[i].hidden) {
+				continue;
+			}
+
+			const vName = `${componentId}-${items[i]._originalIndex}`;
+			items[i].style.viewTransitionName = vName;
+
+			if (isVisible) {
+				const zIndex = items.length - i;
+				staggerCss += `::view-transition-group(${vName}) { z-index: ${zIndex}; }\n`;
+			}
+
+			if (this.options.staggerDelay > 0) {
+				const delay = Math.min(staggerIndex * this.options.staggerDelay, maxDelay);
+				staggerCss += `::view-transition-group(${vName}), ::view-transition-old(${vName}), ::view-transition-new(${vName}) { animation-delay: ${delay}ms; animation-fill-mode: both; }\n`;
+				staggerIndex++;
+			}
+		}
+
+		return { staggerCss, staggerIndex };
 	}
 
 	_animateContainerHeight(initialHeight, transition) {
