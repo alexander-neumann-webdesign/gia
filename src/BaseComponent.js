@@ -12,9 +12,15 @@ let globalLenisInstance = null;
 let lastScrollY = 0;
 let lastVelocity = 0;
 
+
 const _scrollPayload = { scroll: 0, velocity: 0 };
 const _resizePayload = { width: 0, height: 0 };
 const _observerEntryArr = [null];
+
+const _callScrollCb = (cb) => cb(_scrollPayload);
+const _callResizeCb = (cb) => cb(_resizePayload);
+const _callObserverCb = (cb) => cb(_observerEntryArr);
+
 
 let _isScrollTicking = false;
 let _scrollEventData = null;
@@ -39,9 +45,7 @@ function _processScroll() {
 
 	_scrollPayload.scroll = scrollY;
 	_scrollPayload.velocity = velocity;
-	for (const cb of scrollCallbacks) {
-		cb(_scrollPayload);
-	}
+	scrollCallbacks.forEach(_callScrollCb);
 }
 
 function handleGlobalScroll(e) {
@@ -58,9 +62,7 @@ function _processResize() {
 	_isResizeTicking = false;
 	_resizePayload.width = window.innerWidth;
 	_resizePayload.height = window.innerHeight;
-	for (const cb of windowResizeCallbacks) {
-		cb(_resizePayload);
-	}
+	windowResizeCallbacks.forEach(_callResizeCb);
 }
 
 function handleGlobalResize(e) {
@@ -329,9 +331,7 @@ export default class Component {
 					const callbacks = resizeCallbacks.get(entry.target);
 					if (callbacks) {
 						_observerEntryArr[0] = entry;
-						for (const cb of callbacks) {
-							cb(_observerEntryArr);
-						}
+						callbacks.forEach(_callObserverCb);
 					}
 				}
 			});
@@ -403,9 +403,7 @@ export default class Component {
 					const callbacks = observerData.callbacks.get(entry.target);
 					if (callbacks) {
 						_observerEntryArr[0] = entry;
-						for (const cb of callbacks) {
-							cb(_observerEntryArr);
-						}
+						callbacks.forEach(_callObserverCb);
 					}
 				}
 			}, options);
@@ -720,13 +718,19 @@ export default class Component {
 		let methods = protoMethodsCache.get(proto);
 
 		if (!methods) {
-			methods = Object.getOwnPropertyNames(proto).filter((method) => {
-				return (
+			methods = [];
+			const allMethods = Object.getOwnPropertyNames(proto);
+			// ⚡ BOLT OPTIMIZATION: Avoid Array.filter to eliminate closure allocation on component init
+			for (let i = 0; i < allMethods.length; i++) {
+				const method = allMethods[i];
+				if (
 					!globalExcludedMethods.has(method) &&
 					!method.startsWith("_") &&
 					typeof Object.getOwnPropertyDescriptor(proto, method)?.value === "function"
-				);
-			});
+				) {
+					methods.push(method);
+				}
+			}
 			protoMethodsCache.set(proto, methods);
 		}
 

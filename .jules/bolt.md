@@ -81,3 +81,7 @@
 ## 2024-05-24 - Debounce High Frequency Global Events in BaseComponent
 **Learning:** Attaching native DOM listeners to high frequency events like `scroll` and `resize` without debouncing can cause the main thread to block, especially when there are many registered callbacks iterating synchronously.
 **Action:** Always wrap the actual payload extraction and callback execution of high frequency global event listeners in a `requestAnimationFrame` call to decouple the event firing from the processing logic, thus preventing layout thrashing and jank.
+
+## 2024-05-30 - Iterator Allocation on Set.forEach
+**Learning:** `for...of` loops iterating over a `Set` (or `Map`) allocate an Iterator object on every run. In extreme hot paths like `requestAnimationFrame` tied to scroll or resize handlers, this forces Garbage Collection (GC) churn which can cause micro-stutters. Using `Set.prototype.forEach()` with a hoisted, pre-allocated function completely eliminates both Iterator and closure allocation in these tight loops.
+**Action:** When iterating over a `Set` (e.g., calling registered callbacks) inside a `requestAnimationFrame` loop, prefer `.forEach(cachedFunction)` over `for (const x of set)`.
