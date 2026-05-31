@@ -98,21 +98,7 @@ class Form extends gia.Component {
 			const conditionString = el.getAttribute('data-condition');
 			if (!conditionString) return;
 
-			// Support "fieldName:expectedValue" format
-			const parts = conditionString.split(':');
-			const fieldName = parts[0];
-			const expectedValue = parts.length > 1 ? parts.slice(1).join(':') : undefined;
-
-			const actualValues = formData.getAll(fieldName);
-
-			let conditionMet = false;
-
-			if (expectedValue !== undefined) {
-				conditionMet = actualValues.includes(expectedValue);
-			} else {
-				// If no expected value is specified, just check if the field has ANY value
-				conditionMet = actualValues.some(val => val !== "");
-			}
+			const conditionMet = this._checkCondition(conditionString, formData);
 
 			if (conditionMet) {
 				this._showConditionElement(el);
@@ -120,6 +106,22 @@ class Form extends gia.Component {
 				this._hideConditionElement(el);
 			}
 		});
+	}
+
+	_checkCondition(conditionString, formData) {
+		// Support "fieldName:expectedValue" format
+		const parts = conditionString.split(':');
+		const fieldName = parts[0];
+		const expectedValue = parts.length > 1 ? parts.slice(1).join(':') : undefined;
+
+		const actualValues = formData.getAll(fieldName);
+
+		if (expectedValue !== undefined) {
+			return actualValues.includes(expectedValue);
+		} else {
+			// If no expected value is specified, just check if the field has ANY value
+			return actualValues.some(val => val !== "");
+		}
 	}
 
 	_showConditionElement(el) {
@@ -280,32 +282,37 @@ class Form extends gia.Component {
 
 	_detectNameAndEmail(data) {
 		// 2. Smart Detection Logic for Name and Email
-		let detectedName = "";
-		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
-		if (nameInput && nameInput.value.trim() !== "") {
-			detectedName = nameInput.value;
-		} else {
-			const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
-			const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
-			let parts = [];
-			if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
-			if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
-			if (parts.length > 0) detectedName = parts.join(" ");
-		}
-
-		let detectedEmail = "";
-		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
-		if (emailInput && emailInput.value.trim() !== "") {
-			detectedEmail = emailInput.value;
-		} else {
-			const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
-			if (fallbackEmail && fallbackEmail.value) {
-				detectedEmail = fallbackEmail.value;
-			}
-		}
+		const detectedName = this._detectName();
+		const detectedEmail = this._detectEmail();
 
 		if (detectedName) data.append("detected-name", detectedName);
 		if (detectedEmail) data.append("detected-email", detectedEmail);
+	}
+
+	_detectName() {
+		const nameInput = this.formElement.querySelector('[autocomplete="name"]');
+		if (nameInput && nameInput.value.trim() !== "") {
+			return nameInput.value;
+		}
+		const givenNameInput = this.formElement.querySelector('[autocomplete="given-name"]');
+		const familyNameInput = this.formElement.querySelector('[autocomplete="family-name"]');
+		let parts = [];
+		if (givenNameInput && givenNameInput.value) parts.push(givenNameInput.value);
+		if (familyNameInput && familyNameInput.value) parts.push(familyNameInput.value);
+		if (parts.length > 0) return parts.join(" ");
+		return "";
+	}
+
+	_detectEmail() {
+		const emailInput = this.formElement.querySelector('[autocomplete="email"]');
+		if (emailInput && emailInput.value.trim() !== "") {
+			return emailInput.value;
+		}
+		const fallbackEmail = this.formElement.querySelector('input[type="email"], input[name*="email" i], input[name*="e-mail" i]');
+		if (fallbackEmail && fallbackEmail.value) {
+			return fallbackEmail.value;
+		}
+		return "";
 	}
 
 	_updateSubmittingUI(isSubmitting) {
@@ -313,43 +320,10 @@ class Form extends gia.Component {
 			this.ref.submitBtn.disabled = isSubmitting;
 			if (isSubmitting) {
 				this.ref.submitBtn.setAttribute('aria-busy', 'true');
-				// Inject spinner SVG
-				this.ref.submitBtn.insertAdjacentHTML('afterbegin', `
-					<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
-						<line x1="12" y1="2" x2="12" y2="6"></line>
-						<line x1="12" y1="18" x2="12" y2="22"></line>
-						<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-						<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-						<line x1="2" y1="12" x2="6" y2="12"></line>
-						<line x1="18" y1="12" x2="22" y2="12"></line>
-						<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-						<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-					</svg>
-				`);
-
-				// Animate spinner
-				const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
-				if (spinnerIcon && typeof spinnerIcon.animate === 'function') {
-					this.spinnerAnimation = spinnerIcon.animate([
-						{ transform: 'rotate(0deg)' },
-						{ transform: 'rotate(360deg)' }
-					], {
-						duration: 1000,
-						iterations: Infinity,
-						easing: 'linear'
-					});
-				}
+				this._addSpinner(this.ref.submitBtn);
 			} else {
 				this.ref.submitBtn.removeAttribute('aria-busy');
-				// Restore original HTML
-				if (this.spinnerAnimation) {
-					this.spinnerAnimation.cancel();
-					this.spinnerAnimation = null;
-				}
-				const spinnerIcon = this.ref.submitBtn.querySelector('.form-spinner-icon');
-				if (spinnerIcon) {
-					spinnerIcon.remove();
-				}
+				this._removeSpinner(this.ref.submitBtn);
 			}
 		}
 
@@ -359,6 +333,47 @@ class Form extends gia.Component {
 			} else {
 				this.formElement.classList.remove('is-submitting');
 			}
+		}
+	}
+
+	_addSpinner(btn) {
+		// Inject spinner SVG
+		btn.insertAdjacentHTML('afterbegin', `
+			<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
+				<line x1="12" y1="2" x2="12" y2="6"></line>
+				<line x1="12" y1="18" x2="12" y2="22"></line>
+				<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+				<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+				<line x1="2" y1="12" x2="6" y2="12"></line>
+				<line x1="18" y1="12" x2="22" y2="12"></line>
+				<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+				<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+			</svg>
+		`);
+
+		// Animate spinner
+		const spinnerIcon = btn.querySelector('.form-spinner-icon');
+		if (spinnerIcon && typeof spinnerIcon.animate === 'function') {
+			this.spinnerAnimation = spinnerIcon.animate([
+				{ transform: 'rotate(0deg)' },
+				{ transform: 'rotate(360deg)' }
+			], {
+				duration: 1000,
+				iterations: Infinity,
+				easing: 'linear'
+			});
+		}
+	}
+
+	_removeSpinner(btn) {
+		// Restore original HTML
+		if (this.spinnerAnimation) {
+			this.spinnerAnimation.cancel();
+			this.spinnerAnimation = null;
+		}
+		const spinnerIcon = btn.querySelector('.form-spinner-icon');
+		if (spinnerIcon) {
+			spinnerIcon.remove();
 		}
 	}
 
