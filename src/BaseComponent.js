@@ -229,27 +229,21 @@ export default class Component {
 
 
 		if (this._observedScrollCallbacks) {
-			for (const cb of this._observedScrollCallbacks) {
-				this.unobserveScroll(cb);
-			}
+			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
 		}
 
 		if (this._observedWindowResizeCallbacks) {
-			for (const cb of this._observedWindowResizeCallbacks) {
-				this.unobserveWindowResize(cb);
-			}
+			this._observedWindowResizeCallbacks.forEach(this.unobserveWindowResize, this);
 		}
 
 		if (this._observedResizeElements) {
-			for (const element of this._observedResizeElements.keys()) {
-				this.unobserveResize(element);
-			}
+			const unobserve = function(value, element) { this.unobserveResize(element); };
+			this._observedResizeElements.forEach(unobserve, this);
 		}
 
 		if (this._observedIntersectionElements) {
-			for (const element of this._observedIntersectionElements.keys()) {
-				this.unobserveIntersection(element);
-			}
+			const unobserve = function(value, element) { this.unobserveIntersection(element); };
+			this._observedIntersectionElements.forEach(unobserve, this);
 		}
 	}
 
@@ -369,9 +363,8 @@ export default class Component {
 		} else {
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) {
-				for (const cb of componentCallbacks) {
-					globalCbs.delete(cb);
-				}
+				const delCb = function(cb) { this.delete(cb); };
+				componentCallbacks.forEach(delCb, globalCbs);
 			}
 			componentCallbacks.clear();
 		}
@@ -442,7 +435,7 @@ export default class Component {
 		const componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) return;
 
-		for (const [hash, componentCallbacks] of componentElementMap) {
+		const processHash = function(componentCallbacks, hash) {
 			const observerData = intersectionObservers.get(hash);
 
 			if (callback) {
@@ -455,9 +448,8 @@ export default class Component {
 			} else {
 				if (observerData && observerData.callbacks.has(element)) {
 					const globalCbs = observerData.callbacks.get(element);
-					for (const cb of componentCallbacks) {
-						globalCbs.delete(cb);
-					}
+					const delCb = function(cb) { this.delete(cb); };
+					componentCallbacks.forEach(delCb, globalCbs);
 				}
 				componentCallbacks.clear();
 			}
@@ -478,7 +470,8 @@ export default class Component {
 					intersectionObservers.delete(hash);
 				}
 			}
-		}
+		};
+		componentElementMap.forEach(processHash);
 
 		if (componentElementMap.size === 0) {
 			this._observedIntersectionElements.delete(element);
