@@ -417,6 +417,11 @@ input[type="radio"] {
 .form-dropzone {
   transition: background-color 0.2s, border-color 0.2s;
 
+  &:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
   &.is-dragover {
     background-color: rgba(0, 0, 0, 0.05);
     border-color: #666 !important;
