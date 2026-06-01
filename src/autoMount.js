@@ -4,6 +4,13 @@ import destroyInstance from "./destroyInstance.js";
 import { queryAll } from "./utils.js";
 
 let observer = null;
+let _currentComponentsToLoad = null;
+
+const _processAddedNode = (node) => {
+    if (node.isConnected) {
+        loadComponents(_currentComponentsToLoad, node);
+    }
+};
 
 function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
@@ -45,13 +52,10 @@ function handleMutations(mutations) {
 
     // If nodes were added, run loadComponents ONLY on the added nodes rather than the whole body
     // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
-    // Set elements can be iterated via for...of (avoiding Array.from())
-    for (const node of addedElements) {
-        // ensure node is still in document
-        if (node.isConnected) {
-            loadComponents(componentsToLoad, node);
-        }
-    }
+    // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation by using Set.prototype.forEach with hoisted callback
+    _currentComponentsToLoad = componentsToLoad;
+    addedElements.forEach(_processAddedNode);
+    _currentComponentsToLoad = null;
 }
 
 export function initObserver() {

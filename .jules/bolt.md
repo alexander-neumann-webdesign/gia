@@ -85,3 +85,7 @@
 ## 2024-05-30 - Iterator Allocation on Set.forEach
 **Learning:** `for...of` loops iterating over a `Set` (or `Map`) allocate an Iterator object on every run. In extreme hot paths like `requestAnimationFrame` tied to scroll or resize handlers, this forces Garbage Collection (GC) churn which can cause micro-stutters. Using `Set.prototype.forEach()` with a hoisted, pre-allocated function completely eliminates both Iterator and closure allocation in these tight loops.
 **Action:** When iterating over a `Set` (e.g., calling registered callbacks) inside a `requestAnimationFrame` loop, prefer `.forEach(cachedFunction)` over `for (const x of set)`.
+
+## 2024-06-01 - Avoid Object.keys() array allocations
+**Learning:** Found places where Object.keys() was used in hot paths like `setState`, allocating an intermediate array and forcing double iteration over object keys.
+**Action:** Replaced Object.keys() with `for...in` loops coupled with `Object.prototype.hasOwnProperty.call()` checks.
