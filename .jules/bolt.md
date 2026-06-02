@@ -89,3 +89,6 @@
 ## 2024-06-01 - Avoid Object.keys() array allocations
 **Learning:** Found places where Object.keys() was used in hot paths like `setState`, allocating an intermediate array and forcing double iteration over object keys.
 **Action:** Replaced Object.keys() with `for...in` loops coupled with `Object.prototype.hasOwnProperty.call()` checks.
+## 2024-06-02 - Hoist closure functions to eliminate GC churn on unmount
+**Learning:** Found that `_destroy`, `unobserveResize`, and `unobserveIntersection` methods were allocating new inline closure functions when calling `forEach` on Sets or Maps (e.g., `const unobserve = function(value, element) { this.unobserveResize(element); };` and `const delCb = function(cb) { this.delete(cb); };`). This causes unnecessary garbage collection churn in hot paths, especially when lots of components are created and destroyed.
+**Action:** Always hoist callback functions to the outer scope when possible and use the native `thisArg` parameter to maintain context, or pass native prototype methods directly (e.g., `Set.prototype.delete`) to completely avoid allocating new closure functions on every iteration.
