@@ -21,6 +21,10 @@ const _callScrollCb = (cb) => cb(_scrollPayload);
 const _callResizeCb = (cb) => cb(_resizePayload);
 const _callObserverCb = (cb) => cb(_observerEntryArr);
 
+const _unobserveResizeCb = function(value, element) { this.unobserveResize(element); };
+const _unobserveIntersectionCb = function(value, element) { this.unobserveIntersection(element); };
+
+
 
 let _isScrollTicking = false;
 let _scrollEventData = null;
@@ -237,13 +241,13 @@ export default class Component {
 		}
 
 		if (this._observedResizeElements) {
-			const unobserve = function(value, element) { this.unobserveResize(element); };
-			this._observedResizeElements.forEach(unobserve, this);
+			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
+			this._observedResizeElements.forEach(_unobserveResizeCb, this);
 		}
 
 		if (this._observedIntersectionElements) {
-			const unobserve = function(value, element) { this.unobserveIntersection(element); };
-			this._observedIntersectionElements.forEach(unobserve, this);
+			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
+			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
 		}
 	}
 
@@ -363,8 +367,8 @@ export default class Component {
 		} else {
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) {
-				const delCb = function(cb) { this.delete(cb); };
-				componentCallbacks.forEach(delCb, globalCbs);
+				// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
+				componentCallbacks.forEach(Set.prototype.delete, globalCbs);
 			}
 			componentCallbacks.clear();
 		}
@@ -448,8 +452,8 @@ export default class Component {
 			} else {
 				if (observerData && observerData.callbacks.has(element)) {
 					const globalCbs = observerData.callbacks.get(element);
-					const delCb = function(cb) { this.delete(cb); };
-					componentCallbacks.forEach(delCb, globalCbs);
+					// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
+					componentCallbacks.forEach(Set.prototype.delete, globalCbs);
 				}
 				componentCallbacks.clear();
 			}
