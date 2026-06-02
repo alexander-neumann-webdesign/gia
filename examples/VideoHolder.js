@@ -124,53 +124,61 @@ class VideoHolder extends gia.Component {
 		}
 
 		if ('isPlaying' in stateChanges) {
-			if (this.state.isPlaying) {
-				if (this.ref.video.paused) {
-					const playPromise = this.ref.video.play();
-					if (playPromise !== undefined) {
-						playPromise.catch(error => {
-							console.warn("Video autoplay blocked or interrupted:", error);
-							this.setState({ isPlaying: false });
-						});
-					}
-				}
-			} else {
-				if (!this.ref.video.paused) {
-					this.ref.video.pause();
+			this._updateVideoState();
+			this._updatePlayPauseButton();
+		}
+	}
+
+	_updateVideoState() {
+		if (this.state.isPlaying) {
+			if (this.ref.video.paused) {
+				const playPromise = this.ref.video.play();
+				if (playPromise !== undefined) {
+					playPromise.catch(error => {
+						console.warn("Video autoplay blocked or interrupted:", error);
+						this.setState({ isPlaying: false });
+					});
 				}
 			}
-
-			if (this.ref.playPauseButton) {
-				const isPlaying = this.state.isPlaying;
-				const playPauseBtn = this.ref.playPauseButton;
-
-				playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
-
-				if (isPlaying) {
-					playPauseBtn.classList.remove('is-paused');
-					playPauseBtn.classList.add('is-playing');
-				} else {
-					playPauseBtn.classList.remove('is-playing');
-					playPauseBtn.classList.add('is-paused');
-				}
-
-				let iconShape = playPauseBtn.querySelector('.icon-shape');
-				if (!iconShape) {
-					playPauseBtn.replaceChildren();
-					playPauseBtn.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>');
-					iconShape = playPauseBtn.querySelector('.icon-shape');
-				}
-
-				if (iconShape) {
-					if (isPlaying) {
-						iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
-					} else {
-						iconShape.setAttribute('d', 'M 5 3 L 12 7.5 L 12 16.5 L 5 21 Z M 12 7.5 L 19 12 L 19 12 L 12 16.5 Z');
-					}
-				}
+		} else {
+			if (!this.ref.video.paused) {
+				this.ref.video.pause();
 			}
 		}
 	}
+
+	_updatePlayPauseButton() {
+		if (!this.ref.playPauseButton) return;
+
+		const isPlaying = this.state.isPlaying;
+		const playPauseBtn = this.ref.playPauseButton;
+
+		playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
+
+		if (isPlaying) {
+			playPauseBtn.classList.remove('is-paused');
+			playPauseBtn.classList.add('is-playing');
+		} else {
+			playPauseBtn.classList.remove('is-playing');
+			playPauseBtn.classList.add('is-paused');
+		}
+
+		let iconShape = playPauseBtn.querySelector('.icon-shape');
+		if (!iconShape) {
+			playPauseBtn.replaceChildren();
+			playPauseBtn.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>');
+			iconShape = playPauseBtn.querySelector('.icon-shape');
+		}
+
+		if (iconShape) {
+			if (isPlaying) {
+				iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
+			} else {
+				iconShape.setAttribute('d', 'M 5 3 L 12 7.5 L 12 16.5 L 5 21 Z M 12 7.5 L 19 12 L 19 12 L 12 16.5 Z');
+			}
+		}
+	}
+
 }
 
 gia.register(VideoHolder);
