@@ -115,7 +115,7 @@ export default class Component {
 		this._autoBindFunctions();
 		if (config.get("autoBindActions")) {
 			this._autoBindActions();
-		}
+	}
 	}
 
 	get ref() {
@@ -136,9 +136,9 @@ export default class Component {
 			if (list === undefined) {
 				list = [];
 				refsByName[refName] = list;
-			}
+	}
 			list.push(element);
-		}
+	}
 
 		// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
 		// This avoids allocating an array with Object.keys() every time set ref is called
@@ -146,7 +146,7 @@ export default class Component {
 		for (const _k in items) {
 			itemsEmpty = false;
 			break;
-		}
+	}
 
 		if (itemsEmpty) {
 			for (const refName in refsByName) {
@@ -156,14 +156,14 @@ export default class Component {
 					const actualRefName = refName.substring(colonIndex + 1);
 					if (componentName === this._name && !this._ref[actualRefName]) {
 						this._ref[actualRefName] = refsByName[refName];
-					}
-				} else {
-					if (!this._ref[refName]) {
+	}
+	} else {
+			if (!this._ref[refName]) {
 						this._ref[refName] = refsByName[refName];
-					}
-				}
-			}
-		} else {
+	}
+		}
+	}
+	} else {
 			this._ref = {};
 			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
 			for (const key in items) {
@@ -173,18 +173,18 @@ export default class Component {
 				if (items[key] !== null && isArray && items[key].length > 0) {
 					this._ref[key] = items[key];
 					continue;
-				}
+		}
 
 				const prefixedName = `${this._name}:${key}`;
 				let refs = refsByName[prefixedName] || [];
 
 				if (refs.length === 0) {
 					refs = refsByName[key] || [];
-				}
+		}
 
 				this._ref[key] = isArray ? refs : (refs[0] ?? null);
-			}
-		}
+	}
+	}
 	}
 
 	get options() {
@@ -200,17 +200,17 @@ export default class Component {
 			if (trimmedStr.startsWith("{") || trimmedStr.startsWith("[")) {
 				try {
 					options = JSON.parse(trimmedStr);
-				} catch (e) {
+		} catch (e) {
 					console.error(`Failed to parse options for component "${this._name}": ${e.message}`);
-				}
-			}
 		}
+	}
+	}
 
 		this._options = {
 			...this._options,
 			...defaults,
 			...options,
-		};
+	};
 
 		// return this._options;
 	}
@@ -234,21 +234,21 @@ export default class Component {
 
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
-		}
+	}
 
 		if (this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks.forEach(this.unobserveWindowResize, this);
-		}
+	}
 
 		if (this._observedResizeElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedResizeElements.forEach(_unobserveResizeCb, this);
-		}
+	}
 
 		if (this._observedIntersectionElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
-		}
+	}
 	}
 
 
@@ -262,14 +262,14 @@ export default class Component {
 			if (window.lenis) {
 				globalLenisInstance = window.lenis;
 				globalLenisInstance.on('scroll', handleGlobalScroll);
-			} else {
+	} else {
 				window.addEventListener('scroll', handleGlobalScroll, { passive: true });
-			}
-		}
+	}
+	}
 
 		if (!this._observedScrollCallbacks) {
 			this._observedScrollCallbacks = new Set();
-		}
+	}
 		this._observedScrollCallbacks.add(callback);
 		scrollCallbacks.add(callback);
 	}
@@ -277,7 +277,7 @@ export default class Component {
 	unobserveScroll(callback) {
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.delete(callback);
-		}
+	}
 		scrollCallbacks.delete(callback);
 
 		if (scrollCallbacks.size === 0 && globalScrollListenerBound) {
@@ -285,10 +285,10 @@ export default class Component {
 			if (globalLenisInstance) {
 				globalLenisInstance.off('scroll', handleGlobalScroll);
 				globalLenisInstance = null;
-			} else {
+	} else {
 				window.removeEventListener('scroll', handleGlobalScroll);
-			}
-		}
+	}
+	}
 	}
 
 	observeWindowResize(callback) {
@@ -297,11 +297,11 @@ export default class Component {
 		if (!globalResizeListenerBound) {
 			globalResizeListenerBound = true;
 			window.addEventListener(resizeEventName, handleGlobalResize, { passive: true });
-		}
+	}
 
 		if (!this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks = new Set();
-		}
+	}
 		this._observedWindowResizeCallbacks.add(callback);
 		windowResizeCallbacks.add(callback);
 	}
@@ -309,13 +309,13 @@ export default class Component {
 	unobserveWindowResize(callback) {
 		if (this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks.delete(callback);
-		}
+	}
 		windowResizeCallbacks.delete(callback);
 
 		if (windowResizeCallbacks.size === 0 && globalResizeListenerBound) {
 			globalResizeListenerBound = false;
 			window.removeEventListener(resizeEventName, handleGlobalResize);
-		}
+	}
 	}
 
 	observeResize(element, callback) {
@@ -326,31 +326,31 @@ export default class Component {
 				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
 				for (let i = 0; i < entries.length; i++) {
 					const entry = entries[i];
-					const callbacks = resizeCallbacks.get(entry.target);
-					if (callbacks) {
+			const callbacks = resizeCallbacks.get(entry.target);
+			if (callbacks) {
 						_observerEntryArr[0] = entry;
 						callbacks.forEach(_callObserverCb);
-					}
-				}
-			});
+	}
 		}
+	});
+	}
 
 		let rCbs = resizeCallbacks.get(element);
 		if (!rCbs) {
 			rCbs = new Set();
 			resizeCallbacks.set(element, rCbs);
 			globalResizeObserver.observe(element);
-		}
+	}
 		rCbs.add(callback);
 
 		if (!this._observedResizeElements) {
 			this._observedResizeElements = new Map();
-		}
+	}
 		let oCbs = this._observedResizeElements.get(element);
 		if (!oCbs) {
 			oCbs = new Set();
 			this._observedResizeElements.set(element, oCbs);
-		}
+	}
 		oCbs.add(callback);
 	}
 
@@ -364,26 +364,26 @@ export default class Component {
 			componentCallbacks.delete(callback);
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) globalCbs.delete(callback);
-		} else {
+	} else {
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) {
 				// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
 				componentCallbacks.forEach(Set.prototype.delete, globalCbs);
-			}
+	}
 			componentCallbacks.clear();
-		}
+	}
 
 		if (componentCallbacks.size === 0) {
 			this._observedResizeElements.delete(element);
-		}
+	}
 
 		const globalCbs = resizeCallbacks.get(element);
 		if (globalCbs && globalCbs.size === 0) {
 			resizeCallbacks.delete(element);
 			if (globalResizeObserver) {
 				globalResizeObserver.unobserve(element);
-			}
-		}
+	}
+	}
 	}
 
 	observeIntersection(element, callback, options = {}) {
@@ -397,40 +397,79 @@ export default class Component {
 				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
 				for (let i = 0; i < entries.length; i++) {
 					const entry = entries[i];
-					const callbacks = observerData.callbacks.get(entry.target);
-					if (callbacks) {
+			const callbacks = observerData.callbacks.get(entry.target);
+			if (callbacks) {
 						_observerEntryArr[0] = entry;
 						callbacks.forEach(_callObserverCb);
-					}
-				}
-			}, options);
+	}
+		}
+	}, options);
 			observerData = { observer, callbacks: new Map() };
 			intersectionObservers.set(hash, observerData);
-		}
+	}
 
 		let oDataCbs = observerData.callbacks.get(element);
 		if (!oDataCbs) {
 			oDataCbs = new Set();
 			observerData.callbacks.set(element, oDataCbs);
 			observerData.observer.observe(element);
-		}
+	}
 		oDataCbs.add(callback);
 
 		if (!this._observedIntersectionElements) {
 			this._observedIntersectionElements = new Map();
-		}
+	}
 		let componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) {
 			componentElementMap = new Map();
 			this._observedIntersectionElements.set(element, componentElementMap);
-		}
+	}
 
 		let hashCbs = componentElementMap.get(hash);
 		if (!hashCbs) {
 			hashCbs = new Set();
 			componentElementMap.set(hash, hashCbs);
-		}
+	}
 		hashCbs.add(callback);
+	}
+
+	_processIntersectionHash(componentCallbacks, hash) {
+		const observerData = intersectionObservers.get(hash);
+		const element = this._currentUnobserveElement;
+		const callback = this._currentUnobserveCallback;
+
+		if (callback) {
+			if (componentCallbacks.has(callback)) {
+				componentCallbacks.delete(callback);
+				if (observerData && observerData.callbacks.has(element)) {
+					observerData.callbacks.get(element).delete(callback);
+				}
+			}
+		} else {
+			if (observerData && observerData.callbacks.has(element)) {
+				const globalCbs = observerData.callbacks.get(element);
+				// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
+				componentCallbacks.forEach(Set.prototype.delete, globalCbs);
+			}
+			componentCallbacks.clear();
+		}
+
+		if (componentCallbacks.size === 0) {
+			this._observedIntersectionElements.get(element).delete(hash);
+		}
+
+		if (observerData) {
+			const globalCbs = observerData.callbacks.get(element);
+			if (globalCbs && globalCbs.size === 0) {
+				observerData.callbacks.delete(element);
+				observerData.observer.unobserve(element);
+			}
+
+			if (observerData.callbacks.size === 0) {
+				observerData.observer.disconnect();
+				intersectionObservers.delete(hash);
+			}
+		}
 	}
 
 	unobserveIntersection(element, callback = null) {
@@ -439,43 +478,13 @@ export default class Component {
 		const componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) return;
 
-		const processHash = function(componentCallbacks, hash) {
-			const observerData = intersectionObservers.get(hash);
-
-			if (callback) {
-				if (componentCallbacks.has(callback)) {
-					componentCallbacks.delete(callback);
-					if (observerData && observerData.callbacks.has(element)) {
-						observerData.callbacks.get(element).delete(callback);
-					}
-				}
-			} else {
-				if (observerData && observerData.callbacks.has(element)) {
-					const globalCbs = observerData.callbacks.get(element);
-					// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
-					componentCallbacks.forEach(Set.prototype.delete, globalCbs);
-				}
-				componentCallbacks.clear();
-			}
-
-			if (componentCallbacks.size === 0) {
-				componentElementMap.delete(hash);
-			}
-
-			if (observerData) {
-				const globalCbs = observerData.callbacks.get(element);
-				if (globalCbs && globalCbs.size === 0) {
-					observerData.callbacks.delete(element);
-					observerData.observer.unobserve(element);
-				}
-
-				if (observerData.callbacks.size === 0) {
-					observerData.observer.disconnect();
-					intersectionObservers.delete(hash);
-				}
-			}
-		};
-		componentElementMap.forEach(processHash);
+		// ⚡ BOLT OPTIMIZATION: Avoid inline closure allocation by storing context
+		// and using a bound or class method to process the Map entries.
+		this._currentUnobserveElement = element;
+		this._currentUnobserveCallback = callback;
+		componentElementMap.forEach(this._processIntersectionHash, this);
+		this._currentUnobserveElement = null;
+		this._currentUnobserveCallback = null;
 
 		if (componentElementMap.size === 0) {
 			this._observedIntersectionElements.delete(element);
@@ -494,25 +503,25 @@ export default class Component {
 		// If 'window.multipleSelect' exists, we don't need to do anything.
 		if (globalName && window[globalName] && !(window[globalName] instanceof Node) && !(window[globalName] instanceof HTMLCollection) && !(window[globalName] instanceof Window)) {
 			return Promise.resolve(window[globalName]);
-		}
+	}
 
 		// 2. DOM LOOKUP: Find the existing script tag
 		const script = document.getElementById(scriptId);
 		if (!script) {
 			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
-		}
+	}
 
 		// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
 		// and unintended execution of malicious payloads (e.g., via iframe data-src).
 		if (!(script instanceof HTMLScriptElement)) {
 			return Promise.reject(new Error(`Element with ID '${scriptId}' is not a valid script tag.`));
-		}
+	}
 
 		// CACHE CHECK: Did we already start loading this?
 		// If another component triggered this 5ms ago, return that same running promise.
 		if (script._loadPromise) {
 			return script._loadPromise;
-		}
+	}
 
 		// START LOADING
 		script._loadPromise = new Promise((resolve, reject) => {
@@ -520,19 +529,19 @@ export default class Component {
 			const cleanup = () => {
 				script.onload = null;
 				script.onerror = null;
-			};
+	};
 
 			script.onload = () => {
 				cleanup();
 				resolve(globalName ? window[globalName] : true);
-			};
+	};
 
 			script.onerror = () => {
 				cleanup();
 				// Delete the promise so we can try again later if needed
 				delete script._loadPromise;
 				reject(new Error(`Failed to load script: ${scriptId}`));
-			};
+	};
 
 			// TRIGGER: Move data-src to src if not already done
 			// If script.src is already set, the browser is likely already downloading it.
@@ -541,12 +550,12 @@ export default class Component {
 				script.src = script.getAttribute('data-src');
 				// Clean up the data attribute to keep DOM tidy (optional)
 				script.removeAttribute('data-src');
-			} else if (!script.src && !script.hasAttribute('data-src')) {
+	} else if (!script.src && !script.hasAttribute('data-src')) {
 				// Edge case: Tag exists but has no source at all
 				cleanup();
 				reject(new Error(`Script tag '${scriptId}' has no src or data-src.`));
-			}
-		});
+	}
+	});
 
 		return script._loadPromise;
 	}
@@ -562,17 +571,17 @@ export default class Component {
 		const link = document.getElementById(styleId);
 		if (!link) {
 			return Promise.reject(new Error(`Link tag with ID '${styleId}' not found.`));
-		}
+	}
 
 		// SECURITY: Ensure the found element is actually a link tag
 		if (!(link instanceof HTMLLinkElement)) {
 			return Promise.reject(new Error(`Element with ID '${styleId}' is not a valid link tag.`));
-		}
+	}
 
 		// CACHE CHECK: Did we already start loading this?
 		if (link._loadPromise) {
 			return link._loadPromise;
-		}
+	}
 
 		// START LOADING
 		link._loadPromise = new Promise((resolve, reject) => {
@@ -580,30 +589,30 @@ export default class Component {
 			const cleanup = () => {
 				link.onload = null;
 				link.onerror = null;
-			};
+	};
 
 			link.onload = () => {
 				cleanup();
 				resolve(true);
-			};
+	};
 
 			link.onerror = () => {
 				cleanup();
 				// Delete the promise so we can try again later if needed
 				delete link._loadPromise;
 				reject(new Error(`Failed to load style: ${styleId}`));
-			};
+	};
 
 			// TRIGGER: Move data-href to href if not already done
 			if (!link.href && link.hasAttribute('data-href')) {
 				link.href = link.getAttribute('data-href');
 				// Clean up the data attribute to keep DOM tidy (optional)
 				link.removeAttribute('data-href');
-			} else if (!link.href && !link.hasAttribute('data-href')) {
+	} else if (!link.href && !link.hasAttribute('data-href')) {
 				// Edge case: Tag exists but has no source at all
 				cleanup();
 				reject(new Error(`Link tag '${styleId}' has no href or data-href.`));
-			} else if (link.href && !link.hasAttribute('data-href')) {
+	} else if (link.href && !link.hasAttribute('data-href')) {
 				// Already has href (might be pre-loaded)
 				// The onload event might have already fired, but we're attaching it now.
 				// If the stylesheet is already loaded, `onload` will not fire again.
@@ -614,14 +623,14 @@ export default class Component {
 					if (document.styleSheets[i].href === link.href) {
 						isLoaded = true;
 						break;
-					}
-				}
+	}
+		}
 				if (isLoaded) {
 					cleanup();
 					resolve(true);
-				}
-			}
-		});
+		}
+	}
+	});
 
 		return link._loadPromise;
 	}
@@ -651,11 +660,11 @@ export default class Component {
 			if (this._state[key] !== newValue) {
 				this._state[key] = newValue;
 
-				if (!this._pendingStateChanges) {
+		if (!this._pendingStateChanges) {
 					this._pendingStateChanges = {};
 					this._pendingAttributeChanges = {};
 					requestAnimationFrame(this._flushStateChanges);
-				}
+		}
 
 				// Build batched state change payload
 				this._pendingStateChanges[key] = newValue;
@@ -669,12 +678,12 @@ export default class Component {
 						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 						attrName = `data-${kebabKey}`;
 						globalStateAttributeCache.set(key, attrName);
-					}
+	}
 
 					this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
-				}
-			}
 		}
+	}
+	}
 	}
 	}
 
@@ -686,7 +695,7 @@ export default class Component {
 		for (const _k in this._pendingAttributeChanges) {
 			hasAttrChanges = true;
 			break;
-		}
+	}
 
 		if (hasAttrChanges) {
 			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
@@ -695,9 +704,9 @@ export default class Component {
 				const value = this._pendingAttributeChanges[attrName];
 				if (this.element.getAttribute(attrName) !== value) {
 					this.element.setAttribute(attrName, value);
-				}
-			}
 		}
+	}
+	}
 
 		this.stateChange(this._pendingStateChanges);
 		this._pendingStateChanges = null;
@@ -726,16 +735,16 @@ export default class Component {
 					typeof Object.getOwnPropertyDescriptor(proto, method)?.value === "function"
 				) {
 					methods.push(method);
-				}
-			}
-			protoMethodsCache.set(proto, methods);
 		}
+	}
+			protoMethodsCache.set(proto, methods);
+	}
 
 		// Bind the cached methods to the instance
 		for (let i = 0; i < methods.length; i++) {
 			const method = methods[i];
 			this[method] = this[method].bind(this);
-		}
+	}
 	}
 
 	_autoBindActions() {
@@ -756,7 +765,7 @@ export default class Component {
 				let spaceIndex = actionString.indexOf(" ", startIndex);
 				if (spaceIndex === -1) {
 					spaceIndex = actionString.length;
-				}
+		}
 
 				if (spaceIndex > startIndex) {
 					const pair = actionString.substring(startIndex, spaceIndex);
@@ -766,10 +775,10 @@ export default class Component {
 					if (arrowIndex !== -1) {
 						event = pair.substring(0, arrowIndex);
 						method = pair.substring(arrowIndex + 2);
-					} else {
+	} else {
 						event = pair;
 						method = undefined; // Will trigger the warning below
-					}
+	}
 
 					if (
 						this[method] &&
@@ -777,16 +786,16 @@ export default class Component {
 						!method.startsWith("_") &&
 						!globalExcludedMethods.has(method)
 					) {
-						// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
+				// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
 						// an inline closure (e => this[method](e)) for every single bound action.
 						el.addEventListener(event, this[method]);
-					} else {
+	} else {
 						console.warn(`Method "${method}" not found, is restricted, or is not a function in component.`);
-					}
-				}
+	}
+		}
 
 				startIndex = spaceIndex + 1;
-			}
-		}
+	}
+	}
 	}
 }
