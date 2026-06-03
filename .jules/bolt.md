@@ -92,3 +92,7 @@
 ## 2024-06-02 - Hoist closure functions to eliminate GC churn on unmount
 **Learning:** Found that `_destroy`, `unobserveResize`, and `unobserveIntersection` methods were allocating new inline closure functions when calling `forEach` on Sets or Maps (e.g., `const unobserve = function(value, element) { this.unobserveResize(element); };` and `const delCb = function(cb) { this.delete(cb); };`). This causes unnecessary garbage collection churn in hot paths, especially when lots of components are created and destroyed.
 **Action:** Always hoist callback functions to the outer scope when possible and use the native `thisArg` parameter to maintain context, or pass native prototype methods directly (e.g., `Set.prototype.delete`) to completely avoid allocating new closure functions on every iteration.
+
+## 2024-06-02 - Hoist closure functions to eliminate GC churn on unmount
+**Learning:** Found that `processHash` method was allocating new inline closure functions when calling `forEach` on Sets or Maps. This causes unnecessary garbage collection churn in hot paths, especially when lots of components are created and destroyed.
+**Action:** Always hoist callback functions to the outer scope when possible and use the native `thisArg` parameter to maintain context, or pass native prototype methods directly to completely avoid allocating new closure functions on every iteration.
