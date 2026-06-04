@@ -27,11 +27,14 @@ const _unobserveIntersectionCb = function(value, element) { this.unobserveInters
 
 
 let _isScrollTicking = false;
-let _scrollEventData = null;
 
 function _processScroll() {
 	_isScrollTicking = false;
-	const e = _scrollEventData;
+	scrollCallbacks.forEach(_callScrollCb);
+}
+
+function handleGlobalScroll(e) {
+	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
 	let scrollY, velocity;
 	if (globalLenisInstance) {
 		scrollY = globalLenisInstance.scroll;
@@ -49,11 +52,7 @@ function _processScroll() {
 
 	_scrollPayload.scroll = scrollY;
 	_scrollPayload.velocity = velocity;
-	scrollCallbacks.forEach(_callScrollCb);
-}
 
-function handleGlobalScroll(e) {
-	_scrollEventData = e;
 	if (!_isScrollTicking) {
 		_isScrollTicking = true;
 		window.requestAnimationFrame(_processScroll);
@@ -64,12 +63,14 @@ let _isResizeTicking = false;
 
 function _processResize() {
 	_isResizeTicking = false;
-	_resizePayload.width = window.innerWidth;
-	_resizePayload.height = window.innerHeight;
 	windowResizeCallbacks.forEach(_callResizeCb);
 }
 
 function handleGlobalResize(e) {
+	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
+	_resizePayload.width = window.innerWidth;
+	_resizePayload.height = window.innerHeight;
+
 	if (!_isResizeTicking) {
 		_isResizeTicking = true;
 		window.requestAnimationFrame(_processResize);
