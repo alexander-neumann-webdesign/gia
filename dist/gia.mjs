@@ -80,15 +80,15 @@ function Z(o, e, t = null, n = {
   o.dispatchEvent(s);
 }
 function Q(o, e) {
-  let t, n = null;
-  const s = () => {
-    clearTimeout(t), n && o(...n);
-  }, r = function(...i) {
-    n = i, clearTimeout(t), t = setTimeout(s, e);
+  let t, n = null, s = null;
+  const r = () => {
+    clearTimeout(t), n && o.apply(s, n);
+  }, i = function() {
+    n = arguments, s = this, clearTimeout(t), t = setTimeout(r, e);
   };
-  return r.cancel = function() {
-    clearTimeout(t), n = null;
-  }, r;
+  return i.cancel = function() {
+    clearTimeout(t), n = null, s = null;
+  }, i;
 }
 const _e = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
