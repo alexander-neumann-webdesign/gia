@@ -76,7 +76,7 @@ class OpenStreetMap extends gia.Component {
 
 		// Add OpenStreetMap tile layer
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '<details class="osm-attribution-details"><summary class="osm-attribution-summary" title="Attribution"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></summary><span class="osm-attribution-text">&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</span></details>'
+			attribution: '<details class="osm-attribution-details"><summary class="osm-attribution-summary" title="Attribution"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></summary><span class="osm-attribution-text">&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</span></details>'
 		}).addTo(this.map);
 
 		// Add markers

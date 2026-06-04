@@ -11,9 +11,9 @@ class LightboxGallery extends gia.Component {
 			showAnimationDuration: 360,
 			hideAnimationDuration: 300,
 			easing: "cubic-bezier(0.75, 0, 0.25, 1)",
-			arrowPrevSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
-			arrowNextSVG: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
-			closeSVG: `<svg width="26" height="26" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1.29289" y1="32.2929" x2="30.2929" y2="3.29289" stroke="black" stroke-width="3"/><line y1="-1" x2="41.0122" y2="-1" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 31 33)" stroke="black" stroke-width="3"/></svg>`,
+			arrowPrevSVG: `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+			arrowNextSVG: `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+			closeSVG: `<svg aria-hidden="true" width="26" height="26" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1.29289" y1="32.2929" x2="30.2929" y2="3.29289" stroke="black" stroke-width="3"/><line y1="-1" x2="41.0122" y2="-1" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 31 33)" stroke="black" stroke-width="3"/></svg>`,
 			zoomSVG: ``,
 		};
 		this.photoswipe = null; //stores photoswipe instance
