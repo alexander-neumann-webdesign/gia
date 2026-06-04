@@ -100,3 +100,7 @@
 ## 2024-06-04 - Eliminate array allocations and context loss in debounce
 **Learning:** The `debounce` function used rest parameters (`...args`) and spread syntax (`...lastArgs`) to collect and pass arguments. This causes an intermediate array to be allocated on every execution, increasing GC overhead in hot paths. Furthermore, the `this` context was inadvertently lost. Using the `arguments` object and `.apply(this, arguments)` resolves both the performance overhead and the context loss.
 **Action:** When implementing or optimizing high-frequency functions like `debounce` or `throttle`, prefer standard `arguments` and `.apply(lastThis, lastArgs)` to eliminate intermediate array allocations and properly pass the `this` context.
+
+## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
+**Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
+**Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
