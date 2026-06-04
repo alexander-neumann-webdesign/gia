@@ -63,20 +63,25 @@ export function triggerEvent(
 export function debounce(func, wait) {
 	let timeout;
 	let lastArgs = null;
+	let lastThis = null;
 	const later = () => {
 		clearTimeout(timeout);
 		if (lastArgs) {
-			func(...lastArgs);
+			// ⚡ BOLT OPTIMIZATION: Avoid spread/rest operator allocations
+			// and maintain the correct 'this' context by using .apply()
+			func.apply(lastThis, lastArgs);
 		}
 	};
-	const executedFunction = function(...args) {
-		lastArgs = args;
+	const executedFunction = function() {
+		lastArgs = arguments;
+		lastThis = this;
 		clearTimeout(timeout);
 		timeout = setTimeout(later, wait);
 	};
 	executedFunction.cancel = function() {
 		clearTimeout(timeout);
 		lastArgs = null;
+		lastThis = null;
 	};
 	return executedFunction;
 }

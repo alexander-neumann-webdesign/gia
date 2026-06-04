@@ -96,3 +96,7 @@
 ## 2024-06-02 - Hoist closure functions to eliminate GC churn on unmount
 **Learning:** Found that `processHash` method was allocating new inline closure functions when calling `forEach` on Sets or Maps. This causes unnecessary garbage collection churn in hot paths, especially when lots of components are created and destroyed.
 **Action:** Always hoist callback functions to the outer scope when possible and use the native `thisArg` parameter to maintain context, or pass native prototype methods directly to completely avoid allocating new closure functions on every iteration.
+
+## 2024-06-04 - Eliminate array allocations and context loss in debounce
+**Learning:** The `debounce` function used rest parameters (`...args`) and spread syntax (`...lastArgs`) to collect and pass arguments. This causes an intermediate array to be allocated on every execution, increasing GC overhead in hot paths. Furthermore, the `this` context was inadvertently lost. Using the `arguments` object and `.apply(this, arguments)` resolves both the performance overhead and the context loss.
+**Action:** When implementing or optimizing high-frequency functions like `debounce` or `throttle`, prefer standard `arguments` and `.apply(lastThis, lastArgs)` to eliminate intermediate array allocations and properly pass the `this` context.
