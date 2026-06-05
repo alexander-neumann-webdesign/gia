@@ -119,12 +119,12 @@ class MultiStepForm extends gia.Component {
 
 			if (canNavigate) {
 				indicator.classList.remove('is-disabled');
-				if (indicator.tagName === 'BUTTON') {
+				if (indicator instanceof HTMLButtonElement) {
 					indicator.disabled = false;
 				}
 			} else {
 				indicator.classList.add('is-disabled');
-				if (indicator.tagName === 'BUTTON') {
+				if (indicator instanceof HTMLButtonElement) {
 					indicator.disabled = true;
 				}
 			}
