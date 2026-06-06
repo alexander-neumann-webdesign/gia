@@ -502,7 +502,7 @@ export default class Component {
 	loadScript(scriptId, globalName) {
 		// SAFETY CHECK: Is the library already active globally?
 		// If 'window.multipleSelect' exists, we don't need to do anything.
-		if (globalName && window[globalName] && !(window[globalName] instanceof Node) && !(window[globalName] instanceof HTMLCollection) && !(window[globalName] instanceof Window)) {
+		if (globalName && window[globalName] && !(window[globalName] instanceof Node) && !(window[globalName] instanceof HTMLCollection) && window[globalName] !== window[globalName].window) {
 			return Promise.resolve(window[globalName]);
 	}
 
