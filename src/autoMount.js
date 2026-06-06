@@ -6,6 +6,9 @@ import { queryAll } from "./utils.js";
 let observer = null;
 let _currentComponentsToLoad = null;
 
+// ⚡ BOLT OPTIMIZATION: Module-scoped shared Set to prevent allocation churn in mutation callback
+const _sharedAddedElements = new Set();
+
 const _processAddedNode = (node) => {
     if (node.isConnected) {
         loadComponents(_currentComponentsToLoad, node);
@@ -16,7 +19,7 @@ function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
     const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
 
-    const addedElements = new Set();
+    _sharedAddedElements.clear();
 
     // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
     for (let m = 0; m < mutations.length; m++) {
@@ -44,7 +47,7 @@ function handleMutations(mutations) {
                 // This prevents loadComponents from running redundantly when large blocks
                 // of plain HTML (like list items or paragraphs) are inserted.
                 if (node.hasAttribute(attrName) || node.querySelector(`[${attrName}]`)) {
-                    addedElements.add(node);
+                    _sharedAddedElements.add(node);
                 }
             }
         }
@@ -54,7 +57,7 @@ function handleMutations(mutations) {
     // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
     // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation by using Set.prototype.forEach with hoisted callback
     _currentComponentsToLoad = componentsToLoad;
-    addedElements.forEach(_processAddedNode);
+    _sharedAddedElements.forEach(_processAddedNode);
     _currentComponentsToLoad = null;
 }
 
