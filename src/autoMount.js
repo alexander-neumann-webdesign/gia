@@ -5,6 +5,9 @@ import { queryAll } from "./utils.js";
 
 let observer = null;
 let _currentComponentsToLoad = null;
+// ⚡ BOLT OPTIMIZATION: Reuse a global Set instance for MutationObserver processing to prevent
+// continuous garbage collection (GC) churn from allocating `new Set()` on high-frequency DOM mutations.
+const addedElements = new Set();
 
 const _processAddedNode = (node) => {
     if (node.isConnected) {
@@ -15,8 +18,6 @@ const _processAddedNode = (node) => {
 function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
     const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
-
-    const addedElements = new Set();
 
     // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
     for (let m = 0; m < mutations.length; m++) {
@@ -56,6 +57,10 @@ function handleMutations(mutations) {
     _currentComponentsToLoad = componentsToLoad;
     addedElements.forEach(_processAddedNode);
     _currentComponentsToLoad = null;
+
+    // ⚡ BOLT OPTIMIZATION: Clear the reused Set at the end of the callback to release strong references
+    // to DOM nodes immediately, preventing potential memory leaks during long idle periods.
+    addedElements.clear();
 }
 
 export function initObserver() {
