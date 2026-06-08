@@ -104,3 +104,7 @@
 ## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
 **Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
 **Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
+
+## 2024-06-08 - Synchronous Layout Reads
+**Learning:** Using requestAnimationFrame to batch scroll/resize callbacks can cause layout thrashing if those callbacks perform synchronous layout reads (like getBoundingClientRect), as the reads are pushed into the rAF phase where DOM writes are meant to happen.
+**Action:** Execute global scroll/resize callbacks synchronously outside of rAF so that components can safely read layout, and let the components themselves handle batching their DOM writes inside their own rAF loop.

@@ -26,12 +26,6 @@ const _unobserveIntersectionCb = function(value, element) { this.unobserveInters
 
 
 
-let _isScrollTicking = false;
-
-function _processScroll() {
-	_isScrollTicking = false;
-	scrollCallbacks.forEach(_callScrollCb);
-}
 
 function handleGlobalScroll(e) {
 	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
@@ -53,28 +47,19 @@ function handleGlobalScroll(e) {
 	_scrollPayload.scroll = scrollY;
 	_scrollPayload.velocity = velocity;
 
-	if (!_isScrollTicking) {
-		_isScrollTicking = true;
-		window.requestAnimationFrame(_processScroll);
-	}
+	// ⚡ BOLT OPTIMIZATION: Execute callbacks synchronously so components can read layout OUTSIDE rAF.
+	// Components are responsible for batching their own DOM writes inside rAF.
+	scrollCallbacks.forEach(_callScrollCb);
 }
 
-let _isResizeTicking = false;
-
-function _processResize() {
-	_isResizeTicking = false;
-	windowResizeCallbacks.forEach(_callResizeCb);
-}
 
 function handleGlobalResize(e) {
 	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
 	_resizePayload.width = window.innerWidth;
 	_resizePayload.height = window.innerHeight;
 
-	if (!_isResizeTicking) {
-		_isResizeTicking = true;
-		window.requestAnimationFrame(_processResize);
-	}
+	// ⚡ BOLT OPTIMIZATION: Execute callbacks synchronously so components can read layout OUTSIDE rAF.
+	windowResizeCallbacks.forEach(_callResizeCb);
 }
 
 let globalResizeObserver = null;
