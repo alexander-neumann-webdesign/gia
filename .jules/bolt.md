@@ -104,3 +104,6 @@
 ## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
 **Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
 **Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
+## 2024-06-08 - Reuse Set to prevent GC churn in MutationObserver
+**Learning:** High-frequency event handlers like MutationObserver can cause significant garbage collection (GC) churn if new objects (e.g., `new Set()`) are allocated on each invocation, especially when responding to many DOM changes.
+**Action:** Extract the collection allocation (e.g., `new Set()`) to the module scope and reuse it by calling `.clear()` on each callback invocation. This eliminates the memory allocation overhead in the hot path.
