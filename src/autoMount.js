@@ -6,6 +6,9 @@ import { queryAll } from "./utils.js";
 let observer = null;
 let _currentComponentsToLoad = null;
 
+// ⚡ BOLT OPTIMIZATION: Extract Set to module scope to prevent GC churn in high-frequency callbacks
+const addedElements = new Set();
+
 const _processAddedNode = (node) => {
     if (node.isConnected) {
         loadComponents(_currentComponentsToLoad, node);
@@ -16,7 +19,7 @@ function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
     const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
 
-    const addedElements = new Set();
+    addedElements.clear();
 
     // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
     for (let m = 0; m < mutations.length; m++) {
@@ -56,6 +59,10 @@ function handleMutations(mutations) {
     _currentComponentsToLoad = componentsToLoad;
     addedElements.forEach(_processAddedNode);
     _currentComponentsToLoad = null;
+
+    // ⚡ BOLT OPTIMIZATION: Clear the Set after use to release strong references to added DOM nodes,
+    // preventing memory leaks if those elements are subsequently detached.
+    addedElements.clear();
 }
 
 export function initObserver() {
