@@ -104,3 +104,6 @@
 ## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
 **Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
 **Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
+## 2024-12-10 - Clear arguments in debounce after execution to prevent memory leaks
+**Learning:** Closure-based utility functions like `debounce` that cache `arguments` and `this` context to execute later can trap large objects (like Event objects or entire Vue/React/Gia Components) in memory indefinitely until the next debounced invocation triggers and overwrites the reference.
+**Action:** Always explicitly nullify cached arguments and context references (e.g., `lastArgs = null; lastThis = null;`) immediately after `.apply()` executes within the timeout callback to allow immediate garbage collection of those heavy objects.
