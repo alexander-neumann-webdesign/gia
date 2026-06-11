@@ -166,7 +166,20 @@ class VideoHolder extends gia.Component {
 		let iconShape = playPauseBtn.querySelector('.icon-shape');
 		if (!iconShape) {
 			playPauseBtn.replaceChildren();
-			playPauseBtn.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>');
+			const svgNS = "http://www.w3.org/2000/svg";
+			const svg = document.createElementNS(svgNS, "svg");
+			svg.setAttribute("aria-hidden", "true");
+			svg.setAttribute("viewBox", "0 0 24 24");
+			svg.setAttribute("width", "24");
+			svg.setAttribute("height", "24");
+			svg.setAttribute("stroke", "none");
+			svg.setAttribute("fill", "currentColor");
+
+			const path = document.createElementNS(svgNS, "path");
+			path.setAttribute("class", "icon-shape");
+
+			svg.appendChild(path);
+			playPauseBtn.appendChild(svg);
 			iconShape = playPauseBtn.querySelector('.icon-shape');
 		}
 

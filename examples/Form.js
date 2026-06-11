@@ -337,19 +337,39 @@ class Form extends gia.Component {
 	}
 
 	_addSpinner(btn) {
-		// Inject spinner SVG
-		btn.insertAdjacentHTML('afterbegin', `
-			<svg class="form-spinner-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 0.5rem; vertical-align: middle;">
-				<line x1="12" y1="2" x2="12" y2="6"></line>
-				<line x1="12" y1="18" x2="12" y2="22"></line>
-				<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-				<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-				<line x1="2" y1="12" x2="6" y2="12"></line>
-				<line x1="18" y1="12" x2="22" y2="12"></line>
-				<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-				<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-			</svg>
-		`);
+		const svgNS = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgNS, "svg");
+		svg.setAttribute("class", "form-spinner-icon");
+		svg.setAttribute("width", "16");
+		svg.setAttribute("height", "16");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.setAttribute("aria-hidden", "true");
+		svg.style.marginRight = "0.5rem";
+		svg.style.verticalAlign = "middle";
+
+		const lines = [
+			{x1: "12", y1: "2", x2: "12", y2: "6"},
+			{x1: "12", y1: "18", x2: "12", y2: "22"},
+			{x1: "4.93", y1: "4.93", x2: "7.76", y2: "7.76"},
+			{x1: "16.24", y1: "16.24", x2: "19.07", y2: "19.07"},
+			{x1: "2", y1: "12", x2: "6", y2: "12"},
+			{x1: "18", y1: "12", x2: "22", y2: "12"},
+			{x1: "4.93", y1: "19.07", x2: "7.76", y2: "16.24"},
+			{x1: "16.24", y1: "7.76", x2: "19.07", y2: "4.93"}
+		];
+
+		lines.forEach(attr => {
+			const line = document.createElementNS(svgNS, "line");
+			Object.entries(attr).forEach(([k, v]) => line.setAttribute(k, v));
+			svg.appendChild(line);
+		});
+
+		btn.insertBefore(svg, btn.firstChild);
 
 		// Animate spinner
 		const spinnerIcon = btn.querySelector('.form-spinner-icon');

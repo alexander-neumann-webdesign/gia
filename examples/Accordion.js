@@ -23,21 +23,48 @@ class Accordion extends gia.Component {
 	}
 
 	getIconSvg(iconType) {
+		const svgNS = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgNS, "svg");
+		svg.setAttribute("width", "24");
+		svg.setAttribute("height", "24");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.setAttribute("aria-hidden", "true");
+
 		if (iconType === 'plus') {
-			return `
-				<svg class="accordion-icon accordion-icon--plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
-					<line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
-				</svg>
-			`;
+			svg.setAttribute("class", "accordion-icon accordion-icon--plus");
+
+			const line1 = document.createElementNS(svgNS, "line");
+			line1.setAttribute("x1", "12");
+			line1.setAttribute("y1", "5");
+			line1.setAttribute("x2", "12");
+			line1.setAttribute("y2", "19");
+			line1.setAttribute("class", "vertical-line");
+
+			const line2 = document.createElementNS(svgNS, "line");
+			line2.setAttribute("x1", "5");
+			line2.setAttribute("y1", "12");
+			line2.setAttribute("x2", "19");
+			line2.setAttribute("y2", "12");
+			line2.setAttribute("class", "horizontal-line");
+
+			svg.appendChild(line1);
+			svg.appendChild(line2);
+			return svg;
 		} else if (iconType === 'arrow') {
-			return `
-				<svg class="accordion-icon accordion-icon--arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<polyline points="6 9 12 15 18 9"></polyline>
-				</svg>
-			`;
+			svg.setAttribute("class", "accordion-icon accordion-icon--arrow");
+
+			const polyline = document.createElementNS(svgNS, "polyline");
+			polyline.setAttribute("points", "6 9 12 15 18 9");
+
+			svg.appendChild(polyline);
+			return svg;
 		}
-		return '';
+		return null;
 	}
 
 	mount() {
@@ -47,7 +74,10 @@ class Accordion extends gia.Component {
 		const summary = this.element.querySelector('summary');
 		if (summary && this.options.icon !== 'none') {
 			if (!summary.querySelector('.accordion-icon')) {
-				summary.insertAdjacentHTML('beforeend', this.getIconSvg(this.options.icon));
+				const iconSvg = this.getIconSvg(this.options.icon);
+				if (iconSvg) {
+					summary.appendChild(iconSvg);
+				}
 			}
 		}
 
