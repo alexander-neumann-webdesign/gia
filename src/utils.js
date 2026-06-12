@@ -69,7 +69,14 @@ export function debounce(func, wait) {
 		if (lastArgs) {
 			// ⚡ BOLT OPTIMIZATION: Avoid spread/rest operator allocations
 			// and maintain the correct 'this' context by using .apply()
-			func.apply(lastThis, lastArgs);
+			// ⚡ BOLT OPTIMIZATION: Extract cached references to local variables and nullify
+			// closure variables before executing the function to allow garbage collection
+			// and prevent memory leaks.
+			const args = lastArgs;
+			const context = lastThis;
+			lastArgs = null;
+			lastThis = null;
+			func.apply(context, args);
 		}
 	};
 	const executedFunction = function() {
