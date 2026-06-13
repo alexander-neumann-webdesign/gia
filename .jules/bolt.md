@@ -104,3 +104,7 @@
 ## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
 **Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
 **Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
+
+## 2024-06-13 - Nullify closure references to prevent memory leaks
+**Learning:** In utility functions like `debounce` that rely on caching arguments and contexts (e.g. `lastArgs`, `lastThis`), failing to explicitly nullify those references after the deferred function has executed traps DOM elements, event objects, and component contexts in closure memory, leading to memory leaks over time.
+**Action:** Always explicitly extract cached references to local variables and then nullify the closure references *before* executing the deferred function to allow the garbage collector to clean them up properly, even if the executed function throws an error.
