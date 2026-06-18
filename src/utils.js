@@ -67,9 +67,13 @@ export function debounce(func, wait) {
 	const later = () => {
 		clearTimeout(timeout);
 		if (lastArgs) {
+			const args = lastArgs;
+			const context = lastThis;
+			lastArgs = null;
+			lastThis = null;
 			// ⚡ BOLT OPTIMIZATION: Avoid spread/rest operator allocations
 			// and maintain the correct 'this' context by using .apply()
-			func.apply(lastThis, lastArgs);
+			func.apply(context, args);
 		}
 	};
 	const executedFunction = function() {
