@@ -59,3 +59,8 @@
 **Vulnerability:** A DOM clobbering bypass existed in `loadScript` (`src/BaseComponent.js`). The original code checked `!(window[globalName] instanceof Node)` to verify the clobbered value wasn't a DOM element. However, an attacker could inject multiple elements with the same ID/name to create an `HTMLCollection`, or inject an `<iframe name="...">` to create a `Window` object—neither of which inherit from `Node`.
 **Learning:** Using `instanceof Node` is insufficient to prevent DOM Clobbering. You must explicitly account for `HTMLCollection` and `Window` objects, which are common DOM clobbering vectors.
 **Prevention:** Always validate that the globally resolved variable is not an instance of `Node`, `HTMLCollection`, or `Window`. For example: `!(val instanceof Node) && !(val instanceof HTMLCollection) && !(val instanceof Window)`.
+
+## 2026-06-16 - DOM Clobbering Bypass via tagName property in MultiStepForm
+**Vulnerability:** A previous fix for DOM Clobbering missed `examples/MultiStepForm.js`. Validating elements using `tagName` (e.g., `indicator.tagName === 'BUTTON'`) can be bypassed because nested elements with matching `name` attributes (like `<input name="tagName">` inside a `<form>`) can overwrite the `tagName` property.
+**Learning:** Properties like `tagName` on DOM elements can be clobbered by nested elements with matching `name` attributes, especially within forms. Any logic relying on it can be bypassed if the user has some control over the DOM.
+**Prevention:** Use `instanceof` checks against specific element interfaces (e.g., `element instanceof HTMLButtonElement`) rather than relying on the `tagName` property when validating elements retrieved from the DOM.
