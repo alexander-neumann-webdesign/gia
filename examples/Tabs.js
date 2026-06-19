@@ -44,7 +44,8 @@ class Tabs extends gia.Component {
 		this.tabClickHandlers = [];
 		this.tabKeydownHandlers = [];
 
-		this.ref.tab.forEach((tab, index) => {
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			const clickHandler = (e) => this.handleClick(e, index);
 			const keydownHandler = (e) => this.handleKeydown(e, index);
 
@@ -64,7 +65,7 @@ class Tabs extends gia.Component {
 			} else if (!foundHashMatch && tab.getAttribute('aria-selected') === 'true') {
 				initialIndex = index;
 			}
-		});
+		}
 
 		if (this.ref.tab.length > 0) {
 			this.setState({ activeTabIndex: initialIndex });
@@ -84,14 +85,15 @@ class Tabs extends gia.Component {
 	}
 
 	unmount() {
-		this.ref.tab.forEach((tab, index) => {
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			if (this.tabClickHandlers[index]) {
 				tab.removeEventListener('click', this.tabClickHandlers[index]);
 			}
 			if (this.tabKeydownHandlers[index]) {
 				tab.removeEventListener('keydown', this.tabKeydownHandlers[index]);
 			}
-		});
+		}
 
 		this.tabClickHandlers = [];
 		this.tabKeydownHandlers = [];
@@ -171,7 +173,8 @@ class Tabs extends gia.Component {
 		this.updateIndicator();
 
 		// Update Tabs
-		this.ref.tab.forEach((tab, index) => {
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			const isSelected = index === activeIndex;
 			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
@@ -180,10 +183,11 @@ class Tabs extends gia.Component {
 			} else {
 				tab.setAttribute('tabindex', '-1');
 			}
-		});
+		}
 
 		// Update Panels
-		this.ref.panel.forEach((panel, index) => {
+		for (let index = 0; index < this.ref.panel.length; index++) {
+			const panel = this.ref.panel[index];
 			const activeTab = this.ref.tab[activeIndex];
 			const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
 
@@ -192,7 +196,7 @@ class Tabs extends gia.Component {
 			} else {
 				panel.hidden = (index !== activeIndex);
 			}
-		});
+		}
 	}
 
 	_applyViewTransition(panelsContainer, activeIndex, direction) {
@@ -251,12 +255,18 @@ class Tabs extends gia.Component {
 		// Because of `allow-discrete` transitions, hidden panels might still be `display: block` and take up grid space.
 		// Temporarily absolute position them so they don't affect the container's height measurement.
 		const hiddenPanels = Array.from(panelsContainer.querySelectorAll('[hidden]'));
-		const originalPositions = hiddenPanels.map(p => p.style.position);
-		hiddenPanels.forEach(p => p.style.position = 'absolute');
+		const originalPositions = new Array(hiddenPanels.length);
+		for (let i = 0; i < hiddenPanels.length; i++) {
+			const p = hiddenPanels[i];
+			originalPositions[i] = p.style.position;
+			p.style.position = 'absolute';
+		}
 
 		const endHeight = panelsContainer.offsetHeight;
 
-		hiddenPanels.forEach((p, i) => p.style.position = originalPositions[i]);
+		for (let i = 0; i < hiddenPanels.length; i++) {
+			hiddenPanels[i].style.position = originalPositions[i];
+		}
 
 		return endHeight;
 	}
