@@ -10,6 +10,8 @@ class UploadField extends gia.Component {
 		this.originalDropzoneLabels = new Map();
 		this.handleFileChange = this.handleFileChange.bind(this);
 		this.handleFormReset = this.handleFormReset.bind(this);
+		this.handleFocus = this.handleFocus.bind(this);
+		this.handleBlur = this.handleBlur.bind(this);
 	}
 
 	mount() {
@@ -18,11 +20,23 @@ class UploadField extends gia.Component {
 		this.element.addEventListener('drop', this.handleDrop);
 
 		const fileInput = this.element.querySelector('input[type="file"]');
+		const label = this.element.querySelector('.form-dropzone-label');
+
 		if (fileInput) {
 			fileInput.addEventListener('change', this.handleFileChange);
+			fileInput.addEventListener('focus', this.handleFocus);
+			fileInput.addEventListener('blur', this.handleBlur);
+
+			if (label) {
+				if (!fileInput.id) {
+					fileInput.id = `upload-field-${Math.random().toString(36).substring(2, 9)}`;
+				}
+				if (!label.getAttribute('for')) {
+					label.setAttribute('for', fileInput.id);
+				}
+			}
 		}
 
-		const label = this.element.querySelector('.form-dropzone-label');
 		if (label) {
 			this.originalDropzoneLabels.set(this.element, label.textContent);
 		}
@@ -41,11 +55,21 @@ class UploadField extends gia.Component {
 		const fileInput = this.element.querySelector('input[type="file"]');
 		if (fileInput) {
 			fileInput.removeEventListener('change', this.handleFileChange);
+			fileInput.removeEventListener('focus', this.handleFocus);
+			fileInput.removeEventListener('blur', this.handleBlur);
 		}
 
 		if (this.formElement) {
 			this.formElement.removeEventListener('reset', this.handleFormReset);
 		}
+	}
+
+	handleFocus() {
+		this.element.classList.add('is-focused');
+	}
+
+	handleBlur() {
+		this.element.classList.remove('is-focused');
 	}
 
 	handleFormReset() {
