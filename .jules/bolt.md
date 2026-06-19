@@ -104,3 +104,7 @@
 ## 2024-06-04 - Prevent layout thrashing in global scroll and resize listeners
 **Learning:** For high-frequency events like `scroll` and `resize`, deferring layout reads (e.g., `window.scrollY`, `window.innerWidth`) into the `requestAnimationFrame` callback using dirty flags causes synchronous layout thrashing when other code (or the browser itself) simultaneously performs DOM writes.
 **Action:** When optimizing global event listeners, read the layout values synchronously inside the event listener itself (outside of `requestAnimationFrame`) and cache them into global payloads. Then restrict the `requestAnimationFrame` loop to pure calculations and DOM writes using those cached values.
+
+## 2024-06-05 - Avoid .forEach() and .map() in component hot paths
+**Learning:** High-frequency UI components like Tabs often iterate over internal DOM collections (like `ref.tab` or `ref.panel`) inside lifecycle methods (`mount`, `unmount`) and layout calculation methods (`_measureEndHeight`). Using array iteration methods like `.forEach()` or `.map()` forces the JavaScript engine to allocate multiple inline closure functions and intermediate arrays on every call. Over time, this creates measurable garbage collection (GC) churn which can lead to micro-stutters during interactions or page navigations.
+**Action:** Replace `.forEach()` and `.map()` loops with standard `for` loops across UI components to eliminate unnecessary closure allocations and intermediate array creation, thereby significantly reducing garbage collection overhead.
