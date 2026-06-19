@@ -59,3 +59,7 @@
 **Vulnerability:** A DOM clobbering bypass existed in `loadScript` (`src/BaseComponent.js`). The original code checked `!(window[globalName] instanceof Node)` to verify the clobbered value wasn't a DOM element. However, an attacker could inject multiple elements with the same ID/name to create an `HTMLCollection`, or inject an `<iframe name="...">` to create a `Window` object—neither of which inherit from `Node`.
 **Learning:** Using `instanceof Node` is insufficient to prevent DOM Clobbering. You must explicitly account for `HTMLCollection` and `Window` objects, which are common DOM clobbering vectors.
 **Prevention:** Always validate that the globally resolved variable is not an instance of `Node`, `HTMLCollection`, or `Window`. For example: `!(val instanceof Node) && !(val instanceof HTMLCollection) && !(val instanceof Window)`.
+## 2025-02-28 - [DOM-based XSS Prevention in Dynamic SVGs]
+**Vulnerability:** Found `insertAdjacentHTML` used to directly inject dynamic SVG strings (`qr.createSvgTag()`) into the DOM in `examples/QRCode.js`.
+**Learning:** `insertAdjacentHTML` or `innerHTML` exposes the application to DOM-based XSS when parsing un-sanitized or dynamically generated payloads, even if they're SVGs. `DOMParser().parseFromString()` provides a secure way to instantiate an SVG node without executing injected scripts.
+**Prevention:** Always use safe DOM APIs like `document.createElementNS()` or `DOMParser().parseFromString()` for dynamically generated SVGs instead of `insertAdjacentHTML`.

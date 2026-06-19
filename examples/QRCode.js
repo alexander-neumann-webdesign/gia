@@ -41,7 +41,9 @@ class QRCode extends gia.Component {
 					qr.addData(this.state.contents);
 					qr.make();
 					this.element.replaceChildren();
-					this.element.insertAdjacentHTML('beforeend', qr.createSvgTag());
+					// Prevent DOM-based XSS by securely parsing the dynamic SVG string
+					const svgDoc = new DOMParser().parseFromString(qr.createSvgTag(), 'image/svg+xml');
+					this.element.appendChild(svgDoc.documentElement);
 				} else {
 					setTimeout(checkAndRender, 100);
 				}
