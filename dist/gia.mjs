@@ -32,13 +32,13 @@ class U {
     return this._options[e];
   }
 }
-const f = new U();
+const d = new U();
 function L(o, e, t, n) {
   if (o.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), o.__gia_component__;
   try {
     const s = new t(o, n);
-    return f.get("log") && console.info(`Created instance of component "${e}".`), s;
+    return d.get("log") && console.info(`Created instance of component "${e}".`), s;
   } catch (s) {
     return console.error(`Failed to create component "${e}".`, s), null;
   }
@@ -49,7 +49,7 @@ function he(o) {
 function G(o, e = document) {
   return typeof o != "string" ? o : e.querySelector(o);
 }
-function _(o, e = document) {
+function b(o, e = document) {
   return typeof o != "string" ? o : e.querySelectorAll(o);
 }
 function Y(o, e, t = null) {
@@ -95,7 +95,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   addClass: J,
   debounce: Z,
   query: G,
-  queryAll: _,
+  queryAll: b,
   removeClass: K,
   toggleClass: Y,
   triggerEvent: V
@@ -114,7 +114,7 @@ function Q(o = {}, e = document.documentElement) {
     console.warn("App has no components");
     return;
   }
-  const n = [], s = `${f.get("attrPrefix")}-component`, r = _(`[${s}]`, e), i = r.length;
+  const n = [], s = `${d.get("attrPrefix")}-component`, r = b(`[${s}]`, e), i = r.length;
   for (let l = 0; l < i; l++) {
     const a = r[l];
     if (!a.__gia_component__) {
@@ -143,11 +143,11 @@ function S(o) {
     } catch (n) {
       console.error(`Gia: Error unmounting component "${t}".`, n);
     }
-    o.__gia_component__ = null, e.element && (e.element = null), f.get("log") && console.info(`Removed component "${t}".`);
+    o.__gia_component__ = null, e.element && (e.element = null), d.get("log") && console.info(`Removed component "${t}".`);
   }
 }
-function be(o = document.documentElement) {
-  const e = _(`[${f.get("attrPrefix")}-component]`, o);
+function _e(o = document.documentElement) {
+  const e = b(`[${d.get("attrPrefix")}-component]`, o);
   for (let t = 0; t < e.length; t++)
     S(e[t]);
 }
@@ -182,13 +182,13 @@ function re(o) {
 }
 let le = class {
   constructor(e, t) {
-    this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._flushStateChanges = this._flushStateChanges.bind(this), this._autoBindFunctions(), f.get("autoBindActions") && this._autoBindActions();
+    this.element = e, this.element.__gia_component__ = this, this._name = this.constructor.name, this._ref = {}, this._options = t || {}, this._state = {}, this._flushStateChanges = this._flushStateChanges.bind(this), this._autoBindFunctions(), d.get("autoBindActions") && this._autoBindActions();
   }
   get ref() {
     return this._ref;
   }
   set ref(e) {
-    const t = `${f.get("attrPrefix")}-ref`, n = _(`[${t}]`, this.element), s = /* @__PURE__ */ Object.create(null);
+    const t = `${d.get("attrPrefix")}-ref`, n = b(`[${t}]`, this.element), s = /* @__PURE__ */ Object.create(null);
     for (let i = 0; i < n.length; i++) {
       const l = n[i], a = l.getAttribute(t);
       let c = s[a];
@@ -227,7 +227,7 @@ let le = class {
     return this._options;
   }
   set options(e) {
-    const t = this.element.getAttribute(`${f.get("attrPrefix")}-options`);
+    const t = this.element.getAttribute(`${d.get("attrPrefix")}-options`);
     let n = {};
     if (t) {
       const s = t.trim();
@@ -302,8 +302,8 @@ let le = class {
     const s = re(n);
     let r = E.get(s);
     r || (r = { observer: new IntersectionObserver((u) => {
-      for (let d = 0; d < u.length; d++) {
-        const O = u[d], M = r.callbacks.get(O.target);
+      for (let f = 0; f < u.length; f++) {
+        const O = u[f], M = r.callbacks.get(O.target);
         M && (k[0] = O, M.forEach(T));
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, E.set(s, r));
@@ -343,7 +343,7 @@ let le = class {
    * @return {Promise}
    */
   loadScript(e, t) {
-    if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && !(window[t] instanceof Window))
+    if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && window[t] !== window[t].window)
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
     return n ? n instanceof HTMLScriptElement ? (n._loadPromise || (n._loadPromise = new Promise((s, r) => {
@@ -393,7 +393,7 @@ let le = class {
   unmount() {
   }
   getRef(e, t = !1) {
-    return `[${f.get("attrPrefix")}-ref="${t ? `${this._name}:` : ""}${e}"]`;
+    return `[${d.get("attrPrefix")}-ref="${t ? `${this._name}:` : ""}${e}"]`;
   }
   setState(e) {
     if (e)
@@ -446,7 +446,7 @@ let le = class {
     }
   }
   _autoBindActions() {
-    const e = _("[data-action]", this.element), t = e.length;
+    const e = b("[data-action]", this.element), t = e.length;
     for (let n = 0; n < t; n++) {
       const s = e[n], r = s.getAttribute("data-action");
       if (!r) continue;
@@ -455,8 +455,8 @@ let le = class {
         let l = r.indexOf(" ", i);
         if (l === -1 && (l = r.length), l > i) {
           const a = r.substring(i, l), c = a.indexOf("->");
-          let u, d;
-          c !== -1 ? (u = a.substring(0, c), d = a.substring(c + 2)) : (u = a, d = void 0), this[d] && typeof this[d] == "function" && !d.startsWith("_") && !N.has(d) ? s.addEventListener(u, this[d]) : console.warn(`Method "${d}" not found, is restricted, or is not a function in component.`);
+          let u, f;
+          c !== -1 ? (u = a.substring(0, c), f = a.substring(c + 2)) : (u = a, f = void 0), this[f] && typeof this[f] == "function" && !f.startsWith("_") && !N.has(f) ? s.addEventListener(u, this[f]) : console.warn(`Method "${f}" not found, is restricted, or is not a function in component.`);
         }
         i = l + 1;
       }
@@ -472,7 +472,7 @@ class pe extends le {
 }
 class ae extends EventTarget {
   emit(e, t = {}) {
-    f.get("log") && console.info(`Emitting event '${e}'`);
+    d.get("log") && console.info(`Emitting event '${e}'`);
     const n = { ...t, _name: e }, s = new CustomEvent(e, { detail: n });
     s._name = e, this.dispatchEvent(s);
   }
@@ -496,19 +496,19 @@ class ae extends EventTarget {
   }
 }
 const me = new ae();
-let b = null, P = null;
+let _ = null, P = null;
 const ce = (o) => {
   o.isConnected && Q(P, o);
 };
-function fe(o) {
-  const e = `${f.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
+function de(o) {
+  const e = `${d.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {}, n = /* @__PURE__ */ new Set();
   for (let s = 0; s < o.length; s++) {
     const r = o[s];
     for (let i = 0; i < r.removedNodes.length; i++) {
       const l = r.removedNodes[i];
       if (l.nodeType === Node.ELEMENT_NODE) {
         l.hasAttribute(e) && S(l);
-        const a = _(`[${e}]`, l);
+        const a = b(`[${e}]`, l);
         for (let c = 0; c < a.length; c++)
           S(a[c]);
       }
@@ -521,25 +521,25 @@ function fe(o) {
   P = t, n.forEach(ce), P = null;
 }
 function q() {
-  typeof document > "u" || (f.get("autoMountComponents") && !b ? (b = new MutationObserver(fe), b.observe(document.body, {
+  typeof document > "u" || (d.get("autoMountComponents") && !_ ? (_ = new MutationObserver(de), _.observe(document.body, {
     childList: !0,
     subtree: !0
-  })) : !f.get("autoMountComponents") && b && (b.disconnect(), b = null));
+  })) : !d.get("autoMountComponents") && _ && (_.disconnect(), _ = null));
 }
-const de = f.set;
-f.set = function(o, e) {
-  de.call(this, o, e), o === "autoMountComponents" && q();
+const fe = d.set;
+d.set = function(o, e) {
+  fe.call(this, o, e), o === "autoMountComponents" && q();
 };
 typeof window < "u" && setTimeout(q, 0);
 export {
   le as BaseComponent,
   pe as Component,
-  f as config,
+  d as config,
   L as createInstance,
-  be as destroyInstance,
+  _e as destroyInstance,
   me as eventbus,
   he as getComponentFromElement,
   Q as loadComponents,
-  be as removeComponents,
+  _e as removeComponents,
   ge as utils
 };
