@@ -380,6 +380,11 @@ input[type=radio]::before {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
+.form-dropzone.is-focused {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
+  border-color: #0056b3;
+}
 .form-dropzone.is-dragover {
   background-color: rgba(0, 0, 0, 0.05);
   border-color: #666 !important;
