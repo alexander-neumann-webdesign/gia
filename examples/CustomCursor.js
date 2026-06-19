@@ -360,8 +360,7 @@ class CustomCursor extends gia.Component {
             if (isNewSnapTarget) {
                 this._snappedTarget = closestMagneticEl;
                 if (this.ref.dot && this.magneticTarget) {
-                    const computedStyle = window.getComputedStyle(this.magneticTarget);
-                    const borderRadius = computedStyle.borderRadius || '0px';
+                    const borderRadius = this.magneticBounds.borderRadius;
 
                     this.ref.dot.style.width = `${this.magneticBounds.width}px`;
                     this.ref.dot.style.height = `${this.magneticBounds.height}px`;
@@ -497,7 +496,8 @@ class CustomCursor extends gia.Component {
             width: width,
             height: height,
             centerX: left + width / 2,
-            centerY: top + height / 2
+            centerY: top + height / 2,
+            borderRadius: window.getComputedStyle(el).borderRadius || '0px'
         };
 
         return { bounds, type };
