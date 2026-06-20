@@ -108,3 +108,7 @@
 ## 2024-06-19 - Layout Thrashing in CustomCursor rAF from getComputedStyle
 **Learning:** Calling `window.getComputedStyle(el)` during a `mousemove` event handler or inside a `requestAnimationFrame` loop (e.g. inside `_updateSnappingVisuals` called from `_processInteractions`) forces synchronous style and layout recalculations, causing massive layout thrashing on high-refresh rate displays.
 **Action:** Move `getComputedStyle` reads (like fetching `borderRadius` for the magnetic snapping visual) into the same deferred updates as `getBoundingClientRect` (e.g. `_calculateElementBounds`). Cache these computed style properties on the pre-calculated bounds object instead of reading them synchronously on hover/mousemove.
+
+## 2024-06-20 - Iterator Allocation on array for...of in high-frequency event handler
+**Learning:** Using `for...of` loops to iterate over an array allocates an Iterator object on every run. When used inside a high-frequency event handler (like `mousemove` or inside a `requestAnimationFrame` loop), this constant allocation causes garbage collection churn, which can result in micro-stutters and dropped frames.
+**Action:** When iterating over arrays in hot paths (like animation loops or high-frequency event listeners), always replace `for...of` loops with standard indexed `for` loops (e.g., `for (let i = 0; i < arr.length; i++)`) to completely eliminate Iterator allocation overhead.

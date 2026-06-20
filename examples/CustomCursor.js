@@ -205,7 +205,9 @@ class CustomCursor extends gia.Component {
         let isStick = false;
         let minDistanceSq = Infinity;
 
-        for (const item of this.cachedMagneticElements) {
+        // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation overhead in a hot path
+        for (let i = 0; i < this.cachedMagneticElements.length; i++) {
+            const item = this.cachedMagneticElements[i];
             const { el, bounds, type } = item;
 
             // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning checks.
