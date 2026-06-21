@@ -88,7 +88,9 @@ class CustomCursor extends gia.Component {
         if (window.MutationObserver) {
             this.mutationObserver = new MutationObserver((mutations) => {
                 let shouldUpdate = false;
-                for (const mutation of mutations) {
+                // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation in hot path
+                for (let i = 0; i < mutations.length; i++) {
+                    const mutation = mutations[i];
                     if (mutation.type === 'childList' || mutation.type === 'attributes') {
                         shouldUpdate = true;
                         break;
@@ -205,7 +207,9 @@ class CustomCursor extends gia.Component {
         let isStick = false;
         let minDistanceSq = Infinity;
 
-        for (const item of this.cachedMagneticElements) {
+        // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation in hot path
+        for (let i = 0; i < this.cachedMagneticElements.length; i++) {
+            const item = this.cachedMagneticElements[i];
             const { el, bounds, type } = item;
 
             // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning checks.
@@ -425,7 +429,9 @@ class CustomCursor extends gia.Component {
 
     _preloadImages() {
         const imageElements = document.querySelectorAll('[data-cursor-img]');
-        for (const el of imageElements) {
+        // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation in hot path
+        for (let i = 0; i < imageElements.length; i++) {
+            const el = imageElements[i];
             const src = el.getAttribute('data-cursor-img');
             if (src && !this.preloadedImages.has(src)) {
                 this.preloadedImages.add(src);
@@ -514,7 +520,9 @@ class CustomCursor extends gia.Component {
         const scrollY = this.scroll.y;
 
         // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
-        for (const el of elements) {
+        // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation in hot path
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
             const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
 
             this.cachedMagneticElements.push({ el, bounds, type });
