@@ -108,3 +108,6 @@
 ## 2024-06-19 - Layout Thrashing in CustomCursor rAF from getComputedStyle
 **Learning:** Calling `window.getComputedStyle(el)` during a `mousemove` event handler or inside a `requestAnimationFrame` loop (e.g. inside `_updateSnappingVisuals` called from `_processInteractions`) forces synchronous style and layout recalculations, causing massive layout thrashing on high-refresh rate displays.
 **Action:** Move `getComputedStyle` reads (like fetching `borderRadius` for the magnetic snapping visual) into the same deferred updates as `getBoundingClientRect` (e.g. `_calculateElementBounds`). Cache these computed style properties on the pre-calculated bounds object instead of reading them synchronously on hover/mousemove.
+## 2024-11-20 - Avoid for...of in Hot Paths
+**Learning:** `for...of` loops allocate an Iterator object on every run, which leads to garbage collection churn in high-frequency functions like `requestAnimationFrame` and event listeners (scroll, mousemove, ResizeObserver).
+**Action:** Replace `for...of` with standard indexed `for` loops (e.g., `for (let i = 0; i < arr.length; i++)`) in hot paths to completely eliminate Iterator allocation overhead.
