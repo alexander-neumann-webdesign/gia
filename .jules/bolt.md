@@ -108,3 +108,7 @@
 ## 2024-06-19 - Layout Thrashing in CustomCursor rAF from getComputedStyle
 **Learning:** Calling `window.getComputedStyle(el)` during a `mousemove` event handler or inside a `requestAnimationFrame` loop (e.g. inside `_updateSnappingVisuals` called from `_processInteractions`) forces synchronous style and layout recalculations, causing massive layout thrashing on high-refresh rate displays.
 **Action:** Move `getComputedStyle` reads (like fetching `borderRadius` for the magnetic snapping visual) into the same deferred updates as `getBoundingClientRect` (e.g. `_calculateElementBounds`). Cache these computed style properties on the pre-calculated bounds object instead of reading them synchronously on hover/mousemove.
+
+## 2024-06-21 - Prevent GC trapping in closure-based debouncers
+**Learning:** High-frequency closures (like `debounce` or `throttle`) that cache `arguments` or `this` objects can trap DOM elements and event references in memory. If these closure variables aren't explicitly nullified before function execution, they linger until the next event trigger or cause a permanent leak if the event never fires again.
+**Action:** Always extract cached references into local variables and explicitly nullify the closure variables *before* executing the wrapped function (`const args = lastArgs; lastArgs = null; func.apply(context, args);`). This allows the garbage collector to free up trapped elements immediately after execution.
