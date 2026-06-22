@@ -82,7 +82,10 @@ function V(o, e, t = null, n = {
 function Z(o, e) {
   let t, n = null, s = null;
   const r = () => {
-    clearTimeout(t), n && o.apply(s, n);
+    if (clearTimeout(t), n) {
+      const l = s, a = n;
+      s = null, n = null, o.apply(l, a);
+    }
   }, i = function() {
     n = arguments, s = this, clearTimeout(t), t = setTimeout(r, e);
   };
