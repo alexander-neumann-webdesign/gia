@@ -108,3 +108,6 @@
 ## 2024-06-19 - Layout Thrashing in CustomCursor rAF from getComputedStyle
 **Learning:** Calling `window.getComputedStyle(el)` during a `mousemove` event handler or inside a `requestAnimationFrame` loop (e.g. inside `_updateSnappingVisuals` called from `_processInteractions`) forces synchronous style and layout recalculations, causing massive layout thrashing on high-refresh rate displays.
 **Action:** Move `getComputedStyle` reads (like fetching `borderRadius` for the magnetic snapping visual) into the same deferred updates as `getBoundingClientRect` (e.g. `_calculateElementBounds`). Cache these computed style properties on the pre-calculated bounds object instead of reading them synchronously on hover/mousemove.
+## 2024-05-24 - Prevent memory leak in debounce closure
+**Learning:** Closure variables like `lastArgs` and `lastThis` in high-frequency functions like `debounce` can trap DOM elements and context objects, causing memory leaks if they are not explicitly nullified after the debounced execution.
+**Action:** Extract references into local variables and explicitly nullify the closure variables *before* invoking the wrapped function (e.g. `func.apply()`) to free up memory immediately and prevent state corruption during execution errors.
