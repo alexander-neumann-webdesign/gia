@@ -376,7 +376,7 @@ input[type=radio]::before {
 .form-dropzone {
   transition: background-color 0.2s, border-color 0.2s;
 }
-.form-dropzone:focus-within {
+.form-dropzone.is-focused, .form-dropzone:focus-within {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
@@ -384,7 +384,7 @@ input[type=radio]::before {
   background-color: rgba(0, 0, 0, 0.05);
   border-color: #666 !important;
 }
-.form-dropzone:focus-within {
+.form-dropzone.is-focused, .form-dropzone:focus-within {
   outline: 2px solid #0056b3;
   outline-offset: 2px;
   border-color: #0056b3;
