@@ -125,55 +125,63 @@ class OffCanvasMenu extends gia.Component {
 			});
 
 			if (isOpen) {
-				if (!this.element.open) {
-					this.element.showModal();
-				}
-
-				if (this.options.preventScroll) {
-					document.body.style.overflow = 'hidden';
-
-					// Lenis integration: Stop smooth scrolling
-					if (window.lenis) {
-						window.lenis.stop();
-					}
-				}
-
-				// Write menu ID to URL
-				if (this.menuId && window.location.hash !== `#${this.menuId}`) {
-					history.pushState(null, '', `#${this.menuId}`);
-				}
+				this._openMenu();
 			} else {
-				if (this.element.open) {
-					if (CSS.supports('transition-behavior', 'allow-discrete')) {
-						this.element.close();
-					} else {
-						this.element.setAttribute('data-is-closing', 'true');
-						const handleTransitionEnd = () => {
-							this.element.removeAttribute('data-is-closing');
-							this.element.close();
-							this.element.removeEventListener('transitionend', handleTransitionEnd);
-							clearTimeout(timeout);
-						};
-						const timeout = setTimeout(handleTransitionEnd, 500);
-						this.element.addEventListener('transitionend', handleTransitionEnd);
-					}
-				}
-
-				if (this.options.preventScroll) {
-					document.body.style.overflow = '';
-
-					// Lenis integration: Resume smooth scrolling
-					if (window.lenis) {
-						window.lenis.start();
-					}
-				}
-
-				// Remove menu ID from URL
-				if (this.menuId && window.location.hash === `#${this.menuId}`) {
-					const urlWithoutHash = window.location.pathname + window.location.search;
-					history.pushState(null, '', urlWithoutHash || '#');
-				}
+				this._closeMenu();
 			}
+		}
+	}
+
+	_openMenu() {
+		if (!this.element.open) {
+			this.element.showModal();
+		}
+
+		if (this.options.preventScroll) {
+			document.body.style.overflow = 'hidden';
+
+			// Lenis integration: Stop smooth scrolling
+			if (window.lenis) {
+				window.lenis.stop();
+			}
+		}
+
+		// Write menu ID to URL
+		if (this.menuId && window.location.hash !== `#${this.menuId}`) {
+			history.pushState(null, '', `#${this.menuId}`);
+		}
+	}
+
+	_closeMenu() {
+		if (this.element.open) {
+			if (CSS.supports('transition-behavior', 'allow-discrete')) {
+				this.element.close();
+			} else {
+				this.element.setAttribute('data-is-closing', 'true');
+				const handleTransitionEnd = () => {
+					this.element.removeAttribute('data-is-closing');
+					this.element.close();
+					this.element.removeEventListener('transitionend', handleTransitionEnd);
+					clearTimeout(timeout);
+				};
+				const timeout = setTimeout(handleTransitionEnd, 500);
+				this.element.addEventListener('transitionend', handleTransitionEnd);
+			}
+		}
+
+		if (this.options.preventScroll) {
+			document.body.style.overflow = '';
+
+			// Lenis integration: Resume smooth scrolling
+			if (window.lenis) {
+				window.lenis.start();
+			}
+		}
+
+		// Remove menu ID from URL
+		if (this.menuId && window.location.hash === `#${this.menuId}`) {
+			const urlWithoutHash = window.location.pathname + window.location.search;
+			history.pushState(null, '', urlWithoutHash || '#');
 		}
 	}
 }
