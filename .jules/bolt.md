@@ -111,3 +111,6 @@
 ## 2024-05-24 - Prevent memory leak in debounce closure
 **Learning:** Closure variables like `lastArgs` and `lastThis` in high-frequency functions like `debounce` can trap DOM elements and context objects, causing memory leaks if they are not explicitly nullified after the debounced execution.
 **Action:** Extract references into local variables and explicitly nullify the closure variables *before* invoking the wrapped function (e.g. `func.apply()`) to free up memory immediately and prevent state corruption during execution errors.
+## 2024-06-23 - Iterator Allocation on arrays and iterable collections using for...of loops
+**Learning:** `for...of` loops iterating over arrays or iterable collections (like `NodeList` or `MutationRecord`) allocate an Iterator object on every run. In extreme hot paths like `requestAnimationFrame` or high-frequency event handlers like `mousemove` and `MutationObserver`, this forces Garbage Collection (GC) churn which can cause micro-stutters.
+**Action:** Always optimize high-frequency lifecycle and event loops by replacing `for...of` loops with standard indexed `for` loops (e.g., `for (let i = 0; i < arr.length; i++)`) to completely eliminate Iterator allocation overhead.
