@@ -111,3 +111,7 @@
 ## 2024-05-24 - Prevent memory leak in debounce closure
 **Learning:** Closure variables like `lastArgs` and `lastThis` in high-frequency functions like `debounce` can trap DOM elements and context objects, causing memory leaks if they are not explicitly nullified after the debounced execution.
 **Action:** Extract references into local variables and explicitly nullify the closure variables *before* invoking the wrapped function (e.g. `func.apply()`) to free up memory immediately and prevent state corruption during execution errors.
+
+## 2024-05-18 - Prevent GC churn in autoMount MutationObserver
+**Learning:** High-frequency event handlers like `MutationObserver` callbacks allocate and garbage collect new collections (e.g., `new Set()`) on every invocation, causing memory pressure and potential jank during extensive DOM mutations.
+**Action:** Extract collection allocations to the module scope (e.g., `const _mySet = new Set();`) and reuse them by calling `.clear()` on each callback invocation to eliminate GC churn.
