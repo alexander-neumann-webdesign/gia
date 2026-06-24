@@ -26,10 +26,7 @@ const _unobserveIntersectionCb = function(value, element) { this.unobserveInters
 
 
 
-let _isScrollTicking = false;
-
 function _processScroll() {
-	_isScrollTicking = false;
 	scrollCallbacks.forEach(_callScrollCb);
 }
 
@@ -53,16 +50,10 @@ function handleGlobalScroll(e) {
 	_scrollPayload.scroll = scrollY;
 	_scrollPayload.velocity = velocity;
 
-	if (!_isScrollTicking) {
-		_isScrollTicking = true;
-		window.requestAnimationFrame(_processScroll);
-	}
+	_processScroll();
 }
 
-let _isResizeTicking = false;
-
 function _processResize() {
-	_isResizeTicking = false;
 	windowResizeCallbacks.forEach(_callResizeCb);
 }
 
@@ -71,10 +62,7 @@ function handleGlobalResize(e) {
 	_resizePayload.width = window.innerWidth;
 	_resizePayload.height = window.innerHeight;
 
-	if (!_isResizeTicking) {
-		_isResizeTicking = true;
-		window.requestAnimationFrame(_processResize);
-	}
+	_processResize();
 }
 
 let globalResizeObserver = null;
