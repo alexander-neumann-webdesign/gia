@@ -3,7 +3,10 @@ class SplitText extends gia.Component {
 		super(element);
 
 		this.options = {
-			split: ["words", "chars"], // Can be any combination of lines, words, chars
+			split: ["words"], // Can be any combination of lines, words, chars
+			threshold: 0.1,
+			rootMargin: "0px",
+			once: true,
 		};
 
 		// Save the original text for accessibility
@@ -14,13 +17,17 @@ class SplitText extends gia.Component {
 		this.chars = [];
 		this.lines = [];
 
+		this.setState({
+			isInview: false
+		});
+
 		// Global counters across all nodes
 		this._charIndex = 0;
 		this._wordIndex = 0;
 		this._lineIndex = 0;
 
 		// Pre-bind methods for high-frequency callbacks to avoid GC overhead
-		// handleResize is auto-bound by BaseComponent, _applyLineStyles needs manual binding
+		// handleResize and handleIntersect are auto-bound by BaseComponent, _applyLineStyles needs manual binding
 		this._applyLineStyles = this._applyLineStyles.bind(this);
 
 		// Initialize/Cache Segmenters once for performance
@@ -48,9 +55,31 @@ class SplitText extends gia.Component {
 			this.observeResize(this.element, this.handleResize);
 		}
 
+		this.observeIntersection(this.element, this.handleIntersect, {
+			threshold: this.options.threshold,
+			rootMargin: this.options.rootMargin
+		});
+
 		// Set initialized state to potentially trigger CSS transitions/visibility
 		// BaseComponent auto-maps boolean state to data-[kebab-case] attributes
-		this.setState({ initialized: true });
+		window.requestAnimationFrame(() => {
+			this.setState({ initialized: true });
+		});
+	}
+
+	handleIntersect(entries) {
+		for (let i = 0; i < entries.length; i++) {
+			const entry = entries[i];
+			if (entry.isIntersecting) {
+				this.setState({ isInview: true });
+
+				if (this.options.once) {
+					this.unobserveIntersection(this.element, this.handleIntersect);
+				}
+			} else if (!this.options.once) {
+				this.setState({ isInview: false });
+			}
+		}
 	}
 
 	handleResize() {
@@ -321,12 +350,17 @@ SUGGESTED SCSS
     visibility: visible;
   }
 
-  // Example staggered animation using the generated CSS variables
+  // Example staggered animation triggered when scrolled into view
+  &[data-is-inview="true"] {
+    .split-char {
+      animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      animation-delay: calc(var(--char-index) * 0.03s);
+    }
+  }
+
   .split-char {
     opacity: 0;
     transform: translateY(20px);
-    animation: slideUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    animation-delay: calc(var(--char-index) * 0.03s);
   }
 
   .split-word {
