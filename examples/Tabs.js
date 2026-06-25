@@ -195,10 +195,7 @@ class Tabs extends gia.Component {
 		});
 	}
 
-	_animateTransition(panelsContainer, oldIndex, newIndex, direction) {
-		const currentAnimId = ++this._animationId || 1;
-		this._animationId = currentAnimId;
-
+	_prepareTransitionDOM(panelsContainer, oldIndex, newIndex) {
 		// Measure start height (catches the container mid-animation if interrupted)
 		const startHeight = panelsContainer.offsetHeight;
 
@@ -208,7 +205,6 @@ class Tabs extends gia.Component {
 		panelsContainer.style.overflow = '';
 		panelsContainer.style.position = '';
 
-		const oldPanel = this.ref.panel[oldIndex];
 		const newPanel = this.ref.panel[newIndex];
 
 		this.ref.panel.forEach((panel, index) => {
@@ -242,6 +238,39 @@ class Tabs extends gia.Component {
 		});
 
 		if (newPanel) newPanel.hidden = false;
+
+		return startHeight;
+	}
+
+	_cleanupTransition(panelsContainer, newIndex) {
+		const newPanel = this.ref.panel[newIndex];
+
+		this.ref.panel.forEach((panel) => {
+			panel.getAnimations().forEach(a => a.cancel());
+			if (panel !== newPanel) {
+				panel.hidden = true;
+			}
+			panel.style.position = '';
+			panel.style.top = '';
+			panel.style.left = '';
+			panel.style.width = '';
+		});
+
+		panelsContainer.getAnimations().forEach(a => a.cancel());
+		panelsContainer.style.height = '';
+		panelsContainer.style.overflow = '';
+		panelsContainer.style.position = '';
+		this.element.removeAttribute('data-direction');
+	}
+
+	_animateTransition(panelsContainer, oldIndex, newIndex, direction) {
+		const currentAnimId = ++this._animationId || 1;
+		this._animationId = currentAnimId;
+
+		const startHeight = this._prepareTransitionDOM(panelsContainer, oldIndex, newIndex);
+
+		const oldPanel = this.ref.panel[oldIndex];
+		const newPanel = this.ref.panel[newIndex];
 
 		// Measure end height (now accurately determined ONLY by newPanel)
 		const endHeight = panelsContainer.offsetHeight;
@@ -288,24 +317,7 @@ class Tabs extends gia.Component {
 
 		Promise.allSettled(animations).then(() => {
 			if (this._animationId !== currentAnimId) return;
-
-			// Cleanup
-			this.ref.panel.forEach((panel) => {
-				panel.getAnimations().forEach(a => a.cancel());
-				if (panel !== newPanel) {
-					panel.hidden = true;
-				}
-				panel.style.position = '';
-				panel.style.top = '';
-				panel.style.left = '';
-				panel.style.width = '';
-			});
-
-			panelsContainer.getAnimations().forEach(a => a.cancel());
-			panelsContainer.style.height = '';
-			panelsContainer.style.overflow = '';
-			panelsContainer.style.position = '';
-			this.element.removeAttribute('data-direction');
+			this._cleanupTransition(panelsContainer, newIndex);
 		});
 	}
 
