@@ -1387,6 +1387,34 @@
         </div>
     </section>
 
+    <section id="CountUp">
+        <h2>CountUp</h2>
+        <div class="demo-block" style="text-align: center; padding: 3rem;">
+            <p>An auto-parsing counting animation that triggers when scrolled into view.</p>
+            <div data-component="CountUp" data-options='{"duration": 3000, "start": 0, "end": 1500, "decimals": 0, "suffix": "+"}' style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">1,500+</div>
+            <div data-component="CountUp" data-options='{"duration": 3000, "start": 0, "end": 250.50, "decimals": 2, "prefix": "$"}' style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;">$0</div>
+        </div>
+    </section>
+
+    <section id="Magnetic">
+        <h2>Magnetic</h2>
+        <div class="demo-block" style="text-align: center; padding: 4rem;">
+            <p>A physics-based component that pulls elements and their inner text toward the cursor on hover.</p>
+            
+            <div class="magnetic-wrap" data-component="Magnetic" style="display: inline-block; padding: 2rem; cursor: pointer; margin-right: 2rem;">
+              <button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; border-radius: 9999px; background: #333; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
+                <span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;">Hover Me!</span>
+              </button>
+            </div>
+            
+            <div class="magnetic-wrap" data-component="Magnetic" data-options='{"strength": 0.6, "textStrength": 0.25}' style="display: inline-block; padding: 2rem; cursor: pointer;">
+              <button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1.5rem 3rem; border-radius: 9999px; background: #007bff; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
+                <span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;">Parallax Hover</span>
+              </button>
+            </div>
+        </div>
+    </section>
+
     <section id="PongGame">
         <h2>PongGame</h2>
         <div class="demo-block">

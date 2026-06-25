@@ -196,11 +196,41 @@ class Tabs extends gia.Component {
 	}
 
 	_animateTransition(panelsContainer, oldIndex, newIndex, direction) {
+		const currentAnimId = ++this._animationId || 1;
+		this._animationId = currentAnimId;
+
+		// Measure start height (catches the container mid-animation if interrupted)
+		const startHeight = panelsContainer.offsetHeight;
+
+		// Reset all ongoing animations and inline styles
+		panelsContainer.getAnimations().forEach(a => a.cancel());
+		panelsContainer.style.height = '';
+		panelsContainer.style.overflow = '';
+		panelsContainer.style.position = '';
+
 		const oldPanel = this.ref.panel[oldIndex];
 		const newPanel = this.ref.panel[newIndex];
 
-		// Measure start height
-		const startHeight = panelsContainer.offsetHeight;
+		this.ref.panel.forEach((panel, index) => {
+			panel.getAnimations().forEach(a => a.cancel());
+			
+			// Ensure only the panel we are transitioning FROM is initially visible
+			panel.hidden = (index !== oldIndex);
+			
+			// FIX: Any panel that is NOT the new target panel must be absolutely positioned
+			// so it doesn't expand the grid cell and mess up the endHeight measurement!
+			if (panel !== newPanel) {
+				panel.style.position = 'absolute';
+				panel.style.top = '0';
+				panel.style.left = '0';
+				panel.style.width = '100%';
+			} else {
+				panel.style.position = '';
+				panel.style.top = '';
+				panel.style.left = '';
+				panel.style.width = '';
+			}
+		});
 
 		// Prepare DOM for new state
 		this.updateIndicator();
@@ -213,15 +243,7 @@ class Tabs extends gia.Component {
 
 		if (newPanel) newPanel.hidden = false;
 
-		// Lock height and position to measure correctly without page jump
-		if (oldPanel) {
-			oldPanel.style.position = 'absolute';
-			oldPanel.style.top = '0';
-			oldPanel.style.left = '0';
-			oldPanel.style.width = '100%';
-		}
-
-		// Measure end height
+		// Measure end height (now accurately determined ONLY by newPanel)
 		const endHeight = panelsContainer.offsetHeight;
 
 		// Lock container size for animation
@@ -265,20 +287,21 @@ class Tabs extends gia.Component {
 		}
 
 		Promise.allSettled(animations).then(() => {
-			// Cleanup
-			if (oldPanel) {
-				oldPanel.hidden = true;
-				oldPanel.style.position = '';
-				oldPanel.style.top = '';
-				oldPanel.style.left = '';
-				oldPanel.style.width = '';
-				oldPanel.getAnimations().forEach(a => a.cancel());
-			}
-			
-			if (newPanel) {
-				newPanel.getAnimations().forEach(a => a.cancel());
-			}
+			if (this._animationId !== currentAnimId) return;
 
+			// Cleanup
+			this.ref.panel.forEach((panel) => {
+				panel.getAnimations().forEach(a => a.cancel());
+				if (panel !== newPanel) {
+					panel.hidden = true;
+				}
+				panel.style.position = '';
+				panel.style.top = '';
+				panel.style.left = '';
+				panel.style.width = '';
+			});
+
+			panelsContainer.getAnimations().forEach(a => a.cancel());
 			panelsContainer.style.height = '';
 			panelsContainer.style.overflow = '';
 			panelsContainer.style.position = '';

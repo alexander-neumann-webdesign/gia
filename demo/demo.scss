@@ -1163,45 +1163,14 @@ div[data-component="Tabs"] {
   }
 
   [role="tabpanel"] {
-    // Modern discrete transition
-    transition: opacity 0.4s ease, transform 0.4s ease, display 0.4s allow-discrete;
     opacity: 1;
-    transform: translateX(0);
 
     &[hidden] {
-      opacity: 0;
       display: none;
     }
   }
 
-  &[data-direction="forward"] {
-    [role="tabpanel"] {
-      &[hidden] {
-        transform: translateX(-20px);
-      }
-      @starting-style {
-        &:not([hidden]) {
-          opacity: 0;
-          transform: translateX(20px);
-        }
-      }
-    }
-  }
 
-  &[data-direction="backward"] {
-    [role="tabpanel"] {
-      &[hidden] {
-        transform: translateX(20px);
-      }
-      @starting-style {
-        &:not([hidden]) {
-          opacity: 0;
-          transform: translateX(-20px);
-        }
-      }
-    }
-  }
-}
 
 /* --- Tabs View Transitions --- */
 @keyframes tabs-slide-out-left {
