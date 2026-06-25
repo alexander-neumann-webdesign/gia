@@ -136,6 +136,8 @@ class TodoApp extends gia.Component {
 
 	stateChange(stateChanges) {
 		if ('tasks' in stateChanges) {
+			const newTasks = stateChanges.tasks;
+			
 			if (this.ref.list) {
 				if (document.startViewTransition) {
 					// Apply view transition names to current items
@@ -149,7 +151,7 @@ class TodoApp extends gia.Component {
 					}
 
 					const transition = document.startViewTransition(() => {
-						this.renderTasks(stateChanges.tasks);
+						this.renderTasks(newTasks);
 
 						// Apply view transition names to the newly created items
 						const newItems = this.ref.list.querySelectorAll('li');
@@ -174,12 +176,12 @@ class TodoApp extends gia.Component {
 						}
 					});
 				} else {
-					this.renderTasks(stateChanges.tasks);
+					this.renderTasks(newTasks);
 				}
 			}
 
 			// Update a state attribute on the component itself for CSS styling based on task count
-			const taskCount = stateChanges.tasks.length;
+			const taskCount = newTasks.length;
 			this.setState({ hasTasks: taskCount > 0 });
 		}
 	}

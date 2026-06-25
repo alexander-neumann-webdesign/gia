@@ -40,10 +40,8 @@ class FilterableListGSAP extends gia.Component {
 
 
 	async require() {
-		await Promise.all([
-			this.loadScript("gsap", "gsap"),
-			this.loadScript("Flip", "Flip"),
-		]);
+		await this.loadScript("gsap", "gsap");
+		await this.loadScript("Flip", "Flip");
 	}
 
 	_syncOutputs() {

@@ -3,29 +3,33 @@ class Magnetic extends gia.Component {
 		super(element);
 
 		this.options = {
-			strength: 0.5, // How much the element moves relative to the mouse (0.5 = 50%)
-			textStrength: 0.2, // Move a child text element even further for a 3D parallax effect
-			lerp: 0.1, // Smoothing interpolation (0.01 to 1)
+			strength: 0.6, // How much the element moves relative to the mouse (0.5 = 50%)
+			textStrength: 0.075, // Move a child text element even further for a 3D parallax effect
+			lerp: 0.1, // Smoothing interpolation when hovered (0.01 to 1)
+			spring: 0.1, // Spring stiffness when snapping back (lower = looser spring)
+			friction: 0.5, // Spring damping when snapping back (0 to 1, lower = more bounce)
 		};
 
 		this.ref = {
 			element: null, // The actual physical button/element to move
-			text: null     // Inner text for parallax (optional)
+			text: null, // Inner text for parallax (optional)
 		};
 
 		this.mouse = { x: 0, y: 0 };
 		this.target = { x: 0, y: 0 };
 		this.current = { x: 0, y: 0 };
+		this.velocity = { x: 0, y: 0 };
 
 		this.textTarget = { x: 0, y: 0 };
 		this.textCurrent = { x: 0, y: 0 };
+		this.textVelocity = { x: 0, y: 0 };
 
 		this.boundingRect = { width: 0, height: 0, left: 0, top: 0 };
-		
+
 		this.frameId = null;
 
 		this.setState({
-			isHovered: false
+			isHovered: false,
 		});
 	}
 
@@ -38,18 +42,18 @@ class Magnetic extends gia.Component {
 		// Use pointer events for mouse and touch unification
 		// We attach listeners to `this.element` (the wrapper) which acts as the stable bounding area.
 		// If we attached to this.ref.element, the bounding rect would drift as the element moves!
-		this.element.addEventListener('pointerenter', this.handlePointerEnter);
-		this.element.addEventListener('pointermove', this.handlePointerMove);
-		this.element.addEventListener('pointerleave', this.handlePointerLeave);
-		
+		this.element.addEventListener("pointerenter", this.handlePointerEnter);
+		this.element.addEventListener("pointermove", this.handlePointerMove);
+		this.element.addEventListener("pointerleave", this.handlePointerLeave);
+
 		// Update bounds if the window resizes
 		this.observeResize(this.element, this.updateBounds);
 	}
 
 	unmount() {
-		this.element.removeEventListener('pointerenter', this.handlePointerEnter);
-		this.element.removeEventListener('pointermove', this.handlePointerMove);
-		this.element.removeEventListener('pointerleave', this.handlePointerLeave);
+		this.element.removeEventListener("pointerenter", this.handlePointerEnter);
+		this.element.removeEventListener("pointermove", this.handlePointerMove);
+		this.element.removeEventListener("pointerleave", this.handlePointerLeave);
 
 		if (this.frameId) {
 			cancelAnimationFrame(this.frameId);
@@ -63,14 +67,14 @@ class Magnetic extends gia.Component {
 			width: rect.width,
 			height: rect.height,
 			left: rect.left,
-			top: rect.top
+			top: rect.top,
 		};
 	}
 
 	handlePointerEnter(e) {
 		// Ignore on touch devices where "hovering" physics don't translate well
-		if (e.pointerType === 'touch') return; 
-		
+		if (e.pointerType === "touch") return;
+
 		this.setState({ isHovered: true });
 		this.updateBounds(); // Always get fresh bounds on enter
 
@@ -102,7 +106,7 @@ class Magnetic extends gia.Component {
 
 	handlePointerLeave(e) {
 		this.setState({ isHovered: false });
-		
+
 		// Target returns to origin
 		this.target.x = 0;
 		this.target.y = 0;
@@ -112,28 +116,70 @@ class Magnetic extends gia.Component {
 
 	tickUpdate() {
 		// ⚡ BOLT OPTIMIZATION: Zero closure allocations in hot physics loop
-		this.current.x += (this.target.x - this.current.x) * this.options.lerp;
-		this.current.y += (this.target.y - this.current.y) * this.options.lerp;
+		const { isHovered } = this.state;
 
-		if (this.ref.text) {
-			this.textCurrent.x += (this.textTarget.x - this.textCurrent.x) * this.options.lerp;
-			this.textCurrent.y += (this.textTarget.y - this.textCurrent.y) * this.options.lerp;
+		if (isHovered) {
+			// Calculate velocity during lerp so the spring inherits momentum on leave
+			const prevX = this.current.x;
+			const prevY = this.current.y;
+
+			this.current.x += (this.target.x - this.current.x) * this.options.lerp;
+			this.current.y += (this.target.y - this.current.y) * this.options.lerp;
+
+			this.velocity.x = this.current.x - prevX;
+			this.velocity.y = this.current.y - prevY;
+
+			if (this.ref.text) {
+				const prevTextX = this.textCurrent.x;
+				const prevTextY = this.textCurrent.y;
+
+				this.textCurrent.x += (this.textTarget.x - this.textCurrent.x) * this.options.lerp;
+				this.textCurrent.y += (this.textTarget.y - this.textCurrent.y) * this.options.lerp;
+
+				this.textVelocity.x = this.textCurrent.x - prevTextX;
+				this.textVelocity.y = this.textCurrent.y - prevTextY;
+			}
+		} else {
+			// Spring physics when snapping back
+			this.velocity.x += (this.target.x - this.current.x) * this.options.spring;
+			this.velocity.y += (this.target.y - this.current.y) * this.options.spring;
+			this.velocity.x *= this.options.friction;
+			this.velocity.y *= this.options.friction;
+
+			this.current.x += this.velocity.x;
+			this.current.y += this.velocity.y;
+
+			if (this.ref.text) {
+				this.textVelocity.x += (this.textTarget.x - this.textCurrent.x) * this.options.spring;
+				this.textVelocity.y += (this.textTarget.y - this.textCurrent.y) * this.options.spring;
+				this.textVelocity.x *= this.options.friction;
+				this.textVelocity.y *= this.options.friction;
+
+				this.textCurrent.x += this.textVelocity.x;
+				this.textCurrent.y += this.textVelocity.y;
+			}
 		}
 
-		const dx = this.target.x - this.current.x;
-		const dy = this.target.y - this.current.y;
-		const dist = Math.sqrt(dx * dx + dy * dy);
+		// Calculate total energy to know when to stop
+		const distSq = (this.target.x - this.current.x) ** 2 + (this.target.y - this.current.y) ** 2;
+		const velSq = this.velocity.x ** 2 + this.velocity.y ** 2;
+		const energy = distSq + velSq;
 
 		this.renderPosition();
 
-		// Check if we can stop ticking (not hovered and returned to origin)
-		if (!this.state.isHovered && dist < 0.1) {
+		// Check if we can stop ticking (not hovered and energy is near zero)
+		if (!isHovered && energy < 0.05) {
 			// Snap to exact 0 to clean up floating point errors
 			this.current.x = 0;
 			this.current.y = 0;
+			this.velocity.x = 0;
+			this.velocity.y = 0;
+
 			if (this.ref.text) {
 				this.textCurrent.x = 0;
 				this.textCurrent.y = 0;
+				this.textVelocity.x = 0;
+				this.textVelocity.y = 0;
 			}
 			this.renderPosition();
 			this.frameId = null; // Stop RAF loop
