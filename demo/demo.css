@@ -1022,7 +1022,6 @@ div[data-component=Tabs] [role=tabpanel][hidden] {
   display: none;
 }
 
-
 /* --- Tabs View Transitions --- */
 @keyframes tabs-slide-out-left {
   to {
