@@ -61,6 +61,7 @@ function handleMutations(mutations) {
 }
 
 export function initObserver() {
+    if (typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__) return;
     if (typeof document === "undefined") return;
 
     if (config.get("autoMountComponents") && !observer) {
@@ -76,12 +77,14 @@ export function initObserver() {
 }
 
 // Intercept config.set to dynamically start/stop observer when setting 'autoMountComponents'
-const originalConfigSet = config.set;
-config.set = function (name, value) {
-    originalConfigSet.call(this, name, value);
-    if (name === "autoMountComponents") {
-        initObserver();
-    }
-};
+if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
+    const originalConfigSet = config.set;
+    config.set = function (name, value) {
+        originalConfigSet.call(this, name, value);
+        if (name === "autoMountComponents") {
+            initObserver();
+        }
+    };
+}
 
 export default initObserver;

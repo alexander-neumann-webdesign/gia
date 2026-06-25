@@ -1,44 +1,51 @@
 import config from "./config.js";
 
 /**
- * Event bus using native EventTarget
+ * Event bus using pure JS for Zero-GC and maximum performance
  */
 
-class EventBus extends EventTarget {
+class EventBus {
+	constructor() {
+		this.listeners = Object.create(null);
+	}
+
 	emit(event, eventObject = {}) {
 		if (config.get("log")) {
 			console.info(`Emitting event '${event}'`);
 		}
-		// ⚡ BOLT OPTIMIZATION: Create the detail payload once per emit rather than inside every listener's wrapper.
-		// This saves N object spread allocations where N is the number of listeners.
-		const detail = { ...eventObject, _name: event };
-		const customEvent = new CustomEvent(event, { detail });
-		customEvent._name = event;
-		this.dispatchEvent(customEvent);
+
+		const handlers = this.listeners[event];
+		if (!handlers || handlers.length === 0) return;
+
+		// ⚡ OPTIMIZATION: Create payload once, completely bypassing DOM CustomEvent overhead.
+		const payload = { ...eventObject, _name: event };
+
+		// ⚡ OPTIMIZATION: Standard for loop over array, avoids Iterator overhead.
+		// We copy the array in case a handler calls .off() synchronously causing index shifts.
+		const callbacks = handlers.slice();
+		for (let i = 0; i < callbacks.length; i++) {
+			callbacks[i](payload);
+		}
 	}
 
 	on(event, handler, once = false) {
-		let wrappedHandlers = handler._wrappedHandlers;
-		if (!wrappedHandlers) {
-			wrappedHandlers = new Map();
-			handler._wrappedHandlers = wrappedHandlers;
+		if (!this.listeners[event]) {
+			this.listeners[event] = [];
 		}
 
-		let wrappedHandler = wrappedHandlers.get(event);
-		if (!wrappedHandler) {
-			// ⚡ BOLT OPTIMIZATION: Prevent object spread allocation {...e.detail} on every event listener
-			// by using the pre-spread detail object created in emit().
-			wrappedHandler = (e) => {
-				if (e.detail && e.detail._name === e._name) {
-					handler(e.detail);
-				} else {
-					handler({ ...e.detail, _name: e._name });
-				}
+		let actualHandler = handler;
+		if (once) {
+			actualHandler = (data) => {
+				this.off(event, actualHandler);
+				handler(data);
 			};
-			wrappedHandlers.set(event, wrappedHandler);
+			if (!handler._wrappedHandlers) {
+				handler._wrappedHandlers = Object.create(null);
+			}
+			handler._wrappedHandlers[event] = actualHandler;
 		}
 
-		this.addEventListener(event, wrappedHandler, { once });
+		this.listeners[event].push(actualHandler);
 	}
 
 	once(event, handler) {
@@ -46,20 +53,27 @@ class EventBus extends EventTarget {
 	}
 
 	off(event, handler) {
-		if (handler && handler._wrappedHandlers) {
-			const wrappedHandler = handler._wrappedHandlers.get(event);
-			if (wrappedHandler) {
-				this.removeEventListener(event, wrappedHandler);
-			}
-		} else if (handler && handler._wrapped) {
-			// Backwards compatibility if any old handlers exist
-			this.removeEventListener(event, handler._wrapped);
-		} else if (handler) {
-			this.removeEventListener(event, handler);
+		if (!handler) {
+			// Clear all listeners for this event if no handler provided
+			this.listeners[event] = [];
+			return;
 		}
 
-		if (!handler) {
-			console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
+		const handlers = this.listeners[event];
+		if (!handlers) return;
+
+		let targetHandler = handler;
+		if (handler._wrappedHandlers && handler._wrappedHandlers[event]) {
+			targetHandler = handler._wrappedHandlers[event];
+			delete handler._wrappedHandlers[event];
+		} else if (handler._wrapped) {
+			targetHandler = handler._wrapped;
+		}
+
+		const index = handlers.indexOf(targetHandler);
+		if (index !== -1) {
+			// ⚡ OPTIMIZATION: Fast array removal by splicing
+			handlers.splice(index, 1);
 		}
 	}
 }

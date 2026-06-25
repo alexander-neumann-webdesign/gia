@@ -3,8 +3,7 @@
 A performance-first, ultra-lightweight JavaScript framework (~5KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](https://img.shields.io/badge/bundle%20size-15%20KB-blue?style=flat-square)](dist/gia.umd.js)
-[![gzip size](https://img.shields.io/badge/gzip%20size-5.25%20KB-brightgreen?style=flat-square)](dist/gia.umd.js)
+[![bundle size](https://img.shields.io/badge/bundle%20size-(2.6kb_to_5.1kb_gzipped)-blue?style=flat-square)](dist/gia.full.umd.js)
 
 *Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management.*
 
@@ -42,12 +41,19 @@ A performance-first, ultra-lightweight JavaScript framework (~5KB gzipped) for c
 
 ---
 
-## Installation
+## Installation & Build Variants
 
-Load the UMD build directly via script tag:
+Gia is compiled into three highly optimized build variants depending on the features you need. Load the UMD builds directly via script tag, or import the ESM (`.mjs`) builds via a bundler.
+
+| Build Variant | Description | UMD Gzip Size | File |
+| --- | --- | --- | --- |
+| **Full Build** | Includes all framework features, async `require()`, global observers, and the EventBus. | ~5.1 KB | `dist/gia.full.umd.js` |
+| **Mini Build** | Drops `autoMount` MutationObserver logic and `data-action` auto-binding parsing. | ~4.6 KB | `dist/gia.mini.umd.js` |
+| **Nano Build** | The absolute bare minimum. Drops EventBus, global observers (scroll/resize), JSON options parsing, state-to-attribute syncing, and async script loading. Just the core class and ref engine. | ~2.6 KB | `dist/gia.nano.umd.js` |
 
 ```html
-<script src="./dist/gia.umd.js"></script>
+<!-- Example: Loading the full build -->
+<script src="./dist/gia.full.umd.js"></script>
 ```
 
 After loading the script, your components can be registered using `gia.register(ComponentClass)` to make them discoverable globally.

@@ -24,7 +24,16 @@ const _callObserverCb = (cb) => cb(_observerEntryArr);
 const _unobserveResizeCb = function(value, element) { this.unobserveResize(element); };
 const _unobserveIntersectionCb = function(value, element) { this.unobserveIntersection(element); };
 
+const _flushComponentState = (comp) => comp._flushStateChanges();
+let isRafQueued = false;
+const dirtyComponents = new Set();
 
+function flushGlobalStateChanges() {
+	isRafQueued = false;
+	// ⚡ BOLT OPTIMIZATION: Process all dirty components in a single requestAnimationFrame
+	dirtyComponents.forEach(_flushComponentState);
+	dirtyComponents.clear();
+}
 
 function _processScroll() {
 	scrollCallbacks.forEach(_callScrollCb);
@@ -102,7 +111,7 @@ export default class Component {
 		this._state = {};
 		this._flushStateChanges = this._flushStateChanges.bind(this);
 		this._autoBindFunctions();
-		if (config.get("autoBindActions")) {
+		if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && config.get("autoBindActions")) {
 			this._autoBindActions();
 	}
 	}
@@ -181,6 +190,10 @@ export default class Component {
 	}
 
 	set options(defaults) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+			this._options = { ...this._options, ...defaults };
+			return;
+		}
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
 		let options = {};
 		if (optionsFromAttribute) {
@@ -220,6 +233,7 @@ export default class Component {
 	_destroy() {
 		this.unmount();
 
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
@@ -243,6 +257,7 @@ export default class Component {
 
 
 	observeScroll(callback) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (typeof window === "undefined") return;
 
 		if (!globalScrollListenerBound) {
@@ -264,6 +279,7 @@ export default class Component {
 	}
 
 	unobserveScroll(callback) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.delete(callback);
 	}
@@ -281,6 +297,7 @@ export default class Component {
 	}
 
 	observeWindowResize(callback) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (typeof window === "undefined") return;
 
 		if (!globalResizeListenerBound) {
@@ -296,6 +313,7 @@ export default class Component {
 	}
 
 	unobserveWindowResize(callback) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks.delete(callback);
 	}
@@ -308,6 +326,7 @@ export default class Component {
 	}
 
 	observeResize(element, callback) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (typeof window === "undefined" || !window.ResizeObserver) return;
 
 		if (!globalResizeObserver) {
@@ -344,6 +363,7 @@ export default class Component {
 	}
 
 	unobserveResize(element, callback = null) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (!this._observedResizeElements) return;
 
 		const componentCallbacks = this._observedResizeElements.get(element);
@@ -376,6 +396,7 @@ export default class Component {
 	}
 
 	observeIntersection(element, callback, options = {}) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
 		const hash = getIntersectionOptionsHash(options);
@@ -462,6 +483,7 @@ export default class Component {
 	}
 
 	unobserveIntersection(element, callback = null) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (!this._observedIntersectionElements) return;
 
 		const componentElementMap = this._observedIntersectionElements.get(element);
@@ -488,6 +510,7 @@ export default class Component {
 	 * @return {Promise}
 	 */
 	loadScript(scriptId, globalName) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
 		// SAFETY CHECK: Is the library already active globally?
 		// If 'window.multipleSelect' exists, we don't need to do anything.
 		if (globalName && window[globalName] && !(window[globalName] instanceof Node) && !(window[globalName] instanceof HTMLCollection) && !(window[globalName] instanceof Window)) {
@@ -556,6 +579,7 @@ export default class Component {
 	 * @return {Promise}
 	 */
 	loadStyle(styleId) {
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
 		// DOM LOOKUP: Find the existing link tag
 		const link = document.getElementById(styleId);
 		if (!link) {
@@ -652,50 +676,59 @@ export default class Component {
 		if (!this._pendingStateChanges) {
 					this._pendingStateChanges = {};
 					this._pendingAttributeChanges = {};
-					requestAnimationFrame(this._flushStateChanges);
+					// ⚡ BOLT OPTIMIZATION: Add to global dirty set instead of queuing separate rAF per component
+					dirtyComponents.add(this);
+					if (!isRafQueued) {
+						isRafQueued = true;
+						requestAnimationFrame(flushGlobalStateChanges);
+					}
 		}
 
 				// Build batched state change payload
 				this._pendingStateChanges[key] = newValue;
 
-				// Process state changes for attributes
-				const type = typeof newValue;
-				if (type === "boolean" || type === "string") {
-					let attrName = globalStateAttributeCache.get(key);
-					if (!attrName) {
-						// Convert camelCase to kebab-case
-						const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-						attrName = `data-${kebabKey}`;
-						globalStateAttributeCache.set(key, attrName);
-	}
+				if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
+					// Process state changes for attributes
+					const type = typeof newValue;
+					if (type === "boolean" || type === "string") {
+						let attrName = globalStateAttributeCache.get(key);
+						if (!attrName) {
+							// Convert camelCase to kebab-case
+							const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+							attrName = `data-${kebabKey}`;
+							globalStateAttributeCache.set(key, attrName);
+						}
 
-					this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
-		}
+						this._pendingAttributeChanges[attrName] = type === "boolean" ? (newValue ? "true" : "false") : newValue;
+					}
+				}
 	}
 	}
 	}
 	}
 
 	_flushStateChanges() {
-		// Apply batched attribute changes
-		// ⚡ BOLT OPTIMIZATION: Fast-failing for...in empty check to avoid Object.keys() array allocation
-		// when no attributes changed (common in hot paths like games or parallax).
-		let hasAttrChanges = false;
-		for (const _k in this._pendingAttributeChanges) {
-			hasAttrChanges = true;
-			break;
-	}
+		if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
+			// Apply batched attribute changes
+			// ⚡ BOLT OPTIMIZATION: Fast-failing for...in empty check to avoid Object.keys() array allocation
+			// when no attributes changed (common in hot paths like games or parallax).
+			let hasAttrChanges = false;
+			for (const _k in this._pendingAttributeChanges) {
+				hasAttrChanges = true;
+				break;
+			}
 
-		if (hasAttrChanges) {
-			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
-			for (const attrName in this._pendingAttributeChanges) {
-				if (!Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) continue;
-				const value = this._pendingAttributeChanges[attrName];
-				if (this.element.getAttribute(attrName) !== value) {
-					this.element.setAttribute(attrName, value);
+			if (hasAttrChanges) {
+				// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
+				for (const attrName in this._pendingAttributeChanges) {
+					if (!Object.prototype.hasOwnProperty.call(this._pendingAttributeChanges, attrName)) continue;
+					const value = this._pendingAttributeChanges[attrName];
+					if (this.element.getAttribute(attrName) !== value) {
+						this.element.setAttribute(attrName, value);
+					}
+				}
+			}
 		}
-	}
-	}
 
 		this.stateChange(this._pendingStateChanges);
 		this._pendingStateChanges = null;
@@ -737,6 +770,7 @@ export default class Component {
 	}
 
 	_autoBindActions() {
+		if (typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__) return;
 		// Find all elements with data-action inside this component
 		const actionElements = queryAll("[data-action]", this.element);
 		const length = actionElements.length;
