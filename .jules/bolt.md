@@ -117,3 +117,6 @@
 ## 2024-11-20 - Remove rAF deferral for scroll and resize to prevent layout thrashing
 **Learning:** Deferring layout reads like `getBoundingClientRect()` to `requestAnimationFrame` inside high-frequency event handlers (e.g., scroll, resize) can cause layout thrashing if those reads mix with DOM writes scheduled by other components in the same animation frame.
 **Action:** Execute DOM reads synchronously inside the original event listeners (or observer callbacks), cache the values, and restrict `requestAnimationFrame` strictly to pure calculations and DOM writes.
+## 2024-06-25 - Prevent GC churn in MutationObserver callbacks
+**Learning:** Allocating collections like `new Set()` inside high-frequency event handlers such as `MutationObserver` callbacks introduces significant garbage collection (GC) overhead and performance degradation, especially when many DOM mutations occur.
+**Action:** Extract the collection to the module scope and reuse it by calling `.clear()` on each invocation of the handler.
