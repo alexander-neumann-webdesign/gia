@@ -3,61 +3,52 @@ class OffCanvasMenu extends gia.Component {
 		super(element);
 
 		this.options = {
-			preventScroll: true
+			preventScroll: true,
+			mainContentSelector: "main",
+			updateLocationHash: false,
 		};
 
 		this.setState({
-			isOpen: false
+			isOpen: false,
 		});
-
-		this.isDialog = this.element instanceof HTMLDialogElement;
-		if (!this.isDialog) {
-			console.warn("OffCanvasMenu: Component should be attached to a <dialog> element.");
-		}
 
 		this.menuId = this.element.id;
 		this.triggers = this.menuId ? document.querySelectorAll(`[data-offcanvas-target="${this.menuId}"]`) : [];
+		this.closeButtons = this.element.querySelectorAll("[data-offcanvas-close]");
 	}
 
 	mount() {
-		if (!this.isDialog) return;
+		this.triggers.forEach((trigger) => {
+			trigger.addEventListener("click", this.handleTriggerClick);
 
-		// Attach events to external triggers (e.g. burger button)
-		// Methods are automatically bound via _autoBindFunctions in BaseComponent
-		this.triggers.forEach(trigger => {
-			trigger.addEventListener('click', this.handleTriggerClick);
-
-			// Accessibility: set aria-controls and initial aria-expanded state
 			if (this.menuId) {
-				trigger.setAttribute('aria-controls', this.menuId);
+				trigger.setAttribute("aria-controls", this.menuId);
 			}
-			if (!trigger.hasAttribute('aria-expanded')) {
-				trigger.setAttribute('aria-expanded', this.state.isOpen ? 'true' : 'false');
+
+			if (!trigger.hasAttribute("aria-expanded")) {
+				trigger.setAttribute("aria-expanded", this.state.isOpen ? "true" : "false");
 			}
 		});
 
-		// Attach backdrop click
-		this.element.addEventListener('click', this.handleBackdropClick);
+		this.closeButtons.forEach((button) => {
+			button.addEventListener("click", this.handleCloseClick);
+		});
 
-		// Listen for native close event
-		this.element.addEventListener('close', this.handleNativeClose);
-		this.element.addEventListener('cancel', this.handleNativeCancel);
-
-		// Swup integration: Force close on page transition to avoid dangling offcanvas
 		if (window.swup) {
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
 		}
 
-		// Initial state based on URL hash or DOM
 		const hash = window.location.hash;
-		let shouldBeOpen = this.element.hasAttribute('open');
+		let shouldBeOpen = this.element.classList.contains("is-open");
 
-		if (hash && this.menuId && hash === `#${this.menuId}`) {
+		if (this.options.updateLocationHash && hash && this.menuId && hash === `#${this.menuId}`) {
 			shouldBeOpen = true;
 		}
 
 		if (shouldBeOpen) {
 			this.setState({ isOpen: true });
+		} else {
+			this.element.inert = true;
 		}
 	}
 
@@ -66,22 +57,25 @@ class OffCanvasMenu extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		this.triggers.forEach(trigger => {
-			trigger.removeEventListener('click', this.handleTriggerClick);
+		this.triggers.forEach((trigger) => {
+			trigger.removeEventListener("click", this.handleTriggerClick);
 		});
 
-		this.element.removeEventListener('click', this.handleBackdropClick);
-		this.element.removeEventListener('close', this.handleNativeClose);
-		this.element.removeEventListener('cancel', this.handleNativeCancel);
+		this.closeButtons.forEach((button) => {
+			button.removeEventListener("click", this.handleCloseClick);
+		});
 
-		if (this.options.preventScroll && this.element.open) {
-			document.body.style.overflow = '';
+		document.removeEventListener("click", this.handleDocumentClick);
+		document.removeEventListener("keydown", this.handleKeyDown);
+
+		if (this.state.isOpen) {
+			document.documentElement.classList.remove("off-canvas-menu-open");
 		}
 	}
 
 	handleTriggerClick(e) {
 		e.preventDefault();
-		this.setState({ isOpen: true });
+		this.setState({ isOpen: !this.state.isOpen });
 	}
 
 	handleCloseClick(e) {
@@ -89,22 +83,23 @@ class OffCanvasMenu extends gia.Component {
 		this.setState({ isOpen: false });
 	}
 
-	handleNativeClose() {
-		if (this.state.isOpen) {
-			this.setState({ isOpen: false });
+	handleDocumentClick(e) {
+		if (!this.element.contains(e.target)) {
+			let isTriggerClick = false;
+			this.triggers.forEach((trigger) => {
+				if (trigger.contains(e.target)) {
+					isTriggerClick = true;
+				}
+			});
+
+			if (!isTriggerClick) {
+				this.setState({ isOpen: false });
+			}
 		}
 	}
 
-	handleNativeCancel(e) {
-		if (!CSS.supports('transition-behavior', 'allow-discrete')) {
-			e.preventDefault();
-			this.setState({ isOpen: false });
-		}
-	}
-
-	handleBackdropClick(event) {
-		// If clicking directly on the dialog background, close it
-		if (event.target === this.element) {
+	handleKeyDown(e) {
+		if (e.key === "Escape") {
 			this.setState({ isOpen: false });
 		}
 	}
@@ -116,12 +111,11 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ('isOpen' in stateChanges) {
+		if ("isOpen" in stateChanges) {
 			const { isOpen } = stateChanges;
 
-			// Accessibility: update aria-expanded on triggers
-			this.triggers.forEach(trigger => {
-				trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			this.triggers.forEach((trigger) => {
+				trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
 			});
 
 			if (isOpen) {
@@ -133,55 +127,57 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	_openMenu() {
-		if (!this.element.open) {
-			this.element.showModal();
+		this.element.classList.add("is-open");
+		this.element.setAttribute("aria-hidden", "false");
+		this.element.inert = false;
+
+		document.documentElement.classList.add("off-canvas-menu-open");
+
+		const mainContent = document.querySelector(this.options.mainContentSelector);
+		if (mainContent) {
+			mainContent.inert = true;
 		}
 
-		if (this.options.preventScroll) {
-			document.body.style.overflow = 'hidden';
+		setTimeout(() => {
+			document.addEventListener("click", this.handleDocumentClick);
+			document.addEventListener("keydown", this.handleKeyDown);
+		}, 0);
 
-			// Lenis integration: Stop smooth scrolling
-			if (window.lenis) {
-				window.lenis.stop();
-			}
+		if (this.options.preventScroll && window.lenis) {
+			window.lenis.stop();
 		}
 
-		// Write menu ID to URL
-		if (this.menuId && window.location.hash !== `#${this.menuId}`) {
-			history.pushState(null, '', `#${this.menuId}`);
+		if (this.options.updateLocationHash && this.menuId && window.location.hash !== `#${this.menuId}`) {
+			history.pushState(null, "", `#${this.menuId}`);
 		}
 	}
 
 	_closeMenu() {
-		if (this.element.open) {
-			if (CSS.supports('transition-behavior', 'allow-discrete')) {
-				this.element.close();
-			} else {
-				this.element.setAttribute('data-is-closing', 'true');
-				const handleTransitionEnd = () => {
-					this.element.removeAttribute('data-is-closing');
-					this.element.close();
-					this.element.removeEventListener('transitionend', handleTransitionEnd);
-					clearTimeout(timeout);
-				};
-				const timeout = setTimeout(handleTransitionEnd, 500);
-				this.element.addEventListener('transitionend', handleTransitionEnd);
-			}
+		if (this.element.contains(document.activeElement)) {
+			document.activeElement.blur();
 		}
 
-		if (this.options.preventScroll) {
-			document.body.style.overflow = '';
+		this.element.classList.remove("is-open");
+		this.element.setAttribute("aria-hidden", "true");
+		this.element.inert = true;
 
-			// Lenis integration: Resume smooth scrolling
-			if (window.lenis) {
-				window.lenis.start();
-			}
+		document.documentElement.classList.remove("off-canvas-menu-open");
+
+		const mainContent = document.querySelector(this.options.mainContentSelector);
+		if (mainContent) {
+			mainContent.inert = false;
 		}
 
-		// Remove menu ID from URL
-		if (this.menuId && window.location.hash === `#${this.menuId}`) {
+		document.removeEventListener("click", this.handleDocumentClick);
+		document.removeEventListener("keydown", this.handleKeyDown);
+
+		if (this.options.preventScroll && window.lenis) {
+			window.lenis.start();
+		}
+
+		if (this.options.updateLocationHash && this.menuId && window.location.hash === `#${this.menuId}`) {
 			const urlWithoutHash = window.location.pathname + window.location.search;
-			history.pushState(null, '', urlWithoutHash || '#');
+			history.pushState(null, "", urlWithoutHash || "#");
 		}
 	}
 }
@@ -193,84 +189,70 @@ gia.register(OffCanvasMenu);
 EXPECTED HTML
 ========================================
 
-<!-- Trigger inside Header, e.g., a burger button -->
-<header>
-  <button data-offcanvas-target="main-menu" aria-label="Open menu" aria-expanded="false" aria-controls="main-menu">☰</button>
+<header class="site-header">
+  <button data-offcanvas-target="main-menu" aria-label="<?= __('Open menu', 'anweb') ?>" aria-expanded="false" aria-controls="main-menu">
+    <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" width="24" height="16">
+      <path stroke="currentColor" stroke-width="2" d="M0 1h48" />
+      <path stroke="currentColor" stroke-width="2" d="M0 16h48" />
+      <path stroke="currentColor" stroke-width="2" d="M0 31h48" />
+    </svg>
+  </button>
 </header>
 
-<!-- The OffCanvasMenu itself -->
-<dialog data-component="OffCanvasMenu" id="main-menu">
-  <div class="offcanvas-content">
-    <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/about">About</a></li>
-      </ul>
-    </nav>
-  </div>
-</dialog>
+<div
+	data-component="OffCanvasMenu"
+	id="off-canvas-menu"
+	role="dialog"
+	aria-modal="true"
+	aria-label="<?= __('Main Navigation', 'anweb') ?>"
+	aria-hidden="true">
+	<div class="inner-container">
+		<nav aria-label="<?= __('Primary', 'anweb') ?>">
+			<?php wp_nav_menu(array(
+				'menu' => 'off-canvas-menu',
+				'theme_location' => 'off-canvas-menu',
+				'container' => false,
+			)) ?>
+		</nav>
+	</div>
+</div>
+
+<main id="main-content">
+</main>
 
 ========================================
 SUGGESTED SCSS
 ========================================
 
-dialog[data-component="OffCanvasMenu"] {
+
+html.off-canvas-menu-open {
+  body {
+    overflow: hidden;
+  }
+}
+
+#off-canvas-menu {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   max-width: 400px;
   height: 100vh;
-  max-height: 100vh;
   margin: 0;
-  border: none;
-  padding: 0;
+  padding-top: var(--header-height);
   background: white;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-
-  // Slide from left by default
+  z-index: 90;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   transform: translateX(-100%);
-  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
-  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.4s ease, visibility 0.4s;
 
-  &::backdrop {
-    background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
-    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
-    opacity: 0;
-  }
-
-  &[open] {
+  &.is-open {
     transform: translateX(0);
-    opacity: 1;
-
-    &::backdrop {
-      opacity: 1;
-    }
+    visibility: visible;
   }
 
-  @starting-style {
-    &[open] {
-      transform: translateX(-100%);
-      opacity: 0;
-
-      &::backdrop {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[data-is-closing="true"] {
-    opacity: 0;
-    transform: translateX(-100%);
-
-    &::backdrop {
-      opacity: 0;
-    }
-  }
-
-  .offcanvas-content {
+  .inner-container {
     padding: 2rem;
     height: 100%;
     overflow-y: auto;
