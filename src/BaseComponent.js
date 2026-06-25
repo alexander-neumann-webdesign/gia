@@ -233,25 +233,39 @@ export default class Component {
 	_destroy() {
 		this.unmount();
 
-		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+			this._ref = null;
+			if (this.element) {
+				this.element.__gia_component__ = null;
+				this.element = null;
+			}
+			return;
+		}
 
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
-	}
+		}
 
 		if (this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks.forEach(this.unobserveWindowResize, this);
-	}
+		}
 
 		if (this._observedResizeElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedResizeElements.forEach(_unobserveResizeCb, this);
-	}
+		}
 
 		if (this._observedIntersectionElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
-	}
+		}
+
+		// ⚡ BOLT OPTIMIZATION: Aggressively clear refs and element to assist GC
+		this._ref = null;
+		if (this.element) {
+			this.element.__gia_component__ = null;
+			this.element = null;
+		}
 	}
 
 
@@ -674,8 +688,8 @@ export default class Component {
 				this._state[key] = newValue;
 
 		if (!this._pendingStateChanges) {
-					this._pendingStateChanges = {};
-					this._pendingAttributeChanges = {};
+					this._pendingStateChanges = this._reusableStateChanges || {};
+					this._pendingAttributeChanges = this._reusableAttributeChanges || {};
 					// ⚡ BOLT OPTIMIZATION: Add to global dirty set instead of queuing separate rAF per component
 					dirtyComponents.add(this);
 					if (!isRafQueued) {
@@ -731,6 +745,21 @@ export default class Component {
 		}
 
 		this.stateChange(this._pendingStateChanges);
+
+		// ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
+		this._reusableStateChanges = this._pendingStateChanges;
+		this._reusableAttributeChanges = this._pendingAttributeChanges;
+		
+		for (const k in this._reusableStateChanges) {
+			delete this._reusableStateChanges[k];
+		}
+		
+		if (this._reusableAttributeChanges) {
+			for (const k in this._reusableAttributeChanges) {
+				delete this._reusableAttributeChanges[k];
+			}
+		}
+
 		this._pendingStateChanges = null;
 		this._pendingAttributeChanges = null;
 	}

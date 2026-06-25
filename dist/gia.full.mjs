@@ -15,7 +15,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
 });
 class Y {
   constructor() {
-    k(this, "n", {
+    k(this, "o", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -26,10 +26,10 @@ class Y {
     });
   }
   set(e, t) {
-    this.n[e] = t;
+    this.o[e] = t;
   }
   get(e) {
-    return this.n[e];
+    return this.o[e];
   }
 }
 const f = new Y();
@@ -55,7 +55,7 @@ function p(o, e = document) {
 function U(o, e, t = null) {
   t === null ? o.classList.toggle(e) : o.classList.toggle(e, !!t);
 }
-function W(o, e, t) {
+function D(o, e, t) {
   if (!o) return o;
   if (o.length !== void 0 && o.nodeType === void 0)
     for (let n = 0; n < o.length; n++)
@@ -65,10 +65,10 @@ function W(o, e, t) {
   return o;
 }
 function J(o, e) {
-  return W(o, e, "remove");
+  return D(o, e, "remove");
 }
 function Q(o, e) {
-  return W(o, e, "add");
+  return D(o, e, "add");
 }
 function V(o, e, t = null, n = {
   bubbles: !0,
@@ -130,7 +130,7 @@ function X(o = {}, e = document.documentElement) {
     typeof o[c] == "function" ? n.push(L(e, c, o[c])) : console.warn(`Constructor "${c}" not found.`);
   }
   for (let l = 0; l < n.length; l++)
-    n[l].h();
+    n[l].g();
 }
 function E(o) {
   if (!o) return;
@@ -140,9 +140,9 @@ function E(o) {
     t && (e = t.__gia_component__, o = t);
   }
   if (e) {
-    const t = e.s || "Unknown";
+    const t = e.r || "Unknown";
     try {
-      typeof e._ == "function" ? e._() : e.unmount();
+      typeof e.p == "function" ? e.p() : e.unmount();
     } catch (n) {
       console.error(`Gia: Error unmounting component "${t}".`, n);
     }
@@ -161,7 +161,7 @@ const C = { scroll: 0, velocity: 0 }, S = { width: 0, height: 0 }, I = [null], t
   this.unobserveResize(e);
 }, ie = function(o, e) {
   this.unobserveIntersection(e);
-}, se = (o) => o.d();
+}, se = (o) => o.h();
 let $ = !1;
 const G = /* @__PURE__ */ new Set();
 function re() {
@@ -181,17 +181,17 @@ function T(o) {
   S.width = window.innerWidth, S.height = window.innerHeight, ce();
 }
 let w = null;
-const _ = /* @__PURE__ */ new Map(), A = /* @__PURE__ */ new Map(), j = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), B = /* @__PURE__ */ new WeakMap(), D = /* @__PURE__ */ new Map();
+const _ = /* @__PURE__ */ new Map(), A = /* @__PURE__ */ new Map(), j = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), B = /* @__PURE__ */ new WeakMap(), q = /* @__PURE__ */ new Map();
 function ae(o) {
   const e = o.root || null, t = o.rootMargin || "0px 0px 0px 0px", n = o.threshold || 0, i = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${i}`;
 }
 let fe = class {
   constructor(e, t) {
-    this.element = e, this.element.__gia_component__ = this, this.s = this.constructor.name, this.o = {}, this.n = t || {}, this.f = {}, this.d = this.d.bind(this), this.w(), f.get("autoBindActions") && this.b();
+    this.element = e, this.element.__gia_component__ = this, this.r = this.constructor.name, this.e = {}, this.o = t || {}, this.u = {}, this.h = this.h.bind(this), this.m(), f.get("autoBindActions") && this.y();
   }
   get ref() {
-    return this.o;
+    return this.e;
   }
   set ref(e) {
     const t = `${f.get("attrPrefix")}-ref`, n = p(`[${t}]`, this.element), i = /* @__PURE__ */ Object.create(null);
@@ -210,31 +210,31 @@ let fe = class {
         const l = r.indexOf(":");
         if (l !== -1) {
           const c = r.substring(0, l), a = r.substring(l + 1);
-          c === this.s && !this.o[a] && (this.o[a] = i[r]);
+          c === this.r && !this.e[a] && (this.e[a] = i[r]);
         } else
-          this.o[r] || (this.o[r] = i[r]);
+          this.e[r] || (this.e[r] = i[r]);
       }
     else {
-      this.o = {};
+      this.e = {};
       for (const r in e) {
         if (!Object.prototype.hasOwnProperty.call(e, r)) continue;
         const l = Array.isArray(e[r]);
         if (e[r] !== null && l && e[r].length > 0) {
-          this.o[r] = e[r];
+          this.e[r] = e[r];
           continue;
         }
-        const c = `${this.s}:${r}`;
+        const c = `${this.r}:${r}`;
         let a = i[c] || [];
-        a.length === 0 && (a = i[r] || []), this.o[r] = l ? a : a[0] ?? null;
+        a.length === 0 && (a = i[r] || []), this.e[r] = l ? a : a[0] ?? null;
       }
     }
   }
   get options() {
-    return this.n;
+    return this.o;
   }
   set options(e) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__) {
-      this.n = { ...this.n, ...e };
+      this.o = { ...this.o, ...e };
       return;
     }
     const t = this.element.getAttribute(`${f.get("attrPrefix")}-options`);
@@ -245,38 +245,42 @@ let fe = class {
         try {
           n = JSON.parse(i);
         } catch (s) {
-          console.error(`Failed to parse options for component "${this.s}": ${s.message}`);
+          console.error(`Failed to parse options for component "${this.r}": ${s.message}`);
         }
     }
-    this.n = {
-      ...this.n,
+    this.o = {
+      ...this.o,
       ...e,
       ...n
     };
   }
   get state() {
-    return this.f;
+    return this.u;
   }
   set state(e) {
-    console.warn("Use setState instead."), this.f = e;
+    console.warn("Use setState instead."), this.u = e;
   }
-  h() {
+  g() {
     this.mount();
   }
-  _() {
-    this.unmount(), !(typeof __GIA_NANO__ < "u" && __GIA_NANO__) && (this.r && this.r.forEach(this.unobserveScroll, this), this.l && this.l.forEach(this.unobserveWindowResize, this), this.i && this.i.forEach(oe, this), this.e && this.e.forEach(ie, this));
+  p() {
+    if (this.unmount(), typeof __GIA_NANO__ < "u" && __GIA_NANO__) {
+      this.e = null, this.element && (this.element.__gia_component__ = null, this.element = null);
+      return;
+    }
+    this.l && this.l.forEach(this.unobserveScroll, this), this.c && this.c.forEach(this.unobserveWindowResize, this), this.i && this.i.forEach(oe, this), this.t && this.t.forEach(ie, this), this.e = null, this.element && (this.element.__gia_component__ = null, this.element = null);
   }
   observeScroll(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (b || (b = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this.r || (this.r = /* @__PURE__ */ new Set()), this.r.add(e), N.add(e));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (b || (b = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this.l || (this.l = /* @__PURE__ */ new Set()), this.l.add(e), N.add(e));
   }
   unobserveScroll(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.r && this.r.delete(e), N.delete(e), N.size === 0 && b && (b = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y)));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.l && this.l.delete(e), N.delete(e), N.size === 0 && b && (b = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y)));
   }
   observeWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (m || (m = !0, window.addEventListener(x, T, { passive: !0 })), this.l || (this.l = /* @__PURE__ */ new Set()), this.l.add(e), v.add(e));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (m || (m = !0, window.addEventListener(x, T, { passive: !0 })), this.c || (this.c = /* @__PURE__ */ new Set()), this.c.add(e), v.add(e));
   }
   unobserveWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.l && this.l.delete(e), v.delete(e), v.size === 0 && m && (m = !1, window.removeEventListener(x, T)));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.c && this.c.delete(e), v.delete(e), v.size === 0 && m && (m = !1, window.removeEventListener(x, T)));
   }
   observeResize(e, t) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || !window.ResizeObserver) return;
@@ -318,14 +322,14 @@ let fe = class {
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, A.set(i, s));
     let r = s.callbacks.get(e);
-    r || (r = /* @__PURE__ */ new Set(), s.callbacks.set(e, r), s.observer.observe(e)), r.add(t), this.e || (this.e = /* @__PURE__ */ new Map());
-    let l = this.e.get(e);
-    l || (l = /* @__PURE__ */ new Map(), this.e.set(e, l));
+    r || (r = /* @__PURE__ */ new Set(), s.callbacks.set(e, r), s.observer.observe(e)), r.add(t), this.t || (this.t = /* @__PURE__ */ new Map());
+    let l = this.t.get(e);
+    l || (l = /* @__PURE__ */ new Map(), this.t.set(e, l));
     let c = l.get(i);
     c || (c = /* @__PURE__ */ new Set(), l.set(i, c)), c.add(t);
   }
-  m(e, t) {
-    const n = A.get(t), i = this.g, s = this.p;
+  A(e, t) {
+    const n = A.get(t), i = this.w, s = this.b;
     if (s)
       e.has(s) && (e.delete(s), n && n.callbacks.has(i) && n.callbacks.get(i).delete(s));
     else {
@@ -335,15 +339,15 @@ let fe = class {
       }
       e.clear();
     }
-    if (e.size === 0 && this.e.get(i).delete(t), n) {
+    if (e.size === 0 && this.t.get(i).delete(t), n) {
       const r = n.callbacks.get(i);
       r && r.size === 0 && (n.callbacks.delete(i), n.observer.unobserve(i)), n.callbacks.size === 0 && (n.observer.disconnect(), A.delete(t));
     }
   }
   unobserveIntersection(e, t = null) {
-    if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || !this.e) return;
-    const n = this.e.get(e);
-    n && (this.g = e, this.p = t, n.forEach(this.m, this), this.g = null, this.p = null, n.size === 0 && this.e.delete(e));
+    if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || !this.t) return;
+    const n = this.t.get(e);
+    n && (this.w = e, this.b = t, n.forEach(this.A, this), this.w = null, this.b = null, n.size === 0 && this.t.delete(e));
   }
   /**
    * Loads a script that is already defined in the DOM with a data-src attribute.
@@ -357,16 +361,16 @@ let fe = class {
     if (t && window[t] && !(window[t] instanceof Node) && !(window[t] instanceof HTMLCollection) && !(window[t] instanceof Window))
       return Promise.resolve(window[t]);
     const n = document.getElementById(e);
-    return n ? n instanceof HTMLScriptElement ? n.t ? n.t : (n.t = new Promise((i, s) => {
+    return n ? n instanceof HTMLScriptElement ? n.n ? n.n : (n.n = new Promise((i, s) => {
       const r = () => {
         n.onload = null, n.onerror = null;
       };
       n.onload = () => {
         r(), i(t ? window[t] : !0);
       }, n.onerror = () => {
-        r(), delete n.t, s(new Error(`Failed to load script: ${e}`));
+        r(), delete n.n, s(new Error(`Failed to load script: ${e}`));
       }, !n.src && n.hasAttribute("data-src") ? (n.src = n.getAttribute("data-src"), n.removeAttribute("data-src")) : !n.src && !n.hasAttribute("data-src") && (r(), s(new Error(`Script tag '${e}' has no src or data-src.`)));
-    }), n.t) : Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
+    }), n.n) : Promise.reject(new Error(`Element with ID '${e}' is not a valid script tag.`)) : Promise.reject(new Error(`Script tag with ID '${e}' not found.`));
   }
   /**
    * Loads a stylesheet that is already defined in the DOM with a data-href attribute.
@@ -377,14 +381,14 @@ let fe = class {
   loadStyle(e) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__) return Promise.resolve();
     const t = document.getElementById(e);
-    return t ? t instanceof HTMLLinkElement ? t.t ? t.t : (t.t = new Promise((n, i) => {
+    return t ? t instanceof HTMLLinkElement ? t.n ? t.n : (t.n = new Promise((n, i) => {
       const s = () => {
         t.onload = null, t.onerror = null;
       };
       if (t.onload = () => {
         s(), n(!0);
       }, t.onerror = () => {
-        s(), delete t.t, i(new Error(`Failed to load style: ${e}`));
+        s(), delete t.n, i(new Error(`Failed to load style: ${e}`));
       }, !t.href && t.hasAttribute("data-href"))
         t.href = t.getAttribute("data-href"), t.removeAttribute("data-href");
       else if (!t.href && !t.hasAttribute("data-href"))
@@ -398,49 +402,55 @@ let fe = class {
           }
         r && (s(), n(!0));
       }
-    }), t.t) : Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
+    }), t.n) : Promise.reject(new Error(`Element with ID '${e}' is not a valid link tag.`)) : Promise.reject(new Error(`Link tag with ID '${e}' not found.`));
   }
   mount() {
   }
   unmount() {
   }
   getRef(e, t = !1) {
-    return `[${f.get("attrPrefix")}-ref="${t ? `${this.s}:` : ""}${e}"]`;
+    return `[${f.get("attrPrefix")}-ref="${t ? `${this.r}:` : ""}${e}"]`;
   }
   setState(e) {
     if (e)
       for (const t in e) {
         if (!Object.prototype.hasOwnProperty.call(e, t)) continue;
         const n = e[t];
-        if (this.f[t] !== n && (this.f[t] = n, this.u || (this.u = {}, this.c = {}, G.add(this), $ || ($ = !0, requestAnimationFrame(re))), this.u[t] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
+        if (this.u[t] !== n && (this.u[t] = n, this.f || (this.f = this._ || {}, this.s = this.d || {}, G.add(this), $ || ($ = !0, requestAnimationFrame(re))), this.f[t] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const i = typeof n;
           if (i === "boolean" || i === "string") {
-            let s = D.get(t);
-            s || (s = `data-${t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, D.set(t, s)), this.c[s] = i === "boolean" ? n ? "true" : "false" : n;
+            let s = q.get(t);
+            s || (s = `data-${t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, q.set(t, s)), this.s[s] = i === "boolean" ? n ? "true" : "false" : n;
           }
         }
       }
   }
-  d() {
+  h() {
     if (typeof __GIA_NANO__ > "u" || !__GIA_NANO__) {
       let e = !1;
-      for (const t in this.c) {
+      for (const t in this.s) {
         e = !0;
         break;
       }
       if (e)
-        for (const t in this.c) {
-          if (!Object.prototype.hasOwnProperty.call(this.c, t)) continue;
-          const n = this.c[t];
+        for (const t in this.s) {
+          if (!Object.prototype.hasOwnProperty.call(this.s, t)) continue;
+          const n = this.s[t];
           this.element.getAttribute(t) !== n && this.element.setAttribute(t, n);
         }
     }
-    this.stateChange(this.u), this.u = null, this.c = null;
+    this.stateChange(this.f), this._ = this.f, this.d = this.s;
+    for (const e in this._)
+      delete this._[e];
+    if (this.d)
+      for (const e in this.d)
+        delete this.d[e];
+    this.f = null, this.s = null;
   }
   stateChange(e) {
     return e;
   }
-  w() {
+  m() {
     var n;
     const e = Object.getPrototypeOf(this);
     let t = B.get(e);
@@ -458,7 +468,7 @@ let fe = class {
       this[s] = this[s].bind(this);
     }
   }
-  b() {
+  y() {
     const e = p("[data-action]", this.element), t = e.length;
     for (let n = 0; n < t; n++) {
       const i = e[n], s = i.getAttribute("data-action");
@@ -479,8 +489,9 @@ let fe = class {
 class me extends fe {
   async require() {
   }
-  h() {
-    this.require().then(this.mount.bind(this));
+  g() {
+    const e = this.require();
+    e && typeof e.then == "function" ? e.then(() => this.mount()) : this.mount();
   }
 }
 class ue {
@@ -491,7 +502,7 @@ class ue {
     f.get("log") && console.info(`Emitting event '${e}'`);
     const n = this.listeners[e];
     if (!n || n.length === 0) return;
-    const i = { ...t, s: e }, s = n.slice();
+    const i = { ...t, r: e }, s = n.slice();
     for (let r = 0; r < s.length; r++)
       s[r](i);
   }
@@ -513,7 +524,7 @@ class ue {
     const n = this.listeners[e];
     if (!n) return;
     let i = t;
-    t.a && t.a[e] ? (i = t.a[e], delete t.a[e]) : t.y && (i = t.y);
+    t.a && t.a[e] ? (i = t.a[e], delete t.a[e]) : t.N && (i = t.N);
     const s = n.indexOf(i);
     s !== -1 && n.splice(s, 1);
   }
@@ -544,7 +555,7 @@ function he(o) {
   }
   M = t, O.forEach(de), M = null;
 }
-function q() {
+function W() {
   typeof document > "u" || (f.get("autoMountComponents") && !g ? (g = new MutationObserver(he), g.observe(document.body, {
     childList: !0,
     subtree: !0
@@ -553,10 +564,10 @@ function q() {
 {
   const o = f.set;
   f.set = function(e, t) {
-    o.call(this, e, t), e === "autoMountComponents" && q();
+    o.call(this, e, t), e === "autoMountComponents" && W();
   };
 }
-typeof window < "u" && setTimeout(q, 0);
+typeof window < "u" && setTimeout(W, 0);
 export {
   fe as BaseComponent,
   me as Component,
