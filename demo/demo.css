@@ -541,7 +541,27 @@ dialog[data-component=Modal][data-is-closing=true]::backdrop {
 }
 
 /* --- OffCanvasMenu --- */
-dialog[data-component=OffCanvasMenu] {
+html.off-canvas-menu-open::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: offcanvasBackdropFadeIn 0.4s ease forwards;
+}
+
+@keyframes offcanvasBackdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+[data-component=OffCanvasMenu] {
   position: fixed;
   top: 0;
   left: 0;
@@ -554,40 +574,16 @@ dialog[data-component=OffCanvasMenu] {
   padding: 0;
   background: white;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
   transform: translateX(-100%);
-  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
-  opacity: 0;
+  transition: transform 0.4s ease, visibility 0.4s ease;
+  visibility: hidden;
 }
-dialog[data-component=OffCanvasMenu]::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
-  opacity: 0;
-}
-dialog[data-component=OffCanvasMenu][open] {
+[data-component=OffCanvasMenu].is-open {
   transform: translateX(0);
-  opacity: 1;
+  visibility: visible;
 }
-dialog[data-component=OffCanvasMenu][open]::backdrop {
-  opacity: 1;
-}
-@starting-style {
-  dialog[data-component=OffCanvasMenu][open] {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  dialog[data-component=OffCanvasMenu][open]::backdrop {
-    opacity: 0;
-  }
-}
-dialog[data-component=OffCanvasMenu][data-is-closing=true] {
-  opacity: 0;
-  transform: translateX(-100%);
-}
-dialog[data-component=OffCanvasMenu][data-is-closing=true]::backdrop {
-  opacity: 0;
-}
-dialog[data-component=OffCanvasMenu] .offcanvas-content {
+[data-component=OffCanvasMenu] .offcanvas-content {
   padding: 2rem;
   height: 100%;
   overflow-y: auto;

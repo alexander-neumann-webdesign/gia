@@ -68,10 +68,9 @@
   <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
 </header>
 
-<!-- The OffCanvasMenu itself -->
-<dialog data-component="OffCanvasMenu" id="main-menu">
+<div data-component="OffCanvasMenu" id="main-menu" role="dialog" aria-modal="true" aria-label="Main Navigation" aria-hidden="true">
   <div class="offcanvas-content">
-    <button data-action="click->handleCloseClick" aria-label="Close menu">✕</button>
+    <button data-action="click->handleCloseClick" data-offcanvas-close aria-label="Close menu">✕</button>
     <nav>
       <ul>
         <li><a href="/">Home</a></li>
@@ -79,7 +78,7 @@
       </ul>
     </nav>
   </div>
-</dialog>
+</div>
 
 
         </div>

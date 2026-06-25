@@ -631,7 +631,22 @@ dialog[data-component="Modal"] {
 
 
 /* --- OffCanvasMenu --- */
-dialog[data-component="OffCanvasMenu"] {
+html.off-canvas-menu-open::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: offcanvasBackdropFadeIn 0.4s ease forwards;
+}
+
+@keyframes offcanvasBackdropFadeIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
+}
+
+[data-component="OffCanvasMenu"] {
   position: fixed;
   top: 0;
   left: 0;
@@ -644,46 +659,16 @@ dialog[data-component="OffCanvasMenu"] {
   padding: 0;
   background: white;
   box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  z-index: 1000;
 
   // Slide from left by default
   transform: translateX(-100%);
-  transition: transform 0.4s ease, opacity 0.4s ease, overlay 0.4s allow-discrete, display 0.4s allow-discrete;
-  opacity: 0;
+  transition: transform 0.4s ease, visibility 0.4s ease;
+  visibility: hidden;
 
-  &::backdrop {
-    background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
-    transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
-    opacity: 0;
-  }
-
-  &[open] {
+  &.is-open {
     transform: translateX(0);
-    opacity: 1;
-
-    &::backdrop {
-      opacity: 1;
-    }
-  }
-
-  @starting-style {
-    &[open] {
-      transform: translateX(-100%);
-      opacity: 0;
-
-      &::backdrop {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[data-is-closing="true"] {
-    opacity: 0;
-    transform: translateX(-100%);
-
-    &::backdrop {
-      opacity: 0;
-    }
+    visibility: visible;
   }
 
   .offcanvas-content {
