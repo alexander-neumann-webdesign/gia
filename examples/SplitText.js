@@ -96,23 +96,9 @@ class SplitText extends gia.Component {
 		const doLines = this.options.split.indexOf("lines") !== -1;
 
 		// 1. Walk the DOM and replace text nodes with split spans
-		// We use a clone to avoid reflows while walking
-		const clone = this.element.cloneNode(true);
-
-		// Remove aria-label from clone temporarily to not confuse our walker if it searches for things
-		// Actually, walker just goes through childNodes.
-
-		this._walkAndSplit(clone);
-
-		// Apply the DOM
-		this.element.replaceChildren();
-
-		// ⚡ BOLT OPTIMIZATION: Use DocumentFragment to batch DOM insertions
-		const fragment = document.createDocumentFragment();
-		while (clone.firstChild) {
-			fragment.appendChild(clone.firstChild);
-		}
-		this.element.appendChild(fragment);
+		// We walk the original element directly instead of a clone.
+		// Cloning destroys nested components and event listeners because they are bound to the original DOM nodes.
+		this._walkAndSplit(this.element);
 
 		// Now process lines if needed
 		if (doLines) {
