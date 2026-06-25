@@ -22,6 +22,9 @@ class Slider extends gia.Component {
 		};
 
 		this.emblaApi = null;
+		this._slideNodes = [];
+		this._tweenFactor = 0;
+		this._parallaxMultiplier = 0;
 
 		this.setState({
 			canScrollPrev: false,
@@ -146,74 +149,70 @@ class Slider extends gia.Component {
 		}
 	}
 
+	setSlideNodes() {
+		if (this.emblaApi) this._slideNodes = this.emblaApi.slideNodes();
+	}
+
+	setTweenFactor() {
+		if (this.emblaApi) this._tweenFactor = 0.8 * this.emblaApi.scrollSnapList().length;
+	}
+
+	tweenOpacityCallback(slideIndex, diffToTarget) {
+		const tweenValue = 1 - Math.abs(diffToTarget * this._tweenFactor);
+		const opacity = Math.min(Math.max(tweenValue, 0), 1).toString();
+		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
+	}
+
+	tweenOpacity(embla, eventName) {
+		this._applyEmblaEffect(embla, eventName, this.tweenOpacityCallback);
+	}
+
 	setupTween() {
 		if (!this.emblaApi) return;
 
-		let slideNodes = this.emblaApi.slideNodes();
-		const TWEEN_FACTOR_BASE = 0.8;
-		let tweenFactor = 0;
-
-		const numberWithinRange = (number, min, max) => Math.min(Math.max(number, min), max);
-
-		const setTweenFactor = () => {
-			tweenFactor = TWEEN_FACTOR_BASE * this.emblaApi.scrollSnapList().length;
-		};
-
-		const setSlideNodes = () => {
-			slideNodes = this.emblaApi.slideNodes();
-		};
-
-		const tweenOpacity = (embla, eventName) => {
-			this._applyEmblaEffect(embla, eventName, (slideIndex, diffToTarget) => {
-				const tweenValue = 1 - Math.abs(diffToTarget * tweenFactor);
-				const opacity = numberWithinRange(tweenValue, 0, 1).toString();
-				slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
-			});
-		};
-
-		setTweenFactor();
-		tweenOpacity(this.emblaApi);
+		this.setSlideNodes();
+		this.setTweenFactor();
+		this.tweenOpacity(this.emblaApi);
 
 		this.emblaApi
-			.on("reInit", setSlideNodes)
-			.on("reInit", setTweenFactor)
-			.on("reInit", tweenOpacity)
-			.on("scroll", tweenOpacity)
-			.on("slideFocus", tweenOpacity);
+			.on("reInit", this.setSlideNodes)
+			.on("reInit", this.setTweenFactor)
+			.on("reInit", this.tweenOpacity)
+			.on("scroll", this.tweenOpacity)
+			.on("slideFocus", this.tweenOpacity);
 	}
 
+	setParallaxMultiplier() {
+		if (this.emblaApi) this._parallaxMultiplier = 0.2 * this.emblaApi.scrollSnapList().length;
+	}
+
+	applyParallaxCallback(slideIndex, diffToTarget) {
+		const translate = diffToTarget * (-1 * this._parallaxMultiplier) * 100;
+		this._slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
+	}
+
+	applyParallax(embla, eventName) {
+		this._applyEmblaEffect(embla, eventName, this.applyParallaxCallback);
+	}
 
 	setupParallax() {
 		if (!this.emblaApi) return;
 
-		let slideNodes = this.emblaApi.slideNodes();
-		const PARALLAX_FACTOR = 0.2; // 20%
-		let parallaxMultiplier = 0;
-
-		const setParallaxMultiplier = () => {
-			parallaxMultiplier = PARALLAX_FACTOR * this.emblaApi.scrollSnapList().length;
-		};
-
-		const setSlideNodes = () => {
-			slideNodes = this.emblaApi.slideNodes();
-		};
-
-		const applyParallax = (embla, eventName) => {
-			this._applyEmblaEffect(embla, eventName, (slideIndex, diffToTarget) => {
-				const translate = diffToTarget * (-1 * parallaxMultiplier) * 100;
-				slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
-			});
-		};
-
-		setParallaxMultiplier();
-		applyParallax(this.emblaApi);
+		this.setSlideNodes();
+		this.setParallaxMultiplier();
+		this.applyParallax(this.emblaApi);
 
 		this.emblaApi
-			.on("reInit", setSlideNodes)
-			.on("reInit", setParallaxMultiplier)
-			.on("reInit", applyParallax)
-			.on("scroll", applyParallax)
-			.on("slideFocus", applyParallax);
+			.on("reInit", this.setSlideNodes)
+			.on("reInit", this.setParallaxMultiplier)
+			.on("reInit", this.applyParallax)
+			.on("scroll", this.applyParallax)
+			.on("slideFocus", this.applyParallax);
+	}
+
+	handleDotClick(e) {
+		const index = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+		if (this.emblaApi) this.emblaApi.scrollTo(index);
 	}
 
 	setupDots() {
@@ -224,15 +223,16 @@ class Slider extends gia.Component {
 			const dot = document.createElement('button');
 			dot.classList.add('embla__dot');
 			dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+			dot.setAttribute('data-index', index);
 			dot.tabIndex = 0;
-			dot.addEventListener('click', () => this.emblaApi.scrollTo(index));
+			dot.addEventListener('click', this.handleDotClick);
 			this.ref.dotsContainer.appendChild(dot);
 			return dot;
 		});
 
-		this.emblaApi.on('scroll', this.updateDots.bind(this));
-		this.emblaApi.on('select', this.updateDots.bind(this));
-		this.emblaApi.on('reInit', this.updateDots.bind(this));
+		this.emblaApi.on('scroll', this.updateDots);
+		this.emblaApi.on('select', this.updateDots);
+		this.emblaApi.on('reInit', this.updateDots);
 		this.updateDots();
 	}
 

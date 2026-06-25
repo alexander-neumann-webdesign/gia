@@ -20,7 +20,7 @@ class SplitText extends gia.Component {
 		this._lineIndex = 0;
 
 		// Pre-bind methods for high-frequency callbacks to avoid GC overhead
-		this.handleResize = this.handleResize.bind(this);
+		// handleResize is auto-bound by BaseComponent, _applyLineStyles needs manual binding
 		this._applyLineStyles = this._applyLineStyles.bind(this);
 
 		// Initialize/Cache Segmenters once for performance

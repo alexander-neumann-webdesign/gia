@@ -57,7 +57,7 @@ class Accordion extends gia.Component {
 			window.addEventListener('accordion:open', this.handleAccordionOpen);
 		}
 
-		this.maybeStartOpened = this.maybeStartOpened.bind(this);
+
 
 		// Initial state based on URL hash or DOM
 		let shouldBeOpen = this.element.open;
