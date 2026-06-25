@@ -36,9 +36,6 @@ class SplitText extends gia.Component {
 
 	_initSegmenters() {
 		if (window.Intl && Intl.Segmenter) {
-			if (!SplitText._wordSegmenter) {
-				SplitText._wordSegmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'word' });
-			}
 			if (!SplitText._graphemeSegmenter) {
 				SplitText._graphemeSegmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'grapheme' });
 			}
@@ -156,17 +153,12 @@ class SplitText extends gia.Component {
 
 	_tokenizeWords(text) {
 		let words = [];
-		if (SplitText._wordSegmenter) {
-			const segments = SplitText._wordSegmenter.segment(text);
-			for (const segment of segments) {
-				words.push({ text: segment.segment, isWordLike: segment.isWordLike });
-			}
-		} else {
-			const parts = text.split(/(\s+)/);
-			for (const part of parts) {
-				if (part.length > 0) {
-					words.push({ text: part, isWordLike: /\S/.test(part) });
-				}
+		// Use regex split to preserve punctuation attached to words.
+		// Intl.Segmenter separates punctuation, creating unwanted detached single-character spans.
+		const parts = text.split(/(\s+)/);
+		for (const part of parts) {
+			if (part.length > 0) {
+				words.push({ text: part, isWordLike: /\S/.test(part) });
 			}
 		}
 		return words;
