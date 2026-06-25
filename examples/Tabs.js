@@ -181,8 +181,8 @@ class Tabs extends gia.Component {
 				tab.setAttribute('tabindex', '-1');
 			}
 		});
-
-		// Update Panels
+		
+		// Update Panels (only used for immediate switching now without animation)
 		this.ref.panel.forEach((panel, index) => {
 			const activeTab = this.ref.tab[activeIndex];
 			const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
@@ -195,132 +195,105 @@ class Tabs extends gia.Component {
 		});
 	}
 
-	_applyViewTransition(panelsContainer, activeIndex, direction) {
-		if (!document.startViewTransition) {
-			this._updateDOM(activeIndex);
-			return null;
-		}
+	_animateTransition(panelsContainer, oldIndex, newIndex, direction) {
+		const oldPanel = this.ref.panel[oldIndex];
+		const newPanel = this.ref.panel[newIndex];
 
-		if (panelsContainer) {
-			panelsContainer.style.viewTransitionName = 'tab-panels';
-		}
+		// Measure start height
+		const startHeight = panelsContainer.offsetHeight;
 
-		const activePanel = this.ref.panel[activeIndex];
-		const oldPanel = this.ref.panel.find(p => !p.hidden);
-
-		if (oldPanel && oldPanel !== activePanel) {
-			oldPanel.style.viewTransitionName = `tabs-panel-old`;
-		}
-		if (activePanel) {
-			activePanel.style.viewTransitionName = `tabs-panel-new`;
-		}
-
-		// Disable root transition to prevent full-page crossfade
-		document.documentElement.style.viewTransitionName = 'none';
-
-		if (direction !== 0) {
-			document.documentElement.setAttribute('data-tabs-direction', direction > 0 ? 'forward' : 'backward');
-		}
-
-		const transition = document.startViewTransition(() => this._updateDOM(activeIndex));
-
-		transition.ready.catch(() => {});
-		transition.finished.catch(() => {
-			// Ignore AbortError when rapid clicks interrupt an ongoing transition
-		}).finally(() => {
-			if (oldPanel) {
-				oldPanel.style.viewTransitionName = '';
-			}
-			if (activePanel) {
-				activePanel.style.viewTransitionName = '';
-			}
-			if (panelsContainer) {
-				panelsContainer.style.viewTransitionName = '';
-			}
-			document.documentElement.style.viewTransitionName = '';
-			document.documentElement.removeAttribute('data-tabs-direction');
+		// Prepare DOM for new state
+		this.updateIndicator();
+		
+		this.ref.tab.forEach((tab, index) => {
+			const isSelected = index === newIndex;
+			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+			tab.setAttribute('tabindex', isSelected ? '0' : '-1');
 		});
 
-		return transition;
-	}
+		if (newPanel) newPanel.hidden = false;
 
-	_measureEndHeight(panelsContainer) {
-		panelsContainer.style.height = '';
-		panelsContainer.style.overflow = '';
+		// Lock height and position to measure correctly without page jump
+		if (oldPanel) {
+			oldPanel.style.position = 'absolute';
+			oldPanel.style.top = '0';
+			oldPanel.style.left = '0';
+			oldPanel.style.width = '100%';
+		}
 
-		// Because of `allow-discrete` transitions, hidden panels might still be `display: block` and take up grid space.
-		// Temporarily absolute position them so they don't affect the container's height measurement.
-		const hiddenPanels = Array.from(panelsContainer.querySelectorAll('[hidden]'));
-		const originalPositions = hiddenPanels.map(p => p.style.position);
-		hiddenPanels.forEach(p => p.style.position = 'absolute');
-
+		// Measure end height
 		const endHeight = panelsContainer.offsetHeight;
 
-		hiddenPanels.forEach((p, i) => p.style.position = originalPositions[i]);
-
-		return endHeight;
-	}
-
-	_resetContainerStyles(panelsContainer) {
-		panelsContainer.style.overflow = '';
-		panelsContainer.style.height = '';
-	}
-
-	_executeHeightAnimation(panelsContainer, startHeight, endHeight, cleanupCb) {
+		// Lock container size for animation
 		panelsContainer.style.overflow = 'hidden';
 		panelsContainer.style.height = `${startHeight}px`;
+		panelsContainer.style.position = 'relative';
 
+		const animations = [];
+
+		// 1. Container Height Animation
 		if (startHeight !== endHeight) {
-			const animation = panelsContainer.animate(
-				[
-					{ height: `${startHeight}px` },
-					{ height: `${endHeight}px` }
-				],
-				{
-					duration: 400,
-					easing: 'ease',
-					fill: 'forwards'
-				}
+			const heightAnim = panelsContainer.animate(
+				[ { height: `${startHeight}px` }, { height: `${endHeight}px` } ],
+				{ duration: 300, easing: 'ease', fill: 'forwards' }
 			);
-
-			cleanupCb(() => {
-				animation.cancel();
-				this._resetContainerStyles(panelsContainer);
-			});
-		} else {
-			cleanupCb(() => {
-				this._resetContainerStyles(panelsContainer);
-			});
+			animations.push(heightAnim.finished);
 		}
-	}
 
-	_animateContainerHeight(panelsContainer, startHeight, transition) {
-		// Lock height before the View Transition snapshot replaces elements
-		panelsContainer.style.height = `${startHeight}px`;
-
-		if (transition) {
-			transition.ready.then(() => {
-				const endHeight = this._measureEndHeight(panelsContainer);
-				this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
-					transition.finished.finally(cleanup);
-				});
-			}).catch(() => {
-				this._resetContainerStyles(panelsContainer);
-			});
-		} else {
-			// Fallback if view transitions are not supported
-			const endHeight = this._measureEndHeight(panelsContainer);
-			this._executeHeightAnimation(panelsContainer, startHeight, endHeight, (cleanup) => {
-				setTimeout(cleanup, 450);
-			});
+		// 2. Old Panel Fade & Slide Out
+		if (oldPanel) {
+			const oldAnim = oldPanel.animate(
+				[
+					{ opacity: 1, transform: 'translateX(0px)' },
+					{ opacity: 0, transform: `translateX(${direction > 0 ? -20 : 20}px)` }
+				],
+				{ duration: 250, easing: 'ease', fill: 'forwards' }
+			);
+			animations.push(oldAnim.finished);
 		}
+
+		// 3. New Panel Fade & Slide In
+		if (newPanel) {
+			const newAnim = newPanel.animate(
+				[
+					{ opacity: 0, transform: `translateX(${direction > 0 ? 20 : -20}px)` },
+					{ opacity: 1, transform: 'translateX(0px)' }
+				],
+				{ duration: 300, easing: 'ease', fill: 'forwards' }
+			);
+			animations.push(newAnim.finished);
+		}
+
+		Promise.allSettled(animations).then(() => {
+			// Cleanup
+			if (oldPanel) {
+				oldPanel.hidden = true;
+				oldPanel.style.position = '';
+				oldPanel.style.top = '';
+				oldPanel.style.left = '';
+				oldPanel.style.width = '';
+				oldPanel.getAnimations().forEach(a => a.cancel());
+			}
+			
+			if (newPanel) {
+				newPanel.getAnimations().forEach(a => a.cancel());
+			}
+
+			panelsContainer.style.height = '';
+			panelsContainer.style.overflow = '';
+			panelsContainer.style.position = '';
+			this.element.removeAttribute('data-direction');
+		});
 	}
 
 	stateChange(stateChanges) {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
+			const oldIndex = this._currentActiveIndex;
 
-			const direction = this._currentActiveIndex !== undefined ? (activeIndex > this._currentActiveIndex ? 1 : (activeIndex < this._currentActiveIndex ? -1 : 0)) : 0;
+			if (activeIndex === oldIndex) return;
+
+			const direction = oldIndex !== undefined ? (activeIndex > oldIndex ? 1 : -1) : 0;
 			this._currentActiveIndex = activeIndex;
 
 			if (direction !== 0) {
@@ -329,10 +302,9 @@ class Tabs extends gia.Component {
 
 			const panelsContainer = this.ref.panel[0]?.parentElement;
 
-			if (panelsContainer) {
-				const startHeight = panelsContainer.offsetHeight;
-				const transition = this._applyViewTransition(panelsContainer, activeIndex, direction);
-				this._animateContainerHeight(panelsContainer, startHeight, transition);
+			// If we have an old state, a container, and browser supports WAAPI, animate it
+			if (panelsContainer && oldIndex !== undefined && panelsContainer.animate) {
+				this._animateTransition(panelsContainer, oldIndex, activeIndex, direction);
 			} else {
 				this._updateDOM(activeIndex);
 			}
