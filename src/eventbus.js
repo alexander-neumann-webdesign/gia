@@ -17,14 +17,17 @@ class EventBus {
 		const handlers = this.listeners[event];
 		if (!handlers || handlers.length === 0) return;
 
-		// ⚡ OPTIMIZATION: Create payload once, completely bypassing DOM CustomEvent overhead.
-		const payload = { ...eventObject, _name: event };
+		// ⚡ OPTIMIZATION: Mutate eventObject instead of using spread operator
+		// to avoid GC allocation overhead on every emit.
+		if (eventObject && typeof eventObject === 'object') {
+			eventObject._name = event;
+		}
 
 		// ⚡ OPTIMIZATION: Standard for loop over array, avoids Iterator overhead.
 		// We copy the array in case a handler calls .off() synchronously causing index shifts.
 		const callbacks = handlers.slice();
 		for (let i = 0; i < callbacks.length; i++) {
-			callbacks[i](payload);
+			callbacks[i](eventObject);
 		}
 	}
 
@@ -72,8 +75,13 @@ class EventBus {
 
 		const index = handlers.indexOf(targetHandler);
 		if (index !== -1) {
-			// ⚡ OPTIMIZATION: Fast array removal by splicing
-			handlers.splice(index, 1);
+			// ⚡ OPTIMIZATION: Swap-and-Pop O(1) removal to prevent array element shifts
+			if (index === handlers.length - 1) {
+				handlers.pop();
+			} else {
+				handlers[index] = handlers[handlers.length - 1];
+				handlers.pop();
+			}
 		}
 	}
 }

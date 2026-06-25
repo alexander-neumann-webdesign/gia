@@ -39,16 +39,11 @@ function handleMutations(mutations) {
         }
 
         // Track added nodes
-        for (let i = 0; i < mutation.addedNodes.length; i++) {
-            const node = mutation.addedNodes[i];
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                // ⚡ BOLT OPTIMIZATION: Only track nodes that are, or contain, components.
-                // This prevents loadComponents from running redundantly when large blocks
-                // of plain HTML (like list items or paragraphs) are inserted.
-                if (node.hasAttribute(attrName) || node.querySelector(`[${attrName}]`)) {
-                    _addedElements.add(node);
-                }
-            }
+        // ⚡ BOLT OPTIMIZATION: Instead of querying every single added node, 
+        // we just queue the mutation target (parent). This replaces an O(N) query loop
+        // with a single O(1) querySelectorAll on the parent.
+        if (mutation.addedNodes.length > 0 && mutation.target.nodeType === Node.ELEMENT_NODE) {
+            _addedElements.add(mutation.target);
         }
     }
 

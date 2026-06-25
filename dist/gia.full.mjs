@@ -55,7 +55,7 @@ function p(o, e = document) {
 function U(o, e, t = null) {
   t === null ? o.classList.toggle(e) : o.classList.toggle(e, !!t);
 }
-function D(o, e, t) {
+function W(o, e, t) {
   if (!o) return o;
   if (o.length !== void 0 && o.nodeType === void 0)
     for (let n = 0; n < o.length; n++)
@@ -65,10 +65,10 @@ function D(o, e, t) {
   return o;
 }
 function J(o, e) {
-  return D(o, e, "remove");
+  return W(o, e, "remove");
 }
 function Q(o, e) {
-  return D(o, e, "add");
+  return W(o, e, "add");
 }
 function V(o, e, t = null, n = {
   bubbles: !0,
@@ -132,7 +132,7 @@ function X(o = {}, e = document.documentElement) {
   for (let l = 0; l < n.length; l++)
     n[l].g();
 }
-function E(o) {
+function O(o) {
   if (!o) return;
   let e = o.__gia_component__;
   if (!e && typeof o == "string") {
@@ -152,12 +152,12 @@ function E(o) {
 function we(o = document.documentElement) {
   const e = p(`[${f.get("attrPrefix")}-component]`, o);
   for (let t = 0; t < e.length; t++)
-    E(e[t]);
+    O(e[t]);
 }
 let b = !1, m = !1;
 const N = /* @__PURE__ */ new Set(), ee = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), x = ee ? "orientationchange" : "resize", v = /* @__PURE__ */ new Set();
 let h = null;
-const C = { scroll: 0, velocity: 0 }, S = { width: 0, height: 0 }, I = [null], te = (o) => o(C), ne = (o) => o(S), R = (o) => o(I), oe = function(o, e) {
+const C = { scroll: 0, velocity: 0 }, I = { width: 0, height: 0 }, S = [null], te = (o) => o(C), ne = (o) => o(I), R = (o) => o(S), oe = function(o, e) {
   this.unobserveResize(e);
 }, ie = function(o, e) {
   this.unobserveIntersection(e);
@@ -178,10 +178,10 @@ function ce() {
   v.forEach(ne);
 }
 function T(o) {
-  S.width = window.innerWidth, S.height = window.innerHeight, ce();
+  I.width = window.innerWidth, I.height = window.innerHeight, ce();
 }
 let w = null;
-const _ = /* @__PURE__ */ new Map(), A = /* @__PURE__ */ new Map(), j = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), B = /* @__PURE__ */ new WeakMap(), q = /* @__PURE__ */ new Map();
+const _ = /* @__PURE__ */ new Map(), A = /* @__PURE__ */ new Map(), B = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), j = /* @__PURE__ */ new WeakMap(), D = /* @__PURE__ */ new Map();
 function ae(o) {
   const e = o.root || null, t = o.rootMargin || "0px 0px 0px 0px", n = o.threshold || 0, i = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${i}`;
@@ -287,7 +287,7 @@ let fe = class {
     w || (w = new ResizeObserver((s) => {
       for (let r = 0; r < s.length; r++) {
         const l = s[r], c = _.get(l.target);
-        c && (I[0] = l, c.forEach(R));
+        c && (S[0] = l, c.forEach(R));
       }
     }));
     let n = _.get(e);
@@ -318,7 +318,7 @@ let fe = class {
     s || (s = { observer: new IntersectionObserver((d) => {
       for (let u = 0; u < d.length; u++) {
         const z = d[u], P = s.callbacks.get(z.target);
-        P && (I[0] = z, P.forEach(R));
+        P && (S[0] = z, P.forEach(R));
       }
     }, n), callbacks: /* @__PURE__ */ new Map() }, A.set(i, s));
     let r = s.callbacks.get(e);
@@ -419,8 +419,8 @@ let fe = class {
         if (this.u[t] !== n && (this.u[t] = n, this.f || (this.f = this._ || {}, this.s = this.d || {}, G.add(this), $ || ($ = !0, requestAnimationFrame(re))), this.f[t] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const i = typeof n;
           if (i === "boolean" || i === "string") {
-            let s = q.get(t);
-            s || (s = `data-${t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, q.set(t, s)), this.s[s] = i === "boolean" ? n ? "true" : "false" : n;
+            let s = D.get(t);
+            s || (s = `data-${t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, D.set(t, s)), this.s[s] = i === "boolean" ? n ? "true" : "false" : n;
           }
         }
       }
@@ -453,15 +453,15 @@ let fe = class {
   m() {
     var n;
     const e = Object.getPrototypeOf(this);
-    let t = B.get(e);
+    let t = j.get(e);
     if (!t) {
       t = [];
       const i = Object.getOwnPropertyNames(e);
       for (let s = 0; s < i.length; s++) {
         const r = i[s];
-        !j.has(r) && !r.startsWith("_") && typeof ((n = Object.getOwnPropertyDescriptor(e, r)) == null ? void 0 : n.value) == "function" && t.push(r);
+        !B.has(r) && !r.startsWith("_") && typeof ((n = Object.getOwnPropertyDescriptor(e, r)) == null ? void 0 : n.value) == "function" && t.push(r);
       }
-      B.set(e, t);
+      j.set(e, t);
     }
     for (let i = 0; i < t.length; i++) {
       const s = t[i];
@@ -479,7 +479,7 @@ let fe = class {
         if (l === -1 && (l = s.length), l > r) {
           const c = s.substring(r, l), a = c.indexOf("->");
           let d, u;
-          a !== -1 ? (d = c.substring(0, a), u = c.substring(a + 2)) : (d = c, u = void 0), this[u] && typeof this[u] == "function" && !u.startsWith("_") && !j.has(u) ? i.addEventListener(d, this[u]) : console.warn(`Method "${u}" not found, is restricted, or is not a function in component.`);
+          a !== -1 ? (d = c.substring(0, a), u = c.substring(a + 2)) : (d = c, u = void 0), this[u] && typeof this[u] == "function" && !u.startsWith("_") && !B.has(u) ? i.addEventListener(d, this[u]) : console.warn(`Method "${u}" not found, is restricted, or is not a function in component.`);
         }
         r = l + 1;
       }
@@ -502,9 +502,10 @@ class ue {
     f.get("log") && console.info(`Emitting event '${e}'`);
     const n = this.listeners[e];
     if (!n || n.length === 0) return;
-    const i = { ...t, r: e }, s = n.slice();
-    for (let r = 0; r < s.length; r++)
-      s[r](i);
+    t && typeof t == "object" && (t.r = e);
+    const i = n.slice();
+    for (let s = 0; s < i.length; s++)
+      i[s](t);
   }
   on(e, t, n = !1) {
     this.listeners[e] || (this.listeners[e] = []);
@@ -526,36 +527,33 @@ class ue {
     let i = t;
     t.a && t.a[e] ? (i = t.a[e], delete t.a[e]) : t.N && (i = t.N);
     const s = n.indexOf(i);
-    s !== -1 && n.splice(s, 1);
+    s !== -1 && (s === n.length - 1 || (n[s] = n[n.length - 1]), n.pop());
   }
 }
 const ye = new ue();
 let g = null, M = null;
-const O = /* @__PURE__ */ new Set(), de = (o) => {
+const E = /* @__PURE__ */ new Set(), de = (o) => {
   o.isConnected && X(M, o);
 };
 function he(o) {
   const e = `${f.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {};
-  O.clear();
+  E.clear();
   for (let n = 0; n < o.length; n++) {
     const i = o[n];
     for (let s = 0; s < i.removedNodes.length; s++) {
       const r = i.removedNodes[s];
       if (r.nodeType === Node.ELEMENT_NODE) {
-        r.hasAttribute(e) && E(r);
+        r.hasAttribute(e) && O(r);
         const l = p(`[${e}]`, r);
         for (let c = 0; c < l.length; c++)
-          E(l[c]);
+          O(l[c]);
       }
     }
-    for (let s = 0; s < i.addedNodes.length; s++) {
-      const r = i.addedNodes[s];
-      r.nodeType === Node.ELEMENT_NODE && (r.hasAttribute(e) || r.querySelector(`[${e}]`)) && O.add(r);
-    }
+    i.addedNodes.length > 0 && i.target.nodeType === Node.ELEMENT_NODE && E.add(i.target);
   }
-  M = t, O.forEach(de), M = null;
+  M = t, E.forEach(de), M = null;
 }
-function W() {
+function q() {
   typeof document > "u" || (f.get("autoMountComponents") && !g ? (g = new MutationObserver(he), g.observe(document.body, {
     childList: !0,
     subtree: !0
@@ -564,16 +562,16 @@ function W() {
 {
   const o = f.set;
   f.set = function(e, t) {
-    o.call(this, e, t), e === "autoMountComponents" && W();
+    o.call(this, e, t), e === "autoMountComponents" && q();
   };
 }
-typeof window < "u" && setTimeout(W, 0);
+typeof window < "u" && setTimeout(q, 0);
 export {
   fe as BaseComponent,
   me as Component,
   f as config,
   L as createInstance,
-  E as destroyInstance,
+  O as destroyInstance,
   ye as eventbus,
   ge as getComponentFromElement,
   X as loadComponents,
