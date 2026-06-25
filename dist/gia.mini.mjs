@@ -13,7 +13,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
   }
   window.gia.components[e] = i;
 });
-class T {
+class W {
   constructor() {
     G(this, "i", {
       log: !1,
@@ -32,8 +32,8 @@ class T {
     return this.i[e];
   }
 }
-const u = new T();
-function z(i, e, t, n) {
+const u = new W();
+function k(i, e, t, n) {
   if (i.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), i.__gia_component__;
   try {
@@ -46,13 +46,13 @@ function z(i, e, t, n) {
 function ae(i) {
   return typeof i == "string" && (i = document.getElementById(i), !i) ? null : i.__gia_component__;
 }
-function q(i, e = document) {
+function T(i, e = document) {
   return typeof i != "string" ? i : e.querySelector(i);
 }
 function y(i, e = document) {
   return typeof i != "string" ? i : e.querySelectorAll(i);
 }
-function W(i, e, t = null) {
+function q(i, e, t = null) {
   t === null ? i.classList.toggle(e) : i.classList.toggle(e, !!t);
 }
 function x(i, e, t) {
@@ -97,10 +97,10 @@ const fe = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   addClass: F,
   debounce: Y,
-  query: q,
+  query: T,
   queryAll: y,
   removeClass: D,
-  toggleClass: W,
+  toggleClass: q,
   triggerEvent: H
 }, Symbol.toStringTag, { value: "Module" }));
 function ce(i = {}, e = document.documentElement) {
@@ -122,12 +122,12 @@ function ce(i = {}, e = document.documentElement) {
     const a = s[l];
     if (!a.__gia_component__) {
       const h = a.getAttribute(o);
-      typeof i[h] == "function" ? n.push(z(a, h, i[h])) : console.warn(`Constructor "${h}" not found.`);
+      typeof i[h] == "function" ? n.push(k(a, h, i[h])) : console.warn(`Constructor "${h}" not found.`);
     }
   }
   if (e instanceof Element && e.hasAttribute(o) && !e.__gia_component__) {
     const a = e.getAttribute(o);
-    typeof i[a] == "function" ? n.push(z(e, a, i[a])) : console.warn(`Constructor "${a}" not found.`);
+    typeof i[a] == "function" ? n.push(k(e, a, i[a])) : console.warn(`Constructor "${a}" not found.`);
   }
   for (let l = 0; l < n.length; l++)
     n[l].g();
@@ -155,7 +155,7 @@ function ue(i = document.documentElement) {
     K(e[t]);
 }
 let g = !1, p = !1;
-const m = /* @__PURE__ */ new Set(), U = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), k = U ? "orientationchange" : "resize", A = /* @__PURE__ */ new Set();
+const m = /* @__PURE__ */ new Set(), U = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), z = U ? "orientationchange" : "resize", A = /* @__PURE__ */ new Set();
 let c = null;
 const v = { scroll: 0, velocity: 0 }, O = { width: 0, height: 0 }, E = [null], J = (i) => i(v), Q = (i) => i(O), P = (i) => i(E), V = function(i, e) {
   this.unobserveResize(e);
@@ -181,7 +181,7 @@ function M(i) {
   O.width = window.innerWidth, O.height = window.innerHeight, ne();
 }
 let d = null;
-const _ = /* @__PURE__ */ new Map(), b = /* @__PURE__ */ new Map(), ie = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), R = /* @__PURE__ */ new WeakMap(), L = /* @__PURE__ */ new Map();
+const _ = /* @__PURE__ */ new WeakMap(), b = /* @__PURE__ */ new Map(), ie = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), R = /* @__PURE__ */ new WeakMap(), L = /* @__PURE__ */ new Map();
 function oe(i) {
   const e = i.root || null, t = i.rootMargin || "0px 0px 0px 0px", n = i.threshold || 0, o = Array.isArray(n) ? n.join(",") : n.toString();
   return `${e ? e.id || "root-element" : "null"}|${t}|${o}`;
@@ -277,10 +277,10 @@ let se = class {
     typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.l && this.l.delete(e), m.delete(e), m.size === 0 && g && (g = !1, c ? (c.off("scroll", w), c = null) : window.removeEventListener("scroll", w)));
   }
   observeWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (p || (p = !0, window.addEventListener(k, M, { passive: !0 })), this.a || (this.a = /* @__PURE__ */ new Set()), this.a.add(e), A.add(e));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (p || (p = !0, window.addEventListener(z, M, { passive: !0 })), this.a || (this.a = /* @__PURE__ */ new Set()), this.a.add(e), A.add(e));
   }
   unobserveWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.a && this.a.delete(e), A.delete(e), A.size === 0 && p && (p = !1, window.removeEventListener(k, M)));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.a && this.a.delete(e), A.delete(e), A.size === 0 && p && (p = !1, window.removeEventListener(z, M)));
   }
   observeResize(e, t) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || !window.ResizeObserver) return;
@@ -320,7 +320,7 @@ let se = class {
         const C = h[N], $ = s.callbacks.get(C.target);
         $ && (E[0] = C, $.forEach(P));
       }
-    }, n), callbacks: /* @__PURE__ */ new Map() }, b.set(o, s));
+    }, n), callbacks: /* @__PURE__ */ new WeakMap() }, b.set(o, s));
     let r = s.callbacks.get(e);
     r || (r = /* @__PURE__ */ new Set(), s.callbacks.set(e, r), s.observer.observe(e)), r.add(t), this.t || (this.t = /* @__PURE__ */ new Map());
     let l = this.t.get(e);
@@ -520,7 +520,7 @@ export {
   se as BaseComponent,
   _e as Component,
   u as config,
-  z as createInstance,
+  k as createInstance,
   K as destroyInstance,
   de as eventbus,
   ae as getComponentFromElement,

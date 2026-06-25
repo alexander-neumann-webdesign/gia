@@ -75,7 +75,7 @@ function handleGlobalResize(e) {
 }
 
 let globalResizeObserver = null;
-const resizeCallbacks = new Map();
+const resizeCallbacks = new WeakMap();
 
 const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
 
@@ -428,7 +428,7 @@ export default class Component {
 	}
 		}
 	}, options);
-			observerData = { observer, callbacks: new Map() };
+			observerData = { observer, callbacks: new WeakMap() };
 			intersectionObservers.set(hash, observerData);
 	}
 
