@@ -33,7 +33,7 @@ class F {
   }
 }
 const d = new F();
-function I(o, e, t, n) {
+function L(o, e, t, n) {
   if (o.__gia_component__)
     return console.warn(`Component "${e}" already exists.`), o.__gia_component__;
   try {
@@ -122,12 +122,12 @@ function Z(o = {}, e = document.documentElement) {
     const a = r[l];
     if (!a.__gia_component__) {
       const u = a.getAttribute(s);
-      typeof o[u] == "function" ? n.push(I(a, u, o[u])) : console.warn(`Constructor "${u}" not found.`);
+      typeof o[u] == "function" ? n.push(L(a, u, o[u])) : console.warn(`Constructor "${u}" not found.`);
     }
   }
   if (e instanceof Element && e.hasAttribute(s) && !e.__gia_component__) {
     const a = e.getAttribute(s);
-    typeof o[a] == "function" ? n.push(I(e, a, o[a])) : console.warn(`Constructor "${a}" not found.`);
+    typeof o[a] == "function" ? n.push(L(e, a, o[a])) : console.warn(`Constructor "${a}" not found.`);
   }
   for (let l = 0; l < n.length; l++)
     n[l]._load();
@@ -155,7 +155,7 @@ function ge(o = document.documentElement) {
     A(e[t]);
 }
 let m = !1, w = !1;
-const y = /* @__PURE__ */ new Set(), Q = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), L = Q ? "orientationchange" : "resize", C = /* @__PURE__ */ new Set();
+const y = /* @__PURE__ */ new Set(), Q = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), I = Q ? "orientationchange" : "resize", C = /* @__PURE__ */ new Set();
 let h = null;
 const z = { scroll: 0, velocity: 0 }, k = { width: 0, height: 0 }, $ = [null], X = (o) => o(z), ee = (o) => o(k), x = (o) => o($), te = function(o, e) {
   this.unobserveResize(e);
@@ -264,10 +264,10 @@ let re = class {
     this._observedScrollCallbacks && this._observedScrollCallbacks.delete(e), y.delete(e), y.size === 0 && m && (m = !1, h ? (h.off("scroll", v), h = null) : window.removeEventListener("scroll", v));
   }
   observeWindowResize(e) {
-    typeof window > "u" || (w || (w = !0, window.addEventListener(L, B, { passive: !0 })), this._observedWindowResizeCallbacks || (this._observedWindowResizeCallbacks = /* @__PURE__ */ new Set()), this._observedWindowResizeCallbacks.add(e), C.add(e));
+    typeof window > "u" || (w || (w = !0, window.addEventListener(I, B, { passive: !0 })), this._observedWindowResizeCallbacks || (this._observedWindowResizeCallbacks = /* @__PURE__ */ new Set()), this._observedWindowResizeCallbacks.add(e), C.add(e));
   }
   unobserveWindowResize(e) {
-    this._observedWindowResizeCallbacks && this._observedWindowResizeCallbacks.delete(e), C.delete(e), C.size === 0 && w && (w = !1, window.removeEventListener(L, B));
+    this._observedWindowResizeCallbacks && this._observedWindowResizeCallbacks.delete(e), C.delete(e), C.size === 0 && w && (w = !1, window.removeEventListener(I, B));
   }
   observeResize(e, t) {
     if (typeof window > "u" || !window.ResizeObserver) return;
@@ -537,8 +537,8 @@ export {
   re as BaseComponent,
   _e as Component,
   d as config,
-  I as createInstance,
-  ge as destroyInstance,
+  L as createInstance,
+  A as destroyInstance,
   pe as eventbus,
   ue as getComponentFromElement,
   Z as loadComponents,

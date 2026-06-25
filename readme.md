@@ -1,198 +1,355 @@
 # Gia
 
-*Note: This is a personal fork of the original Gia framework. It contains numerous enhancements, custom examples, and optimizations.*
+A performance-first, ultra-lightweight JavaScript framework (~5KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
-### 1. Ultra-Lightweight & Performance-First
-At roughly **~4.12 KB** (minified and gzipped), it is practically invisible on the network. More importantly, it is built with performance in mind: it uses `requestAnimationFrame` to batch DOM mutations (preventing layout thrashing) and relies entirely on native Web APIs (like `EventTarget` for its global event bus) rather than shipping heavy abstractions.
+[![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
+[![bundle size](https://img.shields.io/badge/bundle%20size-15%20KB-blue?style=flat-square)](dist/gia.umd.js)
+[![gzip size](https://img.shields.io/badge/gzip%20size-5.25%20KB-brightgreen?style=flat-square)](dist/gia.umd.js)
 
-### 2. Solves "Vanilla JS Spaghetti"
-Writing Vanilla JS for traditional websites often leads to messy event listeners and memory leaks. Gia solves this by introducing a strict lifecycle (`mount`, `require`, `unmount`). When a DOM node is removed, Gia cleans up the component, preventing the memory leaks that often plague traditional multi-page apps.
+*Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management.*
 
-### 3. Quality of Life Features
-Gia provides several developer experience (DX) improvements that usually require writing boilerplate:
-- **Auto-binding**: It automatically binds component methods and DOM events via `data-action` attributes.
-- **Ref System**: Instead of writing endless `document.querySelector` calls, you use `data-ref` in your HTML, and Gia maps them to a `this.ref` object.
-- **Unified Observers**: Instead of instantiating new `IntersectionObserver` or `ResizeObserver` instances for every component (which drains CPU), Gia shares a single global observer across all components.
+---
 
-### 4. Built for Code-Splitting
-The addition of the `require()` lifecycle method allows you to dynamically import heavy third-party libraries (like map wrappers or physics engines) only if the component actually exists on the page, keeping your initial bundle size tiny.
+### Why Gia?
+
+1. **Ultra-Lightweight & Fast**: Practically invisible on the network. Built using native Web APIs (like `EventTarget` for the global event bus) and optimized to minimize memory allocations.
+2. **Solves "Vanilla JS Spaghetti"**: Traditional multi-page sites struggle with messy event listeners and memory leaks. Gia's strict lifecycle (`mount`, `require`, `unmount`) ensures automatic cleanup when elements leave the DOM.
+3. **Zero-GC Hot Paths**: Hand-optimized to avoid garbage collection spikes and layout thrashing. Perfect for high-frequency events (scrolling, resizing, drag-and-drop, and interactive canvases).
+4. **Built-in DX Features**: Comes with pre-indexed references (`data-ref`), declarative event mapping (`data-action`), unified observers, and asynchronous script/style loading out-of-the-box.
+
+---
 
 ## Table of Contents
+
 - [Installation](#installation)
-- [Architecture & Usage](#architecture--usage)
-- [Global Configuration (`gia.config`)](#global-configuration-giaconfig)
-- [Loading Components](#loading-components)
-- [Component Options (`data-options`)](#component-options-data-options)
-- [The Ref System (`this.ref`)](#the-ref-system-thisref)
-- [Event Binding (`data-action`)](#event-binding-data-action)
-- [State Management & Reactivity](#state-management--reactivity)
-- [Helper Functions](#helper-functions)
-- [Examples](#examples)
-- [Bonus Tip: Gia and Swup](#bonus-tip-gia-and-swup)
-- [Summary](#summary)
+- [Quick Start](#quick-start)
+- [Component Lifecycle](#component-lifecycle)
+- [Core Concepts](#core-concepts)
+  - [The Ref System (`this.ref`)](#the-ref-system-thisref)
+  - [State & Reactivity (`this.setState`)](#state--reactivity-thissetstate)
+  - [Centralized Observers](#centralized-observers)
+  - [On-Demand Dependencies (`require`)](#on-demand-dependencies-require)
+  - [Global Eventbus](#global-eventbus)
+- [Quality of Life Features](#quality-of-life-features)
+  - [Component Options (`data-options`)](#component-options-data-options)
+  - [Event Binding (`data-action`)](#event-binding-data-action)
+  - [Auto-Mounting](#auto-mounting)
+- [Global Configuration](#global-configuration)
+- [API Reference](#api-reference)
+- [Performance Optimizations](#performance-optimizations)
+- [Interactive Examples](#interactive-examples)
+- [Integration with Swup](#integration-with-swup)
+
+---
 
 ## Installation
 
-You can install Gia via npm or simply include it via a script tag.
-
-### NPM
-
-
-```javascript
-import { Component, loadComponents } from "gia";
-```
-
-### Script Tag (UMD)
+Load the UMD build directly via script tag:
 
 ```html
 <script src="./dist/gia.umd.js"></script>
 ```
 
-When using the UMD build, components can be registered using `gia.register()` to make them discoverable globally.
+After loading the script, your components can be registered using `gia.register(ComponentClass)` to make them discoverable globally.
 
-## Architecture & Usage
+---
 
-Gia's approach is to provide a structured lifecycle and state management system strictly bound to specific DOM nodes. The `eventbus` is powered by the native `EventTarget` API. State management optimizes render performance through shallow comparison in `setState` and uses `requestAnimationFrame` for DOM batching.
+## Quick Start
 
-### Defining a Component (`Component` vs `BaseComponent`)
+### 1. Define the HTML markup
 
-Gia provides two base classes you can extend:
-
-1.  **`BaseComponent`**: The core, ultra-lightweight base class. It manages DOM element attachment (`this.element`), component naming (`this._name`), and configuration options parsing from attributes. It handles state management, event auto-binding, the ref system, and standard lifecycles (`mount`, `unmount`). Use this by default for maximum performance.
-2.  **`Component`**: Extends `BaseComponent` by adding an asynchronous `require()` lifecycle method that executes *before* `mount()`. Use this when you need to dynamically load external scripts or heavy dependencies (like a vendor library) only when the component is actually present on the page.
-
-To create a new component, define your defaults in the constructor, handle optional asynchronous loading in `require()`, and attach logic in `mount()`.
+Mark the root element with `data-component` and assign `data-ref` to any child elements you need to interact with.
 
 ```html
-<div data-component="SampleComponent">
-    <!-- Component content goes here -->
+<div class="counter" data-component="Counter">
+  <button class="button" data-ref="decrementBtn" aria-label="Decrease">-</button>
+  <output class="display" data-ref="display">0</output>
+  <button class="button" data-ref="incrementBtn" aria-label="Increase">+</button>
 </div>
 ```
 
+### 2. Implement the component
+
 ```javascript
-import { Component } from "gia"; // Or import { BaseComponent } from "gia";
+import { Component } from "gia";
 
-class SampleComponent extends Component {
-    constructor(element) {
-        super(element);
-    }
+class Counter extends Component {
+  constructor(element) {
+    super(element);
+    
+    this.ref = {
+      display: null,
+      incrementBtn: null,
+      decrementBtn: null
+    };
 
-    // 1. Optional: Asynchronously load heavy dependencies
-    // (Only available if extending Component, not BaseComponent)
-    async require() {
-        // e.g., await this.loadScript('libraryId', 'GlobalVar');
-    }
+    this.setState({ count: 0 });
+  }
 
-    // 2. Setup the component after require() resolves
-    mount() {
-        console.log("Component mounted on:", this.element);
-    }
+  mount() {
+    // Component methods are automatically bound to `this`
+    this.ref.incrementBtn.addEventListener("click", this.increment);
+    this.ref.decrementBtn.addEventListener("click", this.decrement);
 
-    // 3. Cleanup when component is removed
-    unmount() {
-        console.log("Component unmounted");
+    // Initial render
+    this.ref.display.textContent = this.state.count;
+  }
+
+  increment() {
+    this.setState({ count: this.state.count + 1 });
+  }
+
+  decrement() {
+    this.setState({ count: this.state.count - 1 });
+  }
+
+  // Automatically called in the next animation frame when state changes
+  stateChange(changes) {
+    if ("count" in changes) {
+      this.ref.display.textContent = this.state.count;
     }
+  }
 }
 ```
 
-## Global Configuration (`gia.config`)
-
-Gia provides a global `config` object to customize the framework's behavior.
+### 3. Load and register your components
 
 ```javascript
-import { config } from "gia";
-
-// Enable detailed logging (useful during development)
-config.set("log", true);
-
-// Change the default attribute prefix (defaults to 'data')
-// e.g., setting to 'g' means Gia looks for 'g-component' instead of 'data-component'
-config.set("attrPrefix", "data");
-
-// Automatically mount/unmount components as they enter/leave the DOM via MutationObserver
-config.set("autoMountComponents", true);
-
-// Automatically parse and bind `data-action` listeners inside components
-config.set("autoBindActions", true);
-```
-
-## Loading Components
-
-How you initialize components depends on your `autoMountComponents` configuration.
-
-### Manual Loading (Default)
-When `autoMountComponents` is `false` (the default for performance), you must explicitly tell Gia to search a DOM context and attach components. This is typically done on initial page load, and again whenever you inject new HTML.
-
-```html
-<div id="ajax-container">
-    <div data-component="MyComponent"></div>
-    <div data-component="AnotherComponent"></div>
-</div>
-```
-
-```javascript
-import { loadComponents, Component } from "gia";
-
-class MyComponent extends Component {
-    mount() { console.log("MyComponent mounted"); }
-}
-
-class AnotherComponent extends Component {
-    mount() { console.log("AnotherComponent mounted"); }
-}
+import { loadComponents } from "gia";
 
 const components = {
-    MyComponent: MyComponent,
-    AnotherComponent: AnotherComponent
+  Counter
 };
 
-// Mounts all instances found within document.documentElement
+// Auto-discovers and mounts matching components inside the document
 loadComponents(components);
-
-// Later, if you fetch HTML via AJAX and inject it into '#ajax-container':
-const container = document.getElementById("ajax-container");
-loadComponents(components, container);
 ```
 
-### Auto-mounting Loading
-By default, the `MutationObserver`-based auto-mounting capability is disabled. If you enable `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver`. You still call `loadComponents` once to register the component classes, but Gia will automatically detect newly injected HTML and mount/unmount instances automatically.
+---
+
+## Component Lifecycle
+
+```mermaid
+graph TD
+    A[loadComponents / autoMount] --> B["constructor()"]
+    B --> C["require() (Asynchronous)"]
+    C --> D["mount()"]
+    D --> E["stateChange() (on setState)"]
+    D --> F["unmount() (on DOM removal)"]
+    F --> G["_destroy() (Observer/ref cleanup)"]
+```
+
+Gia components follow a strict lifecycle designed to optimize rendering performance and prevent memory leaks:
+
+1. **`constructor(element)`**: Sets up defaults, defines `this.ref` targets, and sets initial state.
+2. **`require()` (Async)**: *Available on `Component` (not `BaseComponent`)*. Performs on-demand script or style loading. Mount is deferred until this resolves.
+3. **`mount()`**: Executes after constructor and dependencies are resolved. Bind custom events, construct third-party libraries, and bootstrap interactions here.
+4. **`stateChange(changes)`**: Invoked inside `requestAnimationFrame` when state values change.
+5. **`unmount()`**: Runs when the component is destroyed (e.g. element removed from DOM). Clean up custom event listeners, timelines, or third-party instances here.
+6. **`_destroy()`**: Internal lifecycle step. Automatically unsubscribes all unified observers and clears elements from memory.
+
+---
+
+## Core Concepts
+
+### The Ref System (`this.ref`)
+
+Instead of writing repetitive `document.querySelector` statements, Gia pre-indexes elements containing `data-ref` inside your component's root context.
+
+#### Configuration Rules
+
+- Set reference keys to `null` to resolve to a **single element**.
+- Set reference keys to `[]` to resolve to an **array of elements**.
+- Set `this.ref` to an empty object `{}` to automatically grab all refs as arrays.
 
 ```html
-<!-- Initial HTML structure -->
-<div id="app">
-    <div data-component="MyComponent">Initial Component</div>
+<div data-component="Gallery">
+  <button data-ref="prev">Previous</button>
+  <button data-ref="next">Next</button>
+  <div data-ref="slides">Slide 1</div>
+  <div data-ref="slides">Slide 2</div>
 </div>
 ```
 
 ```javascript
-import { config, loadComponents } from "gia";
-
-config.set("autoMountComponents", true);
-loadComponents({ MyComponent });
-// Now, anytime `<div data-component="MyComponent">` is added to the DOM, it mounts automatically.
-// Example: document.getElementById("app").innerHTML += '<div data-component="MyComponent">Dynamically Injected</div>';
+class Gallery extends Component {
+  constructor(element) {
+    super(element);
+    this.ref = {
+      prev: null,  // Single HTMLElement
+      next: null,  // Single HTMLElement
+      slides: []   // Array of HTMLElements
+    };
+  }
+}
 ```
 
-## Component Options (`data-options`)
+> [!TIP]
+> **Ref Namespacing**: If components overlap, you can namespace references to keep contexts separate: `<div data-ref="MyComponent:nestedItem">`.
+
+---
+
+### State & Reactivity (`this.setState`)
+
+State should be mutated using `this.setState()`. When state properties change, Gia queues a callback to `stateChange()` in the next animation frame, preventing layout thrashing.
+
+```javascript
+this.setState({ activeTab: 2 });
+```
+
+#### State-to-Attribute Auto-binding
+
+Gia automatically serializes primitive state properties (`boolean` and `string` types) into `data-` attributes on the root element. CamelCase state keys are translated to kebab-case:
+
+- `isOpen: true` ➔ `data-is-open="true"`
+- `status: "loading"` ➔ `data-status="loading"`
+
+This allows you to control component styling entirely through CSS, removing the need for verbose class-toggling code:
+
+```css
+[data-component="Sidebar"] {
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-component="Sidebar"][data-is-open="true"] {
+  transform: translateX(0);
+}
+```
+
+---
+
+### Centralized Observers
+
+Instantiating multiple `IntersectionObserver` or `ResizeObserver` instances can lead to severe browser performance bottlenecks. Gia shares centralized, global observer instances and window listeners across all components. It also handles automatic unsubscription during the `unmount` phase, ensuring zero memory leaks.
+
+Gia provides four primary observer APIs built directly into `BaseComponent`:
+
+#### 1. Intersection (`observeIntersection`)
+Instead of each component creating its own `IntersectionObserver`, Gia groups elements by their observer options (like `threshold` and `rootMargin`) and monitors them using a shared, global observer. 
+*   **Usage**: `this.observeIntersection(element, callback, options)`
+*   **Best for**: Lazy-loading images, scroll-triggered animations (like `Reveal`), and pausing heavy tasks (like canvas physics) when out of view.
+
+#### 2. Element Resize (`observeResize`)
+Monitors changes to an element's dimensions using a single, globally shared `ResizeObserver`.
+*   **Usage**: `this.observeResize(element, callback)`
+*   **Best for**: Responsive components, canvas resizing, and custom text-scaling utilities (like `TextFit`).
+
+#### 3. Global Scroll (`observeScroll`)
+Attaches to a single centralized window scroll listener. Instead of forcing the browser to synchronously recalculate layout by reading `window.scrollY` inside your callback, Gia passes a pre-calculated `payload` containing the current scroll position and velocity.
+*   **Usage**: `this.observeScroll((payload) => console.log(payload.scroll, payload.velocity))`
+*   **Bonus**: If the popular [Lenis](https://lenis.studiofreight.com/) smooth scroll library is detected globally (`window.lenis`), Gia automatically hooks into its optimized `requestAnimationFrame` scroll tick instead of the native DOM scroll event.
+
+#### 4. Window Resize (`observeWindowResize`)
+Attaches to a single centralized window resize listener (or `orientationchange` on mobile browsers) to prevent multiple components from binding heavy resize events simultaneously.
+*   **Usage**: `this.observeWindowResize((payload) => console.log(payload.width, payload.height))`
+
+**Example implementation:**
+
+```javascript
+class TrackingComponent extends Component {
+  mount() {
+    this.observeIntersection(this.element, this.handleIntersection, { threshold: 0.5 });
+    this.observeResize(this.element, this.handleElementResize);
+    this.observeScroll(this.handleScroll);
+    this.observeWindowResize(this.handleWindowResize);
+  }
+
+  handleIntersection([entry]) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("in-view");
+    }
+  }
+
+  handleElementResize([entry]) {
+    console.log("Element width:", entry.contentRect.width);
+  }
+
+  handleScroll(payload) {
+    // Safely read from payload to avoid layout thrashing!
+    this.element.style.transform = `translateY(${payload.scroll * 0.5}px)`;
+  }
+
+  handleWindowResize(payload) {
+    console.log("Window bounds:", payload.width, payload.height);
+  }
+}
+```
+
+---
+
+### On-Demand Dependencies (`require`)
+
+Keep your initial bundle size tiny by lazy-loading heavy third-party dependencies only when a component that actually needs them is present on the page. 
+
+To use `loadScript` and `loadStyle`, you must place the `<script>` and `<link>` tags in your HTML with `data-src` and `data-href` attributes instead of standard `src`/`href`. Gia locates the tag by its `id`, safely triggers the network request, and returns a Promise. 
+
+Gia handles concurrency automatically: if five components request the same script simultaneously, Gia only downloads it once and resolves all component promises when it finishes.
+
+```html
+<!-- Place these in your <head> or at the bottom of the body -->
+<link id="floating-ui-css" rel="stylesheet" data-href="/path/to/floating-ui.css">
+<script id="floating-ui-js" data-src="/path/to/floating-ui.js"></script>
+```
+
+```javascript
+class Tooltip extends Component {
+  async require() {
+    // loadScript(scriptId, expectedGlobalVariable)
+    // loadStyle(styleId)
+    await Promise.all([
+      this.loadScript("floating-ui-js", "FloatingUI"),
+      this.loadStyle("floating-ui-css")
+    ]);
+  }
+
+  mount() {
+    // Dependencies are fully loaded and injected before mount() runs
+    console.log(window.FloatingUI);
+  }
+}
+```
+
+---
+
+### Global Eventbus
+
+Decouple your components by communicating through a global, native `EventTarget`-powered event bus.
+
+```javascript
+import { eventbus } from "gia";
+
+// Component A (Emitter)
+eventbus.emit("productAdded", { id: 101, name: "Premium Widget" });
+
+// Component B (Receiver)
+eventbus.on("productAdded", (data) => {
+  console.log(`Updating cart with product: ${data.name}`);
+});
+```
+
+---
+
+## Quality of Life Features
+
+### Component Options (`data-options`)
 
 You can pass configuration options directly from HTML into your component via the `data-options` attribute. The attribute must contain valid JSON. Gia parses this and merges it with default options defined in your constructor.
 
 ```html
-<div data-component="SliderComponent" data-options='{"speed": 500, "loop": true}'>
+<div data-component="Slider" data-options='{"speed": 500, "loop": true}'>
     <!-- Slider content -->
 </div>
 ```
 
 ```javascript
-class SliderComponent extends Component {
+class Slider extends Component {
     constructor(element) {
         super(element);
 
         // Define defaults and merge with `data-options`
         this.options = {
             speed: 300,
-            loop: false,
-            autoplay: false
+            loop: false
         };
     }
 
@@ -202,470 +359,189 @@ class SliderComponent extends Component {
     }
 }
 ```
-*Best Practice Tip: To ensure proper i18n support, avoid hardcoding user-facing text strings directly in your JavaScript components. Instead, define default text strings in `this.options`, allowing the server (HTML/PHP) to override them with translated values via the `data-options` attribute.*
 
-## The Ref System (`this.ref`)
+---
 
-Gia abstracts querying the DOM by automatically finding and caching elements marked with `data-ref` within the component's root `this.element`. It uses a highly optimized single-pass pre-indexing strategy.
+### Event Binding (`data-action`)
 
-To use refs, you must define the `this.ref` object in the constructor to tell Gia what to look for:
-- Use `null` to indicate a **single element**.
-- Use `[]` to indicate an **array of elements**.
-- Use an empty object `{}` if you want Gia to automatically grab everything it finds as an array.
+By setting `config.set("autoBindActions", true)`, Gia parses `data-action` attributes and automatically binds matching component methods as event listeners, eliminating the need to manually attach and clean up standard event listeners in `mount()`.
+
+**Format**: `data-action="eventName->methodName"` (separate multiple events with spaces).
 
 ```html
-<div data-component="MyComponent">
-    <button data-ref="trigger">Click Me</button>
-    <div data-ref="items">Item 1</div>
-    <div data-ref="items">Item 2</div>
-
-    <!-- References can also be namespaced if components overlap -->
-    <div data-ref="MyComponent:nestedItem">Nested</div>
+<div data-component="InteractiveCard">
+  <div data-action="mouseenter->handleEnter mouseleave->handleLeave">Hover Me</div>
+  <button data-action="click->handleClick">Click Me</button>
 </div>
 ```
 
 ```javascript
-class MyComponent extends Component {
-    constructor(element) {
-        super(element);
-        // Explicitly define the expected structure
-        this.ref = {
-            trigger: null, // Resolves to a single HTMLElement
-            items: [],     // Resolves to an Array of HTMLElements
-        };
-    }
-
-    mount() {
-        console.log(this.ref.trigger);      // <button>
-        console.log(this.ref.items.length); // 2
-    }
+class InteractiveCard extends Component {
+  handleEnter(event) {
+    event.currentTarget.classList.add("hovered");
+  }
+  handleLeave(event) {
+    event.currentTarget.classList.remove("hovered");
+  }
+  handleClick(event) {
+    console.log("Card clicked!", event.currentTarget);
+  }
 }
 ```
 
-## Event Binding (`data-action`)
+> [!IMPORTANT]
+> **Best Practice**: Always use `event.currentTarget` instead of `event.target` in event handlers. `event.currentTarget` is guaranteed to point to the element containing the `data-action` attribute, preventing issues when users click on nested elements (such as icons or text spans).
 
-Manually querying elements and binding event listeners can be tedious. If you enable `config.set("autoBindActions", true)`, Gia automatically maps `data-action` attributes to component methods.
+---
 
-The format is `data-action="eventName->methodName"`. You can define multiple actions separated by spaces.
+### Auto-Mounting
 
-Here is a simple click example:
-
-```html
-<div data-component="SimpleClickComponent">
-    <button data-action="click->handleClick">Action Button</button>
-</div>
-```
+By default, components are loaded manually with `loadComponents(components)`. By enabling `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver` to automatically detect newly injected HTML and mount or unmount instances automatically. 
 
 ```javascript
-class SimpleClickComponent extends Component {
-    constructor(element) {
-        super(element);
-    }
+import { config, loadComponents } from "gia";
 
-    handleClick(event) {
-        console.log("Clicked!", event.currentTarget);
-    }
-}
+config.set("autoMountComponents", true);
+loadComponents({ MyComponent });
+
+// Anytime `<div data-component="MyComponent">` is added to the DOM, it mounts automatically.
+// Example: document.body.innerHTML += '<div data-component="MyComponent">Dynamically Injected</div>';
 ```
 
-And a more complicated example handling hover enter and leave states on a card element:
+---
 
-```html
-<div data-component="HoverCardComponent">
-    <div class="card" data-action="mouseenter->handleEnter mouseleave->handleLeave">
-        Hover over me!
-    </div>
-</div>
-```
+## Global Configuration
+
+Customize the framework's behavior using the global `config` object:
 
 ```javascript
-class HoverCardComponent extends Component {
-    constructor(element) {
-        super(element);
-    }
+import { config } from "gia";
 
-    handleEnter(event) {
-        event.currentTarget.classList.add("is-hovered");
-    }
+// Toggle console logging and warning messages
+config.set("log", true);
 
-    handleLeave(event) {
-        event.currentTarget.classList.remove("is-hovered");
-    }
-}
-```
-*Note: Because `BaseComponent` automatically calls `_autoBindFunctions`, you do not need to manually `.bind(this)` on your methods. `this` inside `handleClick` will safely point to the component instance.*
+// Customize data attribute prefix (e.g. 'g' searches for 'g-component' instead of 'data-component')
+config.set("attrPrefix", "data");
 
-*Best Practice Tip: Always use `event.currentTarget` instead of `event.target` when dealing with DOM events. `event.currentTarget` reliably points to the element that the listener is bound to (the one with the `data-action` attribute), preventing bugs that occur when a user clicks on nested child elements like icons or text spans.*
+// Enable MutationObserver to automatically mount and unmount components on DOM tree changes
+config.set("autoMountComponents", true);
 
-## State Management & Reactivity
-
-Gia encourages reactive DOM updates via `this.setState()` and `stateChange()`. This abstracts away direct DOM manipulation into a clean flow, and uses `requestAnimationFrame` to batch DOM updates for maximum performance.
-
-### Defining and Mutating State
-State should only be updated using `this.setState()`. When the state object is merged, Gia calculates the differences. If changes occur, it queues a call to `stateChange()` in the next animation frame.
-
-Here is a minimal Counter example that also makes use of `data-action` for cleaner event binding:
-
-```html
-<div data-component="CounterComponent">
-    <button data-action="click->increment">Increment</button>
-    <div data-ref="display">0</div>
-</div>
+// Toggle automatic binding of data-action attributes
+config.set("autoBindActions", true);
 ```
 
-```javascript
-class CounterComponent extends Component {
-    constructor(element) {
-        super(element);
-        // Define refs
-        this.ref = {
-            display: null
-        };
-        // Define initial state
-        this.setState({
-            count: 0
-        });
-    }
+---
 
-    increment() {
-        // Update state. This does NOT change the DOM immediately.
-        this.setState({ count: this.state.count + 1 });
-    }
+## API Reference
 
-    // Called automatically by Gia via requestAnimationFrame when state changes
-    stateChange(changes) {
-        // 'changes' only contains keys that actually changed
-        if ('count' in changes) {
-            this.ref.display.textContent = this.state.count;
-        }
-    }
-}
-```
+### Global Exports
 
-*Performance Tip: To prevent layout thrashing, always batch your DOM reads (e.g. `getBoundingClientRect()`, `offsetWidth`) before applying any DOM writes (e.g. updating `style` or setting text content) inside the `stateChange()` method. Interleaving reads and writes forces the browser to recalculate layouts synchronously.*
+- **`loadComponents(components, context)`**: Discovers and mounts components under the given context.
+- **`createInstance(element, componentName, ComponentClass, options)`**: Manually attaches a component to a DOM element.
+- **`destroyInstance(element)`**: Dismantles a component instance, triggering `unmount` and cleaning memory references.
+- **`removeComponents(context)`**: Destroys and cleans up all component instances inside the target context.
+- **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node.
+- **`eventbus`**: Unified `EventTarget`-based event emitter.
 
-### State-to-Attribute Auto-binding
-As a bonus, `BaseComponent` automatically maps `boolean` and `string` state values directly to `data-` attributes on the component's root element (`this.element`). CamelCase state keys are converted to kebab-case.
+### BaseComponent API
 
-```html
-<div data-component="StateExampleComponent">
-    <!-- Component content goes here -->
-</div>
-```
+- **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame.
+- **`observeIntersection(element, callback, options)`** / **`unobserveIntersection(element, callback)`**: Subscribes/unsubscribes to a shared IntersectionObserver.
+- **`observeResize(element, callback)`** / **`unobserveResize(element, callback)`**: Subscribes/unsubscribes to a shared ResizeObserver.
+- **`observeScroll(callback)`** / **`unobserveScroll(callback)`**: Subscribes/unsubscribes to a single, optimized window scroll listener.
+- **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a single window resize listener.
+- **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader.
+- **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader.
 
-```javascript
-import { Component } from "gia";
+---
 
-class StateExampleComponent extends Component {
-    constructor(element) {
-        super(element);
-        this.setState({
-            isOpen: false,
-            status: 'idle',
-            items: []
-        });
-    }
+## Performance Optimizations
 
-    mount() {
-        this.setState({
-            isOpen: true,
-            status: 'loading',
-            items: [1, 2, 3] // Arrays and objects are ignored by the attribute binder
-        });
-    }
-}
-```
-This automatically updates the root element:
-```html
-<div data-component="MyComponent" data-is-open="true" data-status="loading">
-```
-This allows you to write highly performant CSS that reacts to component state without writing manual class-toggling logic.
+To run smooth animations at 60fps, even on low-end mobile devices, this fork implements several optimizations designed to eliminate garbage collection (GC) pauses and prevent layout thrashing:
 
-*Tip: If you want to use `this.setState()` but want to opt-out of automatic state-to-attribute syncing for a specific state variable, you can synchronously call `this.element.removeAttribute('data-variable-name')` at the end of your `stateChange()` method.*
+- **Closure Avoidance**: Observer callbacks are hoisted and context-bound with `thisArg` or properties instead of allocating new anonymous functions on the fly.
+- **Reused Payloads**: High-frequency event payloads (like window scroll position and resize dimensions) are allocated once and updated in-place.
+- **Iterator Suppression**: Replaced `.forEach()`, `.map()`, `.filter()`, and `for...of` iterators with classic `for` loops in hot code paths, avoiding short-lived iterator objects.
+- **Empty Object Checks**: Uses fast-failing `for...in` loops instead of instantiating temporary arrays via `Object.keys()`.
+- **Reference Disconnection**: The `unmount` phase clears references on both Javascript classes and DOM elements, preventing memory leaks and allowing prompt Garbage Collection.
 
-## Helper Functions
+---
 
-Gia includes several helpful utilities to work with components programmatically.
+## Interactive Examples
 
-### `getComponentFromElement(element)`
-If you need to access a component instance from outside (e.g., from another vanilla JS script or global event), you can retrieve it directly from the DOM node.
-
-```html
-<div id="my-component-div" data-component="MyComponent"></div>
-```
-
-```javascript
-import { getComponentFromElement, Component } from "gia";
-
-class MyComponent extends Component {
-    constructor(element) {
-        super(element);
-        this.setState({ isOpen: true });
-    }
-}
-
-// Assume MyComponent is registered/loaded
-const el = document.getElementById("my-component-div");
-const instance = getComponentFromElement(el);
-
-if (instance) {
-    // You can now call public methods or access state
-    console.log(instance.state.isOpen); // true
-}
-```
-
-### `createInstance(element, componentName, component, options)`
-Manually creates and attaches a component instance to a specific DOM element.
-
-```javascript
-import { createInstance } from "gia";
-import MyComponent from "./MyComponent";
-
-const element = document.getElementById("my-element");
-const instance = createInstance(element, "MyComponent", MyComponent, { someOption: true });
-```
-
-### `destroyInstance(element)`
-Destroys the component instance attached to a specific DOM element, triggering its `unmount` lifecycle method and cleaning up memory references.
-
-```javascript
-import { destroyInstance } from "gia";
-
-const element = document.getElementById("my-element");
-destroyInstance(element);
-```
-
-### `removeComponents(context)`
-Destroys and removes all component instances within a given DOM context. By default, it searches the entire `document.documentElement`.
-
-```javascript
-import { removeComponents } from "gia";
-
-const container = document.getElementById("ajax-container");
-removeComponents(container);
-```
-
-### Eventbus
-Gia provides a native `EventTarget` based global event bus to decouple components. It allows components to communicate globally without needing direct references to each other.
-
-```html
-<div data-component="ComponentA"></div>
-<div data-component="ComponentB"></div>
-```
-
-```javascript
-import { eventbus, Component } from "gia";
-
-class ComponentA extends Component {
-    mount() {
-        eventbus.emit("customEvent", { message: "Hello World" });
-    }
-}
-
-class ComponentB extends Component {
-    mount() {
-        eventbus.on("customEvent", this.handleEvent);
-    }
-
-    handleEvent(event) {
-        console.log(event.detail.message); // "Hello World"
-    }
-}
-```
-
-### Dynamic Script and Style Loading
-Avoid blocking the main thread or dealing with race conditions when loading external scripts and styles by using the `loadScript` and `loadStyle` utilities inside the `require` lifecycle. The target script or link elements can be anywhere in the document, such as the `<head>`.
-
-```html
-<!-- Usually in the document <head> or at the end of the <body> -->
-<script id="vendor-js" data-src="..."></script>
-<link id="vendor-css" rel="stylesheet" data-href="...">
-
-<!-- The component instance -->
-<div data-component="MyComponent">
-    <!-- Component content goes here -->
-</div>
-```
-
-```javascript
-import { Component } from "gia";
-
-class MyComponent extends Component {
-    async require() {
-        // Loads the script and waits for the global 'VendorGlobal' to be available
-        // Also lazy-loads the associated stylesheet
-        await Promise.all([
-            this.loadScript('vendor-js', 'VendorGlobal'),
-            this.loadStyle('vendor-css')
-        ]);
-    }
-
-    mount() {
-        console.log("Vendor library loaded:", window.VendorGlobal);
-    }
-}
-```
-
-### Observer API (Scroll, Resize & Intersection)
-Gia provides unified, global listeners for high-frequency events like scroll and window resize, as well as observers for intersection and element resize via `observeScroll`, `observeWindowResize`, `observeIntersection`, and `observeResize` inherited from `BaseComponent`. By using centralized global listeners and shared `IntersectionObserver`/`ResizeObserver` instances across multiple components, it significantly reduces layout thrashing, minimizes memory overhead, and maximizes frame rates. Gia automatically cleans up all observers and listeners during the `unmount` phase.
-
-```html
-<div data-component="VisibilityComponent">
-    <div data-ref="items" class="item">Item 1</div>
-    <div data-ref="items" class="item">Item 2</div>
-</div>
-```
-
-```javascript
-class VisibilityComponent extends Component {
-    constructor(element) {
-        super(element);
-        this.ref = { items: [] };
-    }
-
-    mount() {
-        // Observe intersection (uses a shared global IntersectionObserver instance)
-        // Best Practice: Use a standard for-loop in high-frequency/startup methods to avoid closure allocations
-        for (let i = 0; i < this.ref.items.length; i++) {
-            this.observeIntersection(this.ref.items[i], this.handleIntersection, { threshold: 0.5 });
-        }
-
-        // Observe resize (uses a shared global ResizeObserver instance)
-        this.observeResize(this.element, this.handleResize);
-
-        // Observe global scroll (uses a centralized window scroll listener to prevent layout thrashing)
-        this.observeScroll(this.handleScroll);
-    }
-
-    handleIntersection([entry]) {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            // Stop observing if needed (or Gia will automatically clean it up on unmount)
-            this.unobserveIntersection(entry.target, this.handleIntersection);
-        }
-    }
-
-    handleResize([entry]) {
-        console.log("Component resized:", entry.contentRect.width);
-    }
-
-    handleScroll(payload) {
-        // Read layout from payload instead of window.scrollY to prevent forced synchronous layout
-        console.log("Window scrolled to:", payload.scroll);
-    }
-}
-```
-
-## Examples
-
-The `examples/` directory contains a comprehensive set of real-world use cases demonstrating best practices with Gia. These examples include advanced patterns like URL hash-syncing, hardware-accelerated scroll snapping, reactive accordions, and high-performance parallax scroll-bound animations.
-
-You can preview all examples locally by opening `demo/index.html` in your browser. Or check out the [Live Demo](https://alexander-neumann-webdesign.github.io/gia/demo/).
+A comprehensive suite of examples demonstrating best practices is available. You can view the [Live Demo](https://alexander-neumann-webdesign.github.io/gia/demo/) or inspect their source code.
 
 ### Navigation & Layout
-*   **Header**: A scroll-aware site header component that responds to scroll direction and offset. It intelligently caches layout dimensions and uses `requestAnimationFrame` to apply CSS transforms without layout thrashing.
-*   **OffCanvasMenu**: A slide-out navigation menu demonstrating state-based CSS class toggling, inert trapping for accessibility, and robust click-outside handling to seamlessly close the menu.
-*   **Tabs**: A classic tabbed interface component relying on Gia's state management to toggle active views and ARIA attributes. Also supports URL hash syncing for bookmarkable tabs.
-*   **Accordion**: A semantic, highly-accessible accordion utilizing native `<details>` and `<summary>` tags. Manages state reactively to auto-close sibling panels and syncs active open states with the URL hash for deep linking.
+- **[Accordion](examples/Accordion.js)**: Semantic, accessible accordion utilizing `<details>`/`<summary>`. Manages state to auto-close sibling panels and syncs with the URL hash.
+- **[Header](examples/Header.js)**: A scroll-aware site header caching layout dimensions to apply CSS transforms via `requestAnimationFrame` without layout thrashing.
+- **[OffCanvasMenu](examples/OffCanvasMenu.js)**: A slide-out navigation menu demonstrating state-based class toggling, inert trapping for accessibility, and click-outside handling.
+- **[Tabs](examples/Tabs.js)**: A classic tabbed interface relying on Gia's state management to toggle active views and ARIA attributes, complete with URL syncing.
 
-### UI Components
-*   **Modal**: An accessible dialog window leveraging the native `<dialog>` element. It supports complex triggering via external targets, click-outside-to-close logic, and manages URL hash syncing.
-*   **Tooltip**: A robust tooltip component asynchronously importing the Floating UI library via `require()` to calculate precise, collision-aware absolute positioning.
-*   **ThemeToggle**: A dark/light mode toggle switch that interacts with `localStorage` and optionally mutates global root state to persist user visual preferences.
-*   **ClipboardCopy**: A minimal utility component that seamlessly copies text to the user's clipboard, demonstrating how to use `this.setState` to provide temporary visual UI feedback (e.g., "Copied!") after a successful action.
-*   **CustomCursor**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for smooth magnetic snapping and morphing over interactive elements.
-*   **TextFit**: A typography utility component that integrates the `fitty` library to perfectly scale text to fit its container, automatically handling resize observation and instance cleanup.
-*   **QRCode**: A component that dynamically generates SVG QR codes. It asynchronously loads the `qrcode-generator` library via `require()` only when needed and reacts to state changes to update the code.
+### UI Elements
+- **[ClipboardCopy](examples/ClipboardCopy.js)**: A utility component that copies text to the clipboard and provides temporary UI feedback based on state transitions.
+- **[CustomCursor](examples/CustomCursor.js)**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for magnetic snapping and morphing.
+- **[Modal](examples/Modal.js)**: An accessible dialog leveraging the native `<dialog>` element. Supports complex triggering, click-outside logic, and URL hash syncing.
+- **[ThemeToggle](examples/ThemeToggle.js)**: A dark/light mode toggle switch interacting with `localStorage` and mutating global document state.
+- **[Tooltip](examples/Tooltip.js)**: A robust tooltip component asynchronously importing the Floating UI library via `require()` for collision-aware positioning.
 
 ### Media & Galleries
-*   **Slider**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms via `requestAnimationFrame`.
-*   **LightboxGallery**: A fully-featured gallery component demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked, handling complex DOM structure mappings and global event bindings.
-*   **ImageHolder**: A highly optimized image component providing a buttery-smooth parallax implementation. Tracks viewport entrance to lazy load sources and automatically calculates and sets the `sizes` attribute dynamically based on exact layout dimensions.
-*   **VideoHolder**: A lazy-loading video component that automatically pauses playback when scrolled out of view to save system resources. Uses Intersection Observers to handle complex, asynchronous playback promise logic.
-*   **ImageComparison**: A performant before/after media comparison component. It uses a visually hidden native range slider to update a CSS variable, dynamically driving a `clip-path` mask over stacked images.
+- **[ImageComparison](examples/ImageComparison.js)**: A before/after comparison component using a visually hidden range slider to dynamically update a `clip-path` mask via CSS variables.
+- **[ImageHolder](examples/ImageHolder.js)**: A highly optimized image component providing smooth parallax, viewport entrance tracking, and dynamic `sizes` calculations.
+- **[LightboxGallery](examples/LightboxGallery.js)**: A fully-featured gallery demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked.
+- **[Slider](examples/Slider.js)**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms.
+- **[VideoHolder](examples/VideoHolder.js)**: A lazy-loading video component that automatically pauses playback when scrolled out of view to save system resources.
 
-### Scroll & Animation Effects
-*   **Reveal**: A highly optimized, stagger-ready scroll-reveal component that fades and translates elements into view. It leverages the globally shared `observeIntersection` API to handle hundreds of elements without memory leaks or performance degradation.
-*   **Marquee**: An infinite-scrolling marquee component that automatically clones elements and handles continuous, sub-pixel perfect `requestAnimationFrame` updates, complete with Lenis smooth-scroll velocity integration.
-*   **SplitText**: A specialized typography component for complex text animations. It intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API while perfectly preserving screen reader accessibility.
+### Scroll & Visual Effects
+- **[Marquee](examples/Marquee.js)**: An infinite-scrolling marquee that automatically clones elements and handles continuous, sub-pixel perfect `requestAnimationFrame` updates.
+- **[Reveal](examples/Reveal.js)**: A stagger-ready scroll-reveal component leveraging the globally shared Intersection Observer to handle hundreds of elements without memory leaks.
+- **[SplitText](examples/SplitText.js)**: A specialized typography component that intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API.
+- **[TextFit](examples/TextFit.js)**: A typography utility integrating the `fitty` library to seamlessly scale text to fit its container perfectly.
 
-### Data & State Management
-*   **FilterableList**: A powerful filtering and sorting component for item collections. It synchronizes state with URL search parameters and utilizes the modern View Transitions API for buttery-smooth, hardware-accelerated DOM reordering.
+### Forms & Selection
+- **[Form](examples/Form.js)**: An AJAX-powered form component with built-in HTML5 validation handling, animated loading spinners, and state-driven success/error messaging.
+- **[MultipleSelect](examples/MultipleSelect.js)**: A wrapper for `multiple-select-vanilla` dynamically loading its dependencies and exposing standard value getters/setters.
+- **[RangeSlider](examples/RangeSlider.js)**: A flexible range slider wrapping the `noUiSlider` library, implementing two-way data binding with native hidden inputs.
 
-### Forms
-*   **Form**: An AJAX-powered form component with built-in HTML5 validation handling, animated SVG loading spinners, and state-driven success/error messaging.
-*   **MultipleSelect**: A wrapper component for `multiple-select-vanilla`. It dynamically loads its dependencies and exposes standard value getters and setters for easy integration with standard form data collection.
-*   **RangeSlider**: A flexible range slider wrapping the `noUiSlider` library. It implements two-way data binding, seamlessly syncing its visual state with native hidden inputs to ensure compatibility with standard form submissions.
+### Complex Interactivity
+- **[FilterableList](examples/FilterableList.js)**: A filtering and sorting component synchronizing state with URL parameters and utilizing the modern View Transitions API.
+- **[OpenStreetMap](examples/OpenStreetMap.js)**: A Leaflet-based interactive map component asynchronously loading dependencies to plot markers dynamically.
+- **[MatterPhysicsBackground](examples/MatterPhysicsBackground.js)**: An interactive physics-based canvas utilizing Matter.js, including automatic pausing via IntersectionObserver to save CPU.
+- **[PongGame](examples/PongGame.js)**: A complete, playable Pong game running a custom loop within `requestAnimationFrame`, demonstrating canvas drawing and input handling.
+- **[TodoApp](examples/TodoApp.js)**: A fully-featured todo application highlighting complex state arrays, local storage syncing, and accessible ARIA live regions.
 
-### Maps
-*   **MapLibreMap**: A MapLibre GL wrapper component that asynchronously loads the massive mapping library and styles on-demand, dynamically calculating and framing bounding boxes for location markers.
-*   **OpenStreetMap**: A Leaflet-based interactive map component that asynchronously loads its dependencies and styles, plots markers with popups, and minimizes attribution noise.
+---
 
-### Complex Apps
-*   **MatterPhysicsBackground**: An interactive physics-based background canvas utilizing Matter.js. Complete with responsive resizing, automatic pausing via IntersectionObserver to save CPU resources, and `prefers-reduced-motion` support.
-*   **TodoApp**: A fully-featured todo application demonstrating complex state arrays, local storage syncing, computed properties (like remaining tasks), and accessible ARIA live regions for screen readers.
-*   **PongGame**: A complete, playable Pong game built entirely within a single Gia component. Demonstrates a custom game loop running within `requestAnimationFrame`, keyboard input handling, collision logic, scoring state, and Canvas API drawing.
+## Integration with Swup
 
-## Bonus Tip: Gia and Swup
+Gia integrates perfectly with page transition libraries like [Swup](https://swup.js.org/).
 
-Gia pairs exceptionally well with page transition libraries like [Swup](https://swup.js.org/). Because Gia relies on standard DOM manipulation and clearly defined `mount()` and `unmount()` lifecycles, it perfectly complements Swup's approach to replacing only specific containers.
-
-### Global Integration
-
-You can easily tie Gia's loading mechanisms directly into Swup's lifecycle hooks. By listening to `content:replace`, you can initialize new components when Swup injects new HTML. By listening to `content:remove`, you can ensure that memory is freed properly by destroying old components.
+### Setup elegant listeners to mount and destroy components on page transitions:
 
 ```javascript
 import { loadComponents, removeComponents } from "gia";
 import Swup from "swup";
-import MyComponent from "./MyComponent";
+import components from "./components"; // Your component registry
 
-const components = { MyComponent };
+const containerSelector = "#swup-container";
+const swup = new Swup({ containers: [containerSelector] });
 
-const swup = new Swup({
-    containers: ["#swup-container"]
-});
+// Helper functions scoped to the current main container
+const mount = () => loadComponents(components, document.querySelector(containerSelector));
+const unmount = () => removeComponents(document.querySelector(containerSelector));
 
-// Mount components on initial load
-loadComponents(components, document.getElementById("swup-container"));
+// Initial page load
+mount();
 
-// Re-mount components when Swup replaces the content
-swup.hooks.on("content:replace", () => {
-    loadComponents(components, document.getElementById("swup-container"));
-});
-
-// Cleanup components right before Swup removes the old content
-swup.hooks.on("content:remove", () => {
-    removeComponents(document.getElementById("swup-container"));
-});
+// Hook into Swup's lifecycle events
+swup.hooks.before("content:replace", unmount);
+swup.hooks.on("content:replace", mount);
 ```
 
-### Component-Level Integration
+---
 
-Sometimes individual components need to react to page transitions (e.g., closing an open menu before the page navigates away, or resetting scroll-dependent state). You can safely check for Swup and bind to its hooks within your component's lifecycle:
+## License
 
-```javascript
-import { Component } from "gia";
+Gia is open-source software licensed under the [MIT License](LICENSE).
 
-class OffCanvasMenu extends Component {
-    mount() {
-        // ... standard mount logic ...
-
-        // Close the menu if a link inside it triggers a Swup transition
-        if (window.swup) {
-            this.handleSwupTransition = () => {
-                this.setState({ isOpen: false });
-            };
-            window.swup.hooks.on("animation:out:start", this.handleSwupTransition);
-        }
-    }
-
-    unmount() {
-        // Always clean up the hook listener
-        if (window.swup && this.handleSwupTransition) {
-            window.swup.hooks.off("animation:out:start", this.handleSwupTransition);
-        }
-    }
-}
-```
-## Summary
-Gia is built for "Islands of Interactivity." If you are building a traditional server-rendered website using Django, Laravel, Ruby on Rails, Astro, or purely static HTML, and you just want to sprinkle in some interactive components (sliders, modals, maps, AJAX forms) without shipping a massive JavaScript payload, Gia is designed for this use case. It gives you the structure of modern component-based UI without abandoning the simplicity of Vanilla JS.
+---
+*Maintained and optimized by [Alexander Neumann Webdesign](https://alexander-neumann.site).*
