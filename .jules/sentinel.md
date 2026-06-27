@@ -59,3 +59,8 @@
 **Vulnerability:** A DOM clobbering bypass existed in `loadScript` (`src/BaseComponent.js`). The original code checked `!(window[globalName] instanceof Node)` to verify the clobbered value wasn't a DOM element. However, an attacker could inject multiple elements with the same ID/name to create an `HTMLCollection`, or inject an `<iframe name="...">` to create a `Window` object—neither of which inherit from `Node`.
 **Learning:** Using `instanceof Node` is insufficient to prevent DOM Clobbering. You must explicitly account for `HTMLCollection` and `Window` objects, which are common DOM clobbering vectors.
 **Prevention:** Always validate that the globally resolved variable is not an instance of `Node`, `HTMLCollection`, or `Window`. For example: `!(val instanceof Node) && !(val instanceof HTMLCollection) && !(val instanceof Window)`.
+
+## 2024-06-27 - [Security] Prevent DOM-based XSS by replacing `insertAdjacentHTML`
+**Vulnerability:** The QRCode component used `insertAdjacentHTML` with dynamic strings to inject generated SVGs. `insertAdjacentHTML` can be a vector for DOM-based XSS if user input is ever included in the strings.
+**Learning:** Hardcoded strings injected with `insertAdjacentHTML` are generally safe, but avoiding the pattern altogether, especially with dynamically generated content from third-party libraries, is a good defense-in-depth strategy. It's safer to use DOM APIs like `document.createElement()` or `new DOMParser().parseFromString(..., 'image/svg+xml')` to create elements safely before appending them.
+**Prevention:** Avoid `insertAdjacentHTML` and `innerHTML`. Use `document.createElement()` or `DOMParser` instead when appending dynamic content or user input.

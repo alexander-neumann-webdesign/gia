@@ -41,7 +41,8 @@ class QRCode extends gia.Component {
 					qr.addData(this.state.contents);
 					qr.make();
 					this.element.replaceChildren();
-					this.element.insertAdjacentHTML('beforeend', qr.createSvgTag());
+					const svgDoc = new DOMParser().parseFromString(qr.createSvgTag(), 'image/svg+xml');
+						this.element.appendChild(svgDoc.documentElement);
 				} else {
 					setTimeout(checkAndRender, 100);
 				}
@@ -51,7 +52,10 @@ class QRCode extends gia.Component {
 		} catch (error) {
 			console.error('Error generating QR code:', error);
 			this.element.replaceChildren();
-			this.element.insertAdjacentHTML('beforeend', '<span class="error">Failed to generate QR Code</span>');
+			const errorSpan = document.createElement('span');
+				errorSpan.className = 'error';
+				errorSpan.textContent = 'Failed to generate QR Code';
+				this.element.appendChild(errorSpan);
 		}
 	}
 
