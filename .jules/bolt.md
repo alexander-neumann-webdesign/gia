@@ -120,3 +120,6 @@
 ## 2024-06-25 - Prevent GC churn in MutationObserver callbacks
 **Learning:** Allocating collections like `new Set()` inside high-frequency event handlers such as `MutationObserver` callbacks introduces significant garbage collection (GC) overhead and performance degradation, especially when many DOM mutations occur.
 **Action:** Extract the collection to the module scope and reuse it by calling `.clear()` on each invocation of the handler.
+## 2024-06-25 - Iterator Allocation on array using for...of loops inside ResizeObserver
+**Learning:** `for...of` loops iterating over array elements like `ResizeObserverEntry` arrays inside high-frequency event handlers such as `ResizeObserver` callbacks allocate an Iterator object on every run. This forces Garbage Collection (GC) churn which can cause micro-stutters and performance degradation during window resizes.
+**Action:** Replace `for...of` loops with standard indexed `for` loops (e.g., `for (let i = 0; i < arr.length; i++)`) in `ResizeObserver` callbacks to completely eliminate Iterator allocation overhead.
