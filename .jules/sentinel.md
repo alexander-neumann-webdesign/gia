@@ -63,3 +63,8 @@
 **Vulnerability:** Checking `element.tagName === 'BUTTON'` is susceptible to DOM Clobbering if an attacker injects an element like `<input name="tagName">` inside the form.
 **Learning:** Maliciously injected named children can spoof properties on the parent element, causing validation logic based on properties like `tagName` to fail or behave insecurely.
 **Prevention:** Always use strict prototype chain checks (e.g., `element instanceof HTMLButtonElement`) instead of checking properties like `tagName` or `nodeName` when validating DOM elements, especially within forms.
+
+## 2024-06-27 - [Security] Prevent DOM-based XSS by replacing `insertAdjacentHTML`
+**Vulnerability:** The QRCode component used `insertAdjacentHTML` with dynamic strings to inject generated SVGs. `insertAdjacentHTML` can be a vector for DOM-based XSS if user input is ever included in the strings.
+**Learning:** Hardcoded strings injected with `insertAdjacentHTML` are generally safe, but avoiding the pattern altogether, especially with dynamically generated content from third-party libraries, is a good defense-in-depth strategy. It's safer to use DOM APIs like `document.createElement()` or `new DOMParser().parseFromString(..., 'image/svg+xml')` to create elements safely before appending them.
+**Prevention:** Avoid `insertAdjacentHTML` and `innerHTML`. Use `document.createElement()` or `DOMParser` instead when appending dynamic content or user input.

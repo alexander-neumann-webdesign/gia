@@ -9,3 +9,7 @@
 ## 2025-08-16 - File Dropzone Focus Visibility
 **Learning:** To maintain keyboard accessibility for file upload dropzones with a visually hidden `<input type="file">` (e.g., `opacity: 0`), relying purely on `:focus-within` CSS styles might not be completely robust for testing environments like Playwright or some screen readers because they consider visually hidden inputs non-actionable.
 **Action:** Always augment `:focus-within` by toggling an `is-focused` class via JS `focus`/`blur` events on the parent container. Additionally, always link the container's `<label>` to the input using matching `for` and `id` attributes.
+
+## 2025-09-01 - UploadField Keyboard Actionability
+**Learning:** For custom file dropzones (like UploadField) where the actual file input is visually hidden, adding `is-focused` styles via focus events on the input is good, but it's not enough for keyboard actionability. If a user tabs to the dropzone or its container, they need to be able to trigger the file picker using keyboard keys ('Enter' or 'Space'), as the native input isn't directly interactable via the standard click area.
+**Action:** Always add `tabindex="0"` to custom file dropzone containers and implement a `keydown` listener that catches 'Enter' and 'Space' keys to programmatically trigger a click on the hidden file input.

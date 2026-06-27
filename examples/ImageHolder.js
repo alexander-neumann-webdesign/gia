@@ -215,7 +215,8 @@ class ImageHolder extends gia.Component {
 		let widthChanged = false;
 		let sizeUpdates = [];
 
-		for (let entry of entries) {
+		for (let i = 0; i < entries.length; i++) {
+			const entry = entries[i];
 			const width = entry.contentRect.width;
 			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
 			// so defining the actual render width in CSS pixels is exactly what the sizes attribute needs.
