@@ -12,9 +12,14 @@ class UploadField extends gia.Component {
 		this.handleFormReset = this.handleFormReset.bind(this);
 		this.handleFocus = this.handleFocus.bind(this);
 		this.handleBlur = this.handleBlur.bind(this);
+		this.handleKeyDown = this.handleKeyDown.bind(this);
+		this.handleClick = this.handleClick.bind(this);
 	}
 
 	mount() {
+		this.element.setAttribute('tabindex', '0');
+		this.element.addEventListener('keydown', this.handleKeyDown);
+		this.element.addEventListener('click', this.handleClick);
 		this.element.addEventListener('dragover', this.handleDragOver);
 		this.element.addEventListener('dragleave', this.handleDragLeave);
 		this.element.addEventListener('drop', this.handleDrop);
@@ -38,6 +43,8 @@ class UploadField extends gia.Component {
 	}
 
 	unmount() {
+		this.element.removeEventListener('keydown', this.handleKeyDown);
+		this.element.removeEventListener('click', this.handleClick);
 		this.element.removeEventListener('dragover', this.handleDragOver);
 		this.element.removeEventListener('dragleave', this.handleDragLeave);
 		this.element.removeEventListener('drop', this.handleDrop);
@@ -54,6 +61,24 @@ class UploadField extends gia.Component {
 		}
 	}
 
+
+	handleKeyDown(event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			const fileInput = this.element.querySelector('input[type="file"]');
+			if (fileInput) {
+				fileInput.click();
+			}
+		}
+	}
+
+	handleClick(event) {
+		const fileInput = this.element.querySelector('input[type="file"]');
+		// Only trigger if click wasn't already on the input or a remove button
+		if (fileInput && event.target !== fileInput && !event.target.closest('.remove-file-btn') && !event.target.closest('.add-more-files-btn')) {
+			fileInput.click();
+		}
+	}
 
 	handleFocus() {
 		this.element.classList.add('is-focused');
