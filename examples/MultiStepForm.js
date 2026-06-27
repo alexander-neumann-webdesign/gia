@@ -22,6 +22,10 @@ class MultiStepForm extends gia.Component {
 		this._updateIndicatorsState = this._updateIndicatorsState.bind(this);
 	}
 
+	_getArray(refValue) {
+		return Array.isArray(refValue) ? refValue : (refValue ? [refValue] : []);
+	}
+
 	mount() {
 		if (this.element instanceof HTMLFormElement) {
 			this.formElement = this.element;
@@ -39,18 +43,18 @@ class MultiStepForm extends gia.Component {
 			this.handlePrevStep = this.handlePrevStep.bind(this);
 			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
 
-			const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+			const nextBtns = this._getArray(this.ref.nextBtn);
 			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
 
-			const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+			const prevBtns = this._getArray(this.ref.prevBtn);
 			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
 
-			const stepIndicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+			const stepIndicators = this._getArray(this.ref.stepIndicator);
 			stepIndicators.forEach((indicator, index) => {
 				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
 			});
 
-			if (this.ref.step && (Array.isArray(this.ref.step) ? this.ref.step.length > 0 : true)) {
+			if (this.ref.step && (this._getArray(this.ref.step).length > 0)) {
 				this._updateStepUI(this.state.currentStep);
 			}
 
@@ -71,15 +75,15 @@ class MultiStepForm extends gia.Component {
 			this.formElement.removeEventListener('input', this._updateIndicatorsState);
 		}
 
-		const nextBtns = Array.isArray(this.ref.nextBtn) ? this.ref.nextBtn : (this.ref.nextBtn ? [this.ref.nextBtn] : []);
+		const nextBtns = this._getArray(this.ref.nextBtn);
 		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
 
-		const prevBtns = Array.isArray(this.ref.prevBtn) ? this.ref.prevBtn : (this.ref.prevBtn ? [this.ref.prevBtn] : []);
+		const prevBtns = this._getArray(this.ref.prevBtn);
 		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
 	}
 
 	handleSubmit(event) {
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+		const steps = this._getArray(this.ref.step);
 		if (steps.length > 0 && this.state.currentStep < steps.length - 1) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
@@ -90,7 +94,7 @@ class MultiStepForm extends gia.Component {
 	}
 
 	_isStepValid(stepIndex, report = false) {
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+		const steps = this._getArray(this.ref.step);
 		if (!steps || stepIndex < 0 || stepIndex >= steps.length) return true;
 
 		const stepElement = steps[stepIndex];
@@ -109,7 +113,7 @@ class MultiStepForm extends gia.Component {
 	}
 
 	_updateIndicatorsState() {
-		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		const indicators = this._getArray(this.ref.stepIndicator);
 		let canNavigate = true;
 
 		indicators.forEach((indicator, index) => {
@@ -131,7 +135,7 @@ class MultiStepForm extends gia.Component {
 		});
 
 		if (this.ref.submitBtn) {
-			const steps = Array.isArray(this.ref.step) ? this.ref.step : (this.ref.step ? [this.ref.step] : []);
+			const steps = this._getArray(this.ref.step);
 			let allValid = true;
 			for (let i = 0; i < steps.length; i++) {
 				if (!this._isStepValid(i)) {
@@ -160,7 +164,7 @@ class MultiStepForm extends gia.Component {
 	handleNextStep(event) {
 		event.preventDefault();
 
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		const steps = this._getArray(this.ref.step);
 		if (!steps.length || this.state.currentStep >= steps.length - 1) return;
 
 		if (this._isStepValid(this.state.currentStep, true)) {
@@ -195,14 +199,14 @@ class MultiStepForm extends gia.Component {
 	}
 
 	_updateStepUI(currentStep) {
-		const steps = Array.isArray(this.ref.step) ? this.ref.step : [this.ref.step];
+		const steps = this._getArray(this.ref.step);
 		if (!steps || steps.length === 0) return;
 
 		steps.forEach((step, index) => {
 			step.hidden = index !== currentStep;
 		});
 
-		const indicators = Array.isArray(this.ref.stepIndicator) ? this.ref.stepIndicator : (this.ref.stepIndicator ? [this.ref.stepIndicator] : []);
+		const indicators = this._getArray(this.ref.stepIndicator);
 		indicators.forEach((indicator, index) => {
 			if (index === currentStep) {
 				indicator.setAttribute('aria-current', 'step');
