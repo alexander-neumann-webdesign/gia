@@ -58,30 +58,34 @@ class MapLibreMap extends gia.Component {
 		]);
 	}
 
+	_calculateCenterFromLocations() {
+		let minLng = Infinity, maxLng = -Infinity;
+		let minLat = Infinity, maxLat = -Infinity;
+
+		for (const location of this.options.locations) {
+			let lng, lat;
+			if (Array.isArray(location)) {
+				[lng, lat] = location;
+			} else {
+				lng = location.lng;
+				lat = location.lat;
+			}
+
+			if (lng < minLng) minLng = lng;
+			if (lng > maxLng) maxLng = lng;
+			if (lat < minLat) minLat = lat;
+			if (lat > maxLat) maxLat = lat;
+		}
+
+		return [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+	}
+
 	mount() {
 		let center = this.options.centerCoords;
 
 		if (!center && this.options.locations && this.options.locations.length > 0) {
 			// Calculate the center based on bounding box
-			let minLng = Infinity, maxLng = -Infinity;
-			let minLat = Infinity, maxLat = -Infinity;
-
-			for (const location of this.options.locations) {
-				let lng, lat;
-				if (Array.isArray(location)) {
-					[lng, lat] = location;
-				} else {
-					lng = location.lng;
-					lat = location.lat;
-				}
-
-				if (lng < minLng) minLng = lng;
-				if (lng > maxLng) maxLng = lng;
-				if (lat < minLat) minLat = lat;
-				if (lat > maxLat) maxLat = lat;
-			}
-
-			center = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+			center = this._calculateCenterFromLocations();
 		} else if (!center) {
 			// Default fallback center
 			center = [0, 0];
@@ -105,27 +109,7 @@ class MapLibreMap extends gia.Component {
 		}
 
 		if (this.options.locations) {
-			for (const location of this.options.locations) {
-				let lngLat, title;
-
-				if (Array.isArray(location)) {
-					lngLat = location;
-				} else {
-					lngLat = [location.lng, location.lat];
-					title = location.title;
-				}
-
-				const marker = new maplibregl.Marker()
-					.setLngLat(lngLat);
-
-				if (title) {
-					const popup = new maplibregl.Popup({ offset: 25 }).setText(title);
-					marker.setPopup(popup);
-				}
-
-				marker.addTo(this.map);
-				this.markers.push(marker);
-			}
+			this._addMarkers();
 		}
 
 		this.observeResize(this.element, () => {
@@ -133,6 +117,30 @@ class MapLibreMap extends gia.Component {
 				this.map.resize();
 			}
 		});
+	}
+
+	_addMarkers() {
+		for (const location of this.options.locations) {
+			let lngLat, title;
+
+			if (Array.isArray(location)) {
+				lngLat = location;
+			} else {
+				lngLat = [location.lng, location.lat];
+				title = location.title;
+			}
+
+			const marker = new maplibregl.Marker()
+				.setLngLat(lngLat);
+
+			if (title) {
+				const popup = new maplibregl.Popup({ offset: 25 }).setText(title);
+				marker.setPopup(popup);
+			}
+
+			marker.addTo(this.map);
+			this.markers.push(marker);
+		}
 	}
 
 	unmount() {
