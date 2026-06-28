@@ -191,7 +191,7 @@ EXPECTED HTML
 
 <header class="site-header">
   <button data-offcanvas-target="main-menu" aria-label="<?= __('Open menu', 'anweb') ?>" aria-expanded="false" aria-controls="main-menu">
-    <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" width="24" height="16">
+    <svg aria-hidden="true" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" width="24" height="16">
       <path stroke="currentColor" stroke-width="2" d="M0 1h48" />
       <path stroke="currentColor" stroke-width="2" d="M0 16h48" />
       <path stroke="currentColor" stroke-width="2" d="M0 31h48" />
