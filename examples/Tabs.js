@@ -211,6 +211,37 @@ class Tabs extends gia.Component {
 		const oldPanel = this.ref.panel[oldIndex];
 		const newPanel = this.ref.panel[newIndex];
 
+		this._setupPanelsForAnimation(oldIndex, newPanel);
+
+		// Prepare DOM for new state
+		this.updateIndicator();
+
+		this.ref.tab.forEach((tab, index) => {
+			const isSelected = index === newIndex;
+			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+			tab.setAttribute('tabindex', isSelected ? '0' : '-1');
+		});
+
+		if (newPanel) newPanel.hidden = false;
+
+		// Measure end height (now accurately determined ONLY by newPanel)
+		const endHeight = panelsContainer.offsetHeight;
+
+		// Lock container size for animation
+		panelsContainer.style.overflow = 'hidden';
+		panelsContainer.style.height = `${startHeight}px`;
+		panelsContainer.style.position = 'relative';
+
+		const animations = this._createAnimations(panelsContainer, oldPanel, newPanel, startHeight, endHeight, direction);
+
+		Promise.allSettled(animations).then(() => {
+			if (this._animationId !== currentAnimId) return;
+			this._cleanupAfterAnimation(panelsContainer, newPanel);
+			this.element.removeAttribute('data-direction');
+		});
+	}
+
+	_setupPanelsForAnimation(oldIndex, newPanel) {
 		this.ref.panel.forEach((panel, index) => {
 			panel.getAnimations().forEach(a => a.cancel());
 			
@@ -231,26 +262,9 @@ class Tabs extends gia.Component {
 				panel.style.width = '';
 			}
 		});
+	}
 
-		// Prepare DOM for new state
-		this.updateIndicator();
-		
-		this.ref.tab.forEach((tab, index) => {
-			const isSelected = index === newIndex;
-			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-			tab.setAttribute('tabindex', isSelected ? '0' : '-1');
-		});
-
-		if (newPanel) newPanel.hidden = false;
-
-		// Measure end height (now accurately determined ONLY by newPanel)
-		const endHeight = panelsContainer.offsetHeight;
-
-		// Lock container size for animation
-		panelsContainer.style.overflow = 'hidden';
-		panelsContainer.style.height = `${startHeight}px`;
-		panelsContainer.style.position = 'relative';
-
+	_createAnimations(panelsContainer, oldPanel, newPanel, startHeight, endHeight, direction) {
 		const animations = [];
 
 		// 1. Container Height Animation
@@ -286,27 +300,25 @@ class Tabs extends gia.Component {
 			animations.push(newAnim.finished);
 		}
 
-		Promise.allSettled(animations).then(() => {
-			if (this._animationId !== currentAnimId) return;
+		return animations;
+	}
 
-			// Cleanup
-			this.ref.panel.forEach((panel) => {
-				panel.getAnimations().forEach(a => a.cancel());
-				if (panel !== newPanel) {
-					panel.hidden = true;
-				}
-				panel.style.position = '';
-				panel.style.top = '';
-				panel.style.left = '';
-				panel.style.width = '';
-			});
-
-			panelsContainer.getAnimations().forEach(a => a.cancel());
-			panelsContainer.style.height = '';
-			panelsContainer.style.overflow = '';
-			panelsContainer.style.position = '';
-			this.element.removeAttribute('data-direction');
+	_cleanupAfterAnimation(panelsContainer, newPanel) {
+		this.ref.panel.forEach((panel) => {
+			panel.getAnimations().forEach(a => a.cancel());
+			if (panel !== newPanel) {
+				panel.hidden = true;
+			}
+			panel.style.position = '';
+			panel.style.top = '';
+			panel.style.left = '';
+			panel.style.width = '';
 		});
+
+		panelsContainer.getAnimations().forEach(a => a.cancel());
+		panelsContainer.style.height = '';
+		panelsContainer.style.overflow = '';
+		panelsContainer.style.position = '';
 	}
 
 	stateChange(stateChanges) {
