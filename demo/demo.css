@@ -873,6 +873,10 @@ html.off-canvas-menu-open::after {
   background-color: #f0f0f0;
   color: #000;
 }
+.slider-wrapper[data-component=Slider] .slider-btn:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
 .slider-wrapper[data-component=Slider] .slider-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
