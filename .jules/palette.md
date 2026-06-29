@@ -13,3 +13,7 @@
 ## 2025-09-01 - UploadField Keyboard Actionability
 **Learning:** For custom file dropzones (like UploadField) where the actual file input is visually hidden, adding `is-focused` styles via focus events on the input is good, but it's not enough for keyboard actionability. If a user tabs to the dropzone or its container, they need to be able to trigger the file picker using keyboard keys ('Enter' or 'Space'), as the native input isn't directly interactable via the standard click area.
 **Action:** Always add `tabindex="0"` to custom file dropzone containers and implement a `keydown` listener that catches 'Enter' and 'Space' keys to programmatically trigger a click on the hidden file input.
+
+## 2025-10-15 - Added Focus Visible State to Slider Buttons
+**Learning:** Custom slider control buttons (.slider-btn) were missing keyboard focus indicators, making them difficult to operate for keyboard users.
+**Action:** Always add a clear `:focus-visible` outline to custom interactive elements, especially icon-only control buttons, to ensure keyboard accessibility.
