@@ -5,10 +5,13 @@ class Accordion extends gia.Component {
 		this.options = {
 			closeOthers: false, // If true, only one accordion item can be open at a time within the same group
 			icon: 'plus', // 'plus', 'arrow', or 'none'
+			animationDuration: 500, // Matches the CSS transition duration for WAAPI fallback
 		};
 
 		this.ref = {
-			summary: null // Optional: if you specifically want to reference the summary
+			summary: null, // Optional: if you specifically want to reference the summary
+			title: null, // For WAAPI fallback: the <summary> element
+			contentWrapper: null, // For WAAPI fallback: the content wrapper inside <details>
 		};
 
 		this.isDetails = this.element instanceof HTMLDetailsElement;
@@ -16,10 +19,21 @@ class Accordion extends gia.Component {
 			console.warn("Accordion: Component should be attached to a <details> element.");
 		}
 
-		// Initial state is correctly set from element initially or open attribute
+		// Feature detect native modern CSS support
+		this.supportsNativeAnimation = CSS.supports('interpolate-size', 'allow-keywords');
+		this.animation = null;
+
+		// Initial state
 		this.setState({
-			isOpen: this.element.hasAttribute('open')
+			isOpen: this.element.hasAttribute('open'),
+			isClosing: false,
+			isExpanding: false,
 		});
+
+		this.handleToggle = this.handleToggle.bind(this);
+		this.handleClick = this.handleClick.bind(this);
+		this.handleAccordionOpen = this.handleAccordionOpen.bind(this);
+		this.maybeStartOpened = this.maybeStartOpened.bind(this);
 	}
 
 	getIconSvg(iconType) {
@@ -53,11 +67,17 @@ class Accordion extends gia.Component {
 
 		this.element.addEventListener('toggle', this.handleToggle);
 
+		// If no native support, intercept clicks to use WAAPI
+		if (!this.supportsNativeAnimation) {
+			const titleEl = this.ref.title || summary;
+			if (titleEl) {
+				titleEl.addEventListener("click", this.handleClick);
+			}
+		}
+
 		if (this.options.closeOthers) {
 			window.addEventListener('accordion:open', this.handleAccordionOpen);
 		}
-
-
 
 		// Initial state based on URL hash or DOM
 		let shouldBeOpen = this.element.open;
@@ -82,7 +102,11 @@ class Accordion extends gia.Component {
 	maybeStartOpened() {
 		if (window.location.hash && this.element.id === window.location.hash.substring(1)) {
 			if (!this.state.isOpen) {
-				this.setState({ isOpen: true });
+				if (this.supportsNativeAnimation) {
+					this.setState({ isOpen: true });
+				} else {
+					this.expand();
+				}
 
 				setTimeout(() => {
 					this.element.scrollIntoView({ behavior: 'smooth' });
@@ -100,6 +124,13 @@ class Accordion extends gia.Component {
 			this.element.removeEventListener('toggle', this.handleToggle);
 		}
 
+		if (!this.supportsNativeAnimation) {
+			const titleEl = this.ref.title || this.element.querySelector('summary');
+			if (titleEl) {
+				titleEl.removeEventListener("click", this.handleClick);
+			}
+		}
+
 		if (this.options.closeOthers) {
 			window.removeEventListener('accordion:open', this.handleAccordionOpen);
 		}
@@ -107,12 +138,9 @@ class Accordion extends gia.Component {
 
 	handleToggle(event) {
 		// Only update state if it doesn't match the element's actual state
-		// This prevents infinite loops since stateChange might alter element.open
 		if (this.state.isOpen !== this.element.open) {
 			this.setState({ isOpen: this.element.open });
 
-			// Refresh ScrollTrigger after the transition is expected to complete
-			// A 500ms timeout roughly matches the suggested CSS transition duration
 			if (window.ScrollTrigger) {
 				setTimeout(() => {
 					window.ScrollTrigger.refresh();
@@ -121,11 +149,88 @@ class Accordion extends gia.Component {
 		}
 	}
 
+	handleClick(event) {
+		event.preventDefault();
+		this.element.style.overflow = "hidden";
+
+		if (this.state.isClosing || !this.element.open) {
+			this.expand();
+		} else if (this.state.isExpanding || this.element.open) {
+			this.shrink();
+		}
+	}
+
+	shrink() {
+		this.setState({ isClosing: true });
+		
+		const titleEl = this.ref.title || this.element.querySelector('summary');
+		const startHeight = `${this.element.offsetHeight}px`;
+		const endHeight = `${titleEl.offsetHeight}px`;
+		
+		if (this.animation) {
+			this.animation.cancel();
+		}
+		
+		this.animation = this.element.animate(
+			{ height: [startHeight, endHeight] },
+			{ duration: this.options.animationDuration, easing: "ease" }
+		);
+		
+		this.animation.onfinish = () => this.onAnimationFinish(false);
+		this.animation.oncancel = () => this.setState({ isClosing: false });
+	}
+
+	expand() {
+		this.element.style.height = `${this.element.offsetHeight}px`;
+		this.element.open = true;
+		
+		window.requestAnimationFrame(() => {
+			this.setState({ isExpanding: true });
+			
+			const titleEl = this.ref.title || this.element.querySelector('summary');
+			const contentEl = this.ref.contentWrapper || this.element.querySelector('.content');
+			
+			const startHeight = `${this.element.offsetHeight}px`;
+			const endHeight = `${titleEl.offsetHeight + (contentEl ? contentEl.offsetHeight : 0)}px`;
+			
+			if (this.animation) {
+				this.animation.cancel();
+			}
+			
+			this.animation = this.element.animate(
+				{ height: [startHeight, endHeight] },
+				{ duration: this.options.animationDuration, easing: "ease" }
+			);
+			
+			this.animation.onfinish = () => this.onAnimationFinish(true);
+			this.animation.oncancel = () => this.setState({ isExpanding: false });
+		});
+	}
+
+	onAnimationFinish(open) {
+		this.element.open = open;
+		this.animation = null;
+		this.setState({
+			isClosing: false,
+			isExpanding: false,
+			isOpen: open
+		});
+		this.element.style.height = this.element.style.overflow = "";
+
+		if (window.ScrollTrigger) {
+			window.ScrollTrigger.refresh();
+		}
+	}
+
 	handleAccordionOpen(event) {
 		const { instance, parent } = event.detail;
 
 		if (instance !== this && parent === this.element.parentElement && this.state.isOpen) {
-			this.setState({ isOpen: false });
+			if (this.supportsNativeAnimation) {
+				this.setState({ isOpen: false });
+			} else {
+				this.shrink();
+			}
 		}
 	}
 
@@ -146,14 +251,15 @@ class Accordion extends gia.Component {
 				window.dispatchEvent(customEvent);
 			}
 
-			// Dispatch a window resize event to trigger layout updates
-			// (e.g., for embla-carousel or other scripts that rely on window resizing)
-			// ⚡ BOLT OPTIMIZATION: Defer resize event dispatch out of the stateChange (rAF) cycle
-			// Dispatching synchronously inside rAF causes layout thrashing if listeners perform layout reads.
 			setTimeout(() => {
 				window.dispatchEvent(new Event('resize'));
 			}, 0);
 		}
+
+		if ('isClosing' in stateChanges) {
+			this.element.classList.toggle("is-closing", this.state.isClosing);
+		}
+
 		this.element.removeAttribute('data-is-open');
 	}
 }
