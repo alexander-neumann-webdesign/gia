@@ -4,7 +4,7 @@ class Accordion extends gia.Component {
 
 		this.options = {
 			closeOthers: false, // If true, only one accordion item can be open at a time within the same group
-			icon: 'plus', // 'plus', 'arrow', or 'none'
+			icon: "plus", // 'plus', 'arrow', or 'none'
 			animationDuration: 500, // Matches the CSS transition duration for WAAPI fallback
 		};
 
@@ -20,12 +20,12 @@ class Accordion extends gia.Component {
 		}
 
 		// Feature detect native modern CSS support
-		this.supportsNativeAnimation = CSS.supports('interpolate-size', 'allow-keywords');
+		this.supportsNativeAnimation = CSS.supports("interpolate-size", "allow-keywords");
 		this.animation = null;
 
 		// Initial state
 		this.setState({
-			isOpen: this.element.hasAttribute('open'),
+			isOpen: this.element.hasAttribute("open"),
 			isClosing: false,
 			isExpanding: false,
 		});
@@ -37,35 +37,35 @@ class Accordion extends gia.Component {
 	}
 
 	getIconSvg(iconType) {
-		if (iconType === 'plus') {
+		if (iconType === "plus") {
 			return `
 				<svg class="accordion-icon accordion-icon--plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
 					<line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
 				</svg>
 			`;
-		} else if (iconType === 'arrow') {
+		} else if (iconType === "arrow") {
 			return `
 				<svg class="accordion-icon accordion-icon--arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<polyline points="6 9 12 15 18 9"></polyline>
 				</svg>
 			`;
 		}
-		return '';
+		return "";
 	}
 
 	mount() {
 		if (!this.isDetails) return;
 
 		// Inject icon into summary if not present and icon !== 'none'
-		const summary = this.element.querySelector('summary');
-		if (summary && this.options.icon !== 'none') {
-			if (!summary.querySelector('.accordion-icon')) {
-				summary.insertAdjacentHTML('beforeend', this.getIconSvg(this.options.icon));
+		const summary = this.element.querySelector("summary");
+		if (summary && this.options.icon !== "none") {
+			if (!summary.querySelector(".accordion-icon")) {
+				summary.insertAdjacentHTML("beforeend", this.getIconSvg(this.options.icon));
 			}
 		}
 
-		this.element.addEventListener('toggle', this.handleToggle);
+		this.element.addEventListener("toggle", this.handleToggle);
 
 		// If no native support, intercept clicks to use WAAPI
 		if (!this.supportsNativeAnimation) {
@@ -76,7 +76,7 @@ class Accordion extends gia.Component {
 		}
 
 		if (this.options.closeOthers) {
-			window.addEventListener('accordion:open', this.handleAccordionOpen);
+			window.addEventListener("accordion:open", this.handleAccordionOpen);
 		}
 
 		// Initial state based on URL hash or DOM
@@ -88,7 +88,7 @@ class Accordion extends gia.Component {
 
 			// Optional: Scroll to the element if requested by hash
 			setTimeout(() => {
-				this.element.scrollIntoView({ behavior: 'smooth' });
+				this.element.scrollIntoView({ behavior: "smooth" });
 			}, 100);
 		}
 
@@ -109,7 +109,7 @@ class Accordion extends gia.Component {
 				}
 
 				setTimeout(() => {
-					this.element.scrollIntoView({ behavior: 'smooth' });
+					this.element.scrollIntoView({ behavior: "smooth" });
 				}, 100);
 			}
 		}
@@ -121,18 +121,18 @@ class Accordion extends gia.Component {
 		}
 
 		if (this.isDetails) {
-			this.element.removeEventListener('toggle', this.handleToggle);
+			this.element.removeEventListener("toggle", this.handleToggle);
 		}
 
 		if (!this.supportsNativeAnimation) {
-			const titleEl = this.ref.title || this.element.querySelector('summary');
+			const titleEl = this.ref.title || this.element.querySelector("summary");
 			if (titleEl) {
 				titleEl.removeEventListener("click", this.handleClick);
 			}
 		}
 
 		if (this.options.closeOthers) {
-			window.removeEventListener('accordion:open', this.handleAccordionOpen);
+			window.removeEventListener("accordion:open", this.handleAccordionOpen);
 		}
 	}
 
@@ -162,20 +162,20 @@ class Accordion extends gia.Component {
 
 	shrink() {
 		this.setState({ isClosing: true });
-		
-		const titleEl = this.ref.title || this.element.querySelector('summary');
+
+		const titleEl = this.ref.title || this.element.querySelector("summary");
 		const startHeight = `${this.element.offsetHeight}px`;
 		const endHeight = `${titleEl.offsetHeight}px`;
-		
+
 		if (this.animation) {
 			this.animation.cancel();
 		}
-		
+
 		this.animation = this.element.animate(
 			{ height: [startHeight, endHeight] },
-			{ duration: this.options.animationDuration, easing: "ease" }
+			{ duration: this.options.animationDuration, easing: "ease" },
 		);
-		
+
 		this.animation.onfinish = () => this.onAnimationFinish(false);
 		this.animation.oncancel = () => this.setState({ isClosing: false });
 	}
@@ -183,25 +183,25 @@ class Accordion extends gia.Component {
 	expand() {
 		this.element.style.height = `${this.element.offsetHeight}px`;
 		this.element.open = true;
-		
+
 		window.requestAnimationFrame(() => {
 			this.setState({ isExpanding: true });
-			
-			const titleEl = this.ref.title || this.element.querySelector('summary');
-			const contentEl = this.ref.contentWrapper || this.element.querySelector('.content');
-			
+
+			const titleEl = this.ref.title || this.element.querySelector("summary");
+			const contentEl = this.ref.contentWrapper || this.element.querySelector(".content");
+
 			const startHeight = `${this.element.offsetHeight}px`;
 			const endHeight = `${titleEl.offsetHeight + (contentEl ? contentEl.offsetHeight : 0)}px`;
-			
+
 			if (this.animation) {
 				this.animation.cancel();
 			}
-			
+
 			this.animation = this.element.animate(
 				{ height: [startHeight, endHeight] },
-				{ duration: this.options.animationDuration, easing: "ease" }
+				{ duration: this.options.animationDuration, easing: "ease" },
 			);
-			
+
 			this.animation.onfinish = () => this.onAnimationFinish(true);
 			this.animation.oncancel = () => this.setState({ isExpanding: false });
 		});
@@ -213,7 +213,7 @@ class Accordion extends gia.Component {
 		this.setState({
 			isClosing: false,
 			isExpanding: false,
-			isOpen: open
+			isOpen: open,
 		});
 		this.element.style.height = this.element.style.overflow = "";
 
@@ -235,7 +235,7 @@ class Accordion extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ('isOpen' in stateChanges) {
+		if ("isOpen" in stateChanges) {
 			const { isOpen } = stateChanges;
 
 			// Sync DOM if necessary
@@ -245,27 +245,26 @@ class Accordion extends gia.Component {
 
 			// Dispatch event for other accordions
 			if (isOpen && this.options.closeOthers) {
-				const customEvent = new CustomEvent('accordion:open', {
-					detail: { instance: this, parent: this.element.parentElement }
+				const customEvent = new CustomEvent("accordion:open", {
+					detail: { instance: this, parent: this.element.parentElement },
 				});
 				window.dispatchEvent(customEvent);
 			}
 
 			setTimeout(() => {
-				window.dispatchEvent(new Event('resize'));
+				window.dispatchEvent(new Event("resize"));
 			}, 0);
 		}
 
-		if ('isClosing' in stateChanges) {
+		if ("isClosing" in stateChanges) {
 			this.element.classList.toggle("is-closing", this.state.isClosing);
 		}
 
-		this.element.removeAttribute('data-is-open');
+		this.element.removeAttribute("data-is-open");
 	}
 }
 
 gia.register(Accordion);
-
 
 /**
  * Expected HTML Structure:
