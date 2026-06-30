@@ -28,6 +28,7 @@ class ImageHolder extends gia.Component {
 
 		// Initialize state
 		this.setState({
+			isNear: false,
 			isVisible: false,
 			isLoaded: false,
 		});
@@ -40,8 +41,11 @@ class ImageHolder extends gia.Component {
 
 		if (!this.ref.img) return;
 
+		// Force async decoding to prevent main thread hitches when images load during scroll
+		this.ref.img.setAttribute("decoding", "async");
+
 		if (this.ref.img.complete) {
-			this.setState({ isLoaded: true });
+			this.triggerLoad();
 		} else {
 			// gia automatically binds component methods, so .bind(this) is unnecessary
 			// and avoiding it here prevents memory leaks since we can properly remove the listener later
@@ -56,10 +60,19 @@ class ImageHolder extends gia.Component {
 	}
 
 	initObservers() {
+		// Pre-warm observer for GPU texture upload (will-change)
+		// This applies will-change 1 screen early to prevent GPU upload stutters on entry
+		this.observeIntersection(this.element, this.handleNear, {
+			rootMargin: "100% 0px 100% 0px",
+			threshold: 0,
+		});
+
 		// Setup Intersection Observer for 'visible' class
+		// We use a 1px rootMargin so the parallax transform is calculated and applied
+		// exactly 1 frame before it visually enters the viewport, preventing a visual snap.
 		this.observeIntersection(this.element, this.handleIntersect, {
-			rootMargin: "0px",
-			threshold: 0.01,
+			rootMargin: "1px 0px 1px 0px",
+			threshold: 0,
 		});
 
 		// Setup Resize Observer for 'sizes' attribute
@@ -72,6 +85,7 @@ class ImageHolder extends gia.Component {
 
 		// Cache the header element once if needed
 		this.headerElement = document.querySelector("header#main-header");
+		this.headerOffset = this.headerElement ? this.headerElement.offsetHeight : 0;
 
 		// Calculate this ONCE. It never changes during the component's lifecycle,
 		// saving valuable computation time inside the 60fps/120fps render loop.
@@ -106,6 +120,9 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleBodyResize() {
+		if (this.headerElement) {
+			this.headerOffset = this.headerElement.offsetHeight;
+		}
 		this.cacheLayout();
 		if (this.state.isVisible) {
 			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
@@ -148,17 +165,40 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleLoad(e) {
-		this.setState({ isLoaded: true });
+		this.triggerLoad();
+	}
+
+	handleNear(entries) {
+		const entry = entries[entries.length - 1];
+		this.setState({
+			isNear: entry.isIntersecting,
+		});
+	}
+
+	triggerLoad() {
+		if ("decode" in this.ref.img) {
+			// Force the browser to decode the image off the main thread BEFORE we visually reveal it.
+			// This prevents the massive CPU hitch on first-time scrolling.
+			this.ref.img
+				.decode()
+				.then(() => {
+					this.setState({ isLoaded: true });
+				})
+				.catch(() => {
+					this.setState({ isLoaded: true });
+				});
+		} else {
+			this.setState({ isLoaded: true });
+		}
 	}
 
 	handleIntersect(entries) {
 		const entry = entries[entries.length - 1];
 
-		// If becoming visible, perform synchronous layout read here to prevent thrashing
-		// during the subsequent asynchronous stateChange loop
 		if (entry.isIntersecting && this.options.parallaxSpeed !== 0) {
 			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
-			this.cacheLayout();
+			// Use the IntersectionObserver's pre-calculated rect to avoid Forced Synchronous Layouts
+			this.cacheLayout(entry.boundingClientRect);
 		}
 
 		this.setState({
@@ -219,6 +259,10 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleResize(entries) {
+		if (this.headerElement) {
+			this.headerOffset = this.headerElement.offsetHeight;
+		}
+
 		let widthChanged = false;
 		let sizeUpdates = [];
 
@@ -262,10 +306,13 @@ class ImageHolder extends gia.Component {
 		}
 	}
 
-	cacheLayout() {
+	cacheLayout(rect = null) {
 		if (this.options.parallaxSpeed === 0) return;
 
-		const rect = this.element.getBoundingClientRect();
+		// Fallback to synchronous DOM read only if rect isn't provided
+		if (!rect) {
+			rect = this.element.getBoundingClientRect();
+		}
 
 		// Prioritize currentScrollY to maintain sync with smooth scroll libraries like Lenis
 		const scrollTop =
@@ -278,7 +325,7 @@ class ImageHolder extends gia.Component {
 		this.cachedLayout.elementHeight = rect.height;
 		this.cachedLayout.elementTop = rect.top + scrollTop;
 		this.cachedLayout.windowHeight = window.innerHeight;
-		this.cachedLayout.headerOffset = this.headerElement ? this.headerElement.offsetHeight : 0;
+		this.cachedLayout.headerOffset = this.headerOffset || 0;
 
 		// Pre-compute parallax distances here instead of in the RAF loop
 		if (this.options.startFromTop) {
@@ -358,24 +405,34 @@ SUGGESTED SCSS
 ========================================
 
 div[data-component="ImageHolder"] {
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
+  contain: strict;
+  user-select: none;
+  pointer-events: none;
 
   img {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: 50% 50%;
     display: block;
-    opacity: 0;
-    will-change: transform;
+    
+    // Use 0.001 instead of 0 to force the browser to keep it in the render tree 
+    // so it respects the will-change: transform pre-warming.
+    opacity: 0.001; 
 
-    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: opacity 0.9s ease;
   }
 
+  // 1. Trigger the heavy GPU texture upload OFF-SCREEN to hide the stutter
+  &[data-is-near="true"] img {
+    will-change: transform;
+  }
+
+  // 2. Trigger the visual fade-in right as it visually enters the viewport
   &[data-is-visible="true"][data-is-loaded="true"] img {
     opacity: 1;
   }
