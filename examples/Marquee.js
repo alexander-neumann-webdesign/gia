@@ -6,6 +6,7 @@ class Marquee extends gia.Component {
 			speed: 1, // Base scroll speed (pixels per frame)
 			direction: "left", // 'left' or 'right'
 			pauseOnHover: false,
+			reactToScroll: false, // Whether to react to Lenis scroll events
 		};
 
 		this.ref = {
@@ -46,7 +47,6 @@ class Marquee extends gia.Component {
 
 		this._isRenderingFrame = false;
 
-		this.handleIntersection = this.handleIntersection.bind(this);
 		this.preventDrag = this.preventDrag.bind(this);
 	}
 
@@ -56,6 +56,12 @@ class Marquee extends gia.Component {
 		// Prevent flexbox blowout
 		this.element.style.minWidth = "0";
 		this.element.style.maxWidth = "100%";
+
+		// Prevent main thread hitches when marquee contains lazy images
+		const images = this.element.querySelectorAll("img");
+		for (let i = 0; i < images.length; i++) {
+			images[i].setAttribute("decoding", "async");
+		}
 
 		// Force strict stacking context to prevent overlapping layers
 		this.element.style.transform = "translateZ(0)";
@@ -72,8 +78,13 @@ class Marquee extends gia.Component {
 		// Observe resize to adjust clones and bounds
 		this.observeResize(this.element, this.handleResize);
 
-		// Start autoplay loop when in viewport
-		this.observeIntersection(this.element, this.handleIntersection);
+		// Play endlessly. Forcing it to never pause prevents the browser from
+		// putting the GPU layer to sleep, which completely eliminates the startup
+		// stutter/hitch when it wakes up on scroll.
+		if (!this.prefersReducedMotion) {
+			this.play();
+		}
+		this.bindScroll();
 
 		this.initDrag();
 		this.initHover();
@@ -91,22 +102,6 @@ class Marquee extends gia.Component {
 		this.destroyHover();
 		this.destroyDrag();
 		this.unobserveResize(this.element, this.handleResize);
-		this.unobserveIntersection(this.element, this.handleIntersection);
-	}
-
-	handleIntersection(entries) {
-		const entry = entries[entries.length - 1];
-		if (entry.isIntersecting) {
-			// Only listen to scroll events when the marquee is actually in view
-			this.bindScroll();
-			if (!this.prefersReducedMotion) {
-				this.play();
-			}
-		} else {
-			// Completely detach scroll listener when off-screen to save CPU
-			this.unbindScroll();
-			this.pause();
-		}
 	}
 
 	play() {
@@ -122,6 +117,7 @@ class Marquee extends gia.Component {
 	}
 
 	bindScroll() {
+		if (!this.options.reactToScroll) return;
 		if (this.isScrollBound) return;
 
 		// Only bind scroll if lenis is active
@@ -448,10 +444,11 @@ SUGGESTED SCSS
 ========================================
 
 div[data-component="Marquee"] {
-  overflow: hidden;
   position: relative;
   width: 100%;
   display: flex;
+  overflow: hidden;
+  contain: layout paint style;
   user-select: none;
   touch-action: pan-y;
 
