@@ -23,6 +23,11 @@ class Modal extends gia.Component {
 		this.triggers = this.modalId ? document.querySelectorAll(`[data-modal-target="${this.modalId}"]`) : [];
 	}
 
+
+	_getArray(refValue) {
+		return Array.isArray(refValue) ? refValue : (refValue ? [refValue] : []);
+	}
+
 	mount() {
 		if (!this.isDialog) return;
 
@@ -41,7 +46,7 @@ class Modal extends gia.Component {
 
 		// Attach events to close buttons from refs
 		if (this.ref.closeButton) {
-			const buttons = Array.isArray(this.ref.closeButton) ? this.ref.closeButton : [this.ref.closeButton];
+			const buttons = this._getArray(this.ref.closeButton);
 			buttons.forEach(btn => {
 				btn.addEventListener('click', this.handleCloseClick);
 			});
@@ -83,7 +88,7 @@ class Modal extends gia.Component {
 		});
 
 		if (this.ref.closeButton) {
-			const buttons = Array.isArray(this.ref.closeButton) ? this.ref.closeButton : [this.ref.closeButton];
+			const buttons = this._getArray(this.ref.closeButton);
 			buttons.forEach(btn => {
 				btn.removeEventListener('click', this.handleCloseClick);
 			});
