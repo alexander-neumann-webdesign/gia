@@ -123,3 +123,6 @@
 ## 2024-06-25 - Iterator Allocation on array using for...of loops inside ResizeObserver
 **Learning:** `for...of` loops iterating over array elements like `ResizeObserverEntry` arrays inside high-frequency event handlers such as `ResizeObserver` callbacks allocate an Iterator object on every run. This forces Garbage Collection (GC) churn which can cause micro-stutters and performance degradation during window resizes.
 **Action:** Replace `for...of` loops with standard indexed `for` loops (e.g., `for (let i = 0; i < arr.length; i++)`) in `ResizeObserver` callbacks to completely eliminate Iterator allocation overhead.
+## 2024-06-30 - Iterator Allocation on arrays and iterable collections using for...of loops inside WAAPI and DOM manipulations
+**Learning:** High-frequency methods and array iterations inside Web Animations API calls (like `panel.getAnimations().forEach(a => a.cancel())`) allocate inline closure functions. Over time, this creates measurable garbage collection overhead, particularly when switching tabs rapidly.
+**Action:** Replace `.forEach()` calls on DOM queries and Animation arrays with standard `for` loops to eliminate closure function allocations during UI interactions.
