@@ -68,7 +68,7 @@ class ImageHolder extends gia.Component {
 
 	initParallax() {
 		this.isScrollBound = false;
-		this.currentScrollY = window.scrollY || window.pageYOffset;
+		this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
 
 		// Cache the header element once if needed
 		this.headerElement = document.querySelector("header#main-header");
@@ -85,13 +85,16 @@ class ImageHolder extends gia.Component {
 		const speed = Math.abs(this.options.parallaxSpeed);
 		const extraSpacePercent = speed * 100;
 
-		if (this.options.parallaxDirection === "vertical") {
-			this.ref.img.style.height = `calc(100% + ${extraSpacePercent}%)`;
-			this.ref.img.style.top = `-${extraSpacePercent / 2}%`;
-		} else {
-			this.ref.img.style.width = `calc(100% + ${extraSpacePercent}%)`;
-			this.ref.img.style.left = `-${extraSpacePercent / 2}%`;
-		}
+		window.requestAnimationFrame(() => {
+			if (!this.ref.img) return;
+			if (this.options.parallaxDirection === "vertical") {
+				this.ref.img.style.height = `calc(100% + ${extraSpacePercent}%)`;
+				this.ref.img.style.top = `-${extraSpacePercent / 2}%`;
+			} else {
+				this.ref.img.style.width = `calc(100% + ${extraSpacePercent}%)`;
+				this.ref.img.style.left = `-${extraSpacePercent / 2}%`;
+			}
+		});
 
 		// Setup Resize Observer on document to catch layout shifts
 		this.observeResize(document.body, this.handleBodyResize);
@@ -154,8 +157,8 @@ class ImageHolder extends gia.Component {
 		// If becoming visible, perform synchronous layout read here to prevent thrashing
 		// during the subsequent asynchronous stateChange loop
 		if (entry.isIntersecting && this.options.parallaxSpeed !== 0) {
+			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
 			this.cacheLayout();
-			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
 
 		this.setState({
@@ -166,9 +169,13 @@ class ImageHolder extends gia.Component {
 	handleScroll(e) {
 		if (!this.state.isVisible) return;
 
-		// gia.umd.js automatically passes the 'scroll' property
-		if (e && typeof e.scroll === "number") {
+		// Prioritize lenis scroll if available, otherwise fallback to gia's scroll property
+		if (window.lenis) {
+			this.currentScrollY = window.lenis.scroll;
+		} else if (e && typeof e.scroll === "number") {
 			this.currentScrollY = e.scroll;
+		} else {
+			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
 
 		if (window.lenis) {
@@ -246,8 +253,12 @@ class ImageHolder extends gia.Component {
 
 		// Perform DOM writes LAST
 		if (sizeUpdates.length > 0) {
-			// In this loop it's always the same image ref, but keeping the logic general
-			this.ref.img.setAttribute("sizes", sizeUpdates[0]);
+			window.requestAnimationFrame(() => {
+				if (this.ref.img) {
+					// In this loop it's always the same image ref, but keeping the logic general
+					this.ref.img.setAttribute("sizes", sizeUpdates[0]);
+				}
+			});
 		}
 	}
 
@@ -257,7 +268,12 @@ class ImageHolder extends gia.Component {
 		const rect = this.element.getBoundingClientRect();
 
 		// Prioritize currentScrollY to maintain sync with smooth scroll libraries like Lenis
-		const scrollTop = this.currentScrollY || window.scrollY || window.pageYOffset;
+		const scrollTop =
+			typeof this.currentScrollY === "number"
+				? this.currentScrollY
+				: window.lenis
+					? window.lenis.scroll
+					: window.scrollY || window.pageYOffset;
 
 		this.cachedLayout.elementHeight = rect.height;
 		this.cachedLayout.elementTop = rect.top + scrollTop;
@@ -289,7 +305,7 @@ class ImageHolder extends gia.Component {
 		const currentDistance = this.cachedLayout.distanceOffset - currentRectTop;
 
 		// Normalize progress from 0 (just entered) to 1 (just left)
-		let progress = currentDistance / this.cachedLayout.totalDistance;
+		let progress = this.cachedLayout.totalDistance > 0 ? currentDistance / this.cachedLayout.totalDistance : 0;
 		progress = Math.max(0, Math.min(1, progress));
 
 		if (this.options.parallaxCssVar) {
