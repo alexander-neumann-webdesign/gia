@@ -1089,6 +1089,11 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+button[data-component=ThemeToggle]:focus-visible {
+  outline: 2px solid var(--form-control-color, #007bff);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 button[data-component=ThemeToggle] .icon-light {
   display: none;
 }

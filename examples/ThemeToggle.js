@@ -116,6 +116,12 @@ body {
 
 // For the button itself:
 button[data-component="ThemeToggle"] {
+  &:focus-visible {
+    outline: 2px solid var(--form-control-color, #007bff);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   .icon-light { display: none; }
   .icon-dark { display: block; }
 
