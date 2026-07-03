@@ -44,7 +44,9 @@ class Tabs extends gia.Component {
 		this.tabClickHandlers = [];
 		this.tabKeydownHandlers = [];
 
-		this.ref.tab.forEach((tab, index) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			const clickHandler = (e) => this.handleClick(e, index);
 			const keydownHandler = (e) => this.handleKeydown(e, index);
 
@@ -64,7 +66,7 @@ class Tabs extends gia.Component {
 			} else if (!foundHashMatch && tab.getAttribute('aria-selected') === 'true') {
 				initialIndex = index;
 			}
-		});
+		}
 
 		if (this.ref.tab.length > 0) {
 			this.setState({ activeTabIndex: initialIndex });
@@ -84,14 +86,16 @@ class Tabs extends gia.Component {
 	}
 
 	unmount() {
-		this.ref.tab.forEach((tab, index) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			if (this.tabClickHandlers[index]) {
 				tab.removeEventListener('click', this.tabClickHandlers[index]);
 			}
 			if (this.tabKeydownHandlers[index]) {
 				tab.removeEventListener('keydown', this.tabKeydownHandlers[index]);
 			}
-		});
+		}
 
 		this.tabClickHandlers = [];
 		this.tabKeydownHandlers = [];
@@ -171,7 +175,9 @@ class Tabs extends gia.Component {
 		this.updateIndicator();
 
 		// Update Tabs
-		this.ref.tab.forEach((tab, index) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			const isSelected = index === activeIndex;
 			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
@@ -180,10 +186,12 @@ class Tabs extends gia.Component {
 			} else {
 				tab.setAttribute('tabindex', '-1');
 			}
-		});
+		}
 		
 		// Update Panels (only used for immediate switching now without animation)
-		this.ref.panel.forEach((panel, index) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+		for (let index = 0; index < this.ref.panel.length; index++) {
+			const panel = this.ref.panel[index];
 			const activeTab = this.ref.tab[activeIndex];
 			const controlsId = activeTab ? activeTab.getAttribute('aria-controls') : null;
 
@@ -192,7 +200,7 @@ class Tabs extends gia.Component {
 			} else {
 				panel.hidden = (index !== activeIndex);
 			}
-		});
+		}
 	}
 
 	_animateTransition(panelsContainer, oldIndex, newIndex, direction) {
@@ -203,7 +211,8 @@ class Tabs extends gia.Component {
 		const startHeight = panelsContainer.offsetHeight;
 
 		// Reset all ongoing animations and inline styles
-		panelsContainer.getAnimations().forEach(a => a.cancel());
+			const containerAnims = panelsContainer.getAnimations();
+			for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
 		panelsContainer.style.height = '';
 		panelsContainer.style.overflow = '';
 		panelsContainer.style.position = '';
@@ -211,8 +220,11 @@ class Tabs extends gia.Component {
 		const oldPanel = this.ref.panel[oldIndex];
 		const newPanel = this.ref.panel[newIndex];
 
-		this.ref.panel.forEach((panel, index) => {
-			panel.getAnimations().forEach(a => a.cancel());
+			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+			for (let index = 0; index < this.ref.panel.length; index++) {
+				const panel = this.ref.panel[index];
+				const panelAnims = panel.getAnimations();
+				for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
 			
 			// Ensure only the panel we are transitioning FROM is initially visible
 			panel.hidden = (index !== oldIndex);
@@ -230,16 +242,18 @@ class Tabs extends gia.Component {
 				panel.style.left = '';
 				panel.style.width = '';
 			}
-		});
+		}
 
 		// Prepare DOM for new state
 		this.updateIndicator();
 		
-		this.ref.tab.forEach((tab, index) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+		for (let index = 0; index < this.ref.tab.length; index++) {
+			const tab = this.ref.tab[index];
 			const isSelected = index === newIndex;
 			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 			tab.setAttribute('tabindex', isSelected ? '0' : '-1');
-		});
+		}
 
 		if (newPanel) newPanel.hidden = false;
 
@@ -290,8 +304,11 @@ class Tabs extends gia.Component {
 			if (this._animationId !== currentAnimId) return;
 
 			// Cleanup
-			this.ref.panel.forEach((panel) => {
-				panel.getAnimations().forEach(a => a.cancel());
+			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
+			for (let index = 0; index < this.ref.panel.length; index++) {
+				const panel = this.ref.panel[index];
+				const panelAnims = panel.getAnimations();
+				for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
 				if (panel !== newPanel) {
 					panel.hidden = true;
 				}
@@ -299,9 +316,10 @@ class Tabs extends gia.Component {
 				panel.style.top = '';
 				panel.style.left = '';
 				panel.style.width = '';
-			});
+			}
 
-			panelsContainer.getAnimations().forEach(a => a.cancel());
+				const containerAnims = panelsContainer.getAnimations();
+			for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
 			panelsContainer.style.height = '';
 			panelsContainer.style.overflow = '';
 			panelsContainer.style.position = '';

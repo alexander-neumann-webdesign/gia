@@ -17,3 +17,6 @@
 ## 2025-10-15 - Added Focus Visible State to Slider Buttons
 **Learning:** Custom slider control buttons (.slider-btn) were missing keyboard focus indicators, making them difficult to operate for keyboard users.
 **Action:** Always add a clear `:focus-visible` outline to custom interactive elements, especially icon-only control buttons, to ensure keyboard accessibility.
+## 2025-11-20 - Added Focus Visible State to ThemeToggle Button
+**Learning:** Custom icon-only toggle buttons like `ThemeToggle` often lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually as users tab through interactive elements on the page.
+**Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially icon-only control buttons, to ensure robust keyboard accessibility.
