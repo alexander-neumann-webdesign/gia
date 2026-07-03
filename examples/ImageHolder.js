@@ -269,11 +269,39 @@ class ImageHolder extends gia.Component {
 		for (let i = 0; i < entries.length; i++) {
 			const entry = entries[i];
 			const width = entry.contentRect.width;
+			const height = entry.contentRect.height;
 			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
 			// so defining the actual render width in CSS pixels is exactly what the sizes attribute needs.
 			if (this.ref.img && width > 0) {
 				const currentSizes = this.ref.img.getAttribute("sizes");
-				const newSizes = `${Math.ceil(width)}px`;
+
+				let imgElWidth = width;
+				let imgElHeight = height;
+
+				if (this.options.parallaxSpeed !== 0) {
+					const speed = Math.abs(this.options.parallaxSpeed);
+					if (this.options.parallaxDirection === "vertical") {
+						imgElHeight *= 1 + speed;
+					} else {
+						imgElWidth *= 1 + speed;
+					}
+				}
+
+				let renderWidth = imgElWidth;
+
+				const imgNaturalWidth = this.ref.img.naturalWidth || parseFloat(this.ref.img.getAttribute("width"));
+				const imgNaturalHeight = this.ref.img.naturalHeight || parseFloat(this.ref.img.getAttribute("height"));
+
+				if (imgNaturalWidth && imgNaturalHeight) {
+					const imgRatio = imgNaturalWidth / imgNaturalHeight;
+					const elRatio = imgElWidth / imgElHeight;
+
+					if (elRatio < imgRatio) {
+						renderWidth = imgElHeight * imgRatio;
+					}
+				}
+
+				const newSizes = `${Math.ceil(renderWidth)}px`;
 
 				if (currentSizes !== newSizes) {
 					sizeUpdates.push(newSizes);
