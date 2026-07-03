@@ -500,7 +500,7 @@ class CustomCursor extends gia.Component {
             height: height,
             centerX: left + width / 2,
             centerY: top + height / 2,
-            borderRadius: window.getComputedStyle(el).borderRadius || '0px'
+            borderRadius: el.dataset.cachedBorderRadius || (el.dataset.cachedBorderRadius = window.getComputedStyle(el).borderRadius || '0px')
         };
 
         return { bounds, type };
