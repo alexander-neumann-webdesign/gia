@@ -63,6 +63,9 @@ class Magnetic extends gia.Component {
 	updateBounds() {
 		// Since this.element is NEVER transformed, getting its rect is always accurate
 		const rect = this.element.getBoundingClientRect();
+		// We MUST use viewport-relative coordinates (rect.top/left and clientX/Y)
+		// rather than document-relative (pageY). If we used pageY, position:fixed elements
+		// (like sticky header buttons) would have their distance math explode when scrolled!
 		this.boundingRect = {
 			width: rect.width,
 			height: rect.height,
@@ -86,6 +89,7 @@ class Magnetic extends gia.Component {
 	handlePointerMove(e) {
 		if (!this.state.isHovered) return;
 
+		// Use clientX/Y to match the viewport-relative bounding rect cache
 		this.mouse.x = e.clientX;
 		this.mouse.y = e.clientY;
 
