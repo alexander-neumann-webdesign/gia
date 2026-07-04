@@ -90,6 +90,8 @@ class ImageHolder extends gia.Component {
 		// Calculate this ONCE. It never changes during the component's lifecycle,
 		// saving valuable computation time inside the 60fps/120fps render loop.
 		this.speedCalc = this.options.parallaxSpeed / (1 + Math.abs(this.options.parallaxSpeed));
+		this.speedMultiplier = this.speedCalc * 100;
+		this.isHorizontal = this.options.parallaxDirection === "horizontal";
 
 		// Initial calculation based on immediate state
 		this.cacheLayout();
@@ -141,6 +143,8 @@ class ImageHolder extends gia.Component {
 		if (this._frameId) {
 			window.cancelAnimationFrame(this._frameId);
 		}
+		clearTimeout(this._resizeTimer);
+
 		if (this.options.parallaxSpeed !== 0) {
 			this.destroyParallax();
 		}
@@ -209,13 +213,11 @@ class ImageHolder extends gia.Component {
 	handleScroll(e) {
 		if (!this.state.isVisible) return;
 
-		// Prioritize lenis scroll if available, otherwise fallback to gia's scroll property
-		if (window.lenis) {
-			this.currentScrollY = window.lenis.scroll;
-		} else if (e && typeof e.scroll === "number") {
+		// gia's scroll event object already contains the optimized scroll position
+		if (e && typeof e.scroll === "number") {
 			this.currentScrollY = e.scroll;
 		} else {
-			this.currentScrollY = window.scrollY || window.pageYOffset;
+			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
 		}
 
 		if (window.lenis) {
@@ -259,24 +261,39 @@ class ImageHolder extends gia.Component {
 	}
 
 	handleResize(entries) {
-		if (this.headerElement) {
-			this.headerOffset = this.headerElement.offsetHeight;
+		// Extract data synchronously because `gia` reuses the entries array globally for performance
+		const entry = entries[entries.length - 1];
+		if (!entry || !entry.contentRect) return;
+
+		const width = entry.contentRect.width;
+		const height = entry.contentRect.height;
+
+		// 1. Immediately update layout and parallax for smooth 60fps responsive resizing
+		// without any "snapping" or lag.
+		if (this.options.parallaxSpeed !== 0) {
+			this.cacheLayout();
+			if (!this.ticking) {
+				this._frameId = window.requestAnimationFrame(this.tickUpdate);
+				this.ticking = true;
+			}
 		}
 
-		let widthChanged = false;
-		let sizeUpdates = [];
+		// 2. We keep the debounce strictly for the `sizes` update to prevent browser
+		// string-parsing lag and layout recalculation bugs during the drag.
+		this._latestResizeWidth = width;
+		this._latestResizeHeight = height;
 
-		for (let i = 0; i < entries.length; i++) {
-			const entry = entries[i];
-			const width = entry.contentRect.width;
-			const height = entry.contentRect.height;
-			// For sizes, the browser automatically applies the device pixel ratio to srcset selections,
-			// so defining the actual render width in CSS pixels is exactly what the sizes attribute needs.
-			if (this.ref.img && width > 0) {
+		clearTimeout(this._resizeTimer);
+		this._resizeTimer = setTimeout(() => {
+			const w = this._latestResizeWidth;
+			const h = this._latestResizeHeight;
+			let sizeUpdates = [];
+
+			if (this.ref.img && w > 0) {
 				const currentSizes = this.ref.img.getAttribute("sizes");
 
-				let imgElWidth = width;
-				let imgElHeight = height;
+				let imgElWidth = w;
+				let imgElHeight = h;
 
 				if (this.options.parallaxSpeed !== 0) {
 					const speed = Math.abs(this.options.parallaxSpeed);
@@ -289,8 +306,8 @@ class ImageHolder extends gia.Component {
 
 				let renderWidth = imgElWidth;
 
-				const imgNaturalWidth = this.ref.img.naturalWidth || parseFloat(this.ref.img.getAttribute("width"));
-				const imgNaturalHeight = this.ref.img.naturalHeight || parseFloat(this.ref.img.getAttribute("height"));
+				const imgNaturalWidth = this.ref.img.naturalWidth || parseFloat(this.ref.img.getAttribute("width")) || imgElWidth;
+				const imgNaturalHeight = this.ref.img.naturalHeight || parseFloat(this.ref.img.getAttribute("height")) || imgElHeight;
 
 				if (imgNaturalWidth && imgNaturalHeight) {
 					const imgRatio = imgNaturalWidth / imgNaturalHeight;
@@ -301,37 +318,30 @@ class ImageHolder extends gia.Component {
 					}
 				}
 
-				const newSizes = `${Math.ceil(renderWidth)}px`;
+				// Bin sizes to 25px intervals and only update if we need a LARGER image.
+				// This heavily prevents image flashing caused by constant `sizes` changes
+				// re-triggering decoding="async" or lazy loading evaluation.
+				const binnedWidth = Math.ceil(renderWidth / 25) * 25;
 
-				if (currentSizes !== newSizes) {
-					sizeUpdates.push(newSizes);
-				}
+				// Parse the current sizes to compare. If it's something like "100vw", this will be 0.
+				const currentWidthMatch = currentSizes ? currentSizes.match(/^(\d+)px$/) : null;
+				const currentParsedWidth = currentWidthMatch ? parseInt(currentWidthMatch[1], 10) : 0;
 
-				// We only care about layout caching if parallax is enabled
-				if (this.options.parallaxSpeed !== 0) {
-					widthChanged = true;
+				if (binnedWidth > currentParsedWidth) {
+					sizeUpdates.push(`${binnedWidth}px`);
 				}
 			}
-		}
 
-		// Perform layout read FIRST before any DOM writes to prevent thrashing
-		if (widthChanged) {
-			this.cacheLayout();
-			if (!this.ticking) {
-				this._frameId = window.requestAnimationFrame(this.tickUpdate);
-				this.ticking = true;
+			// Perform DOM writes LAST
+			if (sizeUpdates.length > 0) {
+				window.requestAnimationFrame(() => {
+					if (this.ref.img) {
+						// In this loop it's always the same image ref, but keeping the logic general
+						this.ref.img.setAttribute("sizes", sizeUpdates[0]);
+					}
+				});
 			}
-		}
-
-		// Perform DOM writes LAST
-		if (sizeUpdates.length > 0) {
-			window.requestAnimationFrame(() => {
-				if (this.ref.img) {
-					// In this loop it's always the same image ref, but keeping the logic general
-					this.ref.img.setAttribute("sizes", sizeUpdates[0]);
-				}
-			});
-		}
+		}, 150);
 	}
 
 	cacheLayout(rect = null) {
@@ -368,6 +378,9 @@ class ImageHolder extends gia.Component {
 				this.cachedLayout.windowHeight - this.cachedLayout.headerOffset + this.cachedLayout.elementHeight;
 			this.cachedLayout.distanceOffset = this.cachedLayout.windowHeight;
 		}
+
+		// Use multiplication instead of division in the render loop for faster CPU calculation
+		this.cachedLayout.invTotalDistance = this.cachedLayout.totalDistance > 0 ? 1 / this.cachedLayout.totalDistance : 0;
 	}
 
 	updateParallax() {
@@ -380,15 +393,14 @@ class ImageHolder extends gia.Component {
 		const currentDistance = this.cachedLayout.distanceOffset - currentRectTop;
 
 		// Normalize progress from 0 (just entered) to 1 (just left)
-		let progress = this.cachedLayout.totalDistance > 0 ? currentDistance / this.cachedLayout.totalDistance : 0;
-		progress = Math.max(0, Math.min(1, progress));
+		let progress = currentDistance * this.cachedLayout.invTotalDistance;
+		progress = progress < 0 ? 0 : progress > 1 ? 1 : progress;
 
 		if (this.options.parallaxCssVar) {
 			const roundedProgress = Math.round(progress * 10000) / 10000;
-			const progressStr = roundedProgress.toString();
-			if (this._lastParallaxProgress !== progressStr) {
-				this.element.style.setProperty("--parallax-scroll-progress", progressStr);
-				this._lastParallaxProgress = progressStr;
+			if (this._lastParallaxProgress !== roundedProgress) {
+				this._lastParallaxProgress = roundedProgress;
+				this.element.style.setProperty("--parallax-scroll-progress", roundedProgress.toString());
 			}
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
@@ -399,19 +411,16 @@ class ImageHolder extends gia.Component {
 			// to ensure the translation perfectly covers the extra space we added.
 
 			// Use the pre-computed speed calculation from initParallax
-			let offsetPercent = mappedProgress * this.speedCalc * 100;
+			let offsetPercent = mappedProgress * this.speedMultiplier;
 
 			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
 			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
 
-			const transformStr =
-				this.options.parallaxDirection === "horizontal"
-					? `translate3d(${offsetPercent}%, 0, 0)`
-					: `translate3d(0, ${offsetPercent}%, 0)`;
-
-			if (this._lastTransform !== transformStr) {
+			// Compare numbers instead of allocating and comparing new strings every frame
+			if (this._lastOffsetPercent !== offsetPercent) {
+				this._lastOffsetPercent = offsetPercent;
+				const transformStr = this.isHorizontal ? `translate3d(${offsetPercent}%, 0, 0)` : `translate3d(0, ${offsetPercent}%, 0)`;
 				this.ref.img.style.transform = transformStr;
-				this._lastTransform = transformStr;
 			}
 		}
 	}
