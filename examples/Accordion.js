@@ -57,28 +57,22 @@ class Accordion extends gia.Component {
 	mount() {
 		if (!this.isDetails) return;
 
+		// Cache DOM elements to prevent querying during interaction
+		this._summaryEl = this.ref.title || this.element.querySelector("summary");
+		this._contentEl = this.ref.contentWrapper || this.element.querySelector(".content");
+
 		// Inject icon into summary if not present and icon !== 'none'
-		const summary = this.element.querySelector("summary");
-		if (summary && this.options.icon !== "none") {
-			if (!summary.querySelector(".accordion-icon")) {
-				const svgString = this.getIconSvg(this.options.icon);
-				const parser = new DOMParser();
-				const doc = parser.parseFromString(svgString, 'image/svg+xml');
-				const svg = doc.querySelector('svg');
-				if (svg) {
-					summary.appendChild(svg);
-				}
+		if (this._summaryEl && this.options.icon !== "none") {
+			if (!this._summaryEl.querySelector(".accordion-icon")) {
+				this._summaryEl.insertAdjacentHTML("beforeend", this.getIconSvg(this.options.icon));
 			}
 		}
 
 		this.element.addEventListener("toggle", this.handleToggle);
 
 		// If no native support, intercept clicks to use WAAPI
-		if (!this.supportsNativeAnimation) {
-			const titleEl = this.ref.title || summary;
-			if (titleEl) {
-				titleEl.addEventListener("click", this.handleClick);
-			}
+		if (!this.supportsNativeAnimation && this._summaryEl) {
+			this._summaryEl.addEventListener("click", this.handleClick);
 		}
 
 		if (this.options.closeOthers) {
@@ -130,11 +124,8 @@ class Accordion extends gia.Component {
 			this.element.removeEventListener("toggle", this.handleToggle);
 		}
 
-		if (!this.supportsNativeAnimation) {
-			const titleEl = this.ref.title || this.element.querySelector("summary");
-			if (titleEl) {
-				titleEl.removeEventListener("click", this.handleClick);
-			}
+		if (!this.supportsNativeAnimation && this._summaryEl) {
+			this._summaryEl.removeEventListener("click", this.handleClick);
 		}
 
 		if (this.options.closeOthers) {
@@ -147,11 +138,8 @@ class Accordion extends gia.Component {
 		if (this.state.isOpen !== this.element.open) {
 			this.setState({ isOpen: this.element.open });
 
-			if (window.ScrollTrigger) {
-				setTimeout(() => {
-					window.ScrollTrigger.refresh();
-				}, 500);
-			}
+			// Trigger a globally debounced layout refresh to update Parallax/ScrollTrigger
+			Accordion.refreshGlobalLayout();
 		}
 	}
 
@@ -169,9 +157,8 @@ class Accordion extends gia.Component {
 	shrink() {
 		this.setState({ isClosing: true });
 
-		const titleEl = this.ref.title || this.element.querySelector("summary");
 		const startHeight = `${this.element.offsetHeight}px`;
-		const endHeight = `${titleEl.offsetHeight}px`;
+		const endHeight = `${this._summaryEl ? this._summaryEl.offsetHeight : 0}px`;
 
 		if (this.animation) {
 			this.animation.cancel();
@@ -193,11 +180,8 @@ class Accordion extends gia.Component {
 		window.requestAnimationFrame(() => {
 			this.setState({ isExpanding: true });
 
-			const titleEl = this.ref.title || this.element.querySelector("summary");
-			const contentEl = this.ref.contentWrapper || this.element.querySelector(".content");
-
 			const startHeight = `${this.element.offsetHeight}px`;
-			const endHeight = `${titleEl.offsetHeight + (contentEl ? contentEl.offsetHeight : 0)}px`;
+			const endHeight = `${(this._summaryEl ? this._summaryEl.offsetHeight : 0) + (this._contentEl ? this._contentEl.offsetHeight : 0)}px`;
 
 			if (this.animation) {
 				this.animation.cancel();
@@ -223,9 +207,7 @@ class Accordion extends gia.Component {
 		});
 		this.element.style.height = this.element.style.overflow = "";
 
-		if (window.ScrollTrigger) {
-			window.ScrollTrigger.refresh();
-		}
+		Accordion.refreshGlobalLayout();
 	}
 
 	handleAccordionOpen(event) {
@@ -256,10 +238,6 @@ class Accordion extends gia.Component {
 				});
 				window.dispatchEvent(customEvent);
 			}
-
-			setTimeout(() => {
-				window.dispatchEvent(new Event("resize"));
-			}, 0);
 		}
 
 		if ("isClosing" in stateChanges) {
@@ -267,6 +245,16 @@ class Accordion extends gia.Component {
 		}
 
 		this.element.removeAttribute("data-is-open");
+	}
+
+	static refreshGlobalLayout() {
+		clearTimeout(Accordion._globalRefreshTimer);
+		Accordion._globalRefreshTimer = setTimeout(() => {
+			window.dispatchEvent(new Event("resize"));
+			if (window.ScrollTrigger) {
+				window.ScrollTrigger.refresh();
+			}
+		}, 50); // Debounce concurrent accordion triggers
 	}
 }
 
