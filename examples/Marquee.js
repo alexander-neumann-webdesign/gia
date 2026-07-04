@@ -75,6 +75,8 @@ class Marquee extends gia.Component {
 
 		this.setupClones();
 
+		this.baseSpeed = this.options.speed * (this.options.direction === "left" ? -1 : 1);
+
 		// Observe resize to adjust clones and bounds
 		this.observeResize(this.element, this.handleResize);
 
@@ -101,6 +103,7 @@ class Marquee extends gia.Component {
 		this.unbindScroll();
 		this.destroyHover();
 		this.destroyDrag();
+		clearTimeout(this._resizeTimer);
 		this.unobserveResize(this.element, this.handleResize);
 	}
 
@@ -262,6 +265,8 @@ class Marquee extends gia.Component {
 
 	handleResize(entries) {
 		const entry = entries[entries.length - 1];
+		if (!entry || !entry.contentRect) return;
+
 		// Prevent exponential growth by clamping width
 		const newWidth = Math.min(entry.contentRect.width, window.innerWidth * 2);
 
@@ -269,7 +274,11 @@ class Marquee extends gia.Component {
 		if (Math.abs(this.containerWidth - newWidth) < 1) return;
 
 		this.containerWidth = newWidth;
-		this.updateBounds();
+
+		clearTimeout(this._resizeTimer);
+		this._resizeTimer = setTimeout(() => {
+			this.updateBounds();
+		}, 150);
 	}
 
 	updateBounds() {
@@ -347,8 +356,7 @@ class Marquee extends gia.Component {
 			this.speedMultiplier = targetMultiplier;
 		}
 
-		const directionMultiplier = this.options.direction === "left" ? -1 : 1;
-		frameOffset += this.options.speed * directionMultiplier * this.speedMultiplier * timeScale;
+		frameOffset += this.baseSpeed * this.speedMultiplier * timeScale;
 
 		// Apply scroll velocity if any
 		if (Math.abs(this.scrollVelocity) > 0.01) {
@@ -391,10 +399,9 @@ class Marquee extends gia.Component {
 		// Round to the nearest whole pixel to completely prevent 'Layerize' CPU spikes
 		// caused by sub-pixel font anti-aliasing re-rasterization in Chromium.
 		const roundedOffset = Math.round(this.currentOffset);
-		const transformStr = `translate3d(${roundedOffset}px, 0, 0)`;
-		if (this._lastTransform !== transformStr) {
-			this.ref.track.style.transform = transformStr;
-			this._lastTransform = transformStr;
+		if (this._lastRoundedOffset !== roundedOffset) {
+			this._lastRoundedOffset = roundedOffset;
+			this.ref.track.style.transform = `translate3d(${roundedOffset}px, 0, 0)`;
 		}
 	}
 
