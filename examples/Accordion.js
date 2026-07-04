@@ -61,7 +61,13 @@ class Accordion extends gia.Component {
 		const summary = this.element.querySelector("summary");
 		if (summary && this.options.icon !== "none") {
 			if (!summary.querySelector(".accordion-icon")) {
-				summary.insertAdjacentHTML("beforeend", this.getIconSvg(this.options.icon));
+				const svgString = this.getIconSvg(this.options.icon);
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(svgString, 'image/svg+xml');
+				const svg = doc.querySelector('svg');
+				if (svg) {
+					summary.appendChild(svg);
+				}
 			}
 		}
 
