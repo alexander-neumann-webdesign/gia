@@ -18,7 +18,7 @@ class SplitText extends gia.Component {
 		this.lines = [];
 
 		this.setState({
-			isInview: false
+			isInview: false,
 		});
 
 		// Global counters across all nodes
@@ -37,7 +37,7 @@ class SplitText extends gia.Component {
 	_initSegmenters() {
 		if (window.Intl && Intl.Segmenter) {
 			if (!SplitText._graphemeSegmenter) {
-				SplitText._graphemeSegmenter = new Intl.Segmenter(navigator.language || 'en', { granularity: 'grapheme' });
+				SplitText._graphemeSegmenter = new Intl.Segmenter(navigator.language || "en", { granularity: "grapheme" });
 			}
 		}
 	}
@@ -54,7 +54,7 @@ class SplitText extends gia.Component {
 
 		this.observeIntersection(this.element, this.handleIntersect, {
 			threshold: this.options.threshold,
-			rootMargin: this.options.rootMargin
+			rootMargin: this.options.rootMargin,
 		});
 
 		// Set initialized state to potentially trigger CSS transitions/visibility
@@ -65,23 +65,28 @@ class SplitText extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		for (let i = 0; i < entries.length; i++) {
-			const entry = entries[i];
-			if (entry.isIntersecting) {
-				this.setState({ isInview: true });
+		const entry = entries[entries.length - 1];
+		if (!entry) return;
 
-				if (this.options.once) {
-					this.unobserveIntersection(this.element, this.handleIntersect);
-				}
-			} else if (!this.options.once) {
-				this.setState({ isInview: false });
+		if (entry.isIntersecting) {
+			this.setState({ isInview: true });
+
+			if (this.options.once) {
+				this.unobserveIntersection(this.element, this.handleIntersect);
 			}
+		} else if (!this.options.once) {
+			this.setState({ isInview: false });
 		}
 	}
 
 	handleResize() {
 		if (this.options.split.indexOf("lines") !== -1) {
-			this.calculateLines();
+			// Debounce line recalculation during window resize to prevent layout thrashing
+			// (reading offsetTop after writing custom CSS variables in the previous frame)
+			clearTimeout(this._resizeTimer);
+			this._resizeTimer = setTimeout(() => {
+				this.calculateLines();
+			}, 150);
 		}
 	}
 
@@ -125,7 +130,6 @@ class SplitText extends gia.Component {
 
 				const fragment = this._processTextNode(text);
 				node.replaceChild(fragment, child);
-
 			} else if (child.nodeType === Node.ELEMENT_NODE) {
 				// To prevent screen readers from reading the nested contents (since we set aria-label on root)
 				// we could set aria-hidden here, but we apply it directly to the spans anyway.
@@ -279,7 +283,7 @@ class SplitText extends gia.Component {
 				// Instead of querySelectorAll (which is a read operation), we iterate children directly
 				// if they exist, since we know we appended .split-char spans as direct children.
 				const children = wordEl.children;
-				for(let k = 0; k < children.length; k++) {
+				for (let k = 0; k < children.length; k++) {
 					const child = children[k];
 					if (child.classList.contains("split-char")) {
 						if (child._currentLineIndex !== i) {
@@ -300,6 +304,7 @@ class SplitText extends gia.Component {
 		if (this._rafId) {
 			cancelAnimationFrame(this._rafId);
 		}
+		clearTimeout(this._resizeTimer);
 	}
 }
 
@@ -311,7 +316,7 @@ EXPECTED HTML
 ========================================
 
 <h1 data-component="SplitText" data-options='{"split": ["lines", "words", "chars"]}'>
-  This is a <strong>sample text</strong> with an 👨‍👩‍👧‍👦 emoji to be split!
+  This is a <strong>sample text</strong> with an 👨👩👧👦 emoji to be split!
 </h1>
 
 ========================================
