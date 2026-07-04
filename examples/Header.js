@@ -3,12 +3,12 @@ class Header extends gia.Component {
 		super(element);
 
 		this.options = {
-			scrollEvents: true,
+			scrollEvents: false,
 			scrollThreshold: 50, // Distance over which to scrub
 			scrubTransition: false,
 			hideOnScroll: true,
 			hideThreshold: 50, // Minimum scroll amount before hiding/showing
-			showAtBottom: false
+			showAtBottom: false,
 		};
 
 		this.lastScrollY = 0;
@@ -17,12 +17,20 @@ class Header extends gia.Component {
 
 		this.setState({
 			isHidden: false,
-			isScrolled: false
+			isScrolled: false,
 		});
 	}
 
 	mount() {
 		if (this.options.scrollEvents) {
+			// Precompute inverse threshold for faster math in render loop
+			this._invScrollThreshold = 1 / this.options.scrollThreshold;
+
+			// Observe layout shifts instead of polling documentHeight during scroll
+			this.observeResize(document.body, this.handleBodyResize);
+			window.addEventListener("resize", this.handleBodyResize);
+			this.handleBodyResize();
+
 			this.observeScroll(this.handleScroll);
 
 			// Initial check
@@ -31,23 +39,35 @@ class Header extends gia.Component {
 
 			// Swup integration: reset header when navigating
 			if (window.swup) {
-				window.swup.hooks.on("page:view", this.handleSwupPageChange);
+				try {
+					window.swup.hooks.on("page:view", this.handleSwupPageChange);
+				} catch (e) {}
 			}
 		}
 	}
 
 	unmount() {
 		if (this.options.scrollEvents) {
+			this.unobserveResize(document.body, this.handleBodyResize);
+			window.removeEventListener("resize", this.handleBodyResize);
 			this.unobserveScroll(this.handleScroll);
 
 			if (window.swup) {
-				window.swup.hooks.off("page:view", this.handleSwupPageChange);
+				try {
+					window.swup.hooks.off("page:view", this.handleSwupPageChange);
+				} catch (e) {}
 			}
 		}
 	}
 
+	handleBodyResize() {
+		// Cache expensive layout reads to keep them out of the 60fps scroll loop
+		this._windowHeight = window.innerHeight;
+		this._documentHeight = document.documentElement.scrollHeight;
+	}
+
 	handleScroll(payload) {
-		if (payload && typeof payload.scroll === 'number') {
+		if (payload && typeof payload.scroll === "number") {
 			this.currentScrollY = payload.scroll;
 		} else {
 			this.currentScrollY = window.scrollY || window.pageYOffset;
@@ -69,15 +89,18 @@ class Header extends gia.Component {
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
 		if (this.options.scrubTransition) {
-			if (this._lastHeaderProgress !== '0') {
-				this.element.style.setProperty('--header-progress', '0');
-				this._lastHeaderProgress = '0';
+			if (this._lastHeaderProgress !== 0) {
+				this.element.style.setProperty("--header-progress", "0");
+				this._lastHeaderProgress = 0;
 			}
 		}
 		this.setState({
 			isHidden: false,
-			isScrolled: false
+			isScrolled: false,
 		});
+
+		// Refresh bounds since the page content just changed completely
+		this.handleBodyResize();
 	}
 
 	update() {
@@ -86,17 +109,16 @@ class Header extends gia.Component {
 		// Handle scrub transition manually via CSS custom property
 		// to guarantee high performance updates (avoiding setState here)
 		if (this.options.scrubTransition) {
-			// Clamp progress between 0 and 1
-			let progress = this.currentScrollY / this.options.scrollThreshold;
+			// Clamp progress between 0 and 1 using precomputed multiplier
+			let progress = this.currentScrollY * this._invScrollThreshold;
 			if (progress < 0) progress = 0;
 			if (progress > 1) progress = 1;
 
-			// We only want to set the property if it has changed, or unconditionally since this is a raf frame
-			// and setting custom properties is fast, but let's just set it
-			const progressStr = progress.toString();
-			if (this._lastHeaderProgress !== progressStr) {
-				this.element.style.setProperty('--header-progress', progressStr);
-				this._lastHeaderProgress = progressStr;
+			// Round to 4 decimal places to prevent micro-stutters and fast caching
+			const roundedProgress = Math.round(progress * 10000) / 10000;
+			if (this._lastHeaderProgress !== roundedProgress) {
+				this.element.style.setProperty("--header-progress", roundedProgress.toString());
+				this._lastHeaderProgress = roundedProgress;
 			}
 		}
 
@@ -113,7 +135,7 @@ class Header extends gia.Component {
 			}
 
 			// Show at bottom if option is enabled
-			if (this.options.showAtBottom && (this.currentScrollY + window.innerHeight) >= document.documentElement.scrollHeight) {
+			if (this.options.showAtBottom && this.currentScrollY + this._windowHeight >= this._documentHeight) {
 				isHidden = false;
 			}
 		} else {
@@ -126,7 +148,7 @@ class Header extends gia.Component {
 		if (this.state.isScrolled !== isScrolled || this.state.isHidden !== isHidden) {
 			this.setState({
 				isScrolled,
-				isHidden
+				isHidden,
 			});
 		}
 	}
