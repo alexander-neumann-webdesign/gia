@@ -3,41 +3,39 @@ class Reveal extends gia.Component {
 		super(element);
 
 		this.options = {
-			threshold: 0.1,    // Percentage of element that must be visible (0 to 1)
+			threshold: 0.15, // Percentage of element that must be visible (0 to 1)
 			rootMargin: "0px", // Margin around the root. Can have values similar to the CSS margin property
-			once: true,        // Whether to only trigger the reveal once
+			once: true, // Whether to only trigger the reveal once
 		};
 
 		this.setState({
-			isInview: false
+			isInview: false,
 		});
 	}
 
 	mount() {
 		this.observeIntersection(this.element, this.handleIntersect, {
 			threshold: this.options.threshold,
-			rootMargin: this.options.rootMargin
+			rootMargin: this.options.rootMargin,
 		});
 	}
 
 	handleIntersect(entries) {
-		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
-		for (let i = 0; i < entries.length; i++) {
-			const entry = entries[i];
-			if (entry.isIntersecting) {
-				this.setState({ isInview: true });
+		const entry = entries[entries.length - 1];
+		if (!entry) return;
 
-				if (this.options.once) {
-					this.unobserveIntersection(this.element, this.handleIntersect);
-				}
-			} else if (!this.options.once) {
-				this.setState({ isInview: false });
+		if (entry.isIntersecting) {
+			this.setState({ isInview: true });
+
+			if (this.options.once) {
+				this.unobserveIntersection(this.element, this.handleIntersect);
 			}
+		} else if (!this.options.once) {
+			this.setState({ isInview: false });
 		}
 	}
 
-	unmount() {
-	}
+	unmount() {}
 
 	stateChange(stateChanges) {
 		// Classes are now automatically mapped to data-is-inview by BaseComponent
