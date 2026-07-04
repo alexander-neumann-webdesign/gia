@@ -8,7 +8,7 @@ class Slider extends gia.Component {
 			skipSnaps: true,
 			tween: false,
 			parallax: false,
-			wheelGestures: true
+			wheelGestures: true,
 		};
 
 		this.ref = {
@@ -28,7 +28,7 @@ class Slider extends gia.Component {
 
 		this.setState({
 			canScrollPrev: false,
-			canScrollNext: false
+			canScrollNext: false,
 		});
 	}
 
@@ -41,14 +41,14 @@ class Slider extends gia.Component {
 		// <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
 		// to the bottom of your HTML.
 		try {
-			await this.loadScript("embla-carousel-js", "EmblaCarousel");
+			await this.loadScript("vendor/embla/embla-carousel.umd-js", "EmblaCarousel");
 		} catch (error) {
 			console.error("Slider: Failed to load Embla Carousel.", error);
 		}
 
 		if (this.options.wheelGestures) {
 			try {
-				await this.loadScript("embla-carousel-wheel-gestures-js", "EmblaCarouselWheelGestures");
+				await this.loadScript("vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js", "EmblaCarouselWheelGestures");
 			} catch (error) {
 				console.error("Slider: Failed to load Embla Carousel Wheel Gestures.", error);
 			}
@@ -73,23 +73,27 @@ class Slider extends gia.Component {
 		}
 
 		// Initialize Embla
-		this.emblaApi = window.EmblaCarousel(this.ref.viewport, {
-			loop: this.options.loop,
-			align: this.options.align,
-			skipSnaps: this.options.skipSnaps
-		}, plugins);
+		this.emblaApi = window.EmblaCarousel(
+			this.ref.viewport,
+			{
+				loop: this.options.loop,
+				align: this.options.align,
+				skipSnaps: this.options.skipSnaps,
+			},
+			plugins,
+		);
 
 		// Setup Buttons
 		if (this.ref.prevBtn) {
-			this.ref.prevBtn.addEventListener('click', this.scrollPrev);
+			this.ref.prevBtn.addEventListener("click", this.scrollPrev);
 		}
 		if (this.ref.nextBtn) {
-			this.ref.nextBtn.addEventListener('click', this.scrollNext);
+			this.ref.nextBtn.addEventListener("click", this.scrollNext);
 		}
 
 		// Listen to embla events to update button states
-		this.emblaApi.on('select', this.onSelect);
-		this.emblaApi.on('reInit', this.onSelect);
+		this.emblaApi.on("select", this.onSelect);
+		this.emblaApi.on("reInit", this.onSelect);
 
 		if (this.ref.dotsContainer) {
 			this.setupDots();
@@ -159,8 +163,11 @@ class Slider extends gia.Component {
 
 	tweenOpacityCallback(slideIndex, diffToTarget) {
 		const tweenValue = 1 - Math.abs(diffToTarget * this._tweenFactor);
-		const opacity = Math.min(Math.max(tweenValue, 0), 1).toString();
-		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", opacity);
+		const opacity = Math.max(0, Math.min(tweenValue, 1));
+
+		// Round to 4 decimal places to prevent micro-stutters and garbage collection thrashing
+		const roundedOpacity = Math.round(opacity * 10000) / 10000;
+		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", roundedOpacity.toString());
 	}
 
 	tweenOpacity(embla, eventName) {
@@ -183,11 +190,12 @@ class Slider extends gia.Component {
 	}
 
 	setParallaxMultiplier() {
-		if (this.emblaApi) this._parallaxMultiplier = 0.2 * this.emblaApi.scrollSnapList().length;
+		// Precompute the -1 and 100 multiplication here so we don't do it 60fps per slide
+		if (this.emblaApi) this._parallaxMultiplier = -20 * this.emblaApi.scrollSnapList().length;
 	}
 
 	applyParallaxCallback(slideIndex, diffToTarget) {
-		const translate = diffToTarget * (-1 * this._parallaxMultiplier) * 100;
+		const translate = Math.round(diffToTarget * this._parallaxMultiplier * 1000) / 1000;
 		this._slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
 	}
 
@@ -211,7 +219,7 @@ class Slider extends gia.Component {
 	}
 
 	handleDotClick(e) {
-		const index = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+		const index = parseInt(e.currentTarget.getAttribute("data-index"), 10);
 		if (this.emblaApi) this.emblaApi.scrollTo(index);
 	}
 
@@ -220,19 +228,19 @@ class Slider extends gia.Component {
 
 		const scrollSnaps = this.emblaApi.scrollSnapList();
 		this.ref.dot = scrollSnaps.map((_, index) => {
-			const dot = document.createElement('button');
-			dot.classList.add('embla__dot');
-			dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
-			dot.setAttribute('data-index', index);
+			const dot = document.createElement("button");
+			dot.classList.add("embla__dot");
+			dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+			dot.setAttribute("data-index", index);
 			dot.tabIndex = 0;
-			dot.addEventListener('click', this.handleDotClick);
+			dot.addEventListener("click", this.handleDotClick);
 			this.ref.dotsContainer.appendChild(dot);
 			return dot;
 		});
 
-		this.emblaApi.on('scroll', this.updateDots);
-		this.emblaApi.on('select', this.updateDots);
-		this.emblaApi.on('reInit', this.updateDots);
+		this.emblaApi.on("scroll", this.updateDots);
+		this.emblaApi.on("select", this.updateDots);
+		this.emblaApi.on("reInit", this.updateDots);
 		this.updateDots();
 	}
 
@@ -243,7 +251,7 @@ class Slider extends gia.Component {
 		const progress = this.emblaApi.scrollProgress();
 		const snapList = this.emblaApi.scrollSnapList();
 
-		if (snapList && snapList.length > 0 && typeof progress === 'number') {
+		if (snapList && snapList.length > 0 && typeof progress === "number") {
 			let minDiff = Infinity;
 			for (let i = 0; i < snapList.length; i++) {
 				const diff = Math.abs(snapList[i] - progress);
@@ -254,15 +262,19 @@ class Slider extends gia.Component {
 			}
 		}
 
+		// ⚡ BOLT OPTIMIZATION: Only touch the DOM if the active dot actually changed
+		if (this._lastSelectedDot === selected) return;
+		this._lastSelectedDot = selected;
+
 		for (let index = 0; index < this.ref.dot.length; index++) {
 			const dot = this.ref.dot[index];
 			if (index === selected) {
-				dot.classList.add('is-selected');
-				dot.setAttribute('aria-current', 'true');
+				dot.classList.add("is-selected");
+				dot.setAttribute("aria-current", "true");
 				dot.tabIndex = -1;
 			} else {
-				dot.classList.remove('is-selected');
-				dot.removeAttribute('aria-current');
+				dot.classList.remove("is-selected");
+				dot.removeAttribute("aria-current");
 				dot.tabIndex = 0;
 			}
 		}
@@ -274,10 +286,10 @@ class Slider extends gia.Component {
 		}
 
 		if (this.ref.prevBtn) {
-			this.ref.prevBtn.removeEventListener('click', this.scrollPrev);
+			this.ref.prevBtn.removeEventListener("click", this.scrollPrev);
 		}
 		if (this.ref.nextBtn) {
-			this.ref.nextBtn.removeEventListener('click', this.scrollNext);
+			this.ref.nextBtn.removeEventListener("click", this.scrollNext);
 		}
 
 		if (this.ref.dotsContainer && this.ref.dot) {
@@ -303,24 +315,24 @@ class Slider extends gia.Component {
 
 		this.setState({
 			canScrollPrev: this.emblaApi.canScrollPrev(),
-			canScrollNext: this.emblaApi.canScrollNext()
+			canScrollNext: this.emblaApi.canScrollNext(),
 		});
 	}
 
 	stateChange(stateChanges) {
-		if ('canScrollPrev' in stateChanges && this.ref.prevBtn) {
+		if ("canScrollPrev" in stateChanges && this.ref.prevBtn) {
 			if (this.state.canScrollPrev) {
-				this.ref.prevBtn.removeAttribute('disabled');
+				this.ref.prevBtn.removeAttribute("disabled");
 			} else {
-				this.ref.prevBtn.setAttribute('disabled', 'disabled');
+				this.ref.prevBtn.setAttribute("disabled", "disabled");
 			}
 		}
 
-		if ('canScrollNext' in stateChanges && this.ref.nextBtn) {
+		if ("canScrollNext" in stateChanges && this.ref.nextBtn) {
 			if (this.state.canScrollNext) {
-				this.ref.nextBtn.removeAttribute('disabled');
+				this.ref.nextBtn.removeAttribute("disabled");
 			} else {
-				this.ref.nextBtn.setAttribute('disabled', 'disabled');
+				this.ref.nextBtn.setAttribute("disabled", "disabled");
 			}
 		}
 	}
