@@ -20,3 +20,7 @@
 ## 2025-11-20 - Added Focus Visible State to ThemeToggle Button
 **Learning:** Custom icon-only toggle buttons like `ThemeToggle` often lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually as users tab through interactive elements on the page.
 **Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially icon-only control buttons, to ensure robust keyboard accessibility.
+
+## 2025-06-03 - Added Focus Visible State to ClipboardCopy Button
+**Learning:** Custom buttons like `ClipboardCopy` can lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually.
+**Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially utility buttons.
