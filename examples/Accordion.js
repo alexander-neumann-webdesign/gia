@@ -93,7 +93,9 @@ class Accordion extends gia.Component {
 		}
 
 		if (this.element.id && window.swup) {
-			window.swup.hooks.on("scroll:end", this.maybeStartOpened);
+			try {
+				window.swup.hooks.on("page:view", this.maybeStartOpened);
+			} catch (err) {}
 		}
 
 		this.setState({ isOpen: shouldBeOpen });
@@ -117,7 +119,9 @@ class Accordion extends gia.Component {
 
 	unmount() {
 		if (this.element.id && window.swup) {
-			window.swup.hooks.off("scroll:end", this.maybeStartOpened);
+			try {
+				window.swup.hooks.off("page:view", this.maybeStartOpened);
+			} catch (err) {}
 		}
 
 		if (this.isDetails) {

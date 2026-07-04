@@ -115,6 +115,9 @@ class ImageHolder extends gia.Component {
 		// Setup Resize Observer on document to catch layout shifts
 		this.observeResize(document.body, this.handleBodyResize);
 
+		// Also listen to global programmatic resize events (e.g., from Accordion.js)
+		window.addEventListener("resize", this.handleBodyResize);
+
 		if (!this.ticking) {
 			this._frameId = window.requestAnimationFrame(this.tickUpdate);
 			this.ticking = true;
@@ -146,6 +149,7 @@ class ImageHolder extends gia.Component {
 		clearTimeout(this._resizeTimer);
 
 		if (this.options.parallaxSpeed !== 0) {
+			window.removeEventListener("resize", this.handleBodyResize);
 			this.destroyParallax();
 		}
 	}
