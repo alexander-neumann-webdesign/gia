@@ -82,6 +82,7 @@ class ImageHolder extends gia.Component {
 	initParallax() {
 		this.isScrollBound = false;
 		this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
+		this.windowWidth = window.innerWidth;
 
 		// Cache the header element once if needed
 		this.headerElement = document.querySelector("header#main-header");
@@ -124,7 +125,19 @@ class ImageHolder extends gia.Component {
 		}
 	}
 
-	handleBodyResize() {
+	handleBodyResize(e) {
+		// Distinguish between native browser resizes and programmatic ones (e.g., from Accordion.js)
+		const isNative = e && e.isTrusted;
+		const widthChanged = this.windowWidth !== window.innerWidth;
+
+		// If it's a native resize but the width didn't change, it's just the mobile URL bar
+		// hiding/showing. We explicitly ignore these to prevent the parallax math from jumping!
+		if (isNative && !widthChanged) {
+			return;
+		}
+
+		this.windowWidth = window.innerWidth;
+
 		if (this.headerElement) {
 			this.headerOffset = this.headerElement.offsetHeight;
 		}
@@ -272,9 +285,13 @@ class ImageHolder extends gia.Component {
 		const width = entry.contentRect.width;
 		const height = entry.contentRect.height;
 
+		const isWidthChange = this._latestResizeWidth !== undefined && this._latestResizeWidth !== width;
+		const isFirstRun = this._latestResizeWidth === undefined;
+
 		// 1. Immediately update layout and parallax for smooth 60fps responsive resizing
-		// without any "snapping" or lag.
-		if (this.options.parallaxSpeed !== 0) {
+		// without any "snapping" or lag. We explicitly ignore vertical-only resizes to prevent
+		// parallax jumps on mobile when the URL bar hides/shows.
+		if (this.options.parallaxSpeed !== 0 && (isWidthChange || isFirstRun)) {
 			this.cacheLayout();
 			if (!this.ticking) {
 				this._frameId = window.requestAnimationFrame(this.tickUpdate);
