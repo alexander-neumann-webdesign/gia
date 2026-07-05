@@ -69,9 +69,9 @@ class VideoHolder extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		entries.forEach((entry) => {
-			this.setState({ isInViewport: entry.isIntersecting });
-		});
+		for (let i = 0; i < entries.length; i++) {
+			this.setState({ isInViewport: entries[i].isIntersecting });
+		}
 	}
 
 	handleMouseEnter() {

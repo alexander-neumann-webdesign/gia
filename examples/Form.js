@@ -48,10 +48,10 @@ class Form extends gia.Component {
 			this.formElement.addEventListener('submit', this.handleSubmit);
 
 			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
-			this.ref.requiredInputs.forEach((input) => {
-				input.addEventListener('change', this.handleInputChange);
-				input.addEventListener('input', this.handleInputChange);
-			});
+			for (let i = 0; i < this.ref.requiredInputs.length; i++) {
+				this.ref.requiredInputs[i].addEventListener('change', this.handleInputChange);
+				this.ref.requiredInputs[i].addEventListener('input', this.handleInputChange);
+			}
 
 			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
 			if (this.ref.conditions.length > 0) {
@@ -83,10 +83,10 @@ class Form extends gia.Component {
 				this.formElement.removeEventListener('input', this.evaluateConditions);
 			}
 		}
-		this.ref.requiredInputs.forEach((input) => {
-			input.removeEventListener('change', this.handleInputChange);
-			input.removeEventListener('input', this.handleInputChange);
-		});
+		for (let i = 0; i < this.ref.requiredInputs.length; i++) {
+			this.ref.requiredInputs[i].removeEventListener('change', this.handleInputChange);
+			this.ref.requiredInputs[i].removeEventListener('input', this.handleInputChange);
+		}
 	}
 
 	evaluateConditions() {
@@ -94,9 +94,10 @@ class Form extends gia.Component {
 
 		let formData = new FormData(this.formElement);
 
-		this.ref.conditions.forEach(el => {
+		for (let i = 0; i < this.ref.conditions.length; i++) {
+			const el = this.ref.conditions[i];
 			const conditionString = el.getAttribute('data-condition');
-			if (!conditionString) return;
+			if (!conditionString) continue;
 
 			const conditionMet = this._checkCondition(conditionString, formData);
 
@@ -105,7 +106,7 @@ class Form extends gia.Component {
 			} else {
 				this._hideConditionElement(el);
 			}
-		});
+		}
 	}
 
 	_checkCondition(conditionString, formData) {
@@ -127,23 +128,23 @@ class Form extends gia.Component {
 	_showConditionElement(el) {
 		el.hidden = false;
 		const inputs = el.querySelectorAll('input, select, textarea');
-		inputs.forEach(input => {
-			if (input.hasAttribute('data-disabled-by-condition')) {
-				input.disabled = false;
-				input.removeAttribute('data-disabled-by-condition');
+		for (let i = 0; i < inputs.length; i++) {
+			if (inputs[i].hasAttribute('data-disabled-by-condition')) {
+				inputs[i].disabled = false;
+				inputs[i].removeAttribute('data-disabled-by-condition');
 			}
-		});
+		}
 	}
 
 	_hideConditionElement(el) {
 		el.hidden = true;
 		const inputs = el.querySelectorAll('input, select, textarea');
-		inputs.forEach(input => {
-			if (!input.disabled) {
-				input.disabled = true;
-				input.setAttribute('data-disabled-by-condition', 'true');
+		for (let i = 0; i < inputs.length; i++) {
+			if (!inputs[i].disabled) {
+				inputs[i].disabled = true;
+				inputs[i].setAttribute('data-disabled-by-condition', 'true');
 			}
-		});
+		}
 	}
 
 	handleInputChange() {

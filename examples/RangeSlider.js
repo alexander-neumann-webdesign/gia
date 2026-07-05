@@ -66,9 +66,9 @@ class RangeSlider extends gia.Component {
             });
 
             // Sync input changes to slider
-            this.ref.inputs.forEach((input, index) => {
-                input.addEventListener('change', this.handleInputChange);
-            });
+            for (let i = 0; i < this.ref.inputs.length; i++) {
+                this.ref.inputs[i].addEventListener('change', this.handleInputChange);
+            }
         }
     }
 
@@ -89,9 +89,9 @@ class RangeSlider extends gia.Component {
 
     unmount() {
         if (this.ref.inputs && this.ref.inputs.length > 0) {
-            this.ref.inputs.forEach((input) => {
-                input.removeEventListener('change', this.handleInputChange);
-            });
+            for (let i = 0; i < this.ref.inputs.length; i++) {
+                this.ref.inputs[i].removeEventListener('change', this.handleInputChange);
+            }
         }
 
         if (this.sliderInstance) {

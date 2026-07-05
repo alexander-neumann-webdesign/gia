@@ -26,11 +26,11 @@ class TextFit extends gia.Component {
 		// Clean up fitty instances if they exist and have an unsubscribe method
 		if (this.fittyInstances) {
 			const instances = Array.isArray(this.fittyInstances) ? this.fittyInstances : [this.fittyInstances];
-			instances.forEach(instance => {
-				if (instance && typeof instance.unsubscribe === 'function') {
-					instance.unsubscribe();
+			for (let i = 0; i < instances.length; i++) {
+				if (instances[i] && typeof instances[i].unsubscribe === 'function') {
+					instances[i].unsubscribe();
 				}
-			});
+			}
 		}
 	}
 }

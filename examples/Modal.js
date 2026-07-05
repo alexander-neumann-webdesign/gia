@@ -32,7 +32,8 @@ class Modal extends gia.Component {
 		if (!this.isDialog) return;
 
 		// Attach events to triggers
-		this.triggers.forEach(trigger => {
+		for (let i = 0; i < this.triggers.length; i++) {
+			const trigger = this.triggers[i];
 			trigger.addEventListener('click', this.handleTriggerClick);
 
 			// Accessibility: set aria-controls and initial aria-expanded state
@@ -42,14 +43,14 @@ class Modal extends gia.Component {
 			if (!trigger.hasAttribute('aria-expanded')) {
 				trigger.setAttribute('aria-expanded', this.state.isOpen ? 'true' : 'false');
 			}
-		});
+		}
 
 		// Attach events to close buttons from refs
 		if (this.ref.closeButton) {
 			const buttons = this._getArray(this.ref.closeButton);
-			buttons.forEach(btn => {
-				btn.addEventListener('click', this.handleCloseClick);
-			});
+			for (let i = 0; i < buttons.length; i++) {
+				buttons[i].addEventListener('click', this.handleCloseClick);
+			}
 		}
 
 		// Attach backdrop click
@@ -83,15 +84,15 @@ class Modal extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		this.triggers.forEach(trigger => {
-			trigger.removeEventListener('click', this.handleTriggerClick);
-		});
+		for (let i = 0; i < this.triggers.length; i++) {
+			this.triggers[i].removeEventListener('click', this.handleTriggerClick);
+		}
 
 		if (this.ref.closeButton) {
 			const buttons = this._getArray(this.ref.closeButton);
-			buttons.forEach(btn => {
-				btn.removeEventListener('click', this.handleCloseClick);
-			});
+			for (let i = 0; i < buttons.length; i++) {
+				buttons[i].removeEventListener('click', this.handleCloseClick);
+			}
 		}
 
 		this.element.removeEventListener('click', this.handleBackdropClick);
@@ -143,9 +144,9 @@ class Modal extends gia.Component {
 			const { isOpen } = stateChanges;
 
 			// Accessibility: update aria-expanded on triggers
-			this.triggers.forEach(trigger => {
-				trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-			});
+			for (let i = 0; i < this.triggers.length; i++) {
+				this.triggers[i].setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			}
 
 			if (isOpen) {
 				if (!this.element.open) {

@@ -174,10 +174,11 @@ class UploadField extends gia.Component {
 			fileList.style.position = 'relative';
 			fileList.style.zIndex = '10';
 
-			Array.from(fileInput.files).forEach(file => {
-				const fileItem = this._createFileItem(file, dropzone, fileInput);
+			const files = Array.from(fileInput.files);
+			for (let i = 0; i < files.length; i++) {
+				const fileItem = this._createFileItem(files[i], dropzone, fileInput);
 				fileList.appendChild(fileItem);
-			});
+			}
 
 			const addMoreBtn = this._createAddMoreButton(fileInput);
 			fileList.appendChild(addMoreBtn);

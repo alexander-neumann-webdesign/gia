@@ -44,15 +44,19 @@ class MultiStepForm extends gia.Component {
 			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
 
 			const nextBtns = this._getArray(this.ref.nextBtn);
-			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
+			for (let i = 0; i < nextBtns.length; i++) {
+				nextBtns[i].addEventListener('click', this.handleNextStep);
+			}
 
 			const prevBtns = this._getArray(this.ref.prevBtn);
-			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+			for (let i = 0; i < prevBtns.length; i++) {
+				prevBtns[i].addEventListener('click', this.handlePrevStep);
+			}
 
 			const stepIndicators = this._getArray(this.ref.stepIndicator);
-			stepIndicators.forEach((indicator, index) => {
-				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
-			});
+			for (let i = 0; i < stepIndicators.length; i++) {
+				stepIndicators[i].addEventListener('click', (event) => this.handleStepIndicatorClick(event, i));
+			}
 
 			if (this.ref.step && (this._getArray(this.ref.step).length > 0)) {
 				this._updateStepUI(this.state.currentStep);
@@ -76,10 +80,14 @@ class MultiStepForm extends gia.Component {
 		}
 
 		const nextBtns = this._getArray(this.ref.nextBtn);
-		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
+		for (let i = 0; i < nextBtns.length; i++) {
+			nextBtns[i].removeEventListener('click', this.handleNextStep);
+		}
 
 		const prevBtns = this._getArray(this.ref.prevBtn);
-		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
+		for (let i = 0; i < prevBtns.length; i++) {
+			prevBtns[i].removeEventListener('click', this.handlePrevStep);
+		}
 	}
 
 	handleSubmit(event) {
@@ -202,20 +210,20 @@ class MultiStepForm extends gia.Component {
 		const steps = this._getArray(this.ref.step);
 		if (!steps || steps.length === 0) return;
 
-		steps.forEach((step, index) => {
-			step.hidden = index !== currentStep;
-		});
+		for (let i = 0; i < steps.length; i++) {
+			steps[i].hidden = i !== currentStep;
+		}
 
 		const indicators = this._getArray(this.ref.stepIndicator);
-		indicators.forEach((indicator, index) => {
-			if (index === currentStep) {
-				indicator.setAttribute('aria-current', 'step');
-				indicator.classList.add('is-active');
+		for (let i = 0; i < indicators.length; i++) {
+			if (i === currentStep) {
+				indicators[i].setAttribute('aria-current', 'step');
+				indicators[i].classList.add('is-active');
 			} else {
-				indicator.removeAttribute('aria-current');
-				indicator.classList.remove('is-active');
+				indicators[i].removeAttribute('aria-current');
+				indicators[i].classList.remove('is-active');
 			}
-		});
+		}
 
 		if (this.ref.submitBtn) {
 			this.ref.submitBtn.hidden = currentStep !== steps.length - 1;

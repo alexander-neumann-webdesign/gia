@@ -129,3 +129,6 @@
 ## 2024-07-04 - Cache getComputedStyle to prevent layout thrashing
 **Learning:** Calling `window.getComputedStyle(el)` during high-frequency events or inside `requestAnimationFrame` loops (such as within `_calculateElementBounds` in `CustomCursor.js`) causes layout thrashing and synchronous style recalculations.
 **Action:** Cache the result of `getComputedStyle` on the element's `dataset` to avoid recalculating it multiple times and eliminate layout thrashing.
+## 2024-07-06 - Replace .forEach with standard for loops in components
+**Learning:** `Array.prototype.forEach` creates closure functions for every item in the array, introducing unnecessary memory allocation. Converting it into a standard `for` loop in component methods prevents garbage collection (GC) churn.
+**Action:** Replace `.forEach` calls on DOM queries and arrays with standard `for` loops to eliminate closure function allocations during UI interactions in all components.
