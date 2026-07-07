@@ -237,17 +237,11 @@ class ImageHolder extends gia.Component {
 			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
 		}
 
-		if (window.lenis) {
-			// We are already inside Lenis's RAF loop.
-			// Update synchronously to eliminate the 1-frame delay.
-			this.updateParallax();
-		} else {
-			// Native scroll is async, so we still need RAF here
-			if (!this.ticking) {
-				this._frameId = window.requestAnimationFrame(this.tickUpdate);
-				this.ticking = true;
-			}
-		}
+		// Execute synchronously to eliminate 1-frame latency.
+		// Modern browsers throttle scroll events natively to the display refresh rate.
+		// Since updateParallax() only performs DOM writes and no reads, it's completely safe
+		// from Layout Thrashing and doesn't need a rAF debounce.
+		this.updateParallax();
 	}
 
 	tickUpdate() {
@@ -366,7 +360,11 @@ class ImageHolder extends gia.Component {
 		};
 
 		if (isFirstRun) {
-			applySizes();
+			// Skip initial sizes calculation for eager images to prevent double-fetching on load
+			const isLazy = this.ref.img && this.ref.img.getAttribute("loading") === "lazy";
+			if (isLazy) {
+				applySizes();
+			}
 		} else {
 			this._resizeTimer = setTimeout(applySizes, 150);
 		}
@@ -454,7 +452,7 @@ class ImageHolder extends gia.Component {
 	}
 }
 
-gia.register(ImageHolder);
+gia.register(ImageHolder, { priority: 100 });
 
 /*
 ========================================
