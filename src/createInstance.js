@@ -1,4 +1,5 @@
 import config from "./config.js";
+import { components } from "./store.js";
 
 /**
  * Creates and returns instance of component
@@ -10,9 +11,9 @@ import config from "./config.js";
 
 export default function createInstance(element, componentName, component, options) {
 	// Check if the component is already attached before trying to create a new one.
-	if (element.__gia_component__) {
+	if (components.has(element)) {
 		console.warn(`Component "${componentName}" already exists.`);
-		return element.__gia_component__;
+		return components.get(element);
 	}
 
 	try {

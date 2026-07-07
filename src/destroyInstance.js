@@ -1,4 +1,5 @@
 import config from "./config.js";
+import { components } from "./store.js";
 
 /**
  * Destroys and removes instance from DOM element
@@ -9,13 +10,13 @@ export default function destroyInstance(element) {
 
 	// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
 	// inside the extremely hot autoMount MutationObserver removal loop.
-	let instance = element.__gia_component__;
+	let instance = components.get(element);
 
 	// Fallback for ID string passing
 	if (!instance && typeof element === "string") {
 		const el = document.getElementById(element);
 		if (el) {
-			instance = el.__gia_component__;
+			instance = components.get(el);
 			element = el; // update element reference for cleanup below
 		}
 	}
@@ -37,7 +38,7 @@ export default function destroyInstance(element) {
 
 		// DOM CLEANUP
 		// Remove the reference from the DOM element
-		element.__gia_component__ = null;
+		components.delete(element);
 
 		// The instance holds a reference to the element ("this.element").
 		// We must break this link so the Garbage Collector can free both objects.

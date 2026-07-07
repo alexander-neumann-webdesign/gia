@@ -1,3 +1,5 @@
+import { components } from "./store.js";
+
 /**
  * Return instance from element
  * @param element: DOM element or ID of element
@@ -13,5 +15,5 @@ export default function getComponentFromElement(element) {
 		}
 	}
 
-	return element.__gia_component__;
+	return components.get(element) || null;
 }

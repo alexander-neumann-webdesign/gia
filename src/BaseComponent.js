@@ -1,5 +1,6 @@
 import config from "./config.js";
 import { queryAll } from "./utils.js";
+import { components } from "./store.js";
 
 
 let globalScrollListenerBound = false;
@@ -77,24 +78,86 @@ function handleGlobalResize(e) {
 let globalResizeObserver = null;
 const resizeCallbacks = new WeakMap();
 
-const intersectionObservers = new Map(); // optionsHash -> { observer, callbacks }
+const intersectionObservers = new Map(); // root -> marginMap
 
 const globalExcludedMethods = new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]);
 const protoMethodsCache = new WeakMap();
 const globalStateAttributeCache = new Map();
 
-function getIntersectionOptionsHash(options) {
+function getIntersectionObserverData(options) {
 	const root = options.root || null;
 	const rootMargin = options.rootMargin || "0px 0px 0px 0px";
 	const threshold = options.threshold || 0;
-	const thresholdStr = Array.isArray(threshold) ? threshold.join(",") : threshold.toString();
 
-	// Since root is an Element, we can't easily stringify it if it's dynamic.
-	// But usually, root is null. If it's an Element, we just give it a unique ID or use a WeakMap.
-	// For simplicity in a global hash, if root is present we just use an object reference approach or ignore root serialization if it's always document.
-	// Let's create a string hash:
-	const rootId = root ? (root.id || "root-element") : "null";
-	return `${rootId}|${rootMargin}|${thresholdStr}`;
+	let rootMap = intersectionObservers.get(root);
+	if (!rootMap) {
+		rootMap = new Map();
+		intersectionObservers.set(root, rootMap);
+	}
+
+	let marginMap = rootMap.get(rootMargin);
+	if (!marginMap) {
+		marginMap = new Map();
+		rootMap.set(rootMargin, marginMap);
+	}
+
+	let currentMap = marginMap;
+
+	if (Array.isArray(threshold)) {
+		let lenMap = currentMap.get('array');
+		if (!lenMap) {
+			lenMap = new Map();
+			currentMap.set('array', lenMap);
+		}
+		currentMap = lenMap;
+		for (let i = 0; i < threshold.length; i++) {
+			const t = threshold[i];
+			let nextMap = currentMap.get(t);
+			if (!nextMap) {
+				nextMap = new Map();
+				currentMap.set(t, nextMap);
+			}
+			currentMap = nextMap;
+		}
+	} else {
+		let numMap = currentMap.get('number');
+		if (!numMap) {
+			numMap = new Map();
+			currentMap.set('number', numMap);
+		}
+		currentMap = numMap;
+		let nextMap = currentMap.get(threshold);
+		if (!nextMap) {
+			nextMap = new Map();
+			currentMap.set(threshold, nextMap);
+		}
+		currentMap = nextMap;
+	}
+
+	let observerData = currentMap.get('data');
+	if (!observerData) {
+		const observer = new IntersectionObserver((entries) => {
+			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
+			for (let i = 0; i < entries.length; i++) {
+				const entry = entries[i];
+				const callbacks = observerData.callbacks.get(entry.target);
+				if (callbacks) {
+					_observerEntryArr[0] = entry;
+					callbacks.forEach(_callObserverCb);
+				}
+			}
+		}, options);
+
+		observerData = {
+			observer,
+			callbacks: new WeakMap(),
+			nodeMap: currentMap,
+			elementsCount: 0
+		};
+		currentMap.set('data', observerData);
+	}
+
+	return observerData;
 }
 
 /**
@@ -104,7 +167,7 @@ function getIntersectionOptionsHash(options) {
 export default class Component {
 	constructor(element, options) {
 		this.element = element;
-		this.element.__gia_component__ = this;
+		components.set(this.element, this);
 		this._name = this.constructor.name;
 		this._ref = {};
 		this._options = options || {};
@@ -236,7 +299,7 @@ export default class Component {
 		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
 			this._ref = null;
 			if (this.element) {
-				this.element.__gia_component__ = null;
+				components.delete(this.element);
 				this.element = null;
 			}
 			return;
@@ -263,7 +326,7 @@ export default class Component {
 		// ⚡ BOLT OPTIMIZATION: Aggressively clear refs and element to assist GC
 		this._ref = null;
 		if (this.element) {
-			this.element.__gia_component__ = null;
+			components.delete(this.element);
 			this.element = null;
 		}
 	}
@@ -413,52 +476,35 @@ export default class Component {
 		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
-		const hash = getIntersectionOptionsHash(options);
-		let observerData = intersectionObservers.get(hash);
-
-		if (!observerData) {
-			const observer = new IntersectionObserver((entries) => {
-				// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
-				for (let i = 0; i < entries.length; i++) {
-					const entry = entries[i];
-			const callbacks = observerData.callbacks.get(entry.target);
-			if (callbacks) {
-						_observerEntryArr[0] = entry;
-						callbacks.forEach(_callObserverCb);
-	}
-		}
-	}, options);
-			observerData = { observer, callbacks: new WeakMap() };
-			intersectionObservers.set(hash, observerData);
-	}
+		const observerData = getIntersectionObserverData(options);
 
 		let oDataCbs = observerData.callbacks.get(element);
 		if (!oDataCbs) {
 			oDataCbs = new Set();
 			observerData.callbacks.set(element, oDataCbs);
 			observerData.observer.observe(element);
-	}
+			observerData.elementsCount++;
+		}
 		oDataCbs.add(callback);
 
 		if (!this._observedIntersectionElements) {
 			this._observedIntersectionElements = new Map();
-	}
+		}
 		let componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) {
 			componentElementMap = new Map();
 			this._observedIntersectionElements.set(element, componentElementMap);
+		}
+
+		let obsCbs = componentElementMap.get(observerData);
+		if (!obsCbs) {
+			obsCbs = new Set();
+			componentElementMap.set(observerData, obsCbs);
+		}
+		obsCbs.add(callback);
 	}
 
-		let hashCbs = componentElementMap.get(hash);
-		if (!hashCbs) {
-			hashCbs = new Set();
-			componentElementMap.set(hash, hashCbs);
-	}
-		hashCbs.add(callback);
-	}
-
-	_processIntersectionHash(componentCallbacks, hash) {
-		const observerData = intersectionObservers.get(hash);
+	_processIntersectionData(componentCallbacks, observerData) {
 		const element = this._currentUnobserveElement;
 		const callback = this._currentUnobserveCallback;
 
@@ -479,7 +525,7 @@ export default class Component {
 		}
 
 		if (componentCallbacks.size === 0) {
-			this._observedIntersectionElements.get(element).delete(hash);
+			this._observedIntersectionElements.get(element).delete(observerData);
 		}
 
 		if (observerData) {
@@ -487,11 +533,14 @@ export default class Component {
 			if (globalCbs && globalCbs.size === 0) {
 				observerData.callbacks.delete(element);
 				observerData.observer.unobserve(element);
+				observerData.elementsCount--;
 			}
 
-			if (observerData.callbacks.size === 0) {
+			if (observerData.elementsCount === 0) {
 				observerData.observer.disconnect();
-				intersectionObservers.delete(hash);
+				if (observerData.nodeMap) {
+					observerData.nodeMap.delete('data');
+				}
 			}
 		}
 	}
@@ -507,7 +556,7 @@ export default class Component {
 		// and using a bound or class method to process the Map entries.
 		this._currentUnobserveElement = element;
 		this._currentUnobserveCallback = callback;
-		componentElementMap.forEach(this._processIntersectionHash, this);
+		componentElementMap.forEach(this._processIntersectionData, this);
 		this._currentUnobserveElement = null;
 		this._currentUnobserveCallback = null;
 

@@ -2,6 +2,7 @@ import config from "./config.js";
 import createInstance from "./createInstance.js";
 import getComponentFromElement from "./getComponentFromElement.js";
 import { queryAll } from "./utils.js";
+import { components as storeComponents } from "./store.js";
 
 /**
  * Creates instances of components without creating duplicates on elements within the context
@@ -40,7 +41,7 @@ export default function loadComponents(components = {}, context = document.docum
 		const element = elements[i];
 		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
 		// and string-type checking since we know element is a DOM node.
-		const instance = element.__gia_component__;
+		const instance = storeComponents.get(element);
 
 		if (!instance) {
 			const componentName = element.getAttribute(attrName);
@@ -55,7 +56,7 @@ export default function loadComponents(components = {}, context = document.docum
 
 	if (context instanceof Element && context.hasAttribute(attrName)) {
 		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
-		const instance = context.__gia_component__;
+		const instance = storeComponents.get(context);
 
 		if (!instance) {
 			const componentName = context.getAttribute(attrName);
