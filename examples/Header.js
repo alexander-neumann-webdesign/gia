@@ -13,7 +13,6 @@ class Header extends gia.Component {
 
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
-		this.ticking = false;
 
 		this.setState({
 			isHidden: false,
@@ -73,16 +72,12 @@ class Header extends gia.Component {
 			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
 
-		if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
-			this.ticking = true;
-		}
+		// ⚡ BOLT OPTIMIZATION: Update synchronously since modern scroll events are natively throttled
+		// and dispatched before the animation frame. Avoids 1-frame lag and layout thrashing.
+		this.update();
 	}
 
-	tickUpdate() {
-		this.update();
-		this.ticking = false;
-	}
+
 
 	handleSwupPageChange() {
 		// Reset state because Swup scrolls to top

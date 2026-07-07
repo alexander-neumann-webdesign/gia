@@ -57,7 +57,7 @@ class EventBus {
 
 	off(event, handler) {
 		if (!handler) {
-			// Clear all listeners for this event if no handler provided
+			console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
 			this.listeners[event] = [];
 			return;
 		}

@@ -172,10 +172,9 @@ class Marquee extends gia.Component {
 			// If motion is disabled, we might need to manually call renderPosition if tick is paused
 			if (!this.ticking) {
 				this.currentOffset += this.scrollVelocity;
-				if (!this._isRenderingFrame) {
-					this._isRenderingFrame = true;
-					this.renderFrameId = window.requestAnimationFrame(this.renderFrame);
-				}
+				// ⚡ BOLT OPTIMIZATION: Update synchronously since modern scroll events are natively throttled
+				// and dispatched before the animation frame. Avoids 1-frame lag and layout thrashing.
+				this.renderPosition();
 			}
 		}
 	}

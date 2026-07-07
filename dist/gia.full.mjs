@@ -55,7 +55,7 @@ function p(o, e = document) {
 function U(o, e, t = null) {
   t === null ? o.classList.toggle(e) : o.classList.toggle(e, !!t);
 }
-function D(o, e, t) {
+function q(o, e, t) {
   if (!o) return o;
   if (o.length !== void 0 && o.nodeType === void 0)
     for (let n = 0; n < o.length; n++)
@@ -65,10 +65,10 @@ function D(o, e, t) {
   return o;
 }
 function J(o, e) {
-  return D(o, e, "remove");
+  return q(o, e, "remove");
 }
 function Q(o, e) {
-  return D(o, e, "add");
+  return q(o, e, "add");
 }
 function V(o, e, t = null, n = {
   bubbles: !0,
@@ -121,8 +121,8 @@ function X(o = {}, e = document.documentElement) {
   for (let l = 0; l < r; l++) {
     const a = s[l];
     if (!a.__gia_component__) {
-      const d = a.getAttribute(i);
-      typeof o[d] == "function" ? n.push(L(a, d, o[d])) : console.warn(`Constructor "${d}" not found.`);
+      const h = a.getAttribute(i);
+      typeof o[h] == "function" ? n.push(L(a, h, o[h])) : console.warn(`Constructor "${h}" not found.`);
     }
   }
   if (e instanceof Element && e.hasAttribute(i) && !e.__gia_component__) {
@@ -155,27 +155,27 @@ function we(o = document.documentElement) {
     O(e[t]);
 }
 let b = !1, m = !1;
-const N = /* @__PURE__ */ new Set(), ee = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), x = ee ? "orientationchange" : "resize", v = /* @__PURE__ */ new Set();
-let h = null;
+const v = /* @__PURE__ */ new Set(), ee = typeof navigator < "u" && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i), x = ee ? "orientationchange" : "resize", N = /* @__PURE__ */ new Set();
+let d = null;
 const C = { scroll: 0, velocity: 0 }, I = { width: 0, height: 0 }, S = [null], te = (o) => o(C), ne = (o) => o(I), R = (o) => o(S), oe = function(o, e) {
   this.unobserveResize(e);
 }, ie = function(o, e) {
   this.unobserveIntersection(e);
-}, se = (o) => o.h();
+}, se = (o) => o.d();
 let $ = !1;
 const G = /* @__PURE__ */ new Set();
 function re() {
   $ = !1, G.forEach(se), G.clear();
 }
 function le() {
-  N.forEach(te);
+  v.forEach(te);
 }
 function y(o) {
   let e, t;
-  h ? (e = h.scroll, t = h.velocity) : o && typeof o.scroll == "number" ? (e = o.scroll, t = o.velocity || 0) : (e = window.scrollY || window.pageYOffset, t = 0), C.scroll = e, C.velocity = t, le();
+  d ? (e = d.scroll, t = d.velocity) : o && typeof o.scroll == "number" ? (e = o.scroll, t = o.velocity || 0) : (e = window.scrollY || window.pageYOffset, t = 0), C.scroll = e, C.velocity = t, le();
 }
 function ae() {
-  v.forEach(ne);
+  N.forEach(ne);
 }
 function T(o) {
   I.width = window.innerWidth, I.height = window.innerHeight, ae();
@@ -188,7 +188,7 @@ function ce(o) {
 }
 let fe = class {
   constructor(e, t) {
-    this.element = e, this.element.__gia_component__ = this, this.r = this.constructor.name, this.e = {}, this.o = t || {}, this.u = {}, this.h = this.h.bind(this), this.m(), f.get("autoBindActions") && this.y();
+    this.element = e, this.element.__gia_component__ = this, this.r = this.constructor.name, this.e = {}, this.o = t || {}, this.u = {}, this.d = this.d.bind(this), this.m(), f.get("autoBindActions") && this.y();
   }
   get ref() {
     return this.e;
@@ -271,16 +271,16 @@ let fe = class {
     this.l && this.l.forEach(this.unobserveScroll, this), this.a && this.a.forEach(this.unobserveWindowResize, this), this.i && this.i.forEach(oe, this), this.t && this.t.forEach(ie, this), this.e = null, this.element && (this.element.__gia_component__ = null, this.element = null);
   }
   observeScroll(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (b || (b = !0, window.lenis ? (h = window.lenis, h.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this.l || (this.l = /* @__PURE__ */ new Set()), this.l.add(e), N.add(e));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (b || (b = !0, window.lenis ? (d = window.lenis, d.on("scroll", y)) : window.addEventListener("scroll", y, { passive: !0 })), this.l || (this.l = /* @__PURE__ */ new Set()), this.l.add(e), v.add(e));
   }
   unobserveScroll(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.l && this.l.delete(e), N.delete(e), N.size === 0 && b && (b = !1, h ? (h.off("scroll", y), h = null) : window.removeEventListener("scroll", y)));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.l && this.l.delete(e), v.delete(e), v.size === 0 && b && (b = !1, d ? (d.off("scroll", y), d = null) : window.removeEventListener("scroll", y)));
   }
   observeWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (m || (m = !0, window.addEventListener(x, T, { passive: !0 })), this.a || (this.a = /* @__PURE__ */ new Set()), this.a.add(e), v.add(e));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (m || (m = !0, window.addEventListener(x, T, { passive: !0 })), this.a || (this.a = /* @__PURE__ */ new Set()), this.a.add(e), N.add(e));
   }
   unobserveWindowResize(e) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.a && this.a.delete(e), v.delete(e), v.size === 0 && m && (m = !1, window.removeEventListener(x, T)));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || (this.a && this.a.delete(e), N.delete(e), N.size === 0 && m && (m = !1, window.removeEventListener(x, T)));
   }
   observeResize(e, t) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || !window.ResizeObserver) return;
@@ -315,9 +315,9 @@ let fe = class {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || !window.IntersectionObserver) return;
     const i = ce(n);
     let s = A.get(i);
-    s || (s = { observer: new IntersectionObserver((d) => {
-      for (let u = 0; u < d.length; u++) {
-        const k = d[u], z = s.callbacks.get(k.target);
+    s || (s = { observer: new IntersectionObserver((h) => {
+      for (let u = 0; u < h.length; u++) {
+        const k = h[u], z = s.callbacks.get(k.target);
         z && (S[0] = k, z.forEach(R));
       }
     }, n), callbacks: /* @__PURE__ */ new WeakMap() }, A.set(i, s));
@@ -416,7 +416,7 @@ let fe = class {
       for (const t in e) {
         if (!Object.prototype.hasOwnProperty.call(e, t)) continue;
         const n = e[t];
-        if (this.u[t] !== n && (this.u[t] = n, this.f || (this.f = this._ || {}, this.s = this.d || {}, G.add(this), $ || ($ = !0, requestAnimationFrame(re))), this.f[t] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
+        if (this.u[t] !== n && (this.u[t] = n, this.f || (this.f = this._ || {}, this.s = this.h || {}, G.add(this), $ || ($ = !0, requestAnimationFrame(re))), this.f[t] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const i = typeof n;
           if (i === "boolean" || i === "string") {
             let s = W.get(t);
@@ -425,7 +425,7 @@ let fe = class {
         }
       }
   }
-  h() {
+  d() {
     if (typeof __GIA_NANO__ > "u" || !__GIA_NANO__) {
       let e = !1;
       for (const t in this.s) {
@@ -439,12 +439,12 @@ let fe = class {
           this.element.getAttribute(t) !== n && this.element.setAttribute(t, n);
         }
     }
-    this.stateChange(this.f), this._ = this.f, this.d = this.s;
+    this.stateChange(this.f), this._ = this.f, this.h = this.s;
     for (const e in this._)
       delete this._[e];
-    if (this.d)
-      for (const e in this.d)
-        delete this.d[e];
+    if (this.h)
+      for (const e in this.h)
+        delete this.h[e];
     this.f = null, this.s = null;
   }
   stateChange(e) {
@@ -478,8 +478,8 @@ let fe = class {
         let l = s.indexOf(" ", r);
         if (l === -1 && (l = s.length), l > r) {
           const a = s.substring(r, l), c = a.indexOf("->");
-          let d, u;
-          c !== -1 ? (d = a.substring(0, c), u = a.substring(c + 2)) : (d = a, u = void 0), this[u] && typeof this[u] == "function" && !u.startsWith("_") && !B.has(u) ? i.addEventListener(d, this[u]) : console.warn(`Method "${u}" not found, is restricted, or is not a function in component.`);
+          let h, u;
+          c !== -1 ? (h = a.substring(0, c), u = a.substring(c + 2)) : (h = a, u = void 0), this[u] && typeof this[u] == "function" && !u.startsWith("_") && !B.has(u) ? i.addEventListener(h, this[u]) : console.warn(`Method "${u}" not found, is restricted, or is not a function in component.`);
         }
         r = l + 1;
       }
@@ -519,23 +519,23 @@ class ue {
   }
   off(e, t) {
     if (!t) {
-      this.listeners[e] = [];
+      console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget."), this.listeners[e] = [];
       return;
     }
     const n = this.listeners[e];
     if (!n) return;
     let i = t;
-    t.c && t.c[e] ? (i = t.c[e], delete t.c[e]) : t.N && (i = t.N);
+    t.c && t.c[e] ? (i = t.c[e], delete t.c[e]) : t.v && (i = t.v);
     const s = n.indexOf(i);
     s !== -1 && (s === n.length - 1 || (n[s] = n[n.length - 1]), n.pop());
   }
 }
 const ye = new ue();
 let g = null, M = null;
-const E = /* @__PURE__ */ new Set(), de = (o) => {
+const E = /* @__PURE__ */ new Set(), he = (o) => {
   o.isConnected && X(M, o);
 };
-function he(o) {
+function de(o) {
   const e = `${f.get("attrPrefix")}-component`, t = typeof window < "u" && window.gia ? window.gia.components : {};
   E.clear();
   for (let n = 0; n < o.length; n++) {
@@ -551,10 +551,10 @@ function he(o) {
     }
     i.addedNodes.length > 0 && i.target.nodeType === Node.ELEMENT_NODE && E.add(i.target);
   }
-  M = t, E.forEach(de), M = null;
+  M = t, E.forEach(he), M = null;
 }
-function q() {
-  typeof document > "u" || (f.get("autoMountComponents") && !g ? (g = new MutationObserver(he), g.observe(document.body, {
+function D() {
+  typeof document > "u" || (f.get("autoMountComponents") && !g ? (g = new MutationObserver(de), g.observe(document.body, {
     childList: !0,
     subtree: !0
   })) : !f.get("autoMountComponents") && g && (g.disconnect(), g = null));
@@ -562,10 +562,10 @@ function q() {
 {
   const o = f.set;
   f.set = function(e, t) {
-    o.call(this, e, t), e === "autoMountComponents" && q();
+    o.call(this, e, t), e === "autoMountComponents" && D();
   };
 }
-typeof window < "u" && setTimeout(q, 0);
+typeof window < "u" && setTimeout(D, 0);
 export {
   fe as BaseComponent,
   me as Component,
