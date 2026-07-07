@@ -69,9 +69,22 @@ export default function loadComponents(components = {}, context = document.docum
 		}
 	}
 
+	if (initialisedComponents.length > 1) {
+		initialisedComponents.sort((a, b) => {
+			if (!a) return 1;
+			if (!b) return -1;
+			const pA = a.constructor._gia_priority ?? a.constructor.priority ?? 0;
+			const pB = b.constructor._gia_priority ?? b.constructor.priority ?? 0;
+			return pB - pA; // Descending order (highest priority first)
+		});
+	}
+
 	// call _load/require/mount
 	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid array iteration overhead
 	for (let i = 0; i < initialisedComponents.length; i++) {
-		initialisedComponents[i]._load();
+		const comp = initialisedComponents[i];
+		if (comp) {
+			comp._load();
+		}
 	}
 }

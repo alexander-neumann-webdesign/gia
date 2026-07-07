@@ -38,6 +38,7 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
 - [Performance Optimizations](#performance-optimizations)
 - [Interactive Examples](#interactive-examples)
 - [Integration with Swup](#integration-with-swup)
+- [Integration with Lenis](#integration-with-lenis)
 
 ---
 
@@ -421,6 +422,39 @@ loadComponents({ MyComponent });
 
 ---
 
+### Component Mounting Priority
+
+By default, Gia parses the DOM and mounts components in a strict top-to-bottom order. However, if you need certain critical components to execute first (like calculating layouts, setting up dynamic image sizes, or initializing analytics), you can define a mount priority.
+
+There are two ways to set a priority:
+
+**Option 1: Using `gia.register` (Global approach)**
+```javascript
+import { loadComponents } from "gia";
+
+// Register with a priority (higher number mounts first)
+window.gia.register(ImageHolder, { priority: 100 });
+window.gia.register(HeroSlider, { priority: 50 });
+window.gia.register(AnalyticsTracking); // defaults to priority 0
+
+loadComponents(window.gia.components);
+```
+
+**Option 2: Using Class Statics (Component approach)**
+```javascript
+class ImageHolder extends Component {
+	static priority = 100;
+
+	mount() {
+		// Runs before almost everything else!
+	}
+}
+```
+
+Components with the same priority will safely fall back to maintaining their natural DOM top-to-bottom loading order.
+
+---
+
 ## Global Configuration
 
 Customize the framework's behavior using the global `config` object:
@@ -554,6 +588,30 @@ mount();
 // Hook into Swup's lifecycle events
 swup.hooks.before("content:replace", unmount);
 swup.hooks.on("content:replace", mount);
+```
+
+---
+
+## Integration with Lenis
+
+Gia automatically detects and hooks into [Lenis](https://lenis.studiofreight.com/) if it is available globally (`window.lenis`).
+
+By default, calling `this.observeScroll(callback)` in your components attaches a passive event listener to the native `window` scroll event. However, native scroll events can trigger out of sync with the browser's paint cycle, causing jittery parallax or animation effects.
+
+When Gia detects Lenis, it does the heavy lifting for you:
+1. It overrides the native scroll listener and uses `lenis.on('scroll')`.
+2. It synchronizes all of your component `observeScroll` callbacks perfectly with Lenis's internal `requestAnimationFrame` loop.
+3. It automatically calculates and provides both the smooth scroll position and instantaneous scroll velocity to your components:
+
+```javascript
+class ParallaxHero extends Component {
+	mount() {
+		this.observeScroll(({ scroll, velocity }) => {
+			// Perfectly synced with the rendering frame!
+			this.element.style.transform = `translateY(${scroll * 0.5}px) skewY(${velocity * 0.05}deg)`;
+		});
+	}
+}
 ```
 
 ---

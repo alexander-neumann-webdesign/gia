@@ -307,20 +307,24 @@ export default class Component {
 
 		if (this._observedScrollCallbacks) {
 			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
+			this._observedScrollCallbacks = null;
 		}
 
 		if (this._observedWindowResizeCallbacks) {
 			this._observedWindowResizeCallbacks.forEach(this.unobserveWindowResize, this);
+			this._observedWindowResizeCallbacks = null;
 		}
 
 		if (this._observedResizeElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedResizeElements.forEach(_unobserveResizeCb, this);
+			this._observedResizeElements = null;
 		}
 
 		if (this._observedIntersectionElements) {
 			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
 			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
+			this._observedIntersectionElements = null;
 		}
 
 		// ⚡ BOLT OPTIMIZATION: Aggressively clear refs and element to assist GC
