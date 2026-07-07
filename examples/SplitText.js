@@ -32,6 +32,8 @@ class SplitText extends gia.Component {
 
 		// Initialize/Cache Segmenters once for performance
 		this._initSegmenters();
+
+		this._isFirstResize = true;
 	}
 
 	_initSegmenters() {
@@ -80,6 +82,11 @@ class SplitText extends gia.Component {
 	}
 
 	handleResize() {
+		if (this._isFirstResize) {
+			this._isFirstResize = false;
+			return; // Initial lines already calculated synchronously in mount() via split()
+		}
+
 		if (this.options.split.indexOf("lines") !== -1) {
 			// Debounce line recalculation during window resize to prevent layout thrashing
 			// (reading offsetTop after writing custom CSS variables in the previous frame)
