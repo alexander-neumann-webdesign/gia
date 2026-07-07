@@ -129,3 +129,6 @@
 ## 2024-07-04 - Cache getComputedStyle to prevent layout thrashing
 **Learning:** Calling `window.getComputedStyle(el)` during high-frequency events or inside `requestAnimationFrame` loops (such as within `_calculateElementBounds` in `CustomCursor.js`) causes layout thrashing and synchronous style recalculations.
 **Action:** Cache the result of `getComputedStyle` on the element's `dataset` to avoid recalculating it multiple times and eliminate layout thrashing.
+## 2024-07-07 - Synchronous Scroll Updates
+**Learning:** In modern browsers, `scroll` and `resize` events are natively throttled and dispatched just before the animation frame. Wrapping their callbacks in `requestAnimationFrame` introduces an unnecessary 1-frame latency and can cause layout thrashing if those callbacks read DOM properties.
+**Action:** Remove `requestAnimationFrame` wrappers around high-frequency synchronous event callbacks like `handleScroll` and `handleResize` in components to eliminate 1-frame lag and prevent layout thrashing.

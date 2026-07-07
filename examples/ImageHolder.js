@@ -13,8 +13,7 @@ class ImageHolder extends gia.Component {
 			img: null,
 		};
 
-		this.ticking = false;
-		this._frameId = null;
+
 
 		// Layout caching for performance
 		this.cachedLayout = {
@@ -237,23 +236,9 @@ class ImageHolder extends gia.Component {
 			this.currentScrollY = window.lenis ? window.lenis.scroll : window.scrollY || window.pageYOffset;
 		}
 
-		if (window.lenis) {
-			// We are already inside Lenis's RAF loop.
-			// Update synchronously to eliminate the 1-frame delay.
-			this.updateParallax();
-		} else {
-			// Native scroll is async, so we still need RAF here
-			if (!this.ticking) {
-				this._frameId = window.requestAnimationFrame(this.tickUpdate);
-				this.ticking = true;
-			}
-		}
-	}
-
-	tickUpdate() {
+		// ⚡ BOLT OPTIMIZATION: Update synchronously since modern scroll events are natively throttled
+		// and dispatched before the animation frame. Avoids 1-frame lag and layout thrashing.
 		this.updateParallax();
-		this.ticking = false;
-		this._frameId = null;
 	}
 
 	stateChange(stateChanges) {
@@ -262,11 +247,7 @@ class ImageHolder extends gia.Component {
 				if (this.options.parallaxSpeed !== 0) {
 					// Dynamically bind scroll listener only when visible to save resources
 					this.bindScroll();
-
-					if (!this.ticking) {
-						this._frameId = window.requestAnimationFrame(this.tickUpdate);
-						this.ticking = true;
-					}
+					this.updateParallax();
 				}
 			} else {
 				if (this.options.parallaxSpeed !== 0) {
@@ -293,10 +274,7 @@ class ImageHolder extends gia.Component {
 		// parallax jumps on mobile when the URL bar hides/shows.
 		if (this.options.parallaxSpeed !== 0 && (isWidthChange || isFirstRun)) {
 			this.cacheLayout();
-			if (!this.ticking) {
-				this._frameId = window.requestAnimationFrame(this.tickUpdate);
-				this.ticking = true;
-			}
+			this.updateParallax();
 		}
 
 		// 2. We keep the debounce strictly for the `sizes` update to prevent browser

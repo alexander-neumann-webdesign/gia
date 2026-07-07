@@ -89,13 +89,9 @@ class ImageComparison extends gia.Component {
     }
 
     handleInput() {
-        if (!this.ticking) {
-            this.rafId = requestAnimationFrame(() => {
-                this.updateExposure();
-                this.ticking = false;
-            });
-            this.ticking = true;
-        }
+        // ⚡ BOLT OPTIMIZATION: Update synchronously since modern scroll events are natively throttled
+        // and dispatched before the animation frame. Avoids 1-frame lag and layout thrashing.
+        this.updateExposure();
     }
 
     updateExposure() {
