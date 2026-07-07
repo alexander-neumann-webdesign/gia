@@ -270,15 +270,22 @@ class Marquee extends gia.Component {
 		// Prevent exponential growth by clamping width
 		const newWidth = Math.min(entry.contentRect.width, window.innerWidth * 2);
 
+		const isFirstRun = this.containerWidth === 0;
+
 		// Prevent micro-pixel ResizeObserver loops
-		if (Math.abs(this.containerWidth - newWidth) < 1) return;
+		if (!isFirstRun && Math.abs(this.containerWidth - newWidth) < 1) return;
 
 		this.containerWidth = newWidth;
 
 		clearTimeout(this._resizeTimer);
-		this._resizeTimer = setTimeout(() => {
+
+		if (isFirstRun) {
 			this.updateBounds();
-		}, 150);
+		} else {
+			this._resizeTimer = setTimeout(() => {
+				this.updateBounds();
+			}, 150);
+		}
 	}
 
 	updateBounds() {
