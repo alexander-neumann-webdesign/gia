@@ -3,7 +3,7 @@ class ImageHolder extends gia.Component {
 		super(element);
 
 		this.options = {
-			parallaxSpeed: 0.25,
+			parallaxSpeed: 0.3,
 			parallaxDirection: "vertical",
 			parallaxCssVar: false,
 			startFromTop: false,
