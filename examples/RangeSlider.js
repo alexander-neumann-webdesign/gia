@@ -1,4 +1,7 @@
 class RangeSlider extends gia.Component {
+    _getArray(refValue) {
+        return Array.isArray(refValue) ? refValue : (refValue ? [refValue] : []);
+    }
     constructor(element) {
         super(element);
 
@@ -41,11 +44,7 @@ class RangeSlider extends gia.Component {
 
         this.sliderInstance = window.noUiSlider.create(sliderElement, this.options);
 
-        if (this.ref.inputs) {
-            this.ref.inputs = Array.isArray(this.ref.inputs) ? this.ref.inputs : [this.ref.inputs];
-        } else {
-            this.ref.inputs = [];
-        }
+        this.ref.inputs = this._getArray(this.ref.inputs);
 
         if (this.ref.inputs.length === 0) {
             this.ref.inputs = Array.from(this.element.querySelectorAll('input'));
