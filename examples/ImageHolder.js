@@ -305,7 +305,8 @@ class ImageHolder extends gia.Component {
 		this._latestResizeHeight = height;
 
 		clearTimeout(this._resizeTimer);
-		this._resizeTimer = setTimeout(() => {
+
+		const applySizes = () => {
 			const w = this._latestResizeWidth;
 			const h = this._latestResizeHeight;
 			let sizeUpdates = [];
@@ -362,7 +363,13 @@ class ImageHolder extends gia.Component {
 					}
 				});
 			}
-		}, 150);
+		};
+
+		if (isFirstRun) {
+			applySizes();
+		} else {
+			this._resizeTimer = setTimeout(applySizes, 150);
+		}
 	}
 
 	cacheLayout(rect = null) {
