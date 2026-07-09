@@ -1296,6 +1296,11 @@ button[data-component="ThemeToggle"] {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+
+  &:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+  }
 }
 
 .todo-submit-btn, .todo-delete-btn {
@@ -1309,6 +1314,11 @@ button[data-component="ThemeToggle"] {
 
   &:hover {
     background-color: #004494;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
   }
 }
 
@@ -1353,6 +1363,11 @@ button[data-component="ThemeToggle"] {
   gap: 0.5rem;
   cursor: pointer;
   flex: 1;
+
+  .todo-checkbox:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+  }
 }
 
 

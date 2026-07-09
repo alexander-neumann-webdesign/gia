@@ -24,3 +24,7 @@
 ## 2025-06-03 - Added Focus Visible State to ClipboardCopy Button
 **Learning:** Custom buttons like `ClipboardCopy` can lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually.
 **Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially utility buttons.
+
+## 2025-12-05 - Added Focus Visible State to TodoApp Elements
+**Learning:** Custom form elements like `.todo-input` and buttons like `.todo-submit-btn` and `.todo-delete-btn` often lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually. Even nested inputs like `.todo-checkbox` can suffer from this.
+**Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, including inputs and buttons, to ensure robust keyboard accessibility.

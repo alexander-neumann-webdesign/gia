@@ -309,6 +309,11 @@ SUGGESTED SCSS
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+
+  &:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+  }
 }
 
 .todo-submit-btn, .todo-delete-btn {
@@ -322,6 +327,11 @@ SUGGESTED SCSS
 
   &:hover {
     background-color: #004494;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
   }
 }
 
@@ -366,5 +376,10 @@ SUGGESTED SCSS
   gap: 0.5rem;
   cursor: pointer;
   flex: 1;
+
+  .todo-checkbox:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+  }
 }
 */
