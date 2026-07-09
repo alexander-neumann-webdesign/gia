@@ -1146,6 +1146,10 @@ button[data-component=ThemeToggle][data-theme=dark] .icon-dark {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+.todo-input:focus-visible {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
+}
 
 .todo-submit-btn, .todo-delete-btn {
   padding: 0.5rem 1rem;
@@ -1158,6 +1162,10 @@ button[data-component=ThemeToggle][data-theme=dark] .icon-dark {
 }
 .todo-submit-btn:hover, .todo-delete-btn:hover {
   background-color: #004494;
+}
+.todo-submit-btn:focus-visible, .todo-delete-btn:focus-visible {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
 }
 
 .todo-delete-btn {
@@ -1197,6 +1205,10 @@ button[data-component=ThemeToggle][data-theme=dark] .icon-dark {
   gap: 0.5rem;
   cursor: pointer;
   flex: 1;
+}
+.todo-label .todo-checkbox:focus-visible {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
 }
 
 /* --- Tooltip --- */
