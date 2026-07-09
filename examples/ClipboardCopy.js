@@ -57,22 +57,7 @@ class ClipboardCopy extends gia.Component {
 			this.setState({ status: 'copied' });
 		} catch (err) {
 			console.error("ClipboardCopy: Failed to copy text: ", err);
-
-			try {
-				const textArea = document.createElement("textarea");
-				textArea.value = normalizedText;
-				textArea.style.position = "fixed";
-				textArea.style.left = "-999999px";
-				document.body.appendChild(textArea);
-				textArea.select();
-				document.execCommand("copy");
-				document.body.removeChild(textArea);
-				console.log("ClipboardCopy: Text copied to clipboard (fallback method)");
-				this.setState({ status: 'copied' });
-			} catch (fallbackErr) {
-				console.error("ClipboardCopy: Fallback method also failed: ", fallbackErr);
-				this.setState({ status: 'error' });
-			}
+			this.setState({ status: 'error' });
 		}
 	}
 
