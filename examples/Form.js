@@ -68,7 +68,9 @@ class Form extends gia.Component {
 			console.warn("Form component: No form element found.");
 		}
 
-
+		gia.mutate(() => {
+			this.element.classList.add('initialized');
+		});
 	}
 
 	unmount() {
