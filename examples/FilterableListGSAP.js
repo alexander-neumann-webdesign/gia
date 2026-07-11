@@ -45,13 +45,15 @@ class FilterableListGSAP extends gia.Component {
 	}
 
 	_syncOutputs() {
-		for (const [id, value] of this._pendingOutputs.entries()) {
-			const outputEl = document.querySelector(`output[for="${id}"]`);
-			if (outputEl && outputEl.value !== value) {
-				outputEl.value = value;
+		gia.mutate(() => {
+			for (const [id, value] of this._pendingOutputs.entries()) {
+				const outputEl = document.querySelector(`output[for="${id}"]`);
+				if (outputEl && outputEl.value !== value) {
+					outputEl.value = value;
+				}
 			}
-		}
-		this._pendingOutputs.clear();
+			this._pendingOutputs.clear();
+		});
 		this._outputRafId = null;
 	}
 
@@ -450,8 +452,10 @@ class FilterableListGSAP extends gia.Component {
 		this.options.maxItemCount = -1;
 
 		if (this.ref.showMoreBtn) {
-			this.ref.showMoreBtn.style.display = "none";
-			this.ref.showMoreBtn.tabIndex = -1;
+			gia.mutate(() => {
+				this.ref.showMoreBtn.style.display = "none";
+				this.ref.showMoreBtn.tabIndex = -1;
+			});
 		}
 
 		this.applyChanges();
@@ -577,16 +581,18 @@ class FilterableListGSAP extends gia.Component {
 
 	_updateShowMoreVisibility(hiddenBehindMoreCount) {
 		if (this.ref.showMoreBtn) {
-			if (this.options.maxItemCount === -1) {
-				this.ref.showMoreBtn.classList.remove("visible");
-			} else if (hiddenBehindMoreCount > 0) {
-				this.ref.showMoreBtn.classList.add("visible");
-				if (this.ref.showMoreBtnCount) {
-					this.ref.showMoreBtnCount.textContent = hiddenBehindMoreCount;
+			gia.mutate(() => {
+				if (this.options.maxItemCount === -1) {
+					this.ref.showMoreBtn.classList.remove("visible");
+				} else if (hiddenBehindMoreCount > 0) {
+					this.ref.showMoreBtn.classList.add("visible");
+					if (this.ref.showMoreBtnCount) {
+						this.ref.showMoreBtnCount.textContent = hiddenBehindMoreCount;
+					}
+				} else {
+					this.ref.showMoreBtn.classList.remove("visible");
 				}
-			} else {
-				this.ref.showMoreBtn.classList.remove("visible");
-			}
+			});
 		}
 	}
 
@@ -633,32 +639,38 @@ class FilterableListGSAP extends gia.Component {
 
 		// Perform DOM update
 		if (animate && window.gsap && window.Flip) {
-			const state = window.Flip.getState([this.ref.container, ...this.ref.item]);
+			gia.mutate(() => {
+				const state = window.Flip.getState([this.ref.container, ...this.ref.item]);
 
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 
-			window.Flip.from(state, {
-				targets: [this.ref.container, ...this.ref.item],
-				duration: 0.4,
-				ease: "power2.inOut",
-				stagger: this.options.staggerDelay / 1000,
-				absolute: true,
-				absoluteOnLeave: true,
-				onEnter: elements => {
-					return window.gsap.fromTo(elements, {opacity: 0, scale: 0.8}, {opacity: 1, scale: 1, duration: 0.4});
-				},
-				onLeave: elements => {
-					return window.gsap.to(elements, {opacity: 0, scale: 0.8, duration: 0.4});
-				},
-				onComplete: () => {
-					for (let i = 0; i < hiddenItems.length; i++) {
-						hiddenItems[i].hidden = true;
-						hiddenItems[i].style.display = "";
+				window.Flip.from(state, {
+					targets: [this.ref.container, ...this.ref.item],
+					duration: 0.4,
+					ease: "power2.inOut",
+					stagger: this.options.staggerDelay / 1000,
+					absolute: true,
+					absoluteOnLeave: true,
+					onEnter: elements => {
+						return window.gsap.fromTo(elements, {opacity: 0, scale: 0.8}, {opacity: 1, scale: 1, duration: 0.4});
+					},
+					onLeave: elements => {
+						return window.gsap.to(elements, {opacity: 0, scale: 0.8, duration: 0.4});
+					},
+					onComplete: () => {
+						gia.mutate(() => {
+							for (let i = 0; i < hiddenItems.length; i++) {
+								hiddenItems[i].hidden = true;
+								hiddenItems[i].style.display = "";
+							}
+						});
 					}
-				}
+				});
 			});
 		} else {
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+			gia.mutate(() => {
+				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+			});
 		}
 
 		// Trigger setState for batched attributes (like active classes on buttons)

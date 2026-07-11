@@ -289,54 +289,57 @@ class Marquee extends gia.Component {
 	}
 
 	updateBounds() {
-		// Measure content
-		if (this.originalWrapper) {
-			// Round the width up to ensure the layout wrapper forces integer bounds,
-			// preventing sub-pixel misalignment stutters on wrap boundaries.
+		if (!this.originalWrapper) return;
+
+		gia.mutate(() => {
 			// Clear inline width before measuring to allow natural flex sizing
 			this.originalWrapper.style.width = "";
-			this.contentWidth = Math.ceil(this.originalWrapper.getBoundingClientRect().width);
-			this.originalWrapper.style.width = this.contentWidth + "px";
 
-			// Ensure existing clones also update their width
-			for (let i = 0; i < this.clones.length; i++) {
-				this.clones[i].style.width = this.contentWidth + "px";
-			}
-		}
+			gia.measure(() => {
+				this.contentWidth = Math.ceil(this.originalWrapper.getBoundingClientRect().width);
 
-		if (this.contentWidth === 0) return;
+				if (this.contentWidth === 0) return;
 
-		// We only need enough copies so that contentWidth * numCopies >= containerWidth + contentWidth
-		// This mathematically covers the screen at all times without exceeding GPU max texture limits.
-		// Added a hard cap of 50 to prevent massive DOM generation and CPU spikes on empty text.
-		const requiredCopies = Math.min(50, Math.ceil(this.containerWidth / this.contentWidth) + 1);
+				// We only need enough copies so that contentWidth * numCopies >= containerWidth + contentWidth
+				const requiredCopies = Math.min(50, Math.ceil(this.containerWidth / this.contentWidth) + 1);
 
-		// Adjust the number of clones
-		const currentTotalCopies = 1 + this.clones.length;
+				gia.mutate(() => {
+					this.originalWrapper.style.width = this.contentWidth + "px";
 
-		if (requiredCopies > currentTotalCopies) {
-			for (let i = currentTotalCopies; i < requiredCopies; i++) {
-				// Use node.cloneNode(true) to cleanly copy the wrapper and its contents
-				const cloneWrapper = this.originalWrapper.cloneNode(true);
+					// Ensure existing clones also update their width
+					for (let i = 0; i < this.clones.length; i++) {
+						this.clones[i].style.width = this.contentWidth + "px";
+					}
 
-				cloneWrapper.setAttribute("aria-hidden", "true");
-				cloneWrapper.setAttribute("data-nosnippet", "");
+					// Adjust the number of clones
+					const currentTotalCopies = 1 + this.clones.length;
 
-				// Make inner items also hidden for safety
-				const children = cloneWrapper.children;
-				for (let j = 0; j < children.length; j++) {
-					children[j].setAttribute("aria-hidden", "true");
-					children[j].setAttribute("data-nosnippet", "");
-				}
+					if (requiredCopies > currentTotalCopies) {
+						for (let i = currentTotalCopies; i < requiredCopies; i++) {
+							// Use node.cloneNode(true) to cleanly copy the wrapper and its contents
+							const cloneWrapper = this.originalWrapper.cloneNode(true);
 
-				this.clones.push(cloneWrapper);
-				this.ref.track.appendChild(cloneWrapper);
-			}
-		}
+							cloneWrapper.setAttribute("aria-hidden", "true");
+							cloneWrapper.setAttribute("data-nosnippet", "");
 
-		// Explicitly set the width of the track to prevent the browser from
-		// continuously recalculating the bounding box of the flex container on every frame
-		this.ref.track.style.width = this.contentWidth * (1 + this.clones.length) + "px";
+							// Make inner items also hidden for safety
+							const children = cloneWrapper.children;
+							for (let j = 0; j < children.length; j++) {
+								children[j].setAttribute("aria-hidden", "true");
+								children[j].setAttribute("data-nosnippet", "");
+							}
+
+							this.clones.push(cloneWrapper);
+							this.ref.track.appendChild(cloneWrapper);
+						}
+					}
+
+					// Explicitly set the width of the track to prevent the browser from
+					// continuously recalculating the bounding box of the flex container on every frame
+					this.ref.track.style.width = this.contentWidth * (1 + this.clones.length) + "px";
+				});
+			});
+		});
 	}
 
 	tick(time) {
@@ -355,24 +358,31 @@ class Marquee extends gia.Component {
 		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
 		const targetMultiplier = isPaused ? 0 : 1;
 
-		const decayMath = Math.pow(0.9, timeScale);
+		// Only compute expensive Math.pow if we are actively accelerating/decelerating or if there is scroll velocity
+		const hasScrollVelocity = Math.abs(this.scrollVelocity) > 0.01;
+		const needsSpeedAdjustment = Math.abs(targetMultiplier - this.speedMultiplier) >= 0.001;
 
-		this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - decayMath);
+		if (needsSpeedAdjustment || hasScrollVelocity) {
+			const decayMath = Math.pow(0.9, timeScale);
 
-		if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
+			if (needsSpeedAdjustment) {
+				this.speedMultiplier += (targetMultiplier - this.speedMultiplier) * (1 - decayMath);
+				if (Math.abs(targetMultiplier - this.speedMultiplier) < 0.001) {
+					this.speedMultiplier = targetMultiplier;
+				}
+			}
+
+			if (hasScrollVelocity) {
+				frameOffset += this.scrollVelocity * timeScale;
+				// Decay the scroll velocity (friction) using frame-rate independent exponential smoothing
+				this.scrollVelocity *= decayMath;
+			}
+		} else {
 			this.speedMultiplier = targetMultiplier;
+			this.scrollVelocity = 0;
 		}
 
 		frameOffset += this.baseSpeed * this.speedMultiplier * timeScale;
-
-		// Apply scroll velocity if any
-		if (Math.abs(this.scrollVelocity) > 0.01) {
-			frameOffset += this.scrollVelocity * timeScale;
-			// Decay the scroll velocity (friction) using frame-rate independent exponential smoothing
-			this.scrollVelocity *= decayMath;
-		} else {
-			this.scrollVelocity = 0;
-		}
 
 		this.currentOffset += frameOffset;
 
@@ -405,10 +415,12 @@ class Marquee extends gia.Component {
 		// Apply transform to the track
 		// Round to the nearest whole pixel to completely prevent 'Layerize' CPU spikes
 		// caused by sub-pixel font anti-aliasing re-rasterization in Chromium.
-		const roundedOffset = Math.round(this.currentOffset);
+		// Since currentOffset is always negative, (offset - 0.5) | 0 acts as a hyper-fast Math.round()
+		const roundedOffset = (this.currentOffset - 0.5) | 0;
 		if (this._lastRoundedOffset !== roundedOffset) {
 			this._lastRoundedOffset = roundedOffset;
-			this.ref.track.style.transform = `translate3d(${roundedOffset}px, 0, 0)`;
+			// String concatenation is faster than template literals in V8 hot loops
+			this.ref.track.style.transform = 'translate3d(' + roundedOffset + 'px, 0, 0)';
 		}
 	}
 

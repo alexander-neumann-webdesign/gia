@@ -14,7 +14,6 @@ class ImageHolder extends gia.Component {
 		};
 
 		this.ticking = false;
-		this._frameId = null;
 
 		// Layout caching for performance
 		this.cachedLayout = {
@@ -93,6 +92,8 @@ class ImageHolder extends gia.Component {
 		this.speedCalc = this.options.parallaxSpeed / (1 + Math.abs(this.options.parallaxSpeed));
 		this.speedMultiplier = this.speedCalc * 100;
 		this.isHorizontal = this.options.parallaxDirection === "horizontal";
+		this.transformPrefix = this.isHorizontal ? 'translate3d(' : 'translate3d(0, ';
+		this.transformSuffix = this.isHorizontal ? '%, 0, 0)' : '%, 0)';
 
 		// Initial calculation based on immediate state
 		this.cacheLayout();
@@ -102,7 +103,7 @@ class ImageHolder extends gia.Component {
 		const speed = Math.abs(this.options.parallaxSpeed);
 		const extraSpacePercent = speed * 100;
 
-		window.requestAnimationFrame(() => {
+		gia.mutate(() => {
 			if (!this.ref.img) return;
 			if (this.options.parallaxDirection === "vertical") {
 				this.ref.img.style.height = `calc(100% + ${extraSpacePercent}%)`;
@@ -120,7 +121,7 @@ class ImageHolder extends gia.Component {
 		window.addEventListener("resize", this.handleBodyResize);
 
 		if (!this.ticking) {
-			this._frameId = window.requestAnimationFrame(this.tickUpdate);
+			gia.mutate(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -145,7 +146,7 @@ class ImageHolder extends gia.Component {
 		if (this.state.isVisible) {
 			this.handleScroll({ scroll: window.lenis ? window.lenis.scroll : window.scrollY });
 		} else if (!this.ticking) {
-			this._frameId = window.requestAnimationFrame(this.tickUpdate);
+			gia.mutate(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -156,9 +157,7 @@ class ImageHolder extends gia.Component {
 			this.ref.img.removeEventListener("load", this.handleLoad);
 		}
 
-		if (this._frameId) {
-			window.cancelAnimationFrame(this._frameId);
-		}
+		gia.clear(this.tickUpdate);
 		clearTimeout(this._resizeTimer);
 
 		if (this.options.parallaxSpeed !== 0) {
@@ -247,7 +246,6 @@ class ImageHolder extends gia.Component {
 	tickUpdate() {
 		this.updateParallax();
 		this.ticking = false;
-		this._frameId = null;
 	}
 
 	stateChange(stateChanges) {
@@ -258,7 +256,7 @@ class ImageHolder extends gia.Component {
 					this.bindScroll();
 
 					if (!this.ticking) {
-						this._frameId = window.requestAnimationFrame(this.tickUpdate);
+						gia.mutate(this.tickUpdate);
 						this.ticking = true;
 					}
 				}
@@ -288,7 +286,7 @@ class ImageHolder extends gia.Component {
 		if (this.options.parallaxSpeed !== 0 && (isWidthChange || isFirstRun)) {
 			this.cacheLayout();
 			if (!this.ticking) {
-				this._frameId = window.requestAnimationFrame(this.tickUpdate);
+				gia.mutate(this.tickUpdate);
 				this.ticking = true;
 			}
 		}
@@ -350,7 +348,7 @@ class ImageHolder extends gia.Component {
 
 			// Perform DOM writes LAST
 			if (sizeUpdates.length > 0) {
-				window.requestAnimationFrame(() => {
+				gia.mutate(() => {
 					if (this.ref.img) {
 						// In this loop it's always the same image ref, but keeping the logic general
 						this.ref.img.setAttribute("sizes", sizeUpdates[0]);
@@ -412,41 +410,33 @@ class ImageHolder extends gia.Component {
 	updateParallax() {
 		if (this.options.parallaxSpeed === 0 || !this.ref.img) return;
 
-		// Calculate element's current position relative to viewport WITHOUT getBoundingClientRect
-		const currentRectTop = this.cachedLayout.elementTop - this.currentScrollY;
-
 		// Use the statically cached values to avoid conditional branching and math in the render loop
-		const currentDistance = this.cachedLayout.distanceOffset - currentRectTop;
+		const currentDistance = this.cachedLayout.distanceOffset - (this.cachedLayout.elementTop - this.currentScrollY);
 
 		// Normalize progress from 0 (just entered) to 1 (just left)
 		let progress = currentDistance * this.cachedLayout.invTotalDistance;
-		progress = progress < 0 ? 0 : progress > 1 ? 1 : progress;
+		if (progress < 0) progress = 0;
+		else if (progress > 1) progress = 1;
 
 		if (this.options.parallaxCssVar) {
-			const roundedProgress = Math.round(progress * 10000) / 10000;
+			// Bitwise truncation is significantly faster than Math.round in hot loops
+			const roundedProgress = (progress * 10000 | 0) / 10000;
 			if (this._lastParallaxProgress !== roundedProgress) {
 				this._lastParallaxProgress = roundedProgress;
-				this.element.style.setProperty("--parallax-scroll-progress", roundedProgress.toString());
+				this.element.style.setProperty("--parallax-scroll-progress", roundedProgress);
 			}
 		} else {
 			// Map progress 0 -> 1 to an offset from -Speed to +Speed
-			const mappedProgress = progress - 0.5;
+			let offsetPercent = (progress - 0.5) * this.speedMultiplier;
 
-			// translate3d percentages are relative to the image size (H_img).
-			// Since H_img = H_container * (1 + speed), we must divide the offset by (1 + speed)
-			// to ensure the translation perfectly covers the extra space we added.
-
-			// Use the pre-computed speed calculation from initParallax
-			let offsetPercent = mappedProgress * this.speedMultiplier;
-
-			// Round to 4 decimal places to prevent micro-stutters and allow caching to skip redundant DOM writes
-			offsetPercent = Math.round(offsetPercent * 10000) / 10000;
+			// Bitwise truncation to 4 decimal places to prevent micro-stutters and allow caching
+			offsetPercent = (offsetPercent * 10000 | 0) / 10000;
 
 			// Compare numbers instead of allocating and comparing new strings every frame
 			if (this._lastOffsetPercent !== offsetPercent) {
 				this._lastOffsetPercent = offsetPercent;
-				const transformStr = this.isHorizontal ? `translate3d(${offsetPercent}%, 0, 0)` : `translate3d(0, ${offsetPercent}%, 0)`;
-				this.ref.img.style.transform = transformStr;
+				// String concatenation is faster than template literals in V8 hot loops
+				this.ref.img.style.transform = this.transformPrefix + offsetPercent + this.transformSuffix;
 			}
 		}
 	}

@@ -39,13 +39,15 @@ class FilterableList extends gia.Component {
 	}
 
 	_syncOutputs() {
-		for (const [id, value] of this._pendingOutputs.entries()) {
-			const outputEl = document.querySelector(`output[for="${id}"]`);
-			if (outputEl && outputEl.value !== value) {
-				outputEl.value = value;
+		gia.mutate(() => {
+			for (const [id, value] of this._pendingOutputs.entries()) {
+				const outputEl = document.querySelector(`output[for="${id}"]`);
+				if (outputEl && outputEl.value !== value) {
+					outputEl.value = value;
+				}
 			}
-		}
-		this._pendingOutputs.clear();
+			this._pendingOutputs.clear();
+		});
 		this._outputRafId = null;
 	}
 
@@ -444,8 +446,10 @@ class FilterableList extends gia.Component {
 		this.options.maxItemCount = -1;
 
 		if (this.ref.showMoreBtn) {
-			this.ref.showMoreBtn.style.display = "none";
-			this.ref.showMoreBtn.tabIndex = -1;
+			gia.mutate(() => {
+				this.ref.showMoreBtn.style.display = "none";
+				this.ref.showMoreBtn.tabIndex = -1;
+			});
 		}
 
 		this.applyChanges();
@@ -571,16 +575,18 @@ class FilterableList extends gia.Component {
 
 	_updateShowMoreVisibility(hiddenBehindMoreCount) {
 		if (this.ref.showMoreBtn) {
-			if (this.options.maxItemCount === -1) {
-				this.ref.showMoreBtn.classList.remove("visible");
-			} else if (hiddenBehindMoreCount > 0) {
-				this.ref.showMoreBtn.classList.add("visible");
-				if (this.ref.showMoreBtnCount) {
-					this.ref.showMoreBtnCount.textContent = hiddenBehindMoreCount;
+			gia.mutate(() => {
+				if (this.options.maxItemCount === -1) {
+					this.ref.showMoreBtn.classList.remove("visible");
+				} else if (hiddenBehindMoreCount > 0) {
+					this.ref.showMoreBtn.classList.add("visible");
+					if (this.ref.showMoreBtnCount) {
+						this.ref.showMoreBtnCount.textContent = hiddenBehindMoreCount;
+					}
+				} else {
+					this.ref.showMoreBtn.classList.remove("visible");
 				}
-			} else {
-				this.ref.showMoreBtn.classList.remove("visible");
-			}
+			});
 		}
 	}
 
@@ -620,31 +626,37 @@ class FilterableList extends gia.Component {
 	}
 
 	_applyViewTransition(visibleItems, hiddenItems) {
-		// Temporarily disable CSS transitions and apply DOM changes to measure target height
-		this.ref.container.style.transition = 'none';
-		const initialHeight = this.ref.container.offsetHeight;
-
 		const componentId = (this._name || this.constructor.name || 'FilterableList') + '_' + Math.random().toString(36).substring(2, 9);
-		const styleEl = this._setupViewTransitionNames(visibleItems, hiddenItems, componentId);
 
-		// Disable full page transitions so pointer events continue to work for controls outside the container
-		document.documentElement.style.viewTransitionName = 'none';
+		gia.mutate(() => {
+			const styleEl = this._setupViewTransitionNames(visibleItems, hiddenItems, componentId);
+			// Temporarily disable CSS transitions and apply DOM changes to measure target height
+			this.ref.container.style.transition = 'none';
+			// Disable full page transitions so pointer events continue to work for controls outside the container
+			document.documentElement.style.viewTransitionName = 'none';
 
-		const transition = document.startViewTransition(() => {
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
-		});
-		this._currentTransition = transition;
+			gia.measure(() => {
+				const initialHeight = this.ref.container.offsetHeight;
 
-		let heightAnimation = null;
+				const transition = document.startViewTransition(() => {
+					this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+				});
+				this._currentTransition = transition;
 
-		transition.ready.then(() => {
-			heightAnimation = this._animateContainerHeight(initialHeight, transition);
-		}).catch(() => {});
+				let heightAnimation = null;
 
-		transition.finished.catch(() => {
-			// Ignore AbortError when transition is skipped
-		}).finally(() => {
-			this._cleanupViewTransition(transition, heightAnimation, styleEl, visibleItems);
+				transition.ready.then(() => {
+					heightAnimation = this._animateContainerHeight(initialHeight, transition);
+				}).catch(() => {});
+
+				transition.finished.catch(() => {
+					// Ignore AbortError when transition is skipped
+				}).finally(() => {
+					gia.mutate(() => {
+						this._cleanupViewTransition(transition, heightAnimation, styleEl, visibleItems);
+					});
+				});
+			});
 		});
 	}
 
@@ -768,7 +780,9 @@ class FilterableList extends gia.Component {
 		if (animate && document.startViewTransition) {
 			this._applyViewTransition(visibleItems, hiddenItems);
 		} else {
-			this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+			gia.mutate(() => {
+				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
+			});
 		}
 
 		// Trigger setState for batched attributes (like active classes on buttons)
@@ -936,8 +950,10 @@ class FilterableList extends gia.Component {
 
 	stateChange(stateChanges) {
 		if ('filtersUpdated' in stateChanges) {
-			this._updateFilterElements();
-			this._updateSorterElements();
+			gia.mutate(() => {
+				this._updateFilterElements();
+				this._updateSorterElements();
+			});
 		}
 	}
 }

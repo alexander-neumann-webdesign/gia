@@ -67,9 +67,10 @@ class TodoApp extends gia.Component {
 		this.saveToStorage(newTasks);
 		this.announce(`Task added: ${text}`);
 
-		// Clear input
-		this.ref.input.value = "";
-		this.ref.input.focus();
+		gia.mutate(() => {
+			this.ref.input.value = "";
+			this.ref.input.focus();
+		});
 	}
 
 	handleListClick(event) {
@@ -130,7 +131,9 @@ class TodoApp extends gia.Component {
 
 	announce(message) {
 		if (this.ref.announcer) {
-			this.ref.announcer.textContent = message;
+			gia.mutate(() => {
+				this.ref.announcer.textContent = message;
+			});
 		}
 	}
 
@@ -140,43 +143,51 @@ class TodoApp extends gia.Component {
 			
 			if (this.ref.list) {
 				if (document.startViewTransition) {
-					// Apply view transition names to current items
-					const currentItems = this.ref.list.querySelectorAll('li');
-					for (let i = 0; i < currentItems.length; i++) {
-						const deleteBtn = currentItems[i].querySelector('[data-action="delete"]');
-						if (deleteBtn) {
-							const id = deleteBtn.getAttribute('data-id');
-							currentItems[i].style.viewTransitionName = `todo-${id}`;
-						}
-					}
-
-					const transition = document.startViewTransition(() => {
-						this.renderTasks(newTasks);
-
-						// Apply view transition names to the newly created items
-						const newItems = this.ref.list.querySelectorAll('li');
-						for (let i = 0; i < newItems.length; i++) {
-							const deleteBtn = newItems[i].querySelector('[data-action="delete"]');
+					gia.mutate(() => {
+						// Apply view transition names to current items
+						const currentItems = this.ref.list.querySelectorAll('li');
+						for (let i = 0; i < currentItems.length; i++) {
+							const deleteBtn = currentItems[i].querySelector('[data-action="delete"]');
 							if (deleteBtn) {
 								const id = deleteBtn.getAttribute('data-id');
-								newItems[i].style.viewTransitionName = `todo-${id}`;
+								currentItems[i].style.viewTransitionName = `todo-${id}`;
 							}
 						}
-					});
 
-					transition.ready.catch(() => {});
-					transition.finished.catch(() => {
-						// Ignore AbortError when transition is skipped
-					}).finally(() => {
-						if (this.ref.list) {
-							const items = this.ref.list.querySelectorAll('li');
-							for (let i = 0; i < items.length; i++) {
-								items[i].style.viewTransitionName = '';
-							}
-						}
+						gia.measure(() => {
+							const transition = document.startViewTransition(() => {
+								this.renderTasks(newTasks);
+
+								// Apply view transition names to the newly created items
+								const newItems = this.ref.list.querySelectorAll('li');
+								for (let i = 0; i < newItems.length; i++) {
+									const deleteBtn = newItems[i].querySelector('[data-action="delete"]');
+									if (deleteBtn) {
+										const id = deleteBtn.getAttribute('data-id');
+										newItems[i].style.viewTransitionName = `todo-${id}`;
+									}
+								}
+							});
+
+							transition.ready.catch(() => {});
+							transition.finished.catch(() => {
+								// Ignore AbortError when transition is skipped
+							}).finally(() => {
+								gia.mutate(() => {
+									if (this.ref.list) {
+										const items = this.ref.list.querySelectorAll('li');
+										for (let i = 0; i < items.length; i++) {
+											items[i].style.viewTransitionName = '';
+										}
+									}
+								});
+							});
+						});
 					});
 				} else {
-					this.renderTasks(newTasks);
+					gia.mutate(() => {
+						this.renderTasks(newTasks);
+					});
 				}
 			}
 

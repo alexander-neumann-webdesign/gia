@@ -32,7 +32,8 @@ class Modal extends gia.Component {
 		if (!this.isDialog) return;
 
 		// Attach events to triggers
-		this.triggers.forEach(trigger => {
+		for (let i = 0; i < this.triggers.length; i++) {
+			const trigger = this.triggers[i];
 			trigger.addEventListener('click', this.handleTriggerClick);
 
 			// Accessibility: set aria-controls and initial aria-expanded state
@@ -42,14 +43,14 @@ class Modal extends gia.Component {
 			if (!trigger.hasAttribute('aria-expanded')) {
 				trigger.setAttribute('aria-expanded', this.state.isOpen ? 'true' : 'false');
 			}
-		});
+		}
 
 		// Attach events to close buttons from refs
 		if (this.ref.closeButton) {
 			const buttons = this._getArray(this.ref.closeButton);
-			buttons.forEach(btn => {
-				btn.addEventListener('click', this.handleCloseClick);
-			});
+			for (let i = 0; i < buttons.length; i++) {
+				buttons[i].addEventListener('click', this.handleCloseClick);
+			}
 		}
 
 		// Attach backdrop click
@@ -83,15 +84,15 @@ class Modal extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		this.triggers.forEach(trigger => {
-			trigger.removeEventListener('click', this.handleTriggerClick);
-		});
+		for (let i = 0; i < this.triggers.length; i++) {
+			this.triggers[i].removeEventListener('click', this.handleTriggerClick);
+		}
 
 		if (this.ref.closeButton) {
 			const buttons = this._getArray(this.ref.closeButton);
-			buttons.forEach(btn => {
-				btn.removeEventListener('click', this.handleCloseClick);
-			});
+			for (let i = 0; i < buttons.length; i++) {
+				buttons[i].removeEventListener('click', this.handleCloseClick);
+			}
 		}
 
 		this.element.removeEventListener('click', this.handleBackdropClick);
@@ -142,61 +143,65 @@ class Modal extends gia.Component {
 		if ('isOpen' in stateChanges) {
 			const { isOpen } = stateChanges;
 
-			// Accessibility: update aria-expanded on triggers
-			this.triggers.forEach(trigger => {
-				trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-			});
-
-			if (isOpen) {
-				if (!this.element.open) {
-					this.element.showModal();
+			gia.mutate(() => {
+				// Accessibility: update aria-expanded on triggers
+				for (let i = 0; i < this.triggers.length; i++) {
+					this.triggers[i].setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 				}
 
-				if (this.options.preventScroll) {
-					document.body.style.overflow = 'hidden';
-
-					// Lenis integration: Stop smooth scrolling
-					if (window.lenis) {
-						window.lenis.stop();
+				if (isOpen) {
+					if (!this.element.open) {
+						this.element.showModal();
 					}
-				}
 
-				// Write modal ID to URL
-				if (this.modalId && window.location.hash !== `#${this.modalId}`) {
-					history.pushState(null, '', `#${this.modalId}`);
-				}
-			} else {
-				if (this.element.open) {
-					if (CSS.supports('transition-behavior', 'allow-discrete')) {
-						this.element.close();
-					} else {
-						this.element.setAttribute('data-is-closing', 'true');
-						const handleTransitionEnd = () => {
-							this.element.removeAttribute('data-is-closing');
+					if (this.options.preventScroll) {
+						document.body.style.overflow = 'hidden';
+
+						// Lenis integration: Stop smooth scrolling
+						if (window.lenis) {
+							window.lenis.stop();
+						}
+					}
+
+					// Write modal ID to URL
+					if (this.modalId && window.location.hash !== `#${this.modalId}`) {
+						history.pushState(null, '', `#${this.modalId}`);
+					}
+				} else {
+					if (this.element.open) {
+						if (CSS.supports('transition-behavior', 'allow-discrete')) {
 							this.element.close();
-							this.element.removeEventListener('transitionend', handleTransitionEnd);
-							clearTimeout(timeout);
-						};
-						const timeout = setTimeout(handleTransitionEnd, 500);
-						this.element.addEventListener('transitionend', handleTransitionEnd);
+						} else {
+							this.element.setAttribute('data-is-closing', 'true');
+							const handleTransitionEnd = () => {
+								gia.mutate(() => {
+									this.element.removeAttribute('data-is-closing');
+									this.element.close();
+								});
+								this.element.removeEventListener('transitionend', handleTransitionEnd);
+								clearTimeout(timeout);
+							};
+							const timeout = setTimeout(handleTransitionEnd, 500);
+							this.element.addEventListener('transitionend', handleTransitionEnd);
+						}
+					}
+
+					if (this.options.preventScroll) {
+						document.body.style.overflow = '';
+
+						// Lenis integration: Resume smooth scrolling
+						if (window.lenis) {
+							window.lenis.start();
+						}
+					}
+
+					// Remove modal ID from URL
+					if (this.modalId && window.location.hash === `#${this.modalId}`) {
+						const urlWithoutHash = window.location.pathname + window.location.search;
+						history.pushState(null, '', urlWithoutHash || '#');
 					}
 				}
-
-				if (this.options.preventScroll) {
-					document.body.style.overflow = '';
-
-					// Lenis integration: Resume smooth scrolling
-					if (window.lenis) {
-						window.lenis.start();
-					}
-				}
-
-				// Remove modal ID from URL
-				if (this.modalId && window.location.hash === `#${this.modalId}`) {
-					const urlWithoutHash = window.location.pathname + window.location.search;
-					history.pushState(null, '', urlWithoutHash || '#');
-				}
-			}
+			});
 		}
 	}
 }

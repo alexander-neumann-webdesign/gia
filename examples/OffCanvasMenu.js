@@ -18,21 +18,13 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	mount() {
-		this.triggers.forEach((trigger) => {
-			trigger.addEventListener("click", this.handleTriggerClick);
+		for (let i = 0; i < this.triggers.length; i++) {
+			this.triggers[i].addEventListener("click", this.handleTriggerClick);
+		}
 
-			if (this.menuId) {
-				trigger.setAttribute("aria-controls", this.menuId);
-			}
-
-			if (!trigger.hasAttribute("aria-expanded")) {
-				trigger.setAttribute("aria-expanded", this.state.isOpen ? "true" : "false");
-			}
-		});
-
-		this.closeButtons.forEach((button) => {
-			button.addEventListener("click", this.handleCloseClick);
-		});
+		for (let i = 0; i < this.closeButtons.length; i++) {
+			this.closeButtons[i].addEventListener("click", this.handleCloseClick);
+		}
 
 		if (window.swup) {
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
@@ -45,10 +37,24 @@ class OffCanvasMenu extends gia.Component {
 			shouldBeOpen = true;
 		}
 
+		gia.mutate(() => {
+			for (let i = 0; i < this.triggers.length; i++) {
+				const trigger = this.triggers[i];
+				if (this.menuId) {
+					trigger.setAttribute("aria-controls", this.menuId);
+				}
+				if (!trigger.hasAttribute("aria-expanded")) {
+					trigger.setAttribute("aria-expanded", this.state.isOpen ? "true" : "false");
+				}
+			}
+
+			if (!shouldBeOpen) {
+				this.element.inert = true;
+			}
+		});
+
 		if (shouldBeOpen) {
 			this.setState({ isOpen: true });
-		} else {
-			this.element.inert = true;
 		}
 	}
 
@@ -57,19 +63,21 @@ class OffCanvasMenu extends gia.Component {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
 
-		this.triggers.forEach((trigger) => {
-			trigger.removeEventListener("click", this.handleTriggerClick);
-		});
+		for (let i = 0; i < this.triggers.length; i++) {
+			this.triggers[i].removeEventListener("click", this.handleTriggerClick);
+		}
 
-		this.closeButtons.forEach((button) => {
-			button.removeEventListener("click", this.handleCloseClick);
-		});
+		for (let i = 0; i < this.closeButtons.length; i++) {
+			this.closeButtons[i].removeEventListener("click", this.handleCloseClick);
+		}
 
 		document.removeEventListener("click", this.handleDocumentClick);
 		document.removeEventListener("keydown", this.handleKeyDown);
 
 		if (this.state.isOpen) {
-			document.documentElement.classList.remove("off-canvas-menu-open");
+			gia.mutate(() => {
+				document.documentElement.classList.remove("off-canvas-menu-open");
+			});
 		}
 	}
 
@@ -86,11 +94,12 @@ class OffCanvasMenu extends gia.Component {
 	handleDocumentClick(e) {
 		if (!this.element.contains(e.target)) {
 			let isTriggerClick = false;
-			this.triggers.forEach((trigger) => {
-				if (trigger.contains(e.target)) {
+			for (let i = 0; i < this.triggers.length; i++) {
+				if (this.triggers[i].contains(e.target)) {
 					isTriggerClick = true;
+					break;
 				}
-			});
+			}
 
 			if (!isTriggerClick) {
 				this.setState({ isOpen: false });
@@ -114,8 +123,10 @@ class OffCanvasMenu extends gia.Component {
 		if ("isOpen" in stateChanges) {
 			const { isOpen } = stateChanges;
 
-			this.triggers.forEach((trigger) => {
-				trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+			gia.mutate(() => {
+				for (let i = 0; i < this.triggers.length; i++) {
+					this.triggers[i].setAttribute("aria-expanded", isOpen ? "true" : "false");
+				}
 			});
 
 			if (isOpen) {
@@ -127,16 +138,19 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	_openMenu() {
-		this.element.classList.add("is-open");
-		this.element.setAttribute("aria-hidden", "false");
-		this.element.inert = false;
-
-		document.documentElement.classList.add("off-canvas-menu-open");
-
 		const mainContent = document.querySelector(this.options.mainContentSelector);
-		if (mainContent) {
-			mainContent.inert = true;
-		}
+
+		gia.mutate(() => {
+			this.element.classList.add("is-open");
+			this.element.setAttribute("aria-hidden", "false");
+			this.element.inert = false;
+
+			document.documentElement.classList.add("off-canvas-menu-open");
+
+			if (mainContent) {
+				mainContent.inert = true;
+			}
+		});
 
 		setTimeout(() => {
 			document.addEventListener("click", this.handleDocumentClick);
@@ -153,20 +167,25 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	_closeMenu() {
-		if (this.element.contains(document.activeElement)) {
-			document.activeElement.blur();
-		}
-
-		this.element.classList.remove("is-open");
-		this.element.setAttribute("aria-hidden", "true");
-		this.element.inert = true;
-
-		document.documentElement.classList.remove("off-canvas-menu-open");
-
+		const isActiveInside = this.element.contains(document.activeElement);
+		const activeEl = document.activeElement;
 		const mainContent = document.querySelector(this.options.mainContentSelector);
-		if (mainContent) {
-			mainContent.inert = false;
-		}
+
+		gia.mutate(() => {
+			if (isActiveInside) {
+				activeEl.blur();
+			}
+
+			this.element.classList.remove("is-open");
+			this.element.setAttribute("aria-hidden", "true");
+			this.element.inert = true;
+
+			document.documentElement.classList.remove("off-canvas-menu-open");
+
+			if (mainContent) {
+				mainContent.inert = false;
+			}
+		});
 
 		document.removeEventListener("click", this.handleDocumentClick);
 		document.removeEventListener("keydown", this.handleKeyDown);

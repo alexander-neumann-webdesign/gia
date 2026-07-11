@@ -329,16 +329,18 @@ class MatterPhysicsBackground extends gia.Component {
         this.offsetLeft = rect.left + window.scrollX;
         this.offsetTop = rect.top + window.scrollY;
 
-        if (this.render) {
-            this.render.canvas.width = this.width * window.devicePixelRatio;
-            this.render.canvas.height = this.height * window.devicePixelRatio;
-            this.render.canvas.style.width = this.width + 'px';
-            this.render.canvas.style.height = this.height + 'px';
-            this.render.options.width = this.width;
-            this.render.options.height = this.height;
-            this.render.bounds.max.x = this.width;
-            this.render.bounds.max.y = this.height;
-        }
+        gia.mutate(() => {
+            if (this.render) {
+                this.render.canvas.width = this.width * window.devicePixelRatio;
+                this.render.canvas.height = this.height * window.devicePixelRatio;
+                this.render.canvas.style.width = this.width + 'px';
+                this.render.canvas.style.height = this.height + 'px';
+                this.render.options.width = this.width;
+                this.render.options.height = this.height;
+                this.render.bounds.max.x = this.width;
+                this.render.bounds.max.y = this.height;
+            }
+        });
 
         this._createWalls();
     }
@@ -362,7 +364,9 @@ class MatterPhysicsBackground extends gia.Component {
             // Allow external pause button to control state if it exists
             const pauseToggle = this.element.querySelector('[data-action="click->togglePause"]');
             if (pauseToggle) {
-                pauseToggle.setAttribute('aria-expanded', this.state.isPaused);
+                gia.mutate(() => {
+                    pauseToggle.setAttribute('aria-expanded', this.state.isPaused);
+                });
             }
         }
     }

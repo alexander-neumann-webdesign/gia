@@ -89,9 +89,12 @@ class PongGame extends gia.Component {
         this.height = entry.contentRect.height;
         this.offsetTop = this.element.getBoundingClientRect().top + window.scrollY;
 
-        // Update canvas size
-        this.ref.canvas.width = this.width;
-        this.ref.canvas.height = this.height;
+        gia.mutate(() => {
+            // Update canvas size
+            this.ref.canvas.width = this.width;
+            this.ref.canvas.height = this.height;
+            this.draw(); // Force a draw on resize even if paused
+        });
 
         // Reset paddles and ball to new dimensions if they go out of bounds
         this.playerY = Math.min(this.playerY, this.height - this.options.paddleHeight);
@@ -100,8 +103,6 @@ class PongGame extends gia.Component {
         if (this.ballX > this.width || this.ballY > this.height) {
             this.resetBall();
         }
-
-        this.draw(); // Force a draw on resize even if paused
     }
 
     handleBodyResize() {
@@ -136,22 +137,30 @@ class PongGame extends gia.Component {
             // Update aria labels / button text
             if (this.ref.pauseToggle) {
                 const label = this.state.isPaused ? 'Play Background Animation' : 'Pause Background Animation';
-                this.ref.pauseToggle.setAttribute('aria-label', label);
-                let svgPath = this.ref.pauseToggle.querySelector('path');
-                if (svgPath) {
-                    const playD = "M 8 5 V 19 L 19 12 Z M 8 5 V 19 L 19 12 Z";
-                    const pauseD = "M 6 5 L 10 5 L 10 19 L 6 19 Z M 14 5 L 18 5 L 18 19 L 14 19 Z";
-                    svgPath.setAttribute('d', this.state.isPaused ? playD : pauseD);
-                }
+                const svgPath = this.ref.pauseToggle.querySelector('path');
+                const playD = "M 8 5 V 19 L 19 12 Z M 8 5 V 19 L 19 12 Z";
+                const pauseD = "M 6 5 L 10 5 L 10 19 L 6 19 Z M 14 5 L 18 5 L 18 19 L 14 19 Z";
+                const d = this.state.isPaused ? playD : pauseD;
+
+                gia.mutate(() => {
+                    this.ref.pauseToggle.setAttribute('aria-label', label);
+                    if (svgPath) {
+                        svgPath.setAttribute('d', d);
+                    }
+                });
             }
         }
 
         if ('playerScore' in stateChanges && this.ref.playerScoreDisplay) {
-            this.ref.playerScoreDisplay.textContent = stateChanges.playerScore;
+            gia.mutate(() => {
+                this.ref.playerScoreDisplay.textContent = stateChanges.playerScore;
+            });
         }
 
         if ('aiScore' in stateChanges && this.ref.aiScoreDisplay) {
-            this.ref.aiScoreDisplay.textContent = stateChanges.aiScore;
+            gia.mutate(() => {
+                this.ref.aiScoreDisplay.textContent = stateChanges.aiScore;
+            });
         }
     }
 

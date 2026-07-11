@@ -55,7 +55,9 @@ class MultiStepForm extends gia.Component {
 			});
 
 			if (this.ref.step && (this._getArray(this.ref.step).length > 0)) {
-				this._updateStepUI(this.state.currentStep);
+				gia.mutate(() => {
+					this._updateStepUI(this.state.currentStep);
+				});
 			}
 
 			// Re-evaluate validity when inputs change
@@ -115,43 +117,52 @@ class MultiStepForm extends gia.Component {
 	_updateIndicatorsState() {
 		const indicators = this._getArray(this.ref.stepIndicator);
 		let canNavigate = true;
+		const indicatorStates = [];
 
-		indicators.forEach((indicator, index) => {
+		for (let index = 0; index < indicators.length; index++) {
 			if (index > 0 && !this._isStepValid(index - 1)) {
 				canNavigate = false;
 			}
+			indicatorStates.push(canNavigate);
+		}
 
-			if (canNavigate) {
-				indicator.classList.remove('is-disabled');
-				if (indicator instanceof HTMLButtonElement) {
-					indicator.disabled = false;
-				}
-			} else {
-				indicator.classList.add('is-disabled');
-				if (indicator instanceof HTMLButtonElement) {
-					indicator.disabled = true;
-				}
-			}
-		});
-
+		let allValid = true;
 		if (this.ref.submitBtn) {
 			const steps = this._getArray(this.ref.step);
-			let allValid = true;
 			for (let i = 0; i < steps.length; i++) {
 				if (!this._isStepValid(i)) {
 					allValid = false;
 					break;
 				}
 			}
-
-			if (allValid) {
-				this.ref.submitBtn.disabled = false;
-				this.ref.submitBtn.classList.remove('is-disabled');
-			} else {
-				this.ref.submitBtn.disabled = true;
-				this.ref.submitBtn.classList.add('is-disabled');
-			}
 		}
+
+		gia.mutate(() => {
+			for (let index = 0; index < indicators.length; index++) {
+				const indicator = indicators[index];
+				if (indicatorStates[index]) {
+					indicator.classList.remove('is-disabled');
+					if (indicator instanceof HTMLButtonElement) {
+						indicator.disabled = false;
+					}
+				} else {
+					indicator.classList.add('is-disabled');
+					if (indicator instanceof HTMLButtonElement) {
+						indicator.disabled = true;
+					}
+				}
+			}
+
+			if (this.ref.submitBtn) {
+				if (allValid) {
+					this.ref.submitBtn.disabled = false;
+					this.ref.submitBtn.classList.remove('is-disabled');
+				} else {
+					this.ref.submitBtn.disabled = true;
+					this.ref.submitBtn.classList.add('is-disabled');
+				}
+			}
+		});
 	}
 
 	handleStepIndicatorClick(event, index) {
@@ -183,17 +194,24 @@ class MultiStepForm extends gia.Component {
 		if (this.state.currentStep === nextStep) return;
 
 		if (document.startViewTransition) {
-			this.element.style.viewTransitionName = 'multi-step-form';
-			const transition = document.startViewTransition(() => {
-				this._updateStepUI(nextStep);
-				this.setState({ currentStep: nextStep });
-			});
+			gia.mutate(() => {
+				this.element.style.viewTransitionName = 'multi-step-form';
+				
+				gia.measure(() => {
+					const transition = document.startViewTransition(() => {
+						this._isViewTransitioning = true;
+						this.setState({ currentStep: nextStep });
+						this._isViewTransitioning = false;
+					});
 
-			transition.finally(() => {
-				this.element.style.viewTransitionName = '';
+					transition.finally(() => {
+						gia.mutate(() => {
+							this.element.style.viewTransitionName = '';
+						});
+					});
+				});
 			});
 		} else {
-			this._updateStepUI(nextStep);
 			this.setState({ currentStep: nextStep });
 		}
 	}
@@ -202,20 +220,21 @@ class MultiStepForm extends gia.Component {
 		const steps = this._getArray(this.ref.step);
 		if (!steps || steps.length === 0) return;
 
-		steps.forEach((step, index) => {
-			step.hidden = index !== currentStep;
-		});
+		for (let i = 0; i < steps.length; i++) {
+			steps[i].hidden = i !== currentStep;
+		}
 
 		const indicators = this._getArray(this.ref.stepIndicator);
-		indicators.forEach((indicator, index) => {
-			if (index === currentStep) {
+		for (let i = 0; i < indicators.length; i++) {
+			const indicator = indicators[i];
+			if (i === currentStep) {
 				indicator.setAttribute('aria-current', 'step');
 				indicator.classList.add('is-active');
 			} else {
 				indicator.removeAttribute('aria-current');
 				indicator.classList.remove('is-active');
 			}
-		});
+		}
 
 		if (this.ref.submitBtn) {
 			this.ref.submitBtn.hidden = currentStep !== steps.length - 1;
@@ -223,16 +242,24 @@ class MultiStepForm extends gia.Component {
 
 		if (this.options.scrollToTopOnStep && currentStep > 0) {
 			window.setTimeout(() => {
-				if (this.formElement) {
-					this.formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				}
+				gia.mutate(() => {
+					if (this.formElement) {
+						this.formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					}
+				});
 			}, 50);
 		}
 	}
 
 	stateChange(stateChanges) {
 		if ('currentStep' in stateChanges) {
-			this._updateStepUI(stateChanges.currentStep);
+			if (this._isViewTransitioning) {
+				this._updateStepUI(stateChanges.currentStep);
+			} else {
+				gia.mutate(() => {
+					this._updateStepUI(stateChanges.currentStep);
+				});
+			}
 		}
 	}
 }

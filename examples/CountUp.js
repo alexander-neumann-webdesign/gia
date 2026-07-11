@@ -23,7 +23,7 @@ class CountUp extends gia.Component {
 		});
 
 		this.startTime = null;
-		this.frameId = null;
+		this.isTicking = false;
 		this.currentValue = this.options.start;
 		this.lastRendered = "";
 
@@ -54,6 +54,8 @@ class CountUp extends gia.Component {
 		} else {
 			this.options.end = parseFloat(text) || 100;
 		}
+
+		this.groupingRegex = /\B(?=(\d{3})+(?!\d))/g;
 
 		// Set initial layout value immediately to prevent FOUC (Flash of Unstyled Content)
 		this.renderValue(this.options.start);
@@ -87,8 +89,9 @@ class CountUp extends gia.Component {
 
 	startAnimation() {
 		this.startTime = performance.now();
-		if (!this.frameId) {
-			this.frameId = requestAnimationFrame(this.tickUpdate);
+		if (!this.isTicking) {
+			this.isTicking = true;
+			gia.mutate(this.tickUpdate);
 		}
 	}
 
@@ -96,7 +99,8 @@ class CountUp extends gia.Component {
 		return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 	}
 
-	tickUpdate(timestamp) {
+	tickUpdate() {
+		const timestamp = performance.now();
 		// Normalize progress from 0 to 1
 		let progress = (timestamp - this.startTime) / this.options.duration;
 		if (progress > 1) progress = 1;
@@ -108,9 +112,9 @@ class CountUp extends gia.Component {
 		this.renderValue(this.currentValue);
 
 		if (progress < 1) {
-			this.frameId = requestAnimationFrame(this.tickUpdate);
+			gia.mutate(this.tickUpdate);
 		} else {
-			this.frameId = null;
+			this.isTicking = false;
 			this.setState({ isFinished: true });
 		}
 	}
@@ -121,11 +125,11 @@ class CountUp extends gia.Component {
 		if (this.options.useGrouping) {
 			const parts = formatted.split(".");
 			// Fast regex for comma grouping
-			parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, this.options.separator);
+			parts[0] = parts[0].replace(this.groupingRegex, this.options.separator);
 			formatted = parts.join(this.options.decimal);
 		}
 
-		const finalString = `${this.options.prefix}${formatted}${this.options.suffix}`;
+		const finalString = this.options.prefix + formatted + this.options.suffix;
 
 		// ⚡ BOLT OPTIMIZATION: Only update DOM if text actually changed to prevent thrashing
 		if (this.lastRendered !== finalString) {
@@ -135,9 +139,8 @@ class CountUp extends gia.Component {
 	}
 
 	unmount() {
-		if (this.frameId) {
-			cancelAnimationFrame(this.frameId);
-		}
+		this.isTicking = false;
+		gia.clear(this.tickUpdate);
 	}
 }
 

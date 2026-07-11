@@ -88,15 +88,17 @@ class ClipboardCopy extends gia.Component {
 
 			// Apply DOM changes based on status
 			if (status === 'copied') {
-				this.element.setAttribute("aria-label", this.options.successText);
+				gia.mutate(() => {
+					this.element.setAttribute("aria-label", this.options.successText);
 
-				if (this.options.successText) {
-					if (this.ref.buttonText) {
-						this.ref.buttonText.textContent = this.options.successText;
-					} else {
-						this.element.textContent = this.options.successText;
+					if (this.options.successText) {
+						if (this.ref.buttonText) {
+							this.ref.buttonText.textContent = this.options.successText;
+						} else {
+							this.element.textContent = this.options.successText;
+						}
 					}
-				}
+				});
 
 				this.copyTimeout = setTimeout(() => {
 					this.setState({ status: 'idle' });
@@ -108,13 +110,15 @@ class ClipboardCopy extends gia.Component {
 				}, this.options.successDuration);
 
 			} else if (status === 'idle') {
-				this.element.removeAttribute("aria-label");
+				gia.mutate(() => {
+					this.element.removeAttribute("aria-label");
 
-				if (this.ref.buttonText) {
-					this.ref.buttonText.textContent = this.originalText;
-				} else {
-					this.element.textContent = this.originalText;
-				}
+					if (this.ref.buttonText) {
+						this.ref.buttonText.textContent = this.originalText;
+					} else {
+						this.element.textContent = this.originalText;
+					}
+				});
 			}
 		}
 	}

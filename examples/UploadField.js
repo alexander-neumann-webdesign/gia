@@ -81,45 +81,59 @@ class UploadField extends gia.Component {
 	}
 
 	handleFocus() {
-		this.element.classList.add('is-focused');
+		gia.mutate(() => {
+			this.element.classList.add('is-focused');
+		});
 	}
 
 	handleBlur() {
-		this.element.classList.remove('is-focused');
+		gia.mutate(() => {
+			this.element.classList.remove('is-focused');
+		});
 	}
 
 	handleFormReset() {
 		// Restore initial label
 		const label = this.element.querySelector('.form-dropzone-label');
 		const originalText = this.originalDropzoneLabels.get(this.element);
-		if (label && originalText) {
-			label.hidden = false;
-			label.textContent = originalText;
-		}
 
 		// Remove existing file list
 		const existingList = this.element.querySelector('.form-file-list');
-		if (existingList) {
-			existingList.remove();
-		}
+
+		gia.mutate(() => {
+			if (label && originalText) {
+				label.hidden = false;
+				label.textContent = originalText;
+			}
+
+			if (existingList) {
+				existingList.remove();
+			}
+		});
 	}
 
 	handleDragOver(event) {
 		event.preventDefault();
 		const dropzone = event.currentTarget;
-		dropzone.classList.add('is-dragover');
+		gia.mutate(() => {
+			dropzone.classList.add('is-dragover');
+		});
 	}
 
 	handleDragLeave(event) {
 		event.preventDefault();
 		const dropzone = event.currentTarget;
-		dropzone.classList.remove('is-dragover');
+		gia.mutate(() => {
+			dropzone.classList.remove('is-dragover');
+		});
 	}
 
 	handleDrop(event) {
 		event.preventDefault();
 		const dropzone = event.currentTarget;
-		dropzone.classList.remove('is-dragover');
+		gia.mutate(() => {
+			dropzone.classList.remove('is-dragover');
+		});
 
 		const fileInput = dropzone.querySelector('input[type="file"]');
 		if (fileInput && event.dataTransfer.files.length > 0) {
@@ -160,38 +174,41 @@ class UploadField extends gia.Component {
 
 		// Remove existing file list if any
 		const existingList = dropzone.querySelector('.form-file-list');
-		if (existingList) {
-			existingList.remove();
-		}
 
-		if (fileInput.files && fileInput.files.length > 0) {
-			if (label) label.hidden = true;
+		gia.mutate(() => {
+			if (existingList) {
+				existingList.remove();
+			}
 
-			const fileList = document.createElement('div');
-			fileList.className = 'form-file-list';
-			fileList.style.marginTop = '1rem';
-			fileList.style.textAlign = 'left';
-			fileList.style.position = 'relative';
-			fileList.style.zIndex = '10';
+			if (fileInput.files && fileInput.files.length > 0) {
+				if (label) label.hidden = true;
 
-			Array.from(fileInput.files).forEach(file => {
-				const fileItem = this._createFileItem(file, dropzone, fileInput);
-				fileList.appendChild(fileItem);
-			});
+				const fileList = document.createElement('div');
+				fileList.className = 'form-file-list';
+				fileList.style.marginTop = '1rem';
+				fileList.style.textAlign = 'left';
+				fileList.style.position = 'relative';
+				fileList.style.zIndex = '10';
 
-			const addMoreBtn = this._createAddMoreButton(fileInput);
-			fileList.appendChild(addMoreBtn);
+				for (let i = 0; i < fileInput.files.length; i++) {
+					const fileItem = this._createFileItem(fileInput.files[i], dropzone, fileInput);
+					fileList.appendChild(fileItem);
+				}
 
-			dropzone.appendChild(fileList);
-		} else {
-			if (label) {
-				label.hidden = false;
-				const originalText = this.originalDropzoneLabels.get(dropzone);
-				if (originalText) {
-					label.textContent = originalText;
+				const addMoreBtn = this._createAddMoreButton(fileInput);
+				fileList.appendChild(addMoreBtn);
+
+				dropzone.appendChild(fileList);
+			} else {
+				if (label) {
+					label.hidden = false;
+					const originalText = this.originalDropzoneLabels.get(dropzone);
+					if (originalText) {
+						label.textContent = originalText;
+					}
 				}
 			}
-		}
+		});
 	}
 
 	_createAddMoreButton(fileInput) {

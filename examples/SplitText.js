@@ -61,7 +61,7 @@ class SplitText extends gia.Component {
 
 		// Set initialized state to potentially trigger CSS transitions/visibility
 		// BaseComponent auto-maps boolean state to data-[kebab-case] attributes
-		window.requestAnimationFrame(() => {
+		gia.mutate(() => {
 			this.setState({ initialized: true });
 		});
 	}
@@ -238,39 +238,40 @@ class SplitText extends gia.Component {
 
 	calculateLines() {
 		if (this.words.length === 0) return;
+		if (this.ticking) return; // Prevent concurrent recalculations during rapid resizing
 
-		// Phase 1: STRICT DOM READS
-		// We read all offsets into an array first to prevent layout thrashing (forced reflows)
-		const offsetTops = new Array(this.words.length);
-		for (let i = 0; i < this.words.length; i++) {
-			offsetTops[i] = this.words[i].offsetTop;
-		}
+		this.ticking = true;
 
-		// Group words into lines based on cached offsets
-		let currentLine = [];
-		let currentTop = null;
-		const linesArray = [];
-
-		for (let i = 0; i < this.words.length; i++) {
-			const word = this.words[i];
-			const top = offsetTops[i];
-
-			if (currentTop === null || Math.abs(currentTop - top) > 2) {
-				currentLine = [];
-				linesArray.push(currentLine);
-				currentTop = top;
+		gia.measure(() => {
+			// Phase 1: STRICT DOM READS
+			// We read all offsets into an array first to prevent layout thrashing (forced reflows)
+			const offsetTops = new Array(this.words.length);
+			for (let i = 0; i < this.words.length; i++) {
+				offsetTops[i] = this.words[i].offsetTop;
 			}
-			currentLine.push(word);
-		}
 
-		// Phase 2: STRICT DOM WRITES
-		// Defer applying styles until the next frame to keep main thread unblocked
-		this._linesArrayToApply = linesArray;
+			// Group words into lines based on cached offsets
+			let currentLine = [];
+			let currentTop = null;
+			const linesArray = [];
 
-		if (!this.ticking) {
-			this.ticking = true;
-			this._rafId = requestAnimationFrame(this._applyLineStyles);
-		}
+			for (let i = 0; i < this.words.length; i++) {
+				const word = this.words[i];
+				const top = offsetTops[i];
+
+				if (currentTop === null || Math.abs(currentTop - top) > 2) {
+					currentLine = [];
+					linesArray.push(currentLine);
+					currentTop = top;
+				}
+				currentLine.push(word);
+			}
+
+			// Phase 2: STRICT DOM WRITES
+			// Defer applying styles until the next frame to keep main thread unblocked
+			this._linesArrayToApply = linesArray;
+			gia.mutate(this._applyLineStyles);
+		});
 	}
 
 	_applyLineStyles() {
@@ -303,14 +304,12 @@ class SplitText extends gia.Component {
 		}
 
 		this._linesArrayToApply = null;
-		this._rafId = null;
 		this.ticking = false;
 	}
 
 	unmount() {
-		if (this._rafId) {
-			cancelAnimationFrame(this._rafId);
-		}
+		this.ticking = false;
+		gia.clear(this._applyLineStyles);
 		clearTimeout(this._resizeTimer);
 	}
 }

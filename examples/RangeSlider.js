@@ -56,19 +56,21 @@ class RangeSlider extends gia.Component {
             this.sliderInstance.on('update', (values, handle) => {
                 if (this.ref.inputs[handle]) {
                     if (parseFloat(this.ref.inputs[handle].value) !== parseFloat(values[handle])) {
-                        this.ref.inputs[handle].value = values[handle];
+                        gia.mutate(() => {
+                            this.ref.inputs[handle].value = values[handle];
 
-                        // Dispatch events so other components (like Form) can react
-                        this.ref.inputs[handle].dispatchEvent(new Event('input', { bubbles: true }));
-                        this.ref.inputs[handle].dispatchEvent(new Event('change', { bubbles: true }));
+                            // Dispatch events so other components (like Form) can react
+                            this.ref.inputs[handle].dispatchEvent(new Event('input', { bubbles: true }));
+                            this.ref.inputs[handle].dispatchEvent(new Event('change', { bubbles: true }));
+                        });
                     }
                 }
             });
 
             // Sync input changes to slider
-            this.ref.inputs.forEach((input, index) => {
-                input.addEventListener('change', this.handleInputChange);
-            });
+            for (let i = 0; i < this.ref.inputs.length; i++) {
+                this.ref.inputs[i].addEventListener('change', this.handleInputChange);
+            }
         }
     }
 
@@ -89,9 +91,9 @@ class RangeSlider extends gia.Component {
 
     unmount() {
         if (this.ref.inputs && this.ref.inputs.length > 0) {
-            this.ref.inputs.forEach((input) => {
-                input.removeEventListener('change', this.handleInputChange);
-            });
+            for (let i = 0; i < this.ref.inputs.length; i++) {
+                this.ref.inputs[i].removeEventListener('change', this.handleInputChange);
+            }
         }
 
         if (this.sliderInstance) {

@@ -71,15 +71,17 @@ class ThemeToggle extends gia.Component {
 		if ('theme' in stateChanges) {
 			const { theme } = stateChanges;
 
-			// Update the HTML tag
-			document.documentElement.setAttribute(this.options.themeAttribute, theme);
+			gia.mutate(() => {
+				// Update the HTML tag
+				document.documentElement.setAttribute(this.options.themeAttribute, theme);
 
-			// Update button visual state if needed (e.g., swapping SVG icons)
-			if (theme === this.options.darkThemeName) {
-				this.element.setAttribute('aria-label', 'Switch to light mode');
-			} else {
-				this.element.setAttribute('aria-label', 'Switch to dark mode');
-			}
+				// Update button visual state if needed (e.g., swapping SVG icons)
+				if (theme === this.options.darkThemeName) {
+					this.element.setAttribute('aria-label', 'Switch to light mode');
+				} else {
+					this.element.setAttribute('aria-label', 'Switch to dark mode');
+				}
+			});
 		}
 	}
 }

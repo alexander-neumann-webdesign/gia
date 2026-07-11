@@ -69,9 +69,9 @@ class VideoHolder extends gia.Component {
 	}
 
 	handleIntersect(entries) {
-		entries.forEach((entry) => {
-			this.setState({ isInViewport: entry.isIntersecting });
-		});
+		for (let i = 0; i < entries.length; i++) {
+			this.setState({ isInViewport: entries[i].isIntersecting });
+		}
 	}
 
 	handleMouseEnter() {
@@ -152,31 +152,33 @@ class VideoHolder extends gia.Component {
 
 		const isPlaying = this.state.isPlaying;
 		const playPauseBtn = this.ref.playPauseButton;
-
-		playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
-
-		if (isPlaying) {
-			playPauseBtn.classList.remove('is-paused');
-			playPauseBtn.classList.add('is-playing');
-		} else {
-			playPauseBtn.classList.remove('is-playing');
-			playPauseBtn.classList.add('is-paused');
-		}
-
 		let iconShape = playPauseBtn.querySelector('.icon-shape');
-		if (!iconShape) {
-			playPauseBtn.replaceChildren();
-			playPauseBtn.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>');
-			iconShape = playPauseBtn.querySelector('.icon-shape');
-		}
 
-		if (iconShape) {
+		gia.mutate(() => {
+			playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video');
+
 			if (isPlaying) {
-				iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
+				playPauseBtn.classList.remove('is-paused');
+				playPauseBtn.classList.add('is-playing');
 			} else {
-				iconShape.setAttribute('d', 'M 5 3 L 12 7.5 L 12 16.5 L 5 21 Z M 12 7.5 L 19 12 L 19 12 L 12 16.5 Z');
+				playPauseBtn.classList.remove('is-playing');
+				playPauseBtn.classList.add('is-paused');
 			}
-		}
+
+			if (!iconShape) {
+				playPauseBtn.replaceChildren();
+				playPauseBtn.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" stroke="none" fill="currentColor"><path class="icon-shape"></path></svg>');
+				iconShape = playPauseBtn.querySelector('.icon-shape');
+			}
+
+			if (iconShape) {
+				if (isPlaying) {
+					iconShape.setAttribute('d', 'M 6 4 L 10 4 L 10 20 L 6 20 Z M 14 4 L 18 4 L 18 20 L 14 20 Z');
+				} else {
+					iconShape.setAttribute('d', 'M 5 3 L 12 7.5 L 12 16.5 L 5 21 Z M 12 7.5 L 19 12 L 19 12 L 12 16.5 Z');
+				}
+			}
+		});
 	}
 
 }

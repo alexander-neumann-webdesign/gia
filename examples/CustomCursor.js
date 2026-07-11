@@ -255,143 +255,85 @@ class CustomCursor extends gia.Component {
 
     _handleMagneticPullZone(closestMagneticEl) {
         if (closestMagneticEl && this.magneticTarget !== closestMagneticEl) {
-            if (this.magneticTarget) {
-                this.magneticTarget.style.transform = '';
-                this._lastMagneticTransform = '';
-                this.magneticTarget.classList.remove('is-magnetic-active');
-            }
+            const previousTarget = this.magneticTarget;
             this.magneticTarget = closestMagneticEl;
-            this.magneticTarget.classList.add('is-magnetic-active');
             this._currentPullX = 0;
             this._currentPullY = 0;
-        } else if (!closestMagneticEl && this.magneticTarget) {
-            // Exit magnetic element completely
-            this.magneticTarget.style.transform = '';
             this._lastMagneticTransform = '';
-            this.magneticTarget.classList.remove('is-magnetic-active');
+
+            gia.mutate(() => {
+                if (previousTarget) {
+                    previousTarget.style.transform = '';
+                    previousTarget.classList.remove('is-magnetic-active');
+                }
+                closestMagneticEl.classList.add('is-magnetic-active');
+            });
+        } else if (!closestMagneticEl && this.magneticTarget) {
+            const previousTarget = this.magneticTarget;
             this.magneticTarget = null;
             this.magneticBounds = null;
+            this._lastMagneticTransform = '';
+
+            gia.mutate(() => {
+                previousTarget.style.transform = '';
+                previousTarget.classList.remove('is-magnetic-active');
+            });
         }
     }
 
-    _cleanupPreviousState(finalState, targetState) {
-        // Remove old media/icons if we are switching away from those specific contents
-        if (this.currentState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
-            this.ref.mediaBox.replaceChildren();
-        }
-        if (this.currentState === 'icon' && targetState !== 'icon' && this.ref.icon) {
-            this.ref.icon.replaceChildren();
-        }
+    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
+        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
+            
+            const prevState = this.currentState;
+            
+            // Update tracking properties immediately so subsequent events don't re-trigger
+            this.currentState = finalState;
+            this.currentText = targetText;
+            this.currentImg = targetImg;
+            this.currentVideo = targetVideo;
+            this.currentIcon = targetIcon;
+            this._snappedTarget = closestMagneticEl;
 
-        // Clear inline styles if we are leaving a snapped state
-        if ((this.currentState === 'magnetic' || this.currentState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
-            if (this.ref.dot) {
-                this.ref.dot.style.width = '';
-                this.ref.dot.style.height = '';
-                this.ref.dot.style.marginLeft = '';
-                this.ref.dot.style.marginTop = '';
-                this.ref.dot.style.borderRadius = '';
-            }
-            this._snappedTarget = null;
-        }
-    }
+            gia.mutate(() => {
+                // Inline cleanup
+                if (prevState === 'media' && targetState !== 'media' && this.ref.mediaBox) {
+                    this.ref.mediaBox.replaceChildren();
+                }
+                if (prevState === 'icon' && targetState !== 'icon' && this.ref.icon) {
+                    this.ref.icon.replaceChildren();
+                }
+                if ((prevState === 'magnetic' || prevState === 'stick') && (finalState !== 'magnetic' && finalState !== 'stick')) {
+                    if (this.ref.dot) {
+                        this.ref.dot.style.width = '';
+                        this.ref.dot.style.height = '';
+                        this.ref.dot.style.marginLeft = '';
+                        this.ref.dot.style.marginTop = '';
+                        this.ref.dot.style.borderRadius = '';
+                    }
+                }
 
-    _updateStateProperties(finalState, targetText, targetImg, targetVideo, targetIcon) {
-        this.currentState = finalState;
-        this.currentText = targetText;
-        this.currentImg = targetImg;
-        this.currentVideo = targetVideo;
-        this.currentIcon = targetIcon;
-        this.element.setAttribute('data-cursor-state', finalState);
-    }
+                // Inline properties
+                this.element.setAttribute('data-cursor-state', finalState);
 
-    _renderMediaContent(targetImg, targetVideo) {
-        this.ref.mediaBox.replaceChildren();
-        let mediaElement;
-        if (targetImg) {
-            mediaElement = document.createElement('img');
-            mediaElement.src = targetImg;
-            mediaElement.alt = 'Cursor Media';
-        } else if (targetVideo) {
-            mediaElement = document.createElement('video');
-            mediaElement.src = targetVideo;
-            mediaElement.autoplay = true;
-            mediaElement.loop = true;
-            mediaElement.muted = true;
-            mediaElement.playsInline = true;
-        }
+                // DOM Content
+                this._updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon);
 
-        if (mediaElement) {
-            mediaElement.style.width = '100%';
-            mediaElement.style.height = '100%';
-            mediaElement.style.objectFit = 'cover';
-            mediaElement.style.borderRadius = '50%';
-            this.ref.mediaBox.appendChild(mediaElement);
-        }
-    }
-
-    _renderIconContent(targetIcon) {
-        const svgNS = 'http://www.w3.org/2000/svg';
-        const xlinkNS = 'http://www.w3.org/1999/xlink';
-        const svg = document.createElementNS(svgNS, 'svg');
-        svg.setAttribute('class', `mf-svgsprite mf-svgsprite-${targetIcon}`);
-        const use = document.createElementNS(svgNS, 'use');
-        use.setAttributeNS(xlinkNS, 'href', `#${targetIcon}`);
-        svg.appendChild(use);
-        this.ref.icon.replaceChildren(svg);
-    }
-
-    _updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon) {
-        // Update DOM inside cursor for content states
-        if (this.ref.text) {
-            this.ref.text.textContent = targetText;
-        }
-
-        if (this.ref.mediaBox && targetState === 'media') {
-            this._renderMediaContent(targetImg, targetVideo);
-        }
-
-        if (this.ref.icon && targetState === 'icon') {
-            this._renderIconContent(targetIcon);
-        }
-    }
-
-    _updateSnappingVisuals(finalState, closestMagneticEl) {
-        if (finalState === 'magnetic') {
-            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
-            if (isNewSnapTarget) {
-                this._snappedTarget = closestMagneticEl;
-                if (this.ref.dot && this.magneticTarget) {
+                // Snapping Visuals
+                if (finalState === 'magnetic' && this.ref.dot && this.magneticBounds) {
                     const borderRadius = this.magneticBounds.borderRadius;
-
                     this.ref.dot.style.width = `${this.magneticBounds.width}px`;
                     this.ref.dot.style.height = `${this.magneticBounds.height}px`;
                     this.ref.dot.style.marginLeft = `${-this.magneticBounds.width / 2}px`;
                     this.ref.dot.style.marginTop = `${-this.magneticBounds.height / 2}px`;
                     this.ref.dot.style.borderRadius = borderRadius;
-                }
-            }
-        } else if (finalState === 'stick') {
-            const isNewSnapTarget = this._snappedTarget !== closestMagneticEl;
-            if (isNewSnapTarget) {
-                this._snappedTarget = closestMagneticEl;
-                if (this.ref.dot) {
+                } else if (finalState === 'stick' && this.ref.dot) {
                     this.ref.dot.style.width = '';
                     this.ref.dot.style.height = '';
                     this.ref.dot.style.marginLeft = '';
                     this.ref.dot.style.marginTop = '';
                     this.ref.dot.style.borderRadius = '';
                 }
-            }
-        }
-    }
-
-    _updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon) {
-        if (this.currentState !== finalState || this._snappedTarget !== closestMagneticEl || this.currentText !== targetText || this.currentImg !== targetImg || this.currentVideo !== targetVideo || this.currentIcon !== targetIcon) {
-            this._cleanupPreviousState(finalState, targetState);
-            this._updateStateProperties(finalState, targetText, targetImg, targetVideo, targetIcon);
-            this._updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon);
-            this._updateSnappingVisuals(finalState, closestMagneticEl);
+            });
         }
     }
 
@@ -507,30 +449,32 @@ class CustomCursor extends gia.Component {
     }
 
     _updateBounds() {
-        this._preloadImages();
+        gia.measure(() => {
+            this._preloadImages();
 
-        // Rebuild the cache of all magnetic elements
-        const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
-        this.cachedMagneticElements = [];
+            // Rebuild the cache of all magnetic elements
+            const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
+            this.cachedMagneticElements = [];
 
-        const scrollX = this.scroll.x;
-        const scrollY = this.scroll.y;
+            const scrollX = this.scroll.x;
+            const scrollY = this.scroll.y;
 
-        // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
-        for (let i = 0; i < elements.length; i++) {
-            const el = elements[i];
-            const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
+            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i];
+                const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
 
-            this.cachedMagneticElements.push({ el, bounds, type });
+                this.cachedMagneticElements.push({ el, bounds, type });
 
-            if (el === this.magneticTarget) {
-                this.magneticBounds = bounds;
+                if (el === this.magneticTarget) {
+                    this.magneticBounds = bounds;
+                }
             }
-        }
 
-        // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
-        // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
-        this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
+            // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
+            // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
+            this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
+        });
     }
 
     _calculateMagneticPull(targetX, targetY) {

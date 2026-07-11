@@ -26,7 +26,7 @@ class Magnetic extends gia.Component {
 
 		this.boundingRect = { width: 0, height: 0, left: 0, top: 0 };
 
-		this.frameId = null;
+		this.isTicking = false;
 
 		this.setState({
 			isHovered: false,
@@ -55,9 +55,8 @@ class Magnetic extends gia.Component {
 		this.element.removeEventListener("pointermove", this.handlePointerMove);
 		this.element.removeEventListener("pointerleave", this.handlePointerLeave);
 
-		if (this.frameId) {
-			cancelAnimationFrame(this.frameId);
-		}
+		this.isTicking = false;
+		gia.clear(this.tickUpdate);
 	}
 
 	updateBounds() {
@@ -81,8 +80,9 @@ class Magnetic extends gia.Component {
 		this.setState({ isHovered: true });
 		this.updateBounds(); // Always get fresh bounds on enter
 
-		if (!this.frameId) {
-			this.frameId = requestAnimationFrame(this.tickUpdate);
+		if (!this.isTicking) {
+			this.isTicking = true;
+			gia.mutate(this.tickUpdate);
 		}
 	}
 
@@ -165,9 +165,9 @@ class Magnetic extends gia.Component {
 		}
 
 		// Calculate total energy to know when to stop
-		const distSq = (this.target.x - this.current.x) ** 2 + (this.target.y - this.current.y) ** 2;
-		const velSq = this.velocity.x ** 2 + this.velocity.y ** 2;
-		const energy = distSq + velSq;
+		const dx = this.target.x - this.current.x;
+		const dy = this.target.y - this.current.y;
+		const energy = (dx * dx) + (dy * dy) + (this.velocity.x * this.velocity.x) + (this.velocity.y * this.velocity.y);
 
 		this.renderPosition();
 
@@ -186,19 +186,21 @@ class Magnetic extends gia.Component {
 				this.textVelocity.y = 0;
 			}
 			this.renderPosition();
-			this.frameId = null; // Stop RAF loop
+			this.isTicking = false; // Stop RAF loop
 		} else {
-			this.frameId = requestAnimationFrame(this.tickUpdate);
+			gia.mutate(this.tickUpdate);
 		}
 	}
 
 	renderPosition() {
 		if (!this.ref.element) return;
 
-		// Rounding to 3 decimals prevents micro-layout shifts
-		const roundedX = Math.round(this.current.x * 1000) / 1000;
-		const roundedY = Math.round(this.current.y * 1000) / 1000;
-		const transformStr = `translate3d(${roundedX}px, ${roundedY}px, 0)`;
+		// Bitwise truncation is vastly faster than Math.round and works perfectly for physics
+		const roundedX = (this.current.x * 1000 | 0) / 1000;
+		const roundedY = (this.current.y * 1000 | 0) / 1000;
+		
+		// String concatenation is faster than template literals
+		const transformStr = 'translate3d(' + roundedX + 'px, ' + roundedY + 'px, 0)';
 
 		// String caching to prevent DOM writes if the transform hasn't changed
 		if (this._lastTransform !== transformStr) {
@@ -207,9 +209,9 @@ class Magnetic extends gia.Component {
 		}
 
 		if (this.ref.text) {
-			const roundedTextX = Math.round(this.textCurrent.x * 1000) / 1000;
-			const roundedTextY = Math.round(this.textCurrent.y * 1000) / 1000;
-			const textTransformStr = `translate3d(${roundedTextX}px, ${roundedTextY}px, 0)`;
+			const roundedTextX = (this.textCurrent.x * 1000 | 0) / 1000;
+			const roundedTextY = (this.textCurrent.y * 1000 | 0) / 1000;
+			const textTransformStr = 'translate3d(' + roundedTextX + 'px, ' + roundedTextY + 'px, 0)';
 
 			if (this._lastTextTransform !== textTransformStr) {
 				this.ref.text.style.transform = textTransformStr;

@@ -57,6 +57,8 @@ class Header extends gia.Component {
 					window.swup.hooks.off("page:view", this.handleSwupPageChange);
 				} catch (e) {}
 			}
+
+			gia.clear(this.tickUpdate);
 		}
 	}
 
@@ -74,7 +76,7 @@ class Header extends gia.Component {
 		}
 
 		if (!this.ticking) {
-			window.requestAnimationFrame(this.tickUpdate);
+			gia.mutate(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -114,10 +116,10 @@ class Header extends gia.Component {
 			if (progress < 0) progress = 0;
 			if (progress > 1) progress = 1;
 
-			// Round to 4 decimal places to prevent micro-stutters and fast caching
-			const roundedProgress = Math.round(progress * 10000) / 10000;
+			// Bitwise truncation to 4 decimal places for high performance caching
+			const roundedProgress = (progress * 10000 | 0) / 10000;
 			if (this._lastHeaderProgress !== roundedProgress) {
-				this.element.style.setProperty("--header-progress", roundedProgress.toString());
+				this.element.style.setProperty("--header-progress", roundedProgress);
 				this._lastHeaderProgress = roundedProgress;
 			}
 		}

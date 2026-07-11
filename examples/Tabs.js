@@ -163,11 +163,15 @@ class Tabs extends gia.Component {
 		const activeTab = this.ref.tab[activeIndex];
 
 		if (activeTab && this.ref.tabList) {
-			const left = activeTab.offsetLeft;
-			const width = activeTab.offsetWidth;
+			gia.measure(() => {
+				const left = activeTab.offsetLeft;
+				const width = activeTab.offsetWidth;
 
-			this.ref.tabList.style.setProperty('--indicator-left', `${left}px`);
-			this.ref.tabList.style.setProperty('--indicator-width', `${width}px`);
+				gia.mutate(() => {
+					this.ref.tabList.style.setProperty('--indicator-left', `${left}px`);
+					this.ref.tabList.style.setProperty('--indicator-width', `${width}px`);
+				});
+			});
 		}
 	}
 
@@ -207,65 +211,118 @@ class Tabs extends gia.Component {
 		const currentAnimId = ++this._animationId || 1;
 		this._animationId = currentAnimId;
 
-		// Measure start height (catches the container mid-animation if interrupted)
-		const startHeight = panelsContainer.offsetHeight;
+		gia.measure(() => {
+			const startHeight = panelsContainer.offsetHeight;
 
-		// Reset all ongoing animations and inline styles
-			const containerAnims = panelsContainer.getAnimations();
-			for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
-		panelsContainer.style.height = '';
-		panelsContainer.style.overflow = '';
-		panelsContainer.style.position = '';
+			gia.mutate(() => {
+				const containerAnims = panelsContainer.getAnimations();
+				for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
+				panelsContainer.style.height = '';
+				panelsContainer.style.overflow = '';
+				panelsContainer.style.position = '';
 
-		const oldPanel = this.ref.panel[oldIndex];
-		const newPanel = this.ref.panel[newIndex];
+				const oldPanel = this.ref.panel[oldIndex];
+				const newPanel = this.ref.panel[newIndex];
 
-			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
-			for (let index = 0; index < this.ref.panel.length; index++) {
-				const panel = this.ref.panel[index];
-				const panelAnims = panel.getAnimations();
-				for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
-			
-			// Ensure only the panel we are transitioning FROM is initially visible
-			panel.hidden = (index !== oldIndex);
-			
-			// FIX: Any panel that is NOT the new target panel must be absolutely positioned
-			// so it doesn't expand the grid cell and mess up the endHeight measurement!
-			if (panel !== newPanel) {
-				panel.style.position = 'absolute';
-				panel.style.top = '0';
-				panel.style.left = '0';
-				panel.style.width = '100%';
-			} else {
-				panel.style.position = '';
-				panel.style.top = '';
-				panel.style.left = '';
-				panel.style.width = '';
-			}
-		}
+				for (let index = 0; index < this.ref.panel.length; index++) {
+					const panel = this.ref.panel[index];
+					const panelAnims = panel.getAnimations();
+					for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
+				
+					panel.hidden = (index !== oldIndex);
+				
+					if (panel !== newPanel) {
+						panel.style.position = 'absolute';
+						panel.style.top = '0';
+						panel.style.left = '0';
+						panel.style.width = '100%';
+					} else {
+						panel.style.position = '';
+						panel.style.top = '';
+						panel.style.left = '';
+						panel.style.width = '';
+					}
+				}
 
-		// Prepare DOM for new state
-		this.updateIndicator();
-		
-		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
-		for (let index = 0; index < this.ref.tab.length; index++) {
-			const tab = this.ref.tab[index];
-			const isSelected = index === newIndex;
-			tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-			tab.setAttribute('tabindex', isSelected ? '0' : '-1');
-		}
+				this.updateIndicator();
+				
+				for (let index = 0; index < this.ref.tab.length; index++) {
+					const tab = this.ref.tab[index];
+					const isSelected = index === newIndex;
+					tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+					tab.setAttribute('tabindex', isSelected ? '0' : '-1');
+				}
 
-		if (newPanel) newPanel.hidden = false;
+				if (newPanel) newPanel.hidden = false;
 
-		// Measure end height (now accurately determined ONLY by newPanel)
-		const endHeight = panelsContainer.offsetHeight;
+				gia.measure(() => {
+					const endHeight = panelsContainer.offsetHeight;
 
-		// Lock container size for animation
-		panelsContainer.style.overflow = 'hidden';
-		panelsContainer.style.height = `${startHeight}px`;
-		panelsContainer.style.position = 'relative';
+					gia.mutate(() => {
+						panelsContainer.style.overflow = 'hidden';
+						panelsContainer.style.height = `${startHeight}px`;
+						panelsContainer.style.position = 'relative';
 
-		const animations = [];
+						const animations = [];
+
+						if (startHeight !== endHeight) {
+							const heightAnim = panelsContainer.animate(
+								[ { height: `${startHeight}px` }, { height: `${endHeight}px` } ],
+								{ duration: 300, easing: 'ease', fill: 'forwards' }
+							);
+							animations.push(heightAnim.finished);
+						}
+
+						if (oldPanel) {
+							const oldAnim = oldPanel.animate(
+								[
+									{ opacity: 1, transform: 'translateX(0px)' },
+									{ opacity: 0, transform: `translateX(${direction > 0 ? -20 : 20}px)` }
+								],
+								{ duration: 250, easing: 'ease', fill: 'forwards' }
+							);
+							animations.push(oldAnim.finished);
+						}
+
+						if (newPanel) {
+							const newAnim = newPanel.animate(
+								[
+									{ opacity: 0, transform: `translateX(${direction > 0 ? 20 : -20}px)` },
+									{ opacity: 1, transform: 'translateX(0px)' }
+								],
+								{ duration: 300, easing: 'ease', fill: 'forwards' }
+							);
+							animations.push(newAnim.finished);
+						}
+
+						Promise.allSettled(animations).then(() => {
+							if (this._animationId !== currentAnimId) return;
+
+							for (let index = 0; index < this.ref.panel.length; index++) {
+								const panel = this.ref.panel[index];
+								const panelAnims = panel.getAnimations();
+								for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
+								if (panel !== newPanel) {
+									panel.hidden = true;
+								}
+								panel.style.position = '';
+								panel.style.top = '';
+								panel.style.left = '';
+								panel.style.width = '';
+							}
+
+							const containerAnims = panelsContainer.getAnimations();
+							for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
+							panelsContainer.style.height = '';
+							panelsContainer.style.overflow = '';
+							panelsContainer.style.position = '';
+							this.element.removeAttribute('data-direction');
+						});
+					});
+				});
+			});
+		});
+	}
 
 		// 1. Container Height Animation
 		if (startHeight !== endHeight) {

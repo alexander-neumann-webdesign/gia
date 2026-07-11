@@ -135,6 +135,10 @@ class Accordion extends gia.Component {
 		if (this.options.closeOthers) {
 			window.removeEventListener("accordion:open", this.handleAccordionOpen);
 		}
+
+		if (this.animation) {
+			this.animation.cancel();
+		}
 	}
 
 	handleToggle(event) {
@@ -149,7 +153,9 @@ class Accordion extends gia.Component {
 
 	handleClick(event) {
 		event.preventDefault();
-		this.element.style.overflow = "hidden";
+		gia.mutate(() => {
+			this.element.style.overflow = "hidden";
+		});
 
 		if (this.state.isClosing || !this.element.open) {
 			this.expand();
@@ -161,57 +167,71 @@ class Accordion extends gia.Component {
 	shrink() {
 		this.setState({ isClosing: true });
 
-		const startHeight = `${this.element.offsetHeight}px`;
-		const endHeight = `${this._summaryEl ? this._summaryEl.offsetHeight : 0}px`;
+		gia.measure(() => {
+			const startHeight = `${this.element.offsetHeight}px`;
+			const endHeight = `${this._summaryEl ? this._summaryEl.offsetHeight : 0}px`;
 
-		if (this.animation) {
-			this.animation.cancel();
-		}
+			gia.mutate(() => {
+				if (this.animation) {
+					this.animation.cancel();
+				}
 
-		this.animation = this.element.animate(
-			{ height: [startHeight, endHeight] },
-			{ duration: this.options.animationDuration, easing: "ease" },
-		);
+				this.animation = this.element.animate(
+					{ height: [startHeight, endHeight] },
+					{ duration: this.options.animationDuration, easing: "ease" },
+				);
 
-		this.animation.onfinish = () => this.onAnimationFinish(false);
-		this.animation.oncancel = () => this.setState({ isClosing: false });
+				this.animation.onfinish = () => this.onAnimationFinish(false);
+				this.animation.oncancel = () => this.setState({ isClosing: false });
+			});
+		});
 	}
 
 	expand() {
-		this.element.style.height = `${this.element.offsetHeight}px`;
-		this.element.open = true;
+		gia.measure(() => {
+			const currentHeight = `${this.element.offsetHeight}px`;
 
-		window.requestAnimationFrame(() => {
-			this.setState({ isExpanding: true });
+			gia.mutate(() => {
+				this.element.style.height = currentHeight;
+				this.element.open = true;
 
-			const startHeight = `${this.element.offsetHeight}px`;
-			const endHeight = `${(this._summaryEl ? this._summaryEl.offsetHeight : 0) + (this._contentEl ? this._contentEl.offsetHeight : 0)}px`;
+				gia.measure(() => {
+					this.setState({ isExpanding: true });
 
-			if (this.animation) {
-				this.animation.cancel();
-			}
+					const startHeight = `${this.element.offsetHeight}px`;
+					const endHeight = `${(this._summaryEl ? this._summaryEl.offsetHeight : 0) + (this._contentEl ? this._contentEl.offsetHeight : 0)}px`;
 
-			this.animation = this.element.animate(
-				{ height: [startHeight, endHeight] },
-				{ duration: this.options.animationDuration, easing: "ease" },
-			);
+					gia.mutate(() => {
+						if (this.animation) {
+							this.animation.cancel();
+						}
 
-			this.animation.onfinish = () => this.onAnimationFinish(true);
-			this.animation.oncancel = () => this.setState({ isExpanding: false });
+						this.animation = this.element.animate(
+							{ height: [startHeight, endHeight] },
+							{ duration: this.options.animationDuration, easing: "ease" },
+						);
+
+						this.animation.onfinish = () => this.onAnimationFinish(true);
+						this.animation.oncancel = () => this.setState({ isExpanding: false });
+					});
+				});
+			});
 		});
 	}
 
 	onAnimationFinish(open) {
-		this.element.open = open;
-		this.animation = null;
-		this.setState({
-			isClosing: false,
-			isExpanding: false,
-			isOpen: open,
-		});
-		this.element.style.height = this.element.style.overflow = "";
+		gia.mutate(() => {
+			this.element.open = open;
+			this.animation = null;
+			this.setState({
+				isClosing: false,
+				isExpanding: false,
+				isOpen: open,
+			});
+			this.element.style.height = this.element.style.overflow = "";
 
-		Accordion.refreshGlobalLayout();
+			Accordion.refreshGlobalLayout();
+		});
 	}
 
 	handleAccordionOpen(event) {
@@ -227,28 +247,30 @@ class Accordion extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ("isOpen" in stateChanges) {
-			const { isOpen } = stateChanges;
+		gia.mutate(() => {
+			if ("isOpen" in stateChanges) {
+				const { isOpen } = stateChanges;
 
-			// Sync DOM if necessary
-			if (this.element.open !== isOpen) {
-				this.element.open = isOpen;
+				// Sync DOM if necessary
+				if (this.element.open !== isOpen) {
+					this.element.open = isOpen;
+				}
+
+				// Dispatch event for other accordions
+				if (isOpen && this.options.closeOthers) {
+					const customEvent = new CustomEvent("accordion:open", {
+						detail: { instance: this, parent: this.element.parentElement },
+					});
+					window.dispatchEvent(customEvent);
+				}
 			}
 
-			// Dispatch event for other accordions
-			if (isOpen && this.options.closeOthers) {
-				const customEvent = new CustomEvent("accordion:open", {
-					detail: { instance: this, parent: this.element.parentElement },
-				});
-				window.dispatchEvent(customEvent);
+			if ("isClosing" in stateChanges) {
+				this.element.classList.toggle("is-closing", this.state.isClosing);
 			}
-		}
 
-		if ("isClosing" in stateChanges) {
-			this.element.classList.toggle("is-closing", this.state.isClosing);
-		}
-
-		this.element.removeAttribute("data-is-open");
+			this.element.removeAttribute("data-is-open");
+		});
 	}
 
 	static refreshGlobalLayout() {

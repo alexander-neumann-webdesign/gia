@@ -165,9 +165,9 @@ class Slider extends gia.Component {
 		const tweenValue = 1 - Math.abs(diffToTarget * this._tweenFactor);
 		const opacity = Math.max(0, Math.min(tweenValue, 1));
 
-		// Round to 4 decimal places to prevent micro-stutters and garbage collection thrashing
-		const roundedOpacity = Math.round(opacity * 10000) / 10000;
-		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", roundedOpacity.toString());
+		// Bitwise truncation to 4 decimal places for high performance caching
+		const roundedOpacity = (opacity * 10000 | 0) / 10000;
+		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", roundedOpacity);
 	}
 
 	tweenOpacity(embla, eventName) {
@@ -195,8 +195,8 @@ class Slider extends gia.Component {
 	}
 
 	applyParallaxCallback(slideIndex, diffToTarget) {
-		const translate = Math.round(diffToTarget * this._parallaxMultiplier * 1000) / 1000;
-		this._slideNodes[slideIndex].style.setProperty("--slide-parallax-x", `${translate}%`);
+		const translate = (diffToTarget * this._parallaxMultiplier * 1000 | 0) / 1000;
+		this._slideNodes[slideIndex].style.setProperty("--slide-parallax-x", translate + "%");
 	}
 
 	applyParallax(embla, eventName) {
@@ -266,18 +266,20 @@ class Slider extends gia.Component {
 		if (this._lastSelectedDot === selected) return;
 		this._lastSelectedDot = selected;
 
-		for (let index = 0; index < this.ref.dot.length; index++) {
-			const dot = this.ref.dot[index];
-			if (index === selected) {
-				dot.classList.add("is-selected");
-				dot.setAttribute("aria-current", "true");
-				dot.tabIndex = -1;
-			} else {
-				dot.classList.remove("is-selected");
-				dot.removeAttribute("aria-current");
-				dot.tabIndex = 0;
+		gia.mutate(() => {
+			for (let index = 0; index < this.ref.dot.length; index++) {
+				const dot = this.ref.dot[index];
+				if (index === selected) {
+					dot.classList.add("is-selected");
+					dot.setAttribute("aria-current", "true");
+					dot.tabIndex = -1;
+				} else {
+					dot.classList.remove("is-selected");
+					dot.removeAttribute("aria-current");
+					dot.tabIndex = 0;
+				}
 			}
-		}
+		});
 	}
 
 	unmount() {
@@ -320,21 +322,23 @@ class Slider extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ("canScrollPrev" in stateChanges && this.ref.prevBtn) {
-			if (this.state.canScrollPrev) {
-				this.ref.prevBtn.removeAttribute("disabled");
-			} else {
-				this.ref.prevBtn.setAttribute("disabled", "disabled");
+		gia.mutate(() => {
+			if ("canScrollPrev" in stateChanges && this.ref.prevBtn) {
+				if (this.state.canScrollPrev) {
+					this.ref.prevBtn.removeAttribute("disabled");
+				} else {
+					this.ref.prevBtn.setAttribute("disabled", "disabled");
+				}
 			}
-		}
 
-		if ("canScrollNext" in stateChanges && this.ref.nextBtn) {
-			if (this.state.canScrollNext) {
-				this.ref.nextBtn.removeAttribute("disabled");
-			} else {
-				this.ref.nextBtn.setAttribute("disabled", "disabled");
+			if ("canScrollNext" in stateChanges && this.ref.nextBtn) {
+				if (this.state.canScrollNext) {
+					this.ref.nextBtn.removeAttribute("disabled");
+				} else {
+					this.ref.nextBtn.setAttribute("disabled", "disabled");
+				}
 			}
-		}
+		});
 	}
 }
 

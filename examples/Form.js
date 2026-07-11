@@ -37,21 +37,23 @@ class Form extends gia.Component {
 		}
 
 		// Accessibility: Enhance form feedback with live region roles
-		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
-			this.ref.successMessage.setAttribute('role', 'status');
-		}
-		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
-			this.ref.errorMessage.setAttribute('role', 'alert');
-		}
+		gia.mutate(() => {
+			if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
+				this.ref.successMessage.setAttribute('role', 'status');
+			}
+			if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
+				this.ref.errorMessage.setAttribute('role', 'alert');
+			}
+		});
 
 		if (this.formElement) {
 			this.formElement.addEventListener('submit', this.handleSubmit);
 
 			this.ref.requiredInputs = this.formElement.querySelectorAll('[required]');
-			this.ref.requiredInputs.forEach((input) => {
-				input.addEventListener('change', this.handleInputChange);
-				input.addEventListener('input', this.handleInputChange);
-			});
+			for (let i = 0; i < this.ref.requiredInputs.length; i++) {
+				this.ref.requiredInputs[i].addEventListener('change', this.handleInputChange);
+				this.ref.requiredInputs[i].addEventListener('input', this.handleInputChange);
+			}
 
 			this.ref.conditions = Array.from(this.formElement.querySelectorAll('[data-condition]'));
 			if (this.ref.conditions.length > 0) {
@@ -66,13 +68,7 @@ class Form extends gia.Component {
 			console.warn("Form component: No form element found.");
 		}
 
-		if (this.ref.successMessage && !this.ref.successMessage.hasAttribute('role')) {
-			this.ref.successMessage.setAttribute('role', 'status');
-		}
 
-		if (this.ref.errorMessage && !this.ref.errorMessage.hasAttribute('role')) {
-			this.ref.errorMessage.setAttribute('role', 'alert');
-		}
 	}
 
 	unmount() {
@@ -83,10 +79,10 @@ class Form extends gia.Component {
 				this.formElement.removeEventListener('input', this.evaluateConditions);
 			}
 		}
-		this.ref.requiredInputs.forEach((input) => {
-			input.removeEventListener('change', this.handleInputChange);
-			input.removeEventListener('input', this.handleInputChange);
-		});
+		for (let i = 0; i < this.ref.requiredInputs.length; i++) {
+			this.ref.requiredInputs[i].removeEventListener('change', this.handleInputChange);
+			this.ref.requiredInputs[i].removeEventListener('input', this.handleInputChange);
+		}
 	}
 
 	evaluateConditions() {
@@ -94,16 +90,29 @@ class Form extends gia.Component {
 
 		let formData = new FormData(this.formElement);
 
-		this.ref.conditions.forEach(el => {
+		const toShow = [];
+		const toHide = [];
+
+		for (let i = 0; i < this.ref.conditions.length; i++) {
+			const el = this.ref.conditions[i];
 			const conditionString = el.getAttribute('data-condition');
-			if (!conditionString) return;
+			if (!conditionString) continue;
 
 			const conditionMet = this._checkCondition(conditionString, formData);
 
 			if (conditionMet) {
-				this._showConditionElement(el);
+				toShow.push(el);
 			} else {
-				this._hideConditionElement(el);
+				toHide.push(el);
+			}
+		}
+
+		gia.mutate(() => {
+			for (let i = 0; i < toShow.length; i++) {
+				this._showConditionElement(toShow[i]);
+			}
+			for (let i = 0; i < toHide.length; i++) {
+				this._hideConditionElement(toHide[i]);
 			}
 		});
 	}
@@ -127,40 +136,54 @@ class Form extends gia.Component {
 	_showConditionElement(el) {
 		el.hidden = false;
 		const inputs = el.querySelectorAll('input, select, textarea');
-		inputs.forEach(input => {
+		for (let i = 0; i < inputs.length; i++) {
+			const input = inputs[i];
 			if (input.hasAttribute('data-disabled-by-condition')) {
 				input.disabled = false;
 				input.removeAttribute('data-disabled-by-condition');
 			}
-		});
+		}
 	}
 
 	_hideConditionElement(el) {
 		el.hidden = true;
 		const inputs = el.querySelectorAll('input, select, textarea');
-		inputs.forEach(input => {
+		for (let i = 0; i < inputs.length; i++) {
+			const input = inputs[i];
 			if (!input.disabled) {
 				input.disabled = true;
 				input.setAttribute('data-disabled-by-condition', 'true');
 			}
-		});
+		}
 	}
 
 	handleInputChange() {
 		let requiredInputMissing = false;
-		this.ref.requiredInputs.forEach((input) => {
+		const updates = [];
+
+		for (let i = 0; i < this.ref.requiredInputs.length; i++) {
+			const input = this.ref.requiredInputs[i];
 			if (input.type === "checkbox") {
 				if (!input.checked || input.value === "") {
 					requiredInputMissing = true;
-					input.classList.add("input-missing");
-					input.setAttribute("aria-invalid", "true");
+					updates.push({ input, missing: true });
 				} else {
-					input.classList.remove("input-missing");
-					input.removeAttribute("aria-invalid");
+					updates.push({ input, missing: false });
 				}
 			} else {
 				if (!input.value || input.value === "") {
 					requiredInputMissing = true;
+					updates.push({ input, missing: true });
+				} else {
+					updates.push({ input, missing: false });
+				}
+			}
+		}
+
+		gia.mutate(() => {
+			for (let i = 0; i < updates.length; i++) {
+				const { input, missing } = updates[i];
+				if (missing) {
 					input.classList.add("input-missing");
 					input.setAttribute("aria-invalid", "true");
 				} else {
@@ -201,7 +224,9 @@ class Form extends gia.Component {
 			await this._submitRequest(url, data);
 
 			this.setState({ isSubmitting: false, isSuccess: true });
-			this.formElement.reset();
+			gia.mutate(() => {
+				this.formElement.reset();
+			});
 
 		} catch (error) {
 			console.error("Form component error:", error);
@@ -316,24 +341,26 @@ class Form extends gia.Component {
 	}
 
 	_updateSubmittingUI(isSubmitting) {
-		if (this.ref.submitBtn) {
-			this.ref.submitBtn.disabled = isSubmitting;
-			if (isSubmitting) {
-				this.ref.submitBtn.setAttribute('aria-busy', 'true');
-				this._addSpinner(this.ref.submitBtn);
-			} else {
-				this.ref.submitBtn.removeAttribute('aria-busy');
-				this._removeSpinner(this.ref.submitBtn);
+		gia.mutate(() => {
+			if (this.ref.submitBtn) {
+				this.ref.submitBtn.disabled = isSubmitting;
+				if (isSubmitting) {
+					this.ref.submitBtn.setAttribute('aria-busy', 'true');
+					this._addSpinner(this.ref.submitBtn);
+				} else {
+					this.ref.submitBtn.removeAttribute('aria-busy');
+					this._removeSpinner(this.ref.submitBtn);
+				}
 			}
-		}
 
-		if (this.formElement) {
-			if (isSubmitting) {
-				this.formElement.classList.add('is-submitting');
-			} else {
-				this.formElement.classList.remove('is-submitting');
+			if (this.formElement) {
+				if (isSubmitting) {
+					this.formElement.classList.add('is-submitting');
+				} else {
+					this.formElement.classList.remove('is-submitting');
+				}
 			}
-		}
+		});
 	}
 
 	_addSpinner(btn) {
@@ -379,10 +406,14 @@ class Form extends gia.Component {
 
 	_showMessage(element, isVisible) {
 		if (element) {
-			element.hidden = !isVisible;
+			gia.mutate(() => {
+				element.hidden = !isVisible;
+			});
 			if (isVisible) {
 				window.setTimeout(() => {
-					element.scrollIntoView({ behavior: "smooth", block: "center" });
+					gia.mutate(() => {
+						element.scrollIntoView({ behavior: "smooth", block: "center" });
+					});
 				}, 300);
 			}
 		}
