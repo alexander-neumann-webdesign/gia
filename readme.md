@@ -292,6 +292,39 @@ class TrackingComponent extends Component {
 
 ---
 
+### DOM Scheduling (Measure & Mutate)
+
+To completely eliminate layout thrashing (forced synchronous layouts), Gia includes a built-in DOM scheduler inspired by [FastDOM](https://github.com/wilsonpage/fastdom). It batches all DOM reads and writes across your entire application into a single `requestAnimationFrame` loop.
+
+```javascript
+class Tooltip extends Component {
+	align() {
+		// 1. Measure phase: Read from the DOM
+		this.task = gia.measure(() => {
+			const targetRect = this.target.getBoundingClientRect();
+			const tooltipRect = this.element.getBoundingClientRect();
+
+			const left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+
+			// 2. Mutate phase: Write to the DOM
+			gia.mutate(() => {
+				this.element.style.transform = `translateX(${left}px)`;
+				this.element.style.opacity = "1";
+			});
+		});
+	}
+
+	unmount() {
+		// Cancel scheduled tasks if the component is destroyed before the frame executes
+		gia.clear(this.task);
+	}
+}
+```
+
+By forcing components to use `gia.measure()` for reading dimensions and `gia.mutate()` for applying styles, it is mathematically impossible for components to accidentally trigger Write-then-Read layout thrashing. The scheduler guarantees that all Reads across the entire page execute before any Writes on the next frame.
+
+---
+
 ### On-Demand Dependencies (`require`)
 
 Keep your initial bundle size tiny by lazy-loading heavy third-party dependencies only when a component that actually needs them is present on the page.
@@ -487,6 +520,9 @@ config.set("autoBindActions", true);
 - **`removeComponents(context)`**: Destroys and cleans up all component instances inside the target context.
 - **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node.
 - **`eventbus`**: Unified `EventTarget`-based event emitter.
+- **`measure(callback, [context])`**: Schedules a DOM read operation for the next frame's measure phase. Returns a task reference.
+- **`mutate(callback, [context])`**: Schedules a DOM write operation for the next frame's mutate phase. Returns a task reference.
+- **`clear(task)`**: Cancels a scheduled measure or mutate task.
 
 ### BaseComponent API
 
