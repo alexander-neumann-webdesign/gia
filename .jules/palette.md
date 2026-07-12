@@ -24,3 +24,7 @@
 ## 2025-06-03 - Added Focus Visible State to ClipboardCopy Button
 **Learning:** Custom buttons like `ClipboardCopy` can lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually.
 **Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially utility buttons.
+
+## 2023-10-27 - Add missing focus visible indicator to standard anchor tags
+**Learning:** Basic elements such as standard anchor tags (`<a>`) used within the page structure (e.g. Navigation) might lack visual indicators when navigating with a keyboard if a CSS reset is in place without explicit fallbacks.
+**Action:** Always ensure basic interactive elements have global CSS rules providing explicit focus indicators, like `outline: 2px solid`, when relying on keyboard navigation.
