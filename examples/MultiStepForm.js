@@ -44,15 +44,19 @@ class MultiStepForm extends gia.Component {
 			this.handleStepIndicatorClick = this.handleStepIndicatorClick.bind(this);
 
 			const nextBtns = this._getArray(this.ref.nextBtn);
-			nextBtns.forEach(btn => btn.addEventListener('click', this.handleNextStep));
+			for (let i = 0; i < nextBtns.length; i++) {
+				nextBtns[i].addEventListener('click', this.handleNextStep);
+			}
 
 			const prevBtns = this._getArray(this.ref.prevBtn);
-			prevBtns.forEach(btn => btn.addEventListener('click', this.handlePrevStep));
+			for (let i = 0; i < prevBtns.length; i++) {
+				prevBtns[i].addEventListener('click', this.handlePrevStep);
+			}
 
 			const stepIndicators = this._getArray(this.ref.stepIndicator);
-			stepIndicators.forEach((indicator, index) => {
-				indicator.addEventListener('click', (event) => this.handleStepIndicatorClick(event, index));
-			});
+			for (let i = 0; i < stepIndicators.length; i++) {
+				stepIndicators[i].addEventListener('click', this.handleStepIndicatorClick);
+			}
 
 			if (this.ref.step && (this._getArray(this.ref.step).length > 0)) {
 				gia.mutate(() => {
@@ -78,10 +82,19 @@ class MultiStepForm extends gia.Component {
 		}
 
 		const nextBtns = this._getArray(this.ref.nextBtn);
-		nextBtns.forEach(btn => btn.removeEventListener('click', this.handleNextStep));
+		for (let i = 0; i < nextBtns.length; i++) {
+			nextBtns[i].removeEventListener('click', this.handleNextStep);
+		}
 
 		const prevBtns = this._getArray(this.ref.prevBtn);
-		prevBtns.forEach(btn => btn.removeEventListener('click', this.handlePrevStep));
+		for (let i = 0; i < prevBtns.length; i++) {
+			prevBtns[i].removeEventListener('click', this.handlePrevStep);
+		}
+
+		const stepIndicators = this._getArray(this.ref.stepIndicator);
+		for (let i = 0; i < stepIndicators.length; i++) {
+			stepIndicators[i].removeEventListener('click', this.handleStepIndicatorClick);
+		}
 	}
 
 	handleSubmit(event) {
@@ -165,9 +178,10 @@ class MultiStepForm extends gia.Component {
 		});
 	}
 
-	handleStepIndicatorClick(event, index) {
+	handleStepIndicatorClick(event) {
 		event.preventDefault();
 		if (!event.currentTarget.disabled && !event.currentTarget.classList.contains('is-disabled')) {
+			const index = this._getArray(this.ref.stepIndicator).indexOf(event.currentTarget);
 			this.setStep(index);
 		}
 	}

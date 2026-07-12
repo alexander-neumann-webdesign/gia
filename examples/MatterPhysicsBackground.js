@@ -225,19 +225,20 @@ class MatterPhysicsBackground extends gia.Component {
         Composite.add(this.engine.world, this.walls);
     }
 
+    _getRandomColor() {
+        const hue = (Math.random() * 360) | 0;
+        return 'hsl(' + hue + ', 80%, 60%)';
+    }
+
     _addRandomShape(x, y) {
         const { Bodies, Body, Composite } = window.Matter;
         const s = this.options.shapeSize;
         const rand = Math.random();
 
-        // Random pastel colors
-        const hue = Math.floor(Math.random() * 360);
-        const fillStyle = `hsl(${hue}, 70%, 60%)`;
-
         const options = {
             restitution: this.options.restitution,
             density: this.options.density,
-            render: { fillStyle },
+            render: { fillStyle: this._getRandomColor() },
             collisionFilter: {
                 category: 0x0001,
                 mask: 0xFFFFFFFF ^ 0x0002
@@ -250,7 +251,7 @@ class MatterPhysicsBackground extends gia.Component {
         } else if (rand < 0.66) {
             body = Bodies.rectangle(x, y, s + Math.random() * 20, s + Math.random() * 20, options);
         } else {
-            const sides = Math.floor(Math.random() * 4) + 3; // 3 to 6 sides
+            const sides = ((Math.random() * 4) | 0) + 3; // 3 to 6 sides
             body = Bodies.polygon(x, y, sides, s / 2 + Math.random() * 10, options);
         }
 

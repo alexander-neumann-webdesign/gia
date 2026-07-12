@@ -24,10 +24,10 @@ class Tabs extends gia.Component {
 			this.ref.tabList = this.element.querySelector('[role="tablist"]');
 		}
 		if (this.ref.tab.length === 0) {
-			this.ref.tab = Array.from(this.element.querySelectorAll('[role="tab"]'));
+			this.ref.tab = this.element.querySelectorAll('[role="tab"]');
 		}
 		if (this.ref.panel.length === 0) {
-			this.ref.panel = Array.from(this.element.querySelectorAll('[role="tabpanel"]'));
+			this.ref.panel = this.element.querySelectorAll('[role="tabpanel"]');
 		}
 
 		if (!this.ref.tabList || this.ref.tab.length === 0 || this.ref.panel.length === 0) {

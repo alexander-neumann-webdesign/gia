@@ -560,7 +560,7 @@ class CustomCursor extends gia.Component {
                     const angleDeg = this._skewAngle * (180 / Math.PI);
                     const scaleX = 1 + (this._skewIntensity * 0.01);
                     const scaleY = Math.max(1 - (this._skewIntensity * 0.01), 0.1);
-                    skewStr = ` rotate(${angleDeg.toFixed(2)}deg) scale(${scaleX.toFixed(3)}, ${scaleY.toFixed(3)})`;
+                    skewStr = ' rotate(' + angleDeg + 'deg) scale(' + scaleX + ', ' + scaleY + ')';
                 }
             } else {
                 // Decay skew
@@ -575,7 +575,7 @@ class CustomCursor extends gia.Component {
 
     _applyDOMTransform(skewStr) {
         if (this.ref.dot) {
-            let dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
+            let dotTransformStr = 'translate3d(' + this.cursor.x + 'px, ' + this.cursor.y + 'px, 0px)';
             if (skewStr) {
                 dotTransformStr += skewStr;
             }
@@ -599,7 +599,7 @@ class CustomCursor extends gia.Component {
             this.cursor.x = targetX;
             this.cursor.y = targetY;
             if (this.ref.dot) {
-                const dotTransformStr = `translate3d(${this.cursor.x.toFixed(4)}px, ${this.cursor.y.toFixed(4)}px, 0px)`;
+                const dotTransformStr = 'translate3d(' + this.cursor.x + 'px, ' + this.cursor.y + 'px, 0px)';
                 if (this._lastDotTransform !== dotTransformStr) {
                     this.ref.dot.style.transform = dotTransformStr;
                     this._lastDotTransform = dotTransformStr;

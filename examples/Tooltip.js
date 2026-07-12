@@ -225,8 +225,8 @@ class Tooltip extends gia.Component {
 		}).then(({ x, y, placement, middlewareData }) => {
 			gia.mutate(() => {
 				Object.assign(this.popoverElement.style, {
-					left: Math.round(x) + 'px',
-					top: Math.round(y) + 'px',
+					left: ((x + 0.5) | 0) + 'px',
+					top: ((y + 0.5) | 0) + 'px',
 				});
 
 				// Accessing the data
@@ -241,8 +241,8 @@ class Tooltip extends gia.Component {
 					}[placement.split('-')[0]];
 
 					Object.assign(this.arrowElement.style, {
-						left: arrowX != null ? Math.round(arrowX) + 'px' : '',
-						top: arrowY != null ? Math.round(arrowY) + 'px' : '',
+						left: arrowX != null ? ((arrowX + 0.5) | 0) + 'px' : '',
+						top: arrowY != null ? ((arrowY + 0.5) | 0) + 'px' : '',
 						right: '',
 						bottom: '',
 						[staticSide]: '-4px', // 4px is half the width/height of the 8px arrow

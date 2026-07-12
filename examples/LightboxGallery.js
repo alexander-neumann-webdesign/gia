@@ -33,7 +33,7 @@ class LightboxGallery extends gia.Component {
 
 	mount() {
 		if (!this.ref.triggers || this.ref.triggers.length === 0) {
-			this.ref.triggers = Array.from(this.element.querySelectorAll("[data-lightbox]"));
+			this.ref.triggers = this.element.querySelectorAll("[data-lightbox]");
 		}
 
 		if (!window.PhotoSwipeLightbox || !window.PhotoSwipe) {
