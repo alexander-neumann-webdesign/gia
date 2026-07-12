@@ -129,3 +129,6 @@
 ## 2024-07-04 - Cache getComputedStyle to prevent layout thrashing
 **Learning:** Calling `window.getComputedStyle(el)` during high-frequency events or inside `requestAnimationFrame` loops (such as within `_calculateElementBounds` in `CustomCursor.js`) causes layout thrashing and synchronous style recalculations.
 **Action:** Cache the result of `getComputedStyle` on the element's `dataset` to avoid recalculating it multiple times and eliminate layout thrashing.
+## 2024-05-24 - Double-Buffering Arrays to Prevent GC Churn in Hot Loops
+**Learning:** When scheduling functions in requestAnimationFrame (like read/write phases), recreating `reads = []` and `writes = []` on every frame causes constant garbage collection churn.
+**Action:** Use double-buffering by keeping a pre-allocated empty array (`tempReads`, `tempWrites`). During the flush phase, swap `state.reads` with the temp array, execute the scheduled functions, then clear the executed array (`currentReads.length = 0`) and assign it to the temp array.

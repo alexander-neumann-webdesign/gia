@@ -5,6 +5,13 @@ const state = (typeof window !== 'undefined' ? window.__gia_scheduler__ : null) 
     scheduled: false
 };
 
+if (!state.tempReads) {
+    state.tempReads = [];
+}
+if (!state.tempWrites) {
+    state.tempWrites = [];
+}
+
 // Store on window if we are in a browser environment and it isn't already there
 if (typeof window !== 'undefined' && !window.__gia_scheduler__) {
     window.__gia_scheduler__ = state;
@@ -15,7 +22,8 @@ function flush() {
 
     // Flush reads (Measures)
     const currentReads = state.reads;
-    state.reads = [];
+    state.reads = state.tempReads;
+
     for (let i = 0; i < currentReads.length; i++) {
         try {
             currentReads[i]();
@@ -24,9 +32,13 @@ function flush() {
         }
     }
 
+    currentReads.length = 0;
+    state.tempReads = currentReads;
+
     // Flush writes (Mutates)
     const currentWrites = state.writes;
-    state.writes = [];
+    state.writes = state.tempWrites;
+
     for (let i = 0; i < currentWrites.length; i++) {
         try {
             currentWrites[i]();
@@ -34,6 +46,9 @@ function flush() {
             console.error(e);
         }
     }
+
+    currentWrites.length = 0;
+    state.tempWrites = currentWrites;
 
     // If new tasks were scheduled during the flush, schedule another frame
     if (state.reads.length > 0 || state.writes.length > 0) {
