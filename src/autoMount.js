@@ -5,7 +5,7 @@ import { queryAll } from "./utils.js";
 
 let observer = null;
 let _currentComponentsToLoad = null;
-const _addedElements = new Set();
+const _addedElements = [];
 
 const _processAddedNode = (node) => {
     if (node.isConnected) {
@@ -17,8 +17,8 @@ function handleMutations(mutations) {
     const attrName = `${config.get("attrPrefix")}-component`;
     const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
 
-    // ⚡ BOLT OPTIMIZATION: Prevent garbage collection churn by clearing and reusing the module-scoped _addedElements Set
-    _addedElements.clear();
+    // ⚡ BOLT OPTIMIZATION: Prevent garbage collection churn by clearing and reusing the module-scoped _addedElements array
+    _addedElements.length = 0;
 
     // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
     for (let m = 0; m < mutations.length; m++) {
@@ -43,15 +43,19 @@ function handleMutations(mutations) {
         // we just queue the mutation target (parent). This replaces an O(N) query loop
         // with a single O(1) querySelectorAll on the parent.
         if (mutation.addedNodes.length > 0 && mutation.target.nodeType === Node.ELEMENT_NODE) {
-            _addedElements.add(mutation.target);
+            if (_addedElements.indexOf(mutation.target) === -1) {
+                _addedElements.push(mutation.target);
+            }
         }
     }
 
     // If nodes were added, run loadComponents ONLY on the added nodes rather than the whole body
     // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
-    // ⚡ BOLT OPTIMIZATION: Avoid for...of Iterator allocation by using Set.prototype.forEach with hoisted callback
+    // ⚡ BOLT OPTIMIZATION: Avoid Array Iterator allocation by using standard for loop
     _currentComponentsToLoad = componentsToLoad;
-    _addedElements.forEach(_processAddedNode);
+    for (let i = 0; i < _addedElements.length; i++) {
+        _processAddedNode(_addedElements[i]);
+    }
     _currentComponentsToLoad = null;
 }
 

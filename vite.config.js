@@ -9,6 +9,7 @@ export default defineConfig({
 		mangleProps: /^_/,
 		reserveProps: /^__gia_component__$/,
 		mangleQuoted: false,
+		legalComments: 'none',
 	},
 	build: {
 		lib: {

@@ -1,14 +1,15 @@
 import config from "./config.js";
 import { queryAll } from "./utils.js";
 import { components } from "./store.js";
+import { mutate } from "./scheduler.js";
 
 
 let globalScrollListenerBound = false;
 let globalResizeListenerBound = false;
-const scrollCallbacks = new Set();
+const scrollCallbacks = [];
 const isMobileBrowser = typeof navigator !== 'undefined' && !!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
 const resizeEventName = isMobileBrowser ? 'orientationchange' : 'resize';
-const windowResizeCallbacks = new Set();
+const windowResizeCallbacks = [];
 let globalLenisInstance = null;
 let lastScrollY = 0;
 let lastVelocity = 0;
@@ -18,8 +19,6 @@ const _scrollPayload = { scroll: 0, velocity: 0 };
 const _resizePayload = { width: 0, height: 0 };
 const _observerEntryArr = [null];
 
-const _callScrollCb = (cb) => cb(_scrollPayload);
-const _callResizeCb = (cb) => cb(_resizePayload);
 const _callObserverCb = (cb) => cb(_observerEntryArr);
 
 const _unobserveResizeCb = function(value, element) { this.unobserveResize(element); };
@@ -27,17 +26,22 @@ const _unobserveIntersectionCb = function(value, element) { this.unobserveInters
 
 const _flushComponentState = (comp) => comp._flushStateChanges();
 let isRafQueued = false;
-const dirtyComponents = new Set();
+const dirtyComponents = [];
 
 function flushGlobalStateChanges() {
 	isRafQueued = false;
-	// ⚡ BOLT OPTIMIZATION: Process all dirty components in a single requestAnimationFrame
-	dirtyComponents.forEach(_flushComponentState);
-	dirtyComponents.clear();
+	// ⚡ BOLT OPTIMIZATION: Process all dirty components in a single mutate block
+	// ⚡ BOLT OPTIMIZATION: Use classic for loop over Array instead of Set.forEach to prevent iterator allocation
+	for (let i = 0; i < dirtyComponents.length; i++) {
+		dirtyComponents[i]._flushStateChanges();
+	}
+	dirtyComponents.length = 0;
 }
 
 function _processScroll() {
-	scrollCallbacks.forEach(_callScrollCb);
+	for (let i = 0; i < scrollCallbacks.length; i++) {
+		scrollCallbacks[i](_scrollPayload);
+	}
 }
 
 function handleGlobalScroll(e) {
@@ -64,7 +68,9 @@ function handleGlobalScroll(e) {
 }
 
 function _processResize() {
-	windowResizeCallbacks.forEach(_callResizeCb);
+	for (let i = 0; i < windowResizeCallbacks.length; i++) {
+		windowResizeCallbacks[i](_resizePayload);
+	}
 }
 
 function handleGlobalResize(e) {
@@ -143,7 +149,9 @@ function getIntersectionObserverData(options) {
 				const callbacks = observerData.callbacks.get(entry.target);
 				if (callbacks) {
 					_observerEntryArr[0] = entry;
-					callbacks.forEach(_callObserverCb);
+					for (let j = 0; j < callbacks.length; j++) {
+						callbacks[j](_observerEntryArr);
+					}
 				}
 			}
 		}, options);
@@ -353,20 +361,32 @@ export default class Component {
 	}
 
 		if (!this._observedScrollCallbacks) {
-			this._observedScrollCallbacks = new Set();
-	}
-		this._observedScrollCallbacks.add(callback);
-		scrollCallbacks.add(callback);
+			this._observedScrollCallbacks = [];
+		}
+		if (this._observedScrollCallbacks.indexOf(callback) === -1) {
+			this._observedScrollCallbacks.push(callback);
+		}
+		if (scrollCallbacks.indexOf(callback) === -1) {
+			scrollCallbacks.push(callback);
+		}
 	}
 
 	unobserveScroll(callback) {
 		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (this._observedScrollCallbacks) {
-			this._observedScrollCallbacks.delete(callback);
-	}
-		scrollCallbacks.delete(callback);
+			const idx = this._observedScrollCallbacks.indexOf(callback);
+			if (idx !== -1) {
+				this._observedScrollCallbacks[idx] = this._observedScrollCallbacks[this._observedScrollCallbacks.length - 1];
+				this._observedScrollCallbacks.pop();
+			}
+		}
+		const globalIdx = scrollCallbacks.indexOf(callback);
+		if (globalIdx !== -1) {
+			scrollCallbacks[globalIdx] = scrollCallbacks[scrollCallbacks.length - 1];
+			scrollCallbacks.pop();
+		}
 
-		if (scrollCallbacks.size === 0 && globalScrollListenerBound) {
+		if (scrollCallbacks.length === 0 && globalScrollListenerBound) {
 			globalScrollListenerBound = false;
 			if (globalLenisInstance) {
 				globalLenisInstance.off('scroll', handleGlobalScroll);
@@ -387,20 +407,32 @@ export default class Component {
 	}
 
 		if (!this._observedWindowResizeCallbacks) {
-			this._observedWindowResizeCallbacks = new Set();
-	}
-		this._observedWindowResizeCallbacks.add(callback);
-		windowResizeCallbacks.add(callback);
+			this._observedWindowResizeCallbacks = [];
+		}
+		if (this._observedWindowResizeCallbacks.indexOf(callback) === -1) {
+			this._observedWindowResizeCallbacks.push(callback);
+		}
+		if (windowResizeCallbacks.indexOf(callback) === -1) {
+			windowResizeCallbacks.push(callback);
+		}
 	}
 
 	unobserveWindowResize(callback) {
 		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 		if (this._observedWindowResizeCallbacks) {
-			this._observedWindowResizeCallbacks.delete(callback);
-	}
-		windowResizeCallbacks.delete(callback);
+			const idx = this._observedWindowResizeCallbacks.indexOf(callback);
+			if (idx !== -1) {
+				this._observedWindowResizeCallbacks[idx] = this._observedWindowResizeCallbacks[this._observedWindowResizeCallbacks.length - 1];
+				this._observedWindowResizeCallbacks.pop();
+			}
+		}
+		const globalIdx = windowResizeCallbacks.indexOf(callback);
+		if (globalIdx !== -1) {
+			windowResizeCallbacks[globalIdx] = windowResizeCallbacks[windowResizeCallbacks.length - 1];
+			windowResizeCallbacks.pop();
+		}
 
-		if (windowResizeCallbacks.size === 0 && globalResizeListenerBound) {
+		if (windowResizeCallbacks.length === 0 && globalResizeListenerBound) {
 			globalResizeListenerBound = false;
 			window.removeEventListener(resizeEventName, handleGlobalResize);
 	}
@@ -418,7 +450,9 @@ export default class Component {
 			const callbacks = resizeCallbacks.get(entry.target);
 			if (callbacks) {
 						_observerEntryArr[0] = entry;
-						callbacks.forEach(_callObserverCb);
+						for (let j = 0; j < callbacks.length; j++) {
+							callbacks[j](_observerEntryArr);
+						}
 	}
 		}
 	});
@@ -426,21 +460,25 @@ export default class Component {
 
 		let rCbs = resizeCallbacks.get(element);
 		if (!rCbs) {
-			rCbs = new Set();
+			rCbs = [];
 			resizeCallbacks.set(element, rCbs);
 			globalResizeObserver.observe(element);
 	}
-		rCbs.add(callback);
+		if (rCbs.indexOf(callback) === -1) {
+			rCbs.push(callback);
+		}
 
 		if (!this._observedResizeElements) {
 			this._observedResizeElements = new Map();
 	}
 		let oCbs = this._observedResizeElements.get(element);
 		if (!oCbs) {
-			oCbs = new Set();
+			oCbs = [];
 			this._observedResizeElements.set(element, oCbs);
 	}
-		oCbs.add(callback);
+		if (oCbs.indexOf(callback) === -1) {
+			oCbs.push(callback);
+		}
 	}
 
 	unobserveResize(element, callback = null) {
@@ -451,24 +489,40 @@ export default class Component {
 		if (!componentCallbacks) return;
 
 		if (callback) {
-			componentCallbacks.delete(callback);
+			const idx = componentCallbacks.indexOf(callback);
+			if (idx !== -1) {
+				componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
+				componentCallbacks.pop();
+			}
 			const globalCbs = resizeCallbacks.get(element);
-			if (globalCbs) globalCbs.delete(callback);
+			if (globalCbs) {
+				const gIdx = globalCbs.indexOf(callback);
+				if (gIdx !== -1) {
+					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
+					globalCbs.pop();
+				}
+			}
 	} else {
 			const globalCbs = resizeCallbacks.get(element);
 			if (globalCbs) {
-				// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
-				componentCallbacks.forEach(Set.prototype.delete, globalCbs);
+				for (let i = 0; i < componentCallbacks.length; i++) {
+					const cb = componentCallbacks[i];
+					const gIdx = globalCbs.indexOf(cb);
+					if (gIdx !== -1) {
+						globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
+						globalCbs.pop();
+					}
+				}
 	}
-			componentCallbacks.clear();
+			componentCallbacks.length = 0;
 	}
 
-		if (componentCallbacks.size === 0) {
+		if (componentCallbacks.length === 0) {
 			this._observedResizeElements.delete(element);
 	}
 
 		const globalCbs = resizeCallbacks.get(element);
-		if (globalCbs && globalCbs.size === 0) {
+		if (globalCbs && globalCbs.length === 0) {
 			resizeCallbacks.delete(element);
 			if (globalResizeObserver) {
 				globalResizeObserver.unobserve(element);
@@ -484,12 +538,14 @@ export default class Component {
 
 		let oDataCbs = observerData.callbacks.get(element);
 		if (!oDataCbs) {
-			oDataCbs = new Set();
+			oDataCbs = [];
 			observerData.callbacks.set(element, oDataCbs);
 			observerData.observer.observe(element);
 			observerData.elementsCount++;
 		}
-		oDataCbs.add(callback);
+		if (oDataCbs.indexOf(callback) === -1) {
+			oDataCbs.push(callback);
+		}
 
 		if (!this._observedIntersectionElements) {
 			this._observedIntersectionElements = new Map();
@@ -502,10 +558,12 @@ export default class Component {
 
 		let obsCbs = componentElementMap.get(observerData);
 		if (!obsCbs) {
-			obsCbs = new Set();
+			obsCbs = [];
 			componentElementMap.set(observerData, obsCbs);
 		}
-		obsCbs.add(callback);
+		if (obsCbs.indexOf(callback) === -1) {
+			obsCbs.push(callback);
+		}
 	}
 
 	_processIntersectionData(componentCallbacks, observerData) {
@@ -513,28 +571,41 @@ export default class Component {
 		const callback = this._currentUnobserveCallback;
 
 		if (callback) {
-			if (componentCallbacks.has(callback)) {
-				componentCallbacks.delete(callback);
+			const idx = componentCallbacks.indexOf(callback);
+			if (idx !== -1) {
+				componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
+				componentCallbacks.pop();
 				if (observerData && observerData.callbacks.has(element)) {
-					observerData.callbacks.get(element).delete(callback);
+					const globalCbs = observerData.callbacks.get(element);
+					const gIdx = globalCbs.indexOf(callback);
+					if (gIdx !== -1) {
+						globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
+						globalCbs.pop();
+					}
 				}
 			}
 		} else {
 			if (observerData && observerData.callbacks.has(element)) {
 				const globalCbs = observerData.callbacks.get(element);
-				// ⚡ BOLT OPTIMIZATION: Pass Set.prototype.delete directly to prevent closure allocation
-				componentCallbacks.forEach(Set.prototype.delete, globalCbs);
+				for (let i = 0; i < componentCallbacks.length; i++) {
+					const cb = componentCallbacks[i];
+					const gIdx = globalCbs.indexOf(cb);
+					if (gIdx !== -1) {
+						globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
+						globalCbs.pop();
+					}
+				}
 			}
-			componentCallbacks.clear();
+			componentCallbacks.length = 0;
 		}
 
-		if (componentCallbacks.size === 0) {
+		if (componentCallbacks.length === 0) {
 			this._observedIntersectionElements.get(element).delete(observerData);
 		}
 
 		if (observerData) {
 			const globalCbs = observerData.callbacks.get(element);
-			if (globalCbs && globalCbs.size === 0) {
+			if (globalCbs && globalCbs.length === 0) {
 				observerData.callbacks.delete(element);
 				observerData.observer.unobserve(element);
 				observerData.elementsCount--;
@@ -743,11 +814,11 @@ export default class Component {
 		if (!this._pendingStateChanges) {
 					this._pendingStateChanges = this._reusableStateChanges || {};
 					this._pendingAttributeChanges = this._reusableAttributeChanges || {};
-					// ⚡ BOLT OPTIMIZATION: Add to global dirty set instead of queuing separate rAF per component
-					dirtyComponents.add(this);
+					// ⚡ BOLT OPTIMIZATION: Add to global dirty array instead of queuing separate rAF per component
+					dirtyComponents.push(this);
 					if (!isRafQueued) {
 						isRafQueued = true;
-						requestAnimationFrame(flushGlobalStateChanges);
+						mutate(flushGlobalStateChanges);
 					}
 		}
 
@@ -851,8 +922,9 @@ export default class Component {
 	}
 	}
 
-	_autoBindActions() {
-		if (typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__) return;
+}
+if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
+	BaseComponent.prototype._autoBindActions = function() {
 		// Find all elements with data-action inside this component
 		const actionElements = queryAll("[data-action]", this.element);
 		const length = actionElements.length;
@@ -870,7 +942,7 @@ export default class Component {
 				let spaceIndex = actionString.indexOf(" ", startIndex);
 				if (spaceIndex === -1) {
 					spaceIndex = actionString.length;
-		}
+				}
 
 				if (spaceIndex > startIndex) {
 					const pair = actionString.substring(startIndex, spaceIndex);
@@ -880,10 +952,10 @@ export default class Component {
 					if (arrowIndex !== -1) {
 						event = pair.substring(0, arrowIndex);
 						method = pair.substring(arrowIndex + 2);
-	} else {
+					} else {
 						event = pair;
 						method = undefined; // Will trigger the warning below
-	}
+					}
 
 					if (
 						this[method] &&
@@ -891,16 +963,16 @@ export default class Component {
 						!method.startsWith("_") &&
 						!globalExcludedMethods.has(method)
 					) {
-				// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
+						// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
 						// an inline closure (e => this[method](e)) for every single bound action.
 						el.addEventListener(event, this[method]);
-	} else {
+					} else {
 						console.warn(`Method "${method}" not found, is restricted, or is not a function in component.`);
-	}
-		}
+					}
+				}
 
 				startIndex = spaceIndex + 1;
-	}
-	}
-	}
+			}
+		}
+	};
 }

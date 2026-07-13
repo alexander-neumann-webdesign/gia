@@ -10,6 +10,7 @@ export default defineConfig({
 		mangleProps: /^_/,
 		reserveProps: /^__gia_component__$/,
 		mangleQuoted: false,
+		legalComments: 'none',
 	},
 	build: {
 		emptyOutDir: false, // Don't wipe the main/minimal build files

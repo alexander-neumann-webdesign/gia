@@ -25,10 +25,12 @@ function flush() {
     state.reads = state.tempReads;
 
     for (let i = 0; i < currentReads.length; i++) {
-        try {
-            currentReads[i]();
-        } catch (e) {
-            console.error(e);
+        if (currentReads[i]) {
+            try {
+                currentReads[i]();
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 
@@ -40,10 +42,12 @@ function flush() {
     state.writes = state.tempWrites;
 
     for (let i = 0; i < currentWrites.length; i++) {
-        try {
-            currentWrites[i]();
-        } catch (e) {
-            console.error(e);
+        if (currentWrites[i]) {
+            try {
+                currentWrites[i]();
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 
@@ -80,13 +84,13 @@ export function mutate(fn, ctx) {
 export function clear(task) {
     let index = state.reads.indexOf(task);
     if (index > -1) {
-        state.reads.splice(index, 1);
+        state.reads[index] = null;
         return true;
     }
     
     index = state.writes.indexOf(task);
     if (index > -1) {
-        state.writes.splice(index, 1);
+        state.writes[index] = null;
         return true;
     }
     
