@@ -7,6 +7,7 @@ class Marquee extends gia.Component {
 			direction: "left", // 'left' or 'right'
 			pauseOnHover: false,
 			reactToScroll: false, // Whether to react to Lenis scroll events
+			reactToMouse: false,
 		};
 
 		this.ref = {
@@ -46,8 +47,8 @@ class Marquee extends gia.Component {
 		this.speedMultiplier = 1;
 
 		this._isRenderingFrame = false;
-
-		this.preventDrag = this.preventDrag.bind(this);
+		
+		this.centerX = window.innerWidth / 2;
 	}
 
 	mount() {
@@ -75,7 +76,8 @@ class Marquee extends gia.Component {
 
 		this.setupClones();
 
-		this.baseSpeed = this.options.speed * (this.options.direction === "left" ? -1 : 1);
+		this.baseSpeed = this.options.reactToMouse ? 0 : this.options.speed * (this.options.direction === "left" ? -1 : 1);
+		this.mouseSpeedFactor = this.options.speed / this.centerX;
 
 		// Observe resize to adjust clones and bounds
 		this.observeResize(this.element, this.handleResize);
@@ -90,6 +92,7 @@ class Marquee extends gia.Component {
 
 		this.initDrag();
 		this.initHover();
+		this.initMouseReact();
 	}
 
 	unmount() {
@@ -103,6 +106,7 @@ class Marquee extends gia.Component {
 		this.unbindScroll();
 		this.destroyHover();
 		this.destroyDrag();
+		this.destroyMouseReact();
 		clearTimeout(this._resizeTimer);
 		this.unobserveResize(this.element, this.handleResize);
 	}
@@ -159,6 +163,25 @@ class Marquee extends gia.Component {
 
 	onMouseLeave() {
 		this.setState({ isHovered: false });
+	}
+
+	initMouseReact() {
+		if (this.options.reactToMouse) {
+			window.addEventListener("mousemove", this.onMouseMove, { passive: true });
+			if (!this.prefersReducedMotion && !this.ticking) {
+				this.play();
+			}
+		}
+	}
+
+	destroyMouseReact() {
+		if (this.options.reactToMouse) {
+			window.removeEventListener("mousemove", this.onMouseMove);
+		}
+	}
+
+	onMouseMove(e) {
+		this.baseSpeed = (this.centerX - e.clientX) * this.mouseSpeedFactor;
 	}
 
 	handleScroll(e) {
@@ -276,6 +299,8 @@ class Marquee extends gia.Component {
 		if (!isFirstRun && Math.abs(this.containerWidth - newWidth) < 1) return;
 
 		this.containerWidth = newWidth;
+		this.centerX = window.innerWidth / 2;
+		this.mouseSpeedFactor = this.options.speed / this.centerX;
 
 		clearTimeout(this._resizeTimer);
 
