@@ -286,9 +286,9 @@ class VideoHolder extends gia.Component {
 
 			if (iconShape) {
 				if (isMuted) {
-					iconShape.setAttribute("d", "M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6");
+					iconShape.setAttribute('d', 'M 11 5 L 6 9 L 2 9 L 2 15 L 6 15 L 11 19 L 11 5 Z M 15 9 C 17 11, 19 13, 21 15 M 21 9 C 19 11, 17 13, 15 15');
 				} else {
-					iconShape.setAttribute("d", "M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07");
+					iconShape.setAttribute('d', 'M 11 5 L 6 9 L 2 9 L 2 15 L 6 15 L 11 19 L 11 5 Z M 15 9 C 17 11, 17 13, 15 15 M 18 6 C 22 10, 22 14, 18 18');
 				}
 			}
 		});
@@ -339,9 +339,6 @@ div[data-component="VideoHolder"] {
     right: 16px;
     display: flex;
     gap: 8px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
   }
 
   button[data-ref="playPauseButton"],
@@ -359,35 +356,45 @@ div[data-component="VideoHolder"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8) translateZ(0);
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    transform: scale(1);
+    will-change: transform, opacity, backdrop-filter;
 
     svg path.icon-shape {
       transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
+  }
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.4);
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    &:active {
-      transform: scale(0.95);
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    &:focus-visible {
-      outline: 2px solid white;
-      outline-offset: 2px;
+  &:hover,
+  &:focus-within {
+    button[data-ref="playPauseButton"],
+    button[data-ref="muteButton"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateZ(0);
     }
   }
 
-  &:hover .video-controls,
-  &:focus-within .video-controls {
-    opacity: 1;
-    pointer-events: auto;
+  button[data-ref="playPauseButton"]:hover,
+  button[data-ref="muteButton"]:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1) translateZ(0);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  button[data-ref="playPauseButton"]:active,
+  button[data-ref="muteButton"]:active {
+    transform: scale(0.95) translateZ(0);
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  button[data-ref="playPauseButton"]:focus-visible,
+  button[data-ref="muteButton"]:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
   }
 }
 */

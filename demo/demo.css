@@ -1261,9 +1261,6 @@ div[data-component=VideoHolder] .video-controls {
   right: 16px;
   display: flex;
   gap: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton],
 div[data-component=VideoHolder] button[data-ref=muteButton] {
@@ -1280,33 +1277,40 @@ div[data-component=VideoHolder] button[data-ref=muteButton] {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8) translateZ(0);
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  transform: scale(1);
+  will-change: transform, opacity, backdrop-filter;
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton] svg path.icon-shape,
 div[data-component=VideoHolder] button[data-ref=muteButton] svg path.icon-shape {
   transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
+div[data-component=VideoHolder]:hover button[data-ref=playPauseButton],
+div[data-component=VideoHolder]:hover button[data-ref=muteButton],
+div[data-component=VideoHolder]:focus-within button[data-ref=playPauseButton],
+div[data-component=VideoHolder]:focus-within button[data-ref=muteButton] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateZ(0);
+}
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover,
 div[data-component=VideoHolder] button[data-ref=muteButton]:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
-  transform: scale(1.1);
+  transform: scale(1.1) translateZ(0);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:active,
 div[data-component=VideoHolder] button[data-ref=muteButton]:active {
-  transform: scale(0.95);
+  transform: scale(0.95) translateZ(0);
   background: rgba(255, 255, 255, 0.3);
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:focus-visible,
 div[data-component=VideoHolder] button[data-ref=muteButton]:focus-visible {
   outline: 2px solid white;
   outline-offset: 2px;
-}
-div[data-component=VideoHolder]:hover .video-controls, div[data-component=VideoHolder]:focus-within .video-controls {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .physics-section {
