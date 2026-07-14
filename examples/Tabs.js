@@ -324,64 +324,6 @@ class Tabs extends gia.Component {
 		});
 	}
 
-		// 1. Container Height Animation
-		if (startHeight !== endHeight) {
-			const heightAnim = panelsContainer.animate(
-				[ { height: `${startHeight}px` }, { height: `${endHeight}px` } ],
-				{ duration: 300, easing: 'ease', fill: 'forwards' }
-			);
-			animations.push(heightAnim.finished);
-		}
-
-		// 2. Old Panel Fade & Slide Out
-		if (oldPanel) {
-			const oldAnim = oldPanel.animate(
-				[
-					{ opacity: 1, transform: 'translateX(0px)' },
-					{ opacity: 0, transform: `translateX(${direction > 0 ? -20 : 20}px)` }
-				],
-				{ duration: 250, easing: 'ease', fill: 'forwards' }
-			);
-			animations.push(oldAnim.finished);
-		}
-
-		// 3. New Panel Fade & Slide In
-		if (newPanel) {
-			const newAnim = newPanel.animate(
-				[
-					{ opacity: 0, transform: `translateX(${direction > 0 ? 20 : -20}px)` },
-					{ opacity: 1, transform: 'translateX(0px)' }
-				],
-				{ duration: 300, easing: 'ease', fill: 'forwards' }
-			);
-			animations.push(newAnim.finished);
-		}
-
-		Promise.allSettled(animations).then(() => {
-			if (this._animationId !== currentAnimId) return;
-
-			// Cleanup
-			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations
-			for (let index = 0; index < this.ref.panel.length; index++) {
-				const panel = this.ref.panel[index];
-				const panelAnims = panel.getAnimations();
-				for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
-				if (panel !== newPanel) {
-					panel.hidden = true;
-				}
-				panel.style.position = '';
-				panel.style.top = '';
-				panel.style.left = '';
-				panel.style.width = '';
-			}
-
-				const containerAnims = panelsContainer.getAnimations();
-			for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
-			panelsContainer.style.height = '';
-			panelsContainer.style.overflow = '';
-			panelsContainer.style.position = '';
-			this.element.removeAttribute('data-direction');
-		});
 	}
 
 	stateChange(stateChanges) {
