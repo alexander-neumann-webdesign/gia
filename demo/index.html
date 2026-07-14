@@ -670,11 +670,16 @@
   <section id="VideoHolder">
     <h2>VideoHolder</h2>
     <div class="demo-block">
-      <div data-component="VideoHolder">
+      <div data-component="VideoHolder" tabindex="0" role="region" aria-label="Video player">
         <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata"></video>
-        <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
-          <!-- Icons injected via JS -->
-        </button>
+        <div class="video-controls">
+          <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
+            <!-- Icons injected via JS -->
+          </button>
+          <button data-ref="muteButton" aria-label="Unmute video" class="is-muted">
+            <!-- Icons injected via JS -->
+          </button>
+        </div>
       </div>
 
 

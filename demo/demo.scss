@@ -1409,6 +1409,13 @@ button[data-component="ThemeToggle"] {
 /* --- VideoHolder --- */
 div[data-component="VideoHolder"] {
   position: relative;
+  border-radius: 8px; /* Smooth corners */
+  overflow: hidden;
+
+  &:focus-visible {
+    outline: 3px solid #005fcc;
+    outline-offset: 4px;
+  }
 
   video {
     width: 100%;
@@ -1416,13 +1423,25 @@ div[data-component="VideoHolder"] {
     display: block;
   }
 
-  button[data-ref="playPauseButton"] {
+  .video-controls {
     position: absolute;
     bottom: 16px;
     right: 16px;
-    background: rgba(0,0,0,0.5);
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  button[data-ref="playPauseButton"],
+  button[data-ref="muteButton"] {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: white;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     border-radius: 50%;
     width: 48px;
     height: 48px;
@@ -1430,16 +1449,23 @@ div[data-component="VideoHolder"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, background-color 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    transform: scale(1);
 
     svg path.icon-shape {
-      transition: d 0.3s ease;
+      transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     &:hover {
-      background: rgba(0,0,0,0.8);
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    &:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     &:focus-visible {
@@ -1448,8 +1474,8 @@ div[data-component="VideoHolder"] {
     }
   }
 
-  &:hover button[data-ref="playPauseButton"],
-  &:focus-within button[data-ref="playPauseButton"] {
+  &:hover .video-controls,
+  &:focus-within .video-controls {
     opacity: 1;
     pointer-events: auto;
   }
