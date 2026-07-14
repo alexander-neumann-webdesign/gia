@@ -324,8 +324,6 @@ class Tabs extends gia.Component {
 		});
 	}
 
-	}
-
 	stateChange(stateChanges) {
 		if ('activeTabIndex' in stateChanges) {
 			const activeIndex = stateChanges.activeTabIndex;
