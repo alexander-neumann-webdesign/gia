@@ -9,11 +9,25 @@ if (!fs.existsSync(demoPagesDir)) {
     fs.mkdirSync(demoPagesDir, { recursive: true });
 }
 
-// Read demo/index.html to extract component markup
+// Read demo/index.html to extract component markup and vendor scripts
 let demoIndexContent = '';
 if (fs.existsSync(demoIndexHtml)) {
     demoIndexContent = fs.readFileSync(demoIndexHtml, 'utf-8');
 }
+
+// Extract vendor scripts and links
+const vendorScripts = [];
+const scriptRegex = /<script\s+id="[^"]*"\s+data-src="[^"]*"(?:><\/script>|\s*\/>|>.*?<\/script>)/g;
+const linkRegex = /<link\s+id="[^"]*"\s+rel="stylesheet"\s+data-href="[^"]*"(?:\s*crossorigin="")?\s*\/?>/g;
+
+let match;
+while ((match = scriptRegex.exec(demoIndexContent)) !== null) {
+    vendorScripts.push(match[0]);
+}
+while ((match = linkRegex.exec(demoIndexContent)) !== null) {
+    vendorScripts.push(match[0]);
+}
+const vendorScriptsHtml = vendorScripts.join('\n  ');
 
 // Read all component files
 const files = fs.readdirSync(examplesDir).filter(f => f.endsWith('.js'));
@@ -22,10 +36,10 @@ const components = files.map(f => f.replace('.js', ''));
 // Function to extract section from demo/index.html
 function getComponentMarkup(componentName) {
     const sectionRegex = new RegExp(`<section[^>]*id="${componentName}"[^>]*>([\\s\\S]*?)</section>`, 'i');
-    const match = demoIndexContent.match(sectionRegex);
-    if (match) {
+    const secMatch = demoIndexContent.match(sectionRegex);
+    if (secMatch) {
         // Return the inner HTML of the section
-        return match[1].trim();
+        return secMatch[1].trim();
     }
     
     // Fallback markup
@@ -44,9 +58,9 @@ const generateHtmlTemplate = (componentName, optionsString, markup) => `<!DOCTYP
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${componentName} - Gia Components Demo</title>
   
-  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
-  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <!-- Vendor scripts from demo/index.html -->
+  ${vendorScriptsHtml}
+  
   <link rel="stylesheet" href="../demo.css">
   <style>
     body {
@@ -91,8 +105,8 @@ const generateHtmlTemplate = (componentName, optionsString, markup) => `<!DOCTYP
   <!-- Core library -->
   <script src="../../dist/gia.full.umd.js"></script>
   
-  <!-- Component script -->
-  <script src="../../examples/${componentName}.js"></script>
+  <!-- Component scripts -->
+  ${components.map(c => `<script src="../../examples/${c}.js"></script>`).join('\n  ')}
 
   <!-- Initialization -->
   <script>
@@ -112,9 +126,30 @@ components.forEach(comp => {
     let optionsString = 'No default options found.';
     if (optionsMatch && optionsMatch[1]) {
         optionsString = optionsMatch[1];
+        
+        // Dedent the options string
+        const lines = optionsString.split('\n');
+        const minTabs = Math.min(...lines.filter(l => l.trim() && l !== '{').map(l => {
+            const m = l.match(/^\t+/);
+            return m ? m[0].length : 0;
+        }));
+        if (minTabs > 0 && minTabs !== Infinity) {
+            optionsString = lines.map(l => l.replace(new RegExp(`^\t{1,${minTabs}}`), '')).join('\n');
+        }
     }
     
-    const markup = getComponentMarkup(comp);
+    // Escape HTML in options string so SVGs don't render
+    optionsString = optionsString.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    let markup = getComponentMarkup(comp);
+    // Fix relative paths for images, videos, and css
+    markup = markup.replace(/(src|href)="([^"]*\.(jpg|png|mp4|css))"/gi, (match, attr, val) => {
+        if (!val.startsWith('http') && !val.startsWith('/') && !val.startsWith('.')) {
+            return `${attr}="../${val}"`;
+        }
+        return match;
+    });
+
     const htmlContent = generateHtmlTemplate(comp, optionsString, markup);
     fs.writeFileSync(path.join(demoPagesDir, `${comp}.html`), htmlContent);
 });

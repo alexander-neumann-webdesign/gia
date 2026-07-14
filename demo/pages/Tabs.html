@@ -5,9 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tabs - Gia Components Demo</title>
   
-  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
-  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- Vendor scripts from demo/index.html -->
   <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <script id="vendor/embla/embla-carousel.umd-js" data-src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js"
+    data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="Flip" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+  <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
+  <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3"></script>
+  <script id="photoswipe-js" data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe.umd.min.js"></script>
+  <script id="photoswipe-lightbox-js"
+    data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe-lightbox.umd.min.js"></script>
+  <script id="matter-js-script"
+    data-src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
+  <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
+  <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
+  <link id="photoswipe-css" rel="stylesheet" data-href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
+  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  
   <link rel="stylesheet" href="../demo.css">
   <style>
     body {
@@ -72,7 +93,7 @@
             <div data-component="ImageHolder"
               data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'
               style="height: 300px; width: 100%;">
-              <img data-ref="img" src="gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
+              <img data-ref="img" src="../gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
             </div>
           </div>
         </div>
@@ -85,8 +106,40 @@
   <!-- Core library -->
   <script src="../../dist/gia.full.umd.js"></script>
   
-  <!-- Component script -->
+  <!-- Component scripts -->
+  <script src="../../examples/Accordion.js"></script>
+  <script src="../../examples/ClipboardCopy.js"></script>
+  <script src="../../examples/CountUp.js"></script>
+  <script src="../../examples/CustomCursor.js"></script>
+  <script src="../../examples/FilterableList.js"></script>
+  <script src="../../examples/FilterableListGSAP.js"></script>
+  <script src="../../examples/Form.js"></script>
+  <script src="../../examples/Header.js"></script>
+  <script src="../../examples/ImageComparison.js"></script>
+  <script src="../../examples/ImageHolder.js"></script>
+  <script src="../../examples/LightboxGallery.js"></script>
+  <script src="../../examples/Magnetic.js"></script>
+  <script src="../../examples/MapLibreMap.js"></script>
+  <script src="../../examples/Marquee.js"></script>
+  <script src="../../examples/MatterPhysicsBackground.js"></script>
+  <script src="../../examples/Modal.js"></script>
+  <script src="../../examples/MultiStepForm.js"></script>
+  <script src="../../examples/MultipleSelect.js"></script>
+  <script src="../../examples/OffCanvasMenu.js"></script>
+  <script src="../../examples/OpenStreetMap.js"></script>
+  <script src="../../examples/PongGame.js"></script>
+  <script src="../../examples/QRCode.js"></script>
+  <script src="../../examples/RangeSlider.js"></script>
+  <script src="../../examples/Reveal.js"></script>
+  <script src="../../examples/Slider.js"></script>
+  <script src="../../examples/SplitText.js"></script>
   <script src="../../examples/Tabs.js"></script>
+  <script src="../../examples/TextFit.js"></script>
+  <script src="../../examples/ThemeToggle.js"></script>
+  <script src="../../examples/TodoApp.js"></script>
+  <script src="../../examples/Tooltip.js"></script>
+  <script src="../../examples/UploadField.js"></script>
+  <script src="../../examples/VideoHolder.js"></script>
 
   <!-- Initialization -->
   <script>
