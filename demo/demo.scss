@@ -1802,6 +1802,11 @@ button[data-component="ClipboardCopy"] {
     border-radius: 4px;
     background: white;
 
+    &:focus-visible {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+
     &.is-active {
       background: #007bff;
       color: white;
