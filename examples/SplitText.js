@@ -7,6 +7,7 @@ class SplitText extends gia.Component {
 			threshold: 0.1,
 			rootMargin: "0px",
 			once: true,
+			wrapLines: false, // Physically wrap lines in a <span class="split-line">
 		};
 
 		// Save the original text for accessibility
@@ -16,6 +17,9 @@ class SplitText extends gia.Component {
 		this.words = [];
 		this.chars = [];
 		this.lines = [];
+		this.isSplit = false;
+		this._replacements = [];
+		this._lineWrappers = [];
 
 		this.setState({
 			isInview: false,
@@ -48,22 +52,31 @@ class SplitText extends gia.Component {
 		// Accessibility: Set aria-label to original text to hide chopped up letters from screen readers
 		this.element.setAttribute("aria-label", this.originalText);
 
-		this.split();
+		const init = () => {
+			if (!this.element) return; // Prevent execution if unmounted while waiting for fonts
 
-		if (this.options.split.indexOf("lines") !== -1) {
-			this.observeResize(this.element, this.handleResize);
-		}
+			this.split();
 
-		this.observeIntersection(this.element, this.handleIntersect, {
-			threshold: this.options.threshold,
-			rootMargin: this.options.rootMargin,
-		});
+			if (this.options.split.indexOf("lines") !== -1) {
+				this.observeResize(this.element, this.handleResize);
+			}
 
-		// Set initialized state to potentially trigger CSS transitions/visibility
-		// BaseComponent auto-maps boolean state to data-[kebab-case] attributes
-		gia.mutate(() => {
+			this.observeIntersection(this.element, this.handleIntersect, {
+				threshold: this.options.threshold,
+				rootMargin: this.options.rootMargin,
+			});
+
+			// Set initialized state to potentially trigger CSS transitions/visibility
+			// BaseComponent auto-maps boolean state to data-[kebab-case] attributes,
+			// and automatically batches state changes in requestAnimationFrame via mutate().
 			this.setState({ initialized: true });
-		});
+		};
+
+		if (document.fonts && document.fonts.ready) {
+			document.fonts.ready.then(init);
+		} else {
+			init();
+		}
 	}
 
 	handleIntersect(entries) {
@@ -92,12 +105,21 @@ class SplitText extends gia.Component {
 			// (reading offsetTop after writing custom CSS variables in the previous frame)
 			clearTimeout(this._resizeTimer);
 			this._resizeTimer = setTimeout(() => {
-				this.calculateLines();
+				if (this.options.wrapLines) {
+					// Physical blocks break native text reflow, so we must fully revert and resplit
+					this.split();
+				} else {
+					this.calculateLines();
+				}
 			}, 150);
 		}
 	}
 
 	split() {
+		if (this.isSplit) {
+			this.revert();
+		}
+
 		// Reset references
 		this.words = [];
 		this.chars = [];
@@ -112,10 +134,61 @@ class SplitText extends gia.Component {
 		// Cloning destroys nested components and event listeners because they are bound to the original DOM nodes.
 		this._walkAndSplit(this.element);
 
+		this.isSplit = true;
+
 		// Now process lines if needed
 		if (doLines) {
 			this.calculateLines();
 		}
+	}
+
+	revert() {
+		if (this._measureTask) {
+			gia.clear(this._measureTask);
+			this._measureTask = null;
+		}
+		if (this._mutateTask) {
+			gia.clear(this._mutateTask);
+			this._mutateTask = null;
+		}
+
+		if (!this.isSplit) return;
+
+		// 1. Unwrap physical lines if any
+		if (this._lineWrappers) {
+			for (const wrapper of this._lineWrappers) {
+				if (wrapper.parentNode) {
+					const children = Array.from(wrapper.childNodes);
+					for (const c of children) {
+						wrapper.parentNode.insertBefore(c, wrapper);
+					}
+					wrapper.parentNode.removeChild(wrapper);
+				}
+			}
+			this._lineWrappers = [];
+		}
+
+		// 2. Restore original text nodes
+		for (let i = this._replacements.length - 1; i >= 0; i--) {
+			const { parent, oldChild, newChildren } = this._replacements[i];
+			if (newChildren.length > 0 && parent.contains(newChildren[0])) {
+				parent.insertBefore(oldChild, newChildren[0]);
+				for (const c of newChildren) {
+					parent.removeChild(c);
+				}
+			} else if (newChildren.length === 0) {
+				parent.appendChild(oldChild);
+			}
+		}
+
+		this._replacements = [];
+		this.words = [];
+		this.chars = [];
+		this.lines = [];
+		this.isSplit = false;
+		this._charIndex = 0;
+		this._wordIndex = 0;
+		this._lineIndex = 0;
 	}
 
 	_walkAndSplit(node) {
@@ -136,7 +209,9 @@ class SplitText extends gia.Component {
 				}
 
 				const fragment = this._processTextNode(text);
+				const newChildren = Array.from(fragment.childNodes);
 				node.replaceChild(fragment, child);
+				this._replacements.push({ parent: node, oldChild: child, newChildren });
 			} else if (child.nodeType === Node.ELEMENT_NODE) {
 				// To prevent screen readers from reading the nested contents (since we set aria-label on root)
 				// we could set aria-hidden here, but we apply it directly to the spans anyway.
@@ -153,9 +228,11 @@ class SplitText extends gia.Component {
 		// Use regex split to preserve punctuation attached to words.
 		// Intl.Segmenter separates punctuation, creating unwanted detached single-character spans.
 		const parts = text.split(/(\s+)/);
-		for (const part of parts) {
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i];
 			if (part.length > 0) {
-				words.push({ text: part, isWordLike: /\S/.test(part) });
+				// Micro-optimization: part.trim().length is faster than Regex /\S/.test() in a tight loop
+				words.push({ text: part, isWordLike: part.trim().length > 0 });
 			}
 		}
 		return words;
@@ -169,7 +246,19 @@ class SplitText extends gia.Component {
 				chars.push(segment.segment);
 			}
 		} else {
-			chars = [...wordText];
+			// Robust fallback for older browsers (like Firefox < 112) that lack Intl.Segmenter.
+			// This regex (inspired by GSAP) handles complex emojis (ZWS, flags, family emojis).
+			// We use `new RegExp` to prevent SyntaxErrors during script compilation on very old browsers.
+			try {
+				const emojiRegex = new RegExp("\\p{RI}\\p{RI}|\\p{Emoji}(\\p{EMod}|\\u{FE0F}\\u{20E3}?|[\\u{E0020}-\\u{E007E}]+\\u{E007F})?(\\u{200D}\\p{Emoji}(\\p{EMod}|\\u{FE0F}\\u{20E3}?|[\\u{E0020}-\\u{E007E}]+\\u{E007F})?)*|.", "gu");
+				let match;
+				while ((match = emojiRegex.exec(wordText)) !== null) {
+					chars.push(match[0]);
+				}
+			} catch(e) {
+				// Ultimate fallback if Unicode Property Escapes (\p{}) aren't supported
+				chars = [...wordText];
+			}
 		}
 		return chars;
 	}
@@ -242,7 +331,7 @@ class SplitText extends gia.Component {
 
 		this.ticking = true;
 
-		gia.measure(() => {
+		this._measureTask = gia.measure(() => {
 			// Phase 1: STRICT DOM READS
 			// We read all offsets into an array first to prevent layout thrashing (forced reflows)
 			const offsetTops = new Array(this.words.length);
@@ -270,7 +359,7 @@ class SplitText extends gia.Component {
 			// Phase 2: STRICT DOM WRITES
 			// Defer applying styles until the next frame to keep main thread unblocked
 			this._linesArrayToApply = linesArray;
-			gia.mutate(this._applyLineStyles);
+			this._mutateTask = gia.mutate(this._applyLineStyles);
 		});
 	}
 
@@ -293,24 +382,75 @@ class SplitText extends gia.Component {
 				const children = wordEl.children;
 				for (let k = 0; k < children.length; k++) {
 					const child = children[k];
-					if (child.classList.contains("split-char")) {
-						if (child._currentLineIndex !== i) {
-							child.style.setProperty("--line-index", i);
-							child._currentLineIndex = i;
-						}
+					// Micro-optimization: We know all children are split-chars, 
+					// so we can skip the expensive child.classList.contains("split-char") check
+					if (child._currentLineIndex !== i) {
+						child.style.setProperty("--line-index", i);
+						child._currentLineIndex = i;
 					}
 				}
 			}
+		}
+
+		if (this.options.wrapLines) {
+			this._wrapLinesPhysically(this._linesArrayToApply);
 		}
 
 		this._linesArrayToApply = null;
 		this.ticking = false;
 	}
 
+	_wrapLinesPhysically(linesArray) {
+		this._lineWrappers = [];
+		for (let i = 0; i < linesArray.length; i++) {
+			const lineWords = linesArray[i];
+			if (lineWords.length === 0) continue;
+
+			const firstWord = lineWords[0];
+			const lastWord = lineWords[lineWords.length - 1];
+
+			// Only wrap if they share the same parent to avoid breaking nested DOM structures
+			if (firstWord.parentNode && firstWord.parentNode === lastWord.parentNode) {
+				const parent = firstWord.parentNode;
+				const lineWrapper = document.createElement("span");
+				lineWrapper.className = "split-line";
+				lineWrapper.style.display = "block"; // Lines are blocks
+				lineWrapper.style.setProperty("--line-index", i);
+
+				parent.insertBefore(lineWrapper, firstWord);
+
+				let currentNode = firstWord;
+				let reachedLast = false;
+				const nodesToMove = [];
+				
+				while (currentNode) {
+					nodesToMove.push(currentNode);
+					if (currentNode === lastWord) {
+						reachedLast = true;
+						break;
+					}
+					currentNode = currentNode.nextSibling;
+				}
+
+				if (reachedLast) {
+					for (const node of nodesToMove) {
+						lineWrapper.appendChild(node);
+					}
+					this._lineWrappers.push(lineWrapper);
+				} else {
+					lineWrapper.remove();
+				}
+			}
+		}
+	}
+
 	unmount() {
 		this.ticking = false;
-		gia.clear(this._applyLineStyles);
+		if (this._measureTask) gia.clear(this._measureTask);
+		if (this._mutateTask) gia.clear(this._mutateTask);
 		clearTimeout(this._resizeTimer);
+		this.revert();
+		this.element.removeAttribute("aria-label");
 	}
 }
 

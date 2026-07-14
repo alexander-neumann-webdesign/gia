@@ -920,9 +920,12 @@ html.off-canvas-menu-open::after {
 [data-component=SplitText] .split-word {
   display: inline-block;
 }
+[data-component=SplitText].split-lines-demo .split-line {
+  overflow: hidden;
+}
 [data-component=SplitText].split-lines-demo .split-word {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(100%);
   transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 [data-component=SplitText].split-words-demo .split-word {
