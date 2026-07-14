@@ -24,3 +24,7 @@
 ## 2025-06-03 - Added Focus Visible State to ClipboardCopy Button
 **Learning:** Custom buttons like `ClipboardCopy` can lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually.
 **Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially utility buttons.
+
+## 2025-06-04 - Added Focus Visible State to MultiStepForm Step Indicators
+**Learning:** Custom step indicators in multi-step forms (like the buttons in `MultiStepForm`) that act as navigation can lack explicit focus indicators in their baseline styles, making keyboard navigation difficult to track visually as users tab through the form steps.
+**Action:** Always ensure a clear `:focus-visible` outline is applied in CSS for custom interactive elements, especially navigational buttons like step indicators, to ensure robust keyboard accessibility.

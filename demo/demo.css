@@ -1568,6 +1568,10 @@ button[data-component=ClipboardCopy][data-status=error] {
   border-radius: 4px;
   background: white;
 }
+#MultiStepForm .step-indicator:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
 #MultiStepForm .step-indicator.is-active {
   background: #007bff;
   color: white;
