@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CountUp - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>CountUp</h1>
+  <p>Demo showcasing all configuration options for <strong>CountUp</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+			start: 0,
+			end: null, // parsed from element text if not provided
+			duration: 2000, // milliseconds
+			decimals: 0,
+			separator: ",",
+			decimal: ".",
+			prefix: "",
+			suffix: "",
+			easing: true,
+			useGrouping: true,
+			threshold: 0.1,
+			startOnMount: false, // bypass intersection observer
+		}</code></pre>
+  
+  <section id="CountUp">
+    <h2>Interactive Demo</h2>
+    <h2>CountUp</h2>
+    <div class="demo-block" style="text-align: center; padding: 3rem;">
+      <p>An auto-parsing counting animation that triggers when scrolled into view.</p>
+      <div data-component="CountUp"
+        data-options='{"duration": 3000, "start": 0, "end": 1500, "decimals": 0, "suffix": "+"}'
+        style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">1,500+</div>
+      <div data-component="CountUp"
+        data-options='{"duration": 3000, "start": 0, "end": 250.50, "decimals": 2, "prefix": "$"}'
+        style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;">$0</div>
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/CountUp.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

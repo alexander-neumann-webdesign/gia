@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>Tabs</h1>
+  <p>Demo showcasing all configuration options for <strong>Tabs</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>No default options found.</code></pre>
+  
+  <section id="Tabs">
+    <h2>Interactive Demo</h2>
+    <h2>Tabs</h2>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab
+            2</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" tabindex="-1">Tab
+            3</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+            <h3>Full-width Tab 1</h3>
+            <p>This tabs layout adapts to different screen sizes using grid. We added some extra content here so you can
+              see how heights change depending on what's active.</p>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+            <h3>Shorter Tab 2</h3>
+            <p>Just a small amount of text here.</p>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+            <h3>Tab 3 with ImageHolder</h3>
+            <p>This panel contains the requested ImageHolder component.</p>
+            <div data-component="ImageHolder"
+              data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'
+              style="height: 300px; width: 100%;">
+              <img data-ref="img" src="gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/Tabs.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

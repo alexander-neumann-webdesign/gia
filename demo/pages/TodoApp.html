@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TodoApp - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>TodoApp</h1>
+  <p>Demo showcasing all configuration options for <strong>TodoApp</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+			storageKey: "gia-todo-app-data",
+			deleteText: "Delete",
+		}</code></pre>
+  
+  <section id="TodoApp">
+    <h2>Interactive Demo</h2>
+    <h2>TodoApp</h2>
+    <div class="demo-block">
+      <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
+      <div data-component="TodoApp" class="todo-app">
+        <!-- Screen reader announcer for accessibility -->
+        <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
+
+        <form data-action="submit->handleFormSubmit" class="todo-form">
+          <label for="new-todo" class="sr-only">Add new task</label>
+          <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input"
+            required />
+          <button type="submit" class="todo-submit-btn">Add Task</button>
+        </form>
+
+        <ul data-ref="list" class="todo-list" aria-label="Task list">
+          <!-- Tasks will be rendered here dynamically -->
+        </ul>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/TodoApp.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

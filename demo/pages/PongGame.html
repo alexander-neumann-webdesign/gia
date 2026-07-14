@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PongGame - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>PongGame</h1>
+  <p>Demo showcasing all configuration options for <strong>PongGame</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+            paddleWidth: 10,
+            paddleHeight: 100,
+            ballSize: 10,
+            ballSpeed: 5,
+            aiSpeed: 4,
+            paddlePadding: 20
+        }</code></pre>
+  
+  <section id="PongGame">
+    <h2>Interactive Demo</h2>
+    <h2>PongGame</h2>
+    <div class="demo-block">
+
+      <section class="pong-section" data-component="PongGame">
+        <!-- The canvas sits in the background -->
+        <canvas class="pong-canvas" data-ref="PongGame:canvas" aria-hidden="true"></canvas>
+
+        <!-- Content overlay -->
+        <div class="pong-content">
+          <h2>Interactive Background</h2>
+          <p>The canvas runs a Pong simulation you can interact with!</p>
+
+          <div class="pong-scoreboard">
+            <div class="score-card">
+              <span>Player</span>
+              <span class="score" data-ref="PongGame:playerScoreDisplay">0</span>
+            </div>
+            <div class="score-card">
+              <span>AI</span>
+              <span class="score" data-ref="PongGame:aiScoreDisplay">0</span>
+            </div>
+          </div>
+
+          <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle"
+            aria-label="Pause Background Animation">
+            <!-- Icon will be injected by component state -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+        </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/PongGame.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

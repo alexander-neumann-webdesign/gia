@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipboardCopy - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>ClipboardCopy</h1>
+  <p>Demo showcasing all configuration options for <strong>ClipboardCopy</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+			successDuration: 2000,
+			successText: "Copied!",
+		}</code></pre>
+  
+  <section id="ClipboardCopy">
+    <h2>Interactive Demo</h2>
+    <h2>ClipboardCopy</h2>
+    <div class="demo-block">
+      <span data-component="Tooltip" data-tooltip="Click to copy" data-position="top">
+        <button data-component="ClipboardCopy" data-copy-text="SAVE20" class="coupon-btn">
+          <span class="stack-children">
+            <span class="sizer" aria-hidden="true">SAVE20</span>
+            <span class="sizer" aria-hidden="true">Copied!</span>
+            <span data-ref="buttonText">SAVE20</span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon"
+            aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
+            <path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"></path>
+          </svg>
+        </button>
+      </span>
+
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/ClipboardCopy.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

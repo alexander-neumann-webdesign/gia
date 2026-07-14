@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RangeSlider - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>RangeSlider</h1>
+  <p>Demo showcasing all configuration options for <strong>RangeSlider</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+            start: [0, 100],
+            connect: true,
+            range: {
+                'min': 0,
+                'max': 100
+            },
+            step: 1,
+            tooltips: true
+        }</code></pre>
+  
+  <section id="RangeSlider">
+    <h2>Interactive Demo</h2>
+    <h2>RangeSlider</h2>
+    <div class="demo-block">
+      <div data-component="RangeSlider"
+        data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
+        <div data-ref="slider"></div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+          <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
+            Min Value
+            <input type="number" data-ref="inputs"
+              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
+            Max Value
+            <input type="number" data-ref="inputs"
+              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/RangeSlider.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

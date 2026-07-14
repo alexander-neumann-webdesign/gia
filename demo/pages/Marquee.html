@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marquee - Gia Components Demo</title>
+  
+  <!-- Add any necessary vendor scripts here based on component if needed from demo/index.html -->
+  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>Marquee</h1>
+  <p>Demo showcasing all configuration options for <strong>Marquee</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+			speed: 1, // Base scroll speed (pixels per frame)
+			direction: "left", // 'left' or 'right'
+			pauseOnHover: false,
+			reactToScroll: false, // Whether to react to Lenis scroll events
+		}</code></pre>
+  
+  <section id="Marquee">
+    <h2>Interactive Demo</h2>
+    <h2>Marquee</h2>
+    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
+      <div>
+        <h3>Left Direction</h3>
+        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+          <div data-ref="track" class="marquee-track">
+            <div class="marquee-item">Item 1</div>
+            <div class="marquee-item">Item 2</div>
+            <div class="marquee-item">Item 3</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Right Direction</h3>
+        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
+          <div data-ref="track" class="marquee-track">
+            <div class="marquee-item">Item A</div>
+            <div class="marquee-item">Item B</div>
+            <div class="marquee-item">Item C</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>With Images and Text</h3>
+        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'
+          class="marquee-demo">
+          <div data-ref="track" class="marquee-track">
+            <div class="marquee-item">
+              <img src="gallery-1.jpg" alt="Gallery 1"
+                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+            </div>
+            <div class="marquee-item">
+              <span>Beautiful Landscapes</span>
+            </div>
+            <div class="marquee-item">
+              <img src="gallery-2.jpg" alt="Gallery 2"
+                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+            </div>
+            <div class="marquee-item">
+              <span>City Vibes</span>
+            </div>
+            <div class="marquee-item">
+              <img src="gallery-3.jpg" alt="Gallery 3"
+                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+            </div>
+            <div class="marquee-item">
+              <span>Nature Discovery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Cards Variant</h3>
+        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+          <div data-ref="track" class="marquee-track marquee-cards-track">
+            <div class="marquee-item marquee-card">
+              <img src="gallery-1.jpg" alt="Gallery 1">
+              <div class="marquee-card-content">
+                <h4>Mountain Retreat</h4>
+                <p>Discover the serene beauty of the mountains.</p>
+              </div>
+            </div>
+            <div class="marquee-item marquee-card">
+              <img src="gallery-2.jpg" alt="Gallery 2">
+              <div class="marquee-card-content">
+                <h4>City Exploration</h4>
+                <p>Experience the bustling life of the city.</p>
+              </div>
+            </div>
+            <div class="marquee-item marquee-card">
+              <img src="gallery-3.jpg" alt="Gallery 3">
+              <div class="marquee-card-content">
+                <h4>Forest Adventure</h4>
+                <p>Wander through lush green forests.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component script -->
+  <script src="../../examples/Marquee.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>
