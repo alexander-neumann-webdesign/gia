@@ -172,7 +172,7 @@ function getIntersectionObserverData(options) {
  * Component without code splitting support
  */
 
-export default class Component {
+export default class BaseComponent {
 	constructor(element, options) {
 		this.element = element;
 		components.set(this.element, this);
