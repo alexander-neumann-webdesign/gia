@@ -52,7 +52,7 @@ function R(n, t = document) {
 function p(n, t = document) {
   return typeof n != "string" ? n : t.querySelectorAll(n);
 }
-function C(n, t, e = null) {
+function S(n, t, e = null) {
   e === null ? n.classList.toggle(t) : n.classList.toggle(t, !!e);
 }
 function O(n, t, e) {
@@ -64,7 +64,7 @@ function O(n, t, e) {
     n.classList[e](t);
   return n;
 }
-function S(n, t) {
+function C(n, t) {
   return O(n, t, "remove");
 }
 function E(n, t) {
@@ -99,8 +99,8 @@ const _ = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   debounce: I,
   query: R,
   queryAll: p,
-  removeClass: S,
-  toggleClass: C,
+  removeClass: C,
+  toggleClass: S,
   triggerEvent: $
 }, Symbol.toStringTag, { value: "Module" }));
 function q(n = {}, t = document.documentElement) {

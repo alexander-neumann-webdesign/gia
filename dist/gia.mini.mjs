@@ -1,6 +1,6 @@
 var j = Object.defineProperty;
 var T = (i, t, e) => t in i ? j(i, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : i[t] = e;
-var P = (i, t, e) => T(i, typeof t != "symbol" ? t + "" : t, e);
+var $ = (i, t, e) => T(i, typeof t != "symbol" ? t + "" : t, e);
 typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = window.gia.components || {}, window.gia.register = (i, t = {}) => {
   if (typeof i != "function") {
     console.error("Gia: Register failed. Expected a Class, got:", i);
@@ -15,7 +15,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
 });
 class q {
   constructor() {
-    P(this, "r", {
+    $(this, "r", {
       log: !1,
       attrPrefix: "data",
       // data-component="HelloWorld"
@@ -191,18 +191,18 @@ function V() {
       } catch (n) {
         console.error(n);
       }
-  t.length = 0, c.tempWrites = t, (c.reads.length > 0 || c.writes.length > 0) && $();
+  t.length = 0, c.tempWrites = t, (c.reads.length > 0 || c.writes.length > 0) && P();
 }
-function $() {
+function P() {
   !c.scheduled && typeof window < "u" && (c.scheduled = !0, window.requestAnimationFrame(V));
 }
 function dt(i, t) {
   const e = t ? i.bind(t) : i;
-  return c.reads.push(e), $(), e;
+  return c.reads.push(e), P(), e;
 }
 function Z(i, t) {
   const e = t ? i.bind(t) : i;
-  return c.writes.push(e), $(), e;
+  return c.writes.push(e), P(), e;
 }
 function gt(i) {
   let t = c.reads.indexOf(i);
@@ -279,7 +279,7 @@ function ot(i) {
     elementsCount: 0
   }, s.set("data", l)), l;
 }
-let rt = class {
+class rt {
   constructor(t, e) {
     this.element = t, h.set(this.element, this), this.f = this.constructor.name, this.n = {}, this.r = e || {}, this.a = {}, this.d = this.d.bind(this), this.b();
   }
@@ -586,8 +586,8 @@ let rt = class {
       this[r] = this[r].bind(this);
     }
   }
-};
-class _t extends rt {
+}
+class pt extends rt {
   async require() {
   }
   _() {
@@ -631,15 +631,15 @@ class lt {
     r !== -1 && (r === n.length - 1 || (n[r] = n[n.length - 1]), n.pop());
   }
 }
-const wt = new lt();
+const _t = new lt();
 export {
   rt as BaseComponent,
-  _t as Component,
+  pt as Component,
   gt as clear,
   _ as config,
   S as createInstance,
   Q as destroyInstance,
-  wt as eventbus,
+  _t as eventbus,
   ut as getComponentFromElement,
   at as loadComponents,
   dt as measure,
