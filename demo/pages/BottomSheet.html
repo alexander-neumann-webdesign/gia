@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BottomSheet - Gia Components Demo</title>
+  
+  <link rel="stylesheet" href="../demo.css">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .demo-block {
+      margin-top: 1rem;
+      border: 1px dashed #aaa;
+      padding: 1rem;
+      border-radius: 8px;
+      /* Ensure demo block has height so we can scroll */
+      min-height: 80vh;
+    }
+    .options-pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    nav {
+      margin-bottom: 2rem;
+    }
+
+    /* Bottom Sheet Styles */
+    .bottom-sheet[data-component="BottomSheet"] {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="overlay"] {
+      --bs-opacity: 0.4;
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+      pointer-events: none;
+    }
+
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"] {
+      position: relative;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: transform;
+      pointer-events: auto;
+      touch-action: none;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"]:focus {
+      outline: none;
+    }
+
+    /* Extension to hide background gap when dragging up */
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"]::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 200vh;
+      background-color: inherit;
+    }
+
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="handle"] {
+      width: 36px;
+      height: 5px;
+      background: #ddd;
+      border-radius: 3px;
+      margin: 12px auto;
+      flex-shrink: 0;
+    }
+
+    .bottom-sheet[data-component="BottomSheet"] [data-ref="scrollable"] {
+      padding: 0 24px 24px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      flex-grow: 1;
+    }
+
+    /* Active state handling */
+    .bottom-sheet[data-component="BottomSheet"][data-is-open="true"] {
+      pointer-events: auto;
+    }
+
+    .bottom-sheet[data-component="BottomSheet"][data-is-open="true"] [data-ref="overlay"] {
+      opacity: var(--bs-opacity);
+      pointer-events: auto;
+    }
+    
+    .bottom-sheet[data-component="BottomSheet"][data-is-open="true"] [data-ref="drawer"] {
+      transform: translateY(0);
+    }
+
+    /* Dragging state */
+    .bottom-sheet[data-component="BottomSheet"][data-is-dragging="true"] [data-ref="drawer"],
+    .bottom-sheet[data-component="BottomSheet"][data-is-dragging="true"] [data-ref="overlay"] {
+      transition: none !important;
+    }
+
+    body {
+      background-color: #000; /* Permanent black background, hidden by wrapper */
+    }
+
+    /* Wrapper scaling */
+    [data-bottom-sheet-wrapper] {
+      --bs-scale: 0.97;
+      --bs-radius: 12px;
+      --bs-offset: 14px;
+      transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.5s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.5s cubic-bezier(0.32, 0.72, 0, 1), color 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+      background: var(--bg-color, #fff);
+      min-height: 100vh;
+    }
+
+    [data-bottom-sheet-wrapper][data-bottom-sheet-scaled="true"] {
+      transform: scale(var(--bs-scale)) translateY(calc(env(safe-area-inset-top) + var(--bs-offset)));
+      border-radius: var(--bs-radius);
+      overflow: hidden;
+    }
+
+    body:has(.bottom-sheet[data-is-dragging="true"]) [data-bottom-sheet-wrapper] {
+      user-select: none;
+      -webkit-user-select: none;
+      transition: none !important;
+    }
+    
+    /* Demo trigger button */
+    .open-drawer-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div data-bottom-sheet-wrapper>
+  <nav>
+    <a href="index.html">&larr; Back to all components</a>
+  </nav>
+  
+  <h1>BottomSheet</h1>
+  <p>Demo showcasing a highly performant, draggable bottom sheet modeled after native iOS drawers.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+	dampTop: 0.15,
+	closeThreshold: 0.25,
+	velocityThreshold: 0.4,
+	scaleBackground: true
+}</code></pre>
+  
+  <section id="BottomSheet">
+    <h2>Interactive Demo</h2>
+    <div class="demo-block">
+      
+      <button class="open-drawer-btn" data-bottom-sheet-target="my-sheet" aria-expanded="false" aria-controls="my-sheet">Open Bottom Sheet</button>
+
+    </div>
+  </section>
+</div>
+
+<!-- The bottom sheet itself -->
+<div class="bottom-sheet" data-component="BottomSheet" data-options='{"scaleBackground": true}' id="my-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <div data-ref="overlay" aria-hidden="true"></div>
+        <div data-ref="drawer" tabindex="-1">
+          <div data-ref="handle" aria-hidden="true"></div>
+          <div data-ref="scrollable">
+            <h2 id="sheet-title">Bottom Sheet Title</h2>
+            <p>You can drag this drawer up and down natively. Try swiping it!</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <button class="open-drawer-btn" data-ref="closeBtn">Close</button>
+            <div style="height: 1000px; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e0e0e0 10px, #e0e0e0 20px); margin-top: 24px; border-radius: 8px;"></div>
+          </div>
+        </div>
+</div>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component scripts -->
+  <script src="../../examples/BottomSheet.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</body>
+</html>

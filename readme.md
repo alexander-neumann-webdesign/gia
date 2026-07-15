@@ -561,12 +561,14 @@ A comprehensive suite of examples demonstrating best practices is available. You
 
 ### UI Elements
 
+- **[BottomSheet](examples/BottomSheet.js)**: A highly interactive, touch-friendly bottom sheet (drawer) inspired by [Vaul](https://github.com/emilkowalski/vaul). It features responsive CSS variable-driven physics, a "mid-air catch" gesture engine, focus-trapping for WCAG accessibility, and full compatibility with Lenis smooth scrolling.
 - **[ClipboardCopy](examples/ClipboardCopy.js)**: A utility component that copies text to the clipboard and provides temporary UI feedback based on state transitions.
 - **[CountUp](examples/CountUp.js)**: An auto-parsing counting animation that triggers when scrolled into view, optimized for zero garbage collection during its loop.
 - **[CustomCursor](examples/CustomCursor.js)**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for magnetic snapping and morphing.
 - **[Magnetic](examples/Magnetic.js)**: A physical "magnetic pull" effect for interactive elements that uses dual-layer parallax and recalculates spring physics dynamically.
 - **[Modal](examples/Modal.js)**: An accessible dialog leveraging the native `<dialog>` element. Supports complex triggering, click-outside logic, and URL hash syncing.
 - **[ThemeToggle](examples/ThemeToggle.js)**: A dark/light mode toggle switch interacting with `localStorage` and mutating global document state.
+- **[Toaster](examples/Toaster.js)**: A highly optimized, [Sonner-inspired](https://github.com/emilkowalski/sonner) toast notification system featuring physics-based swipe-to-dismiss gestures, dynamic hover expansion, smooth height recalculation, and comprehensive WCAG accessibility.
 - **[Tooltip](examples/Tooltip.js)**: A robust tooltip component asynchronously importing the Floating UI library via `require()` for collision-aware positioning.
 
 ### Media & Galleries
