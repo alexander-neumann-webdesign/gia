@@ -24,9 +24,7 @@ class Modal extends gia.Component {
 	}
 
 
-	_getArray(refValue) {
-		return Array.isArray(refValue) ? refValue : (refValue ? [refValue] : []);
-	}
+
 
 	mount() {
 		if (!this.isDialog) return;
@@ -47,7 +45,7 @@ class Modal extends gia.Component {
 
 		// Attach events to close buttons from refs
 		if (this.ref.closeButton) {
-			const buttons = this._getArray(this.ref.closeButton);
+			const buttons = this.ref.closeButton;
 			for (let i = 0; i < buttons.length; i++) {
 				buttons[i].addEventListener('click', this.handleCloseClick);
 			}
@@ -62,7 +60,6 @@ class Modal extends gia.Component {
 
 		// Swup integration: Force close on page transition to avoid dangling modals
 		if (window.swup) {
-			this.handleSwupOut = this.handleSwupOut.bind(this);
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
 		}
 
@@ -89,7 +86,7 @@ class Modal extends gia.Component {
 		}
 
 		if (this.ref.closeButton) {
-			const buttons = this._getArray(this.ref.closeButton);
+			const buttons = this.ref.closeButton;
 			for (let i = 0; i < buttons.length; i++) {
 				buttons[i].removeEventListener('click', this.handleCloseClick);
 			}

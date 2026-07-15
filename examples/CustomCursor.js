@@ -20,10 +20,6 @@ class CustomCursor extends gia.Component {
         };
 
         // Pre-bind methods for performance in requestAnimationFrame and event listeners
-        this.render = this.render.bind(this);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
-        this.handleScroll = this.handleScroll.bind(this);
-        this.handleResize = this.handleResize.bind(this);
 
         this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };

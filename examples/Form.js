@@ -57,7 +57,6 @@ class Form extends gia.Component {
 
 			this.ref.conditions = this.formElement.querySelectorAll('[data-condition]');
 			if (this.ref.conditions.length > 0) {
-				this.evaluateConditions = this.evaluateConditions.bind(this);
 				this.formElement.addEventListener('change', this.evaluateConditions);
 				this.formElement.addEventListener('input', this.evaluateConditions);
 				this.evaluateConditions();

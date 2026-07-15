@@ -10,10 +10,6 @@ class ImageComparison extends gia.Component {
         this.isDragging = false;
         this.transitionTimeout = null;
 
-        this.handleInput = this.handleInput.bind(this);
-        this.handlePointerDown = this.handlePointerDown.bind(this);
-        this.handlePointerUp = this.handlePointerUp.bind(this);
-        this.handlePointerMove = this.handlePointerMove.bind(this);
         this.dragStartX = null;
     }
 

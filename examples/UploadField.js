@@ -8,12 +8,6 @@ class UploadField extends gia.Component {
 		};
 
 		this.originalDropzoneLabels = new Map();
-		this.handleFileChange = this.handleFileChange.bind(this);
-		this.handleFormReset = this.handleFormReset.bind(this);
-		this.handleFocus = this.handleFocus.bind(this);
-		this.handleBlur = this.handleBlur.bind(this);
-		this.handleKeyDown = this.handleKeyDown.bind(this);
-		this.handleClick = this.handleClick.bind(this);
 	}
 
 	mount() {

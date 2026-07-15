@@ -14,7 +14,6 @@ class Tabs extends gia.Component {
 			activeTabIndex: -1
 		});
 
-		this.updateIndicator = this.updateIndicator.bind(this);
 	}
 
 	mount() {
@@ -219,7 +218,7 @@ class Tabs extends gia.Component {
 				for (let i = 0; i < containerAnims.length; i++) containerAnims[i].cancel();
 				panelsContainer.style.height = '';
 				panelsContainer.style.overflow = '';
-				panelsContainer.style.position = '';
+				panelsContainer.style.position = 'relative';
 
 				const oldPanel = this.ref.panel[oldIndex];
 				const newPanel = this.ref.panel[newIndex];
@@ -230,6 +229,7 @@ class Tabs extends gia.Component {
 					for (let i = 0; i < panelAnims.length; i++) panelAnims[i].cancel();
 				
 					panel.hidden = (index !== oldIndex);
+					panel.style.opacity = '';
 				
 					if (panel !== newPanel) {
 						panel.style.position = 'absolute';
@@ -255,15 +255,14 @@ class Tabs extends gia.Component {
 
 				if (newPanel) newPanel.hidden = false;
 
-				gia.measure(() => {
-					const endHeight = panelsContainer.offsetHeight;
+				// Synchronous read (forces 1 layout recalculation, but perfectly prevents the 1-frame page jump)
+				const endHeight = panelsContainer.offsetHeight;
 
-					gia.mutate(() => {
-						panelsContainer.style.overflow = 'hidden';
-						panelsContainer.style.height = `${startHeight}px`;
-						panelsContainer.style.position = 'relative';
+				panelsContainer.style.overflow = 'hidden';
+				panelsContainer.style.height = `${startHeight}px`;
+				panelsContainer.style.position = 'relative';
 
-						const animations = [];
+				const animations = [];
 
 						if (startHeight !== endHeight) {
 							const heightAnim = panelsContainer.animate(
@@ -309,6 +308,7 @@ class Tabs extends gia.Component {
 								panel.style.top = '';
 								panel.style.left = '';
 								panel.style.width = '';
+								panel.style.opacity = '';
 							}
 
 							const containerAnims = panelsContainer.getAnimations();
@@ -318,8 +318,8 @@ class Tabs extends gia.Component {
 							panelsContainer.style.position = '';
 							this.element.removeAttribute('data-direction');
 						});
-					});
-				});
+					// }); // removed mutate
+				// }); // removed measure
 			});
 		});
 	}

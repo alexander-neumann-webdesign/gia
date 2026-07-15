@@ -35,7 +35,6 @@ class VideoHolder extends gia.Component {
 			this.element.setAttribute("aria-label", "Video player");
 		}
 
-		this.handleKeyDown = this.handleKeyDown.bind(this);
 		this.element.addEventListener("keydown", this.handleKeyDown);
 
 		// Setup Intersection Observer to play/pause video when entering/leaving viewport
@@ -54,8 +53,6 @@ class VideoHolder extends gia.Component {
 		}
 
 		if (this.ref.muteButton) {
-			this.toggleMute = this.toggleMute.bind(this);
-			this.handleVolumeChange = this.handleVolumeChange.bind(this);
 
 			this.ref.muteButton.addEventListener("click", this.toggleMute);
 			this.ref.video.addEventListener("volumechange", this.handleVolumeChange);
@@ -71,7 +68,6 @@ class VideoHolder extends gia.Component {
 
 		// Swup integration: Stop video playback on page transition
 		if (window.swup) {
-			this.handleSwupOut = this.handleSwupOut.bind(this);
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
 		}
 	}

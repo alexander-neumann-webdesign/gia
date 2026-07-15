@@ -19,7 +19,6 @@ class RangeSlider extends gia.Component {
         };
 
         this.sliderInstance = null;
-        this.handleInputChange = this.handleInputChange.bind(this);
     }
 
     async require() {

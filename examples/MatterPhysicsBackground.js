@@ -14,7 +14,6 @@ class MatterPhysicsBackground extends gia.Component {
             cursorSize: 20
         };
 
-        this.handleBodyResize = this.handleBodyResize.bind(this);
 
         this.setState({
             isPaused: false
@@ -32,9 +31,6 @@ class MatterPhysicsBackground extends gia.Component {
 
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        this.handlePointerDown = this.handlePointerDown.bind(this);
-        this.handlePointerMove = this.handlePointerMove.bind(this);
-        this.handlePointerLeave = this.handlePointerLeave.bind(this);
     }
 
     async require() {

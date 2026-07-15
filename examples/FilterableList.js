@@ -29,13 +29,11 @@ class FilterableList extends gia.Component {
 		this.activeFilters = {};
 		this.activeSort = this.options.defaultSort;
 
-		this.applyChangesDebounced = gia.utils.debounce(this.applyChanges.bind(this), 300);
+		this.applyChangesDebounced = gia.utils.debounce(this.applyChanges, 300);
 
 		this._pendingOutputs = new Map();
 		this._outputRafId = null;
 		this._syncOutputs = this._syncOutputs.bind(this);
-		this.handleResetClick = this.handleResetClick.bind(this);
-		this.handleShowMoreClick = this.handleShowMoreClick.bind(this);
 	}
 
 	_syncOutputs() {

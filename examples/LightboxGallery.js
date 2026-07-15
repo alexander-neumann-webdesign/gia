@@ -18,7 +18,6 @@ class LightboxGallery extends gia.Component {
 		};
 		this.photoswipe = null; //stores photoswipe instance
 
-		this.handleSwupOut = this.handleSwupOut.bind(this);
 	}
 
 	async require() {

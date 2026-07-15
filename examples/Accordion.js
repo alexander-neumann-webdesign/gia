@@ -30,10 +30,6 @@ class Accordion extends gia.Component {
 			isExpanding: false,
 		});
 
-		this.handleToggle = this.handleToggle.bind(this);
-		this.handleClick = this.handleClick.bind(this);
-		this.handleAccordionOpen = this.handleAccordionOpen.bind(this);
-		this.maybeStartOpened = this.maybeStartOpened.bind(this);
 	}
 
 	getIconSvg(iconType) {
