@@ -438,10 +438,12 @@ class Marquee extends gia.Component {
 		this.currentOffset = offset;
 
 		// Apply transform to the track
-		// Round to the nearest whole pixel to completely prevent 'Layerize' CPU spikes
-		// caused by sub-pixel font anti-aliasing re-rasterization in Chromium.
-		// Since currentOffset is always negative, (offset - 0.5) | 0 acts as a hyper-fast Math.round()
-		const roundedOffset = (this.currentOffset - 0.5) | 0;
+		// We use sub-pixel rendering (no rounding) to ensure perfectly smooth movement 
+		// at extremely slow speeds (e.g., when the mouse is near the center).
+		
+		// We can round to 2 decimal places to avoid noisy floating point strings
+		const roundedOffset = Math.round(this.currentOffset * 100) / 100;
+		
 		if (this._lastRoundedOffset !== roundedOffset) {
 			this._lastRoundedOffset = roundedOffset;
 			// String concatenation is faster than template literals in V8 hot loops
