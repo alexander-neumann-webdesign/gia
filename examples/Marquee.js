@@ -380,8 +380,12 @@ class Marquee extends gia.Component {
 
 		let frameOffset = 0;
 
-		const isPaused = this.state.isDragging || (this.options.pauseOnHover && this.state.isHovered);
-		const targetMultiplier = isPaused ? 0 : 1;
+		let targetMultiplier = 1;
+		if (this.state.isDragging) {
+			targetMultiplier = 0;
+		} else if (this.options.pauseOnHover && this.state.isHovered) {
+			targetMultiplier = 0.5;
+		}
 
 		// Only compute expensive Math.pow if we are actively accelerating/decelerating or if there is scroll velocity
 		const hasScrollVelocity = Math.abs(this.scrollVelocity) > 0.01;
