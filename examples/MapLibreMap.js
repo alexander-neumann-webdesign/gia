@@ -10,21 +10,23 @@ class MapLibreMap extends gia.Component {
 				version: 8,
 				sources: {
 					osm: {
-						type: 'raster',
-						tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+						type: "raster",
+						tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
 						tileSize: 256,
 						maxzoom: 19,
-						attribution: '&copy; OpenStreetMap Contributors'
-					}
+						attribution: "&copy; OpenStreetMap Contributors",
+					},
 				},
-				layers: [{
-					id: 'osm',
-					type: 'raster',
-					source: 'osm',
-					minzoom: 0
-				}]
+				layers: [
+					{
+						id: "osm",
+						type: "raster",
+						source: "osm",
+						minzoom: 0,
+					},
+				],
 			},
-			locations: [] // Array of [lng, lat] or {lng: 12.55, lat: 55.66, title: "Title"}
+			locations: [], // Array of [lng, lat] or {lng: 12.55, lat: 55.66, title: "Title"}
 		};
 
 		this.map = null;
@@ -34,9 +36,9 @@ class MapLibreMap extends gia.Component {
 	async require() {
 		// Delay initialization until the map container is near the viewport
 		// and the main thread is idle (meaning other components have initialized)
-		await new Promise(resolve => {
+		await new Promise((resolve) => {
 			const initWhenIdle = () => {
-				if ('requestIdleCallback' in window) {
+				if ("requestIdleCallback" in window) {
 					window.requestIdleCallback(resolve);
 				} else {
 					setTimeout(resolve, 0);
@@ -52,10 +54,7 @@ class MapLibreMap extends gia.Component {
 			this.observeIntersection(this.element, intersectionCallback);
 		});
 
-		await Promise.all([
-			this.loadScript('maplibre-js', 'maplibregl'),
-			this.loadStyle('maplibre-css')
-		]);
+		await Promise.all([this.loadScript("maplibre-js", "maplibregl"), this.loadStyle("maplibre-css")]);
 	}
 
 	mount() {
@@ -63,8 +62,10 @@ class MapLibreMap extends gia.Component {
 
 		if (!center && this.options.locations && this.options.locations.length > 0) {
 			// Calculate the center based on bounding box
-			let minLng = Infinity, maxLng = -Infinity;
-			let minLat = Infinity, maxLat = -Infinity;
+			let minLng = Infinity,
+				maxLng = -Infinity;
+			let minLat = Infinity,
+				maxLat = -Infinity;
 
 			for (const location of this.options.locations) {
 				let lng, lat;
@@ -91,15 +92,15 @@ class MapLibreMap extends gia.Component {
 			container: this.element,
 			style: this.options.mapStyle,
 			center: center,
-			zoom: this.options.initialZoomLevel
+			zoom: this.options.initialZoomLevel,
 		});
 
 		this.map.addControl(new maplibregl.NavigationControl());
 
 		if (this.options.projection) {
-			this.map.on('style.load', () => {
+			this.map.on("style.load", () => {
 				this.map.setProjection({
-					type: this.options.projection
+					type: this.options.projection,
 				});
 			});
 		}
@@ -115,8 +116,7 @@ class MapLibreMap extends gia.Component {
 					title = location.title;
 				}
 
-				const marker = new maplibregl.Marker()
-					.setLngLat(lngLat);
+				const marker = new maplibregl.Marker().setLngLat(lngLat);
 
 				if (title) {
 					const popup = new maplibregl.Popup({ offset: 25 }).setText(title);
@@ -144,7 +144,7 @@ class MapLibreMap extends gia.Component {
 	}
 }
 
-gia.register(MapLibreMap);
+gia.register(MapLibreMap, { priority: -50 });
 
 /*
 ========================================

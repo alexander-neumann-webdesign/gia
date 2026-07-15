@@ -166,7 +166,7 @@ class Slider extends gia.Component {
 		const opacity = Math.max(0, Math.min(tweenValue, 1));
 
 		// Bitwise truncation to 4 decimal places for high performance caching
-		const roundedOpacity = (opacity * 10000 | 0) / 10000;
+		const roundedOpacity = ((opacity * 10000) | 0) / 10000;
 		this._slideNodes[slideIndex].style.setProperty("--card-slide-visibility", roundedOpacity);
 	}
 
@@ -195,7 +195,7 @@ class Slider extends gia.Component {
 	}
 
 	applyParallaxCallback(slideIndex, diffToTarget) {
-		const translate = (diffToTarget * this._parallaxMultiplier * 1000 | 0) / 1000;
+		const translate = ((diffToTarget * this._parallaxMultiplier * 1000) | 0) / 1000;
 		this._slideNodes[slideIndex].style.setProperty("--slide-parallax-x", translate + "%");
 	}
 
@@ -342,7 +342,7 @@ class Slider extends gia.Component {
 	}
 }
 
-gia.register(Slider);
+gia.register(Slider, { priority: -50 });
 
 /*
 ========================================

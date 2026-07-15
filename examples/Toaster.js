@@ -122,7 +122,7 @@ class Toaster extends gia.Component {
 		toastEl.className = "gia-toast";
 		toastEl.setAttribute("data-id", id);
 		toastEl.setAttribute("data-type", options.type);
-		
+
 		// WCAG: Semantic roles and live regions
 		if (options.type === "error") {
 			toastEl.setAttribute("role", "alert");
@@ -175,20 +175,20 @@ class Toaster extends gia.Component {
 		});
 	}
 
-	dismissToast(id, direction = 'y') {
-		const index = this.toasts.findIndex(t => t.id === id);
+	dismissToast(id, direction = "y") {
+		const index = this.toasts.findIndex((t) => t.id === id);
 		if (index === -1) return;
 
 		const toast = this.toasts[index];
 		clearTimeout(toast.timeout);
-		
+
 		// Set a flag so handleMouseLeave knows a toast was just dismissed
 		this.isDismissing = true;
 		if (this.dismissResetTimeout) clearTimeout(this.dismissResetTimeout);
 		this.dismissResetTimeout = setTimeout(() => {
 			this.isDismissing = false;
 		}, 50);
-		
+
 		gia.mutate(() => {
 			toast.element.setAttribute("data-removed", direction);
 			toast.element.style.pointerEvents = "none";
@@ -285,19 +285,19 @@ class Toaster extends gia.Component {
 		// delay to allow the next toast to finish its 400ms slide-up animation and catch the mouse.
 		// If the user naturally moves their mouse away, we want it to be snappy (60ms).
 		const delay = this.isDismissing ? 450 : 60;
-		
+
 		this.collapseTimeout = setTimeout(() => {
 			// Double check if the user is still hovering or focused before actually collapsing.
 			// This prevents bugs where focusout triggers a collapse while the mouse is still hovering!
-			const isHovering = this.element.matches(':hover');
+			const isHovering = this.element.matches(":hover");
 			const isFocused = this.element.contains(document.activeElement);
-			
+
 			if (isHovering || isFocused) {
 				return;
 			}
 
 			this.setState({ isExpanded: false });
-			
+
 			// Resume timeouts with remaining time
 			for (let i = 0; i < this.toasts.length; i++) {
 				const toast = this.toasts[i];
@@ -418,11 +418,11 @@ class Toaster extends gia.Component {
 	}
 
 	handleKeyDown(e) {
-		if (e.key === 'Escape' && this.toasts.length > 0) {
+		if (e.key === "Escape" && this.toasts.length > 0) {
 			// Dismiss the focused toast, or the front-most toast if none are focused
-			const focusedToast = document.activeElement ? document.activeElement.closest('.gia-toast') : null;
+			const focusedToast = document.activeElement ? document.activeElement.closest(".gia-toast") : null;
 			if (focusedToast) {
-				const id = parseInt(focusedToast.getAttribute('data-id'), 10);
+				const id = parseInt(focusedToast.getAttribute("data-id"), 10);
 				this.dismissToast(id);
 			} else {
 				this.dismissToast(this.toasts[0].id);
@@ -431,4 +431,4 @@ class Toaster extends gia.Component {
 	}
 }
 
-gia.register(Toaster);
+gia.register(Toaster, { priority: -100 });

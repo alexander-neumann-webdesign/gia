@@ -22,11 +22,11 @@ class Tooltip extends gia.Component {
 	}
 
 	mount() {
-		this.text = this.element.getAttribute('data-tooltip');
-		this.position = this.element.getAttribute('data-position') || 'top';
+		this.text = this.element.getAttribute("data-tooltip");
+		this.position = this.element.getAttribute("data-position") || "top";
 
 		if (!this.text) {
-			console.warn('Tooltip: No data-tooltip attribute found on element.');
+			console.warn("Tooltip: No data-tooltip attribute found on element.");
 			return;
 		}
 
@@ -46,66 +46,66 @@ class Tooltip extends gia.Component {
 		this.arrow = arrow;
 
 		// Create Popover
-		this.popoverElement = document.createElement('div');
-		this.popoverElement.popover = 'manual';
-		this.popoverElement.className = 'gia-tooltip-popover';
+		this.popoverElement = document.createElement("div");
+		this.popoverElement.popover = "manual";
+		this.popoverElement.className = "gia-tooltip-popover";
 		this.popoverElement.textContent = this.text;
 
 		// Create Arrow
-		this.arrowElement = document.createElement('div');
-		this.arrowElement.className = 'gia-tooltip-arrow';
+		this.arrowElement = document.createElement("div");
+		this.arrowElement.className = "gia-tooltip-arrow";
 		this.popoverElement.appendChild(this.arrowElement);
 
 		const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
 		this.popoverElement.id = tooltipId;
 
 		// Accessibility: associate the trigger with the tooltip content
-		this.element.setAttribute('aria-describedby', tooltipId);
+		this.element.setAttribute("aria-describedby", tooltipId);
 
 		// Fallback styling for non-popover supported browsers
-		if (!('popover' in HTMLElement.prototype)) {
-			this.popoverElement.style.display = 'none';
-			this.popoverElement.style.position = 'fixed';
+		if (!("popover" in HTMLElement.prototype)) {
+			this.popoverElement.style.display = "none";
+			this.popoverElement.style.position = "fixed";
 		} else {
 			// Essential for popovers working with absolute positioning libs
-			this.popoverElement.style.position = 'absolute';
-			this.popoverElement.style.margin = '0';
-			this.popoverElement.style.top = '0';
-			this.popoverElement.style.left = '0';
+			this.popoverElement.style.position = "absolute";
+			this.popoverElement.style.margin = "0";
+			this.popoverElement.style.top = "0";
+			this.popoverElement.style.left = "0";
 		}
 
 		document.body.appendChild(this.popoverElement);
 
 		// Trigger events
-		this.element.addEventListener('mouseenter', this.handleShow);
-		this.element.addEventListener('focus', this.handleShow);
+		this.element.addEventListener("mouseenter", this.handleShow);
+		this.element.addEventListener("focus", this.handleShow);
 
-		this.element.addEventListener('mouseleave', this.handleHide);
-		this.element.addEventListener('blur', this.handleHide);
+		this.element.addEventListener("mouseleave", this.handleHide);
+		this.element.addEventListener("blur", this.handleHide);
 
 		// WCAG 1.4.13: Hoverable (keep open when moving over the tooltip itself)
-		this.popoverElement.addEventListener('mouseenter', this.handleTooltipEnter);
-		this.popoverElement.addEventListener('mouseleave', this.handleTooltipLeave);
+		this.popoverElement.addEventListener("mouseenter", this.handleTooltipEnter);
+		this.popoverElement.addEventListener("mouseleave", this.handleTooltipLeave);
 
 		// Compatibility: Swup page transitions
 		if (window.swup) {
-			window.swup.hooks.on('animation:out:start', this.closeTooltip);
+			window.swup.hooks.on("animation:out:start", this.closeTooltip);
 		}
 	}
 
 	unmount() {
-		this.element.removeEventListener('mouseenter', this.handleShow);
-		this.element.removeEventListener('focus', this.handleShow);
-		this.element.removeEventListener('mouseleave', this.handleHide);
-		this.element.removeEventListener('blur', this.handleHide);
+		this.element.removeEventListener("mouseenter", this.handleShow);
+		this.element.removeEventListener("focus", this.handleShow);
+		this.element.removeEventListener("mouseleave", this.handleHide);
+		this.element.removeEventListener("blur", this.handleHide);
 
 		if (this.popoverElement) {
-			this.popoverElement.removeEventListener('mouseenter', this.handleTooltipEnter);
-			this.popoverElement.removeEventListener('mouseleave', this.handleTooltipLeave);
+			this.popoverElement.removeEventListener("mouseenter", this.handleTooltipEnter);
+			this.popoverElement.removeEventListener("mouseleave", this.handleTooltipLeave);
 		}
 
 		if (window.swup) {
-			window.swup.hooks.off('animation:out:start', this.closeTooltip);
+			window.swup.hooks.off("animation:out:start", this.closeTooltip);
 		}
 
 		this.removeGlobalListeners();
@@ -131,28 +131,23 @@ class Tooltip extends gia.Component {
 		if (this.isOpen) return;
 		this.isOpen = true;
 
-		if (typeof this.popoverElement.showPopover === 'function') {
+		if (typeof this.popoverElement.showPopover === "function") {
 			// ⚡ BOLT OPTIMIZATION: Force layout recalculation before showing to ensure
 			// @starting-style CSS animations execute correctly on the very first render
-			this.popoverElement.style.display = 'block';
+			this.popoverElement.style.display = "block";
 			this.popoverElement.clientWidth;
-			this.popoverElement.style.display = '';
+			this.popoverElement.style.display = "";
 
 			this.popoverElement.showPopover();
 		} else {
-			this.popoverElement.style.display = 'block';
+			this.popoverElement.style.display = "block";
 		}
 
 		// Initialize Floating UI autoUpdate with animationFrame for performance
-		this.cleanupAutoUpdate = this.autoUpdate(
-			this.element,
-			this.popoverElement,
-			() => this.updatePosition(),
-			{ animationFrame: true }
-		);
+		this.cleanupAutoUpdate = this.autoUpdate(this.element, this.popoverElement, () => this.updatePosition(), { animationFrame: true });
 
 		// Add global listeners when open (for Escape key)
-		window.addEventListener('keydown', this.handleEscape);
+		window.addEventListener("keydown", this.handleEscape);
 
 		// Compatibility: Lenis smooth scrolling (requires manual position updates because standard scroll events are virtualized)
 		if (window.lenis) {
@@ -183,10 +178,10 @@ class Tooltip extends gia.Component {
 		this.isOpen = false;
 
 		gia.mutate(() => {
-			if (typeof this.popoverElement.hidePopover === 'function') {
+			if (typeof this.popoverElement.hidePopover === "function") {
 				this.popoverElement.hidePopover();
 			} else {
-				this.popoverElement.style.display = 'none';
+				this.popoverElement.style.display = "none";
 			}
 		});
 
@@ -199,7 +194,7 @@ class Tooltip extends gia.Component {
 	}
 
 	removeGlobalListeners() {
-		window.removeEventListener('keydown', this.handleEscape);
+		window.removeEventListener("keydown", this.handleEscape);
 
 		if (window.lenis) {
 			this.unobserveScroll(this.updatePosition);
@@ -208,7 +203,7 @@ class Tooltip extends gia.Component {
 
 	handleEscape(e) {
 		// WCAG 1.4.13: Dismissible via Escape key
-		if (e.key === 'Escape' || e.key === 'Esc') {
+		if (e.key === "Escape" || e.key === "Esc") {
 			this.closeTooltip();
 		}
 	}
@@ -216,17 +211,12 @@ class Tooltip extends gia.Component {
 	updatePosition() {
 		this.computePosition(this.element, this.popoverElement, {
 			placement: this.position,
-			middleware: [
-				this.offset(8),
-				this.flip(),
-				this.shift({ padding: 8 }),
-				this.arrow({ element: this.arrowElement })
-			]
+			middleware: [this.offset(8), this.flip(), this.shift({ padding: 8 }), this.arrow({ element: this.arrowElement })],
 		}).then(({ x, y, placement, middlewareData }) => {
 			gia.mutate(() => {
 				Object.assign(this.popoverElement.style, {
-					left: ((x + 0.5) | 0) + 'px',
-					top: ((y + 0.5) | 0) + 'px',
+					left: ((x + 0.5) | 0) + "px",
+					top: ((y + 0.5) | 0) + "px",
 				});
 
 				// Accessing the data
@@ -234,18 +224,18 @@ class Tooltip extends gia.Component {
 					const { x: arrowX, y: arrowY } = middlewareData.arrow;
 
 					const staticSide = {
-						top: 'bottom',
-						right: 'left',
-						bottom: 'top',
-						left: 'right',
-					}[placement.split('-')[0]];
+						top: "bottom",
+						right: "left",
+						bottom: "top",
+						left: "right",
+					}[placement.split("-")[0]];
 
 					Object.assign(this.arrowElement.style, {
-						left: arrowX != null ? ((arrowX + 0.5) | 0) + 'px' : '',
-						top: arrowY != null ? ((arrowY + 0.5) | 0) + 'px' : '',
-						right: '',
-						bottom: '',
-						[staticSide]: '-4px', // 4px is half the width/height of the 8px arrow
+						left: arrowX != null ? ((arrowX + 0.5) | 0) + "px" : "",
+						top: arrowY != null ? ((arrowY + 0.5) | 0) + "px" : "",
+						right: "",
+						bottom: "",
+						[staticSide]: "-4px", // 4px is half the width/height of the 8px arrow
 					});
 				}
 			});
@@ -253,7 +243,7 @@ class Tooltip extends gia.Component {
 	}
 }
 
-gia.register(Tooltip);
+gia.register(Tooltip, { priority: -75 });
 
 /*
 ========================================

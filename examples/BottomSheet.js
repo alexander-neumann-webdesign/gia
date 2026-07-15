@@ -16,7 +16,7 @@ class BottomSheet extends gia.Component {
 			scale: 0.97,
 			radius: 12,
 			offset: 14,
-			opacity: 0.4
+			opacity: 0.4,
 		};
 
 		this.ref = {
@@ -123,23 +123,23 @@ class BottomSheet extends gia.Component {
 	handleDrawerResize(entries) {
 		const entry = entries[0];
 		this.dragState.drawerHeight = entry.borderBoxSize ? entry.borderBoxSize[0].blockSize : entry.contentRect.height;
-		
+
 		// Extract CSS variables during resize/mount so physics adapt to media queries off the hot path
 		gia.measure(() => {
 			if (this.options.scaleBackground && this.wrapper) {
 				const style = window.getComputedStyle(this.wrapper);
-				const scale = parseFloat(style.getPropertyValue('--bs-scale'));
+				const scale = parseFloat(style.getPropertyValue("--bs-scale"));
 				if (!isNaN(scale)) this.physics.scale = scale;
-				
-				const radius = parseFloat(style.getPropertyValue('--bs-radius'));
+
+				const radius = parseFloat(style.getPropertyValue("--bs-radius"));
 				if (!isNaN(radius)) this.physics.radius = radius;
-				
-				const offset = parseFloat(style.getPropertyValue('--bs-offset'));
+
+				const offset = parseFloat(style.getPropertyValue("--bs-offset"));
 				if (!isNaN(offset)) this.physics.offset = offset;
 			}
 			if (this.ref.overlay) {
 				const style = window.getComputedStyle(this.ref.overlay);
-				const opacity = parseFloat(style.getPropertyValue('--bs-opacity'));
+				const opacity = parseFloat(style.getPropertyValue("--bs-opacity"));
 				if (!isNaN(opacity)) this.physics.opacity = opacity;
 			}
 		});
@@ -190,15 +190,15 @@ class BottomSheet extends gia.Component {
 				}
 				if (this.ref.overlay) {
 					const progress = currentY / this.dragState.drawerHeight;
-					const opacity = this.physics.opacity - (progress * this.physics.opacity);
+					const opacity = this.physics.opacity - progress * this.physics.opacity;
 					this.ref.overlay.style.opacity = Math.min(Math.max(0, opacity), 1).toFixed(3);
 				}
 				if (this.options.scaleBackground && this.wrapper) {
 					const progress = currentY / this.dragState.drawerHeight;
 					const scaleDiff = 1 - this.physics.scale;
-					const scale = this.physics.scale + (progress * scaleDiff);
-					const radius = this.physics.radius - (progress * this.physics.radius);
-					const yOffset = this.physics.offset - (progress * this.physics.offset);
+					const scale = this.physics.scale + progress * scaleDiff;
+					const radius = this.physics.radius - progress * this.physics.radius;
+					const yOffset = this.physics.offset - progress * this.physics.offset;
 					this.wrapper.style.transform = `scale(${Math.min(scale, 1)}) translateY(calc(env(safe-area-inset-top) + ${Math.max(yOffset, 0)}px))`;
 					this.wrapper.style.borderRadius = `${Math.max(radius, 0)}px`;
 				}
@@ -241,16 +241,16 @@ class BottomSheet extends gia.Component {
 			// Adjust overlay opacity based on drag distance (works for both pulling up and down)
 			if (this.ref.overlay) {
 				const progress = deltaY / this.dragState.drawerHeight;
-				const opacity = this.physics.opacity - (progress * this.physics.opacity);
+				const opacity = this.physics.opacity - progress * this.physics.opacity;
 				this.ref.overlay.style.opacity = Math.min(Math.max(0, opacity), 1).toFixed(3);
 			}
 
 			if (this.options.scaleBackground && this.wrapper) {
 				const progress = deltaY / this.dragState.drawerHeight;
 				const scaleDiff = 1 - this.physics.scale;
-				const scale = this.physics.scale + (progress * scaleDiff);
-				const radius = this.physics.radius - (progress * this.physics.radius);
-				const yOffset = this.physics.offset - (progress * this.physics.offset);
+				const scale = this.physics.scale + progress * scaleDiff;
+				const radius = this.physics.radius - progress * this.physics.radius;
+				const yOffset = this.physics.offset - progress * this.physics.offset;
 				this.wrapper.style.transform = `scale(${Math.min(scale, 1)}) translateY(calc(env(safe-area-inset-top) + ${Math.max(yOffset, 0)}px))`;
 				this.wrapper.style.borderRadius = `${Math.max(radius, 0)}px`;
 			}
@@ -401,7 +401,7 @@ class BottomSheet extends gia.Component {
 	}
 }
 
-gia.register(BottomSheet);
+gia.register(BottomSheet, { priority: -100 });
 
 /*
 ========================================

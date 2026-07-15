@@ -17,7 +17,6 @@ class LightboxGallery extends gia.Component {
 			zoomSVG: ``,
 		};
 		this.photoswipe = null; //stores photoswipe instance
-
 	}
 
 	async require() {
@@ -25,7 +24,7 @@ class LightboxGallery extends gia.Component {
 			await Promise.all([
 				this.loadScript("photoswipe-lightbox-js", "PhotoSwipeLightbox"),
 				this.loadScript("photoswipe-js", "PhotoSwipe"),
-				this.loadStyle("photoswipe-css")
+				this.loadStyle("photoswipe-css"),
 			]);
 		}
 	}
@@ -47,8 +46,8 @@ class LightboxGallery extends gia.Component {
 					children: this.ref.triggers,
 					pswpModule: window.PhotoSwipe,
 				},
-				this.options
-			)
+				this.options,
+			),
 		);
 
 		new CustomObjectPosition(this.photoswipe);
@@ -110,9 +109,9 @@ class CustomObjectPosition {
 			let translateY = "0";
 
 			if (translate !== "none") {
-			    const [tx = "0", ty = "0"] = translate.split(" ");
-			    translateX = tx;
-			    translateY = ty;
+				const [tx = "0", ty = "0"] = translate.split(" ");
+				translateX = tx;
+				translateY = ty;
 			}
 
 			const [positionX = "50%", positionY = "50%"] = objectPosition.split(" ");
@@ -148,7 +147,7 @@ class CustomObjectPosition {
 	}
 }
 
-gia.register(LightboxGallery);
+gia.register(LightboxGallery, { priority: -50 });
 
 /*
 ========================================

@@ -2,22 +2,22 @@ class QRCode extends gia.Component {
 	constructor(element) {
 		super(element);
 		this.options = {
-			contents: this.element.getAttribute('data-contents') || 'https://example.com',
-			typeNumber: parseInt(this.element.getAttribute('data-type-number')) || 4,
-			errorCorrectionLevel: this.element.getAttribute('data-error-correction-level') || 'L',
+			contents: this.element.getAttribute("data-contents") || "https://example.com",
+			typeNumber: parseInt(this.element.getAttribute("data-type-number")) || 4,
+			errorCorrectionLevel: this.element.getAttribute("data-error-correction-level") || "L",
 		};
 
 		this.setState({
 			contents: this.options.contents,
 			typeNumber: this.options.typeNumber,
-			errorCorrectionLevel: this.options.errorCorrectionLevel
+			errorCorrectionLevel: this.options.errorCorrectionLevel,
 		});
 	}
 
 	async require() {
 		// Load the script via our built-in loadScript helper.
 		// Note: qrcode-generator assigns `qrcode` directly to the window in most environments.
-		await this.loadScript('qrcode-generator-js', 'qrcode');
+		await this.loadScript("qrcode-generator-js", "qrcode");
 	}
 
 	mount() {
@@ -36,11 +36,11 @@ class QRCode extends gia.Component {
 					// qrcode is not defined yet
 				}
 
-				if (typeof generator === 'function') {
+				if (typeof generator === "function") {
 					const qr = generator(this.state.typeNumber, this.state.errorCorrectionLevel);
 					qr.addData(this.state.contents);
 					qr.make();
-					const svgDoc = new DOMParser().parseFromString(qr.createSvgTag(), 'image/svg+xml');
+					const svgDoc = new DOMParser().parseFromString(qr.createSvgTag(), "image/svg+xml");
 					gia.mutate(() => {
 						this.element.replaceChildren();
 						this.element.appendChild(svgDoc.documentElement);
@@ -52,10 +52,10 @@ class QRCode extends gia.Component {
 
 			checkAndRender();
 		} catch (error) {
-			console.error('Error generating QR code:', error);
-			const errorSpan = document.createElement('span');
-			errorSpan.className = 'error';
-			errorSpan.textContent = 'Failed to generate QR Code';
+			console.error("Error generating QR code:", error);
+			const errorSpan = document.createElement("span");
+			errorSpan.className = "error";
+			errorSpan.textContent = "Failed to generate QR Code";
 			gia.mutate(() => {
 				this.element.replaceChildren();
 				this.element.appendChild(errorSpan);
@@ -64,13 +64,13 @@ class QRCode extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
-		if ('contents' in stateChanges || 'typeNumber' in stateChanges || 'errorCorrectionLevel' in stateChanges) {
+		if ("contents" in stateChanges || "typeNumber" in stateChanges || "errorCorrectionLevel" in stateChanges) {
 			this.renderQRCode();
 		}
 	}
 }
 
-gia.register(QRCode);
+gia.register(QRCode, { priority: -50 });
 
 /*
 ========================================

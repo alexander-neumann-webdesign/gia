@@ -13,9 +13,9 @@ class OpenStreetMap extends gia.Component {
 	async require() {
 		// Delay initialization until the map container is near the viewport
 		// and the main thread is idle (meaning other components have initialized)
-		await new Promise(resolve => {
+		await new Promise((resolve) => {
 			const initWhenIdle = () => {
-				if ('requestIdleCallback' in window) {
+				if ("requestIdleCallback" in window) {
 					window.requestIdleCallback(resolve);
 				} else {
 					setTimeout(resolve, 0);
@@ -33,10 +33,7 @@ class OpenStreetMap extends gia.Component {
 
 		// Asynchronously load the Leaflet script and style
 		try {
-			await Promise.all([
-				this.loadScript("leaflet-js", "L"),
-				this.loadStyle("leaflet-css")
-			]);
+			await Promise.all([this.loadScript("leaflet-js", "L"), this.loadStyle("leaflet-css")]);
 		} catch (error) {
 			console.error("OpenStreetMap: Failed to load Leaflet.", error);
 		}
@@ -61,7 +58,7 @@ class OpenStreetMap extends gia.Component {
 				}
 				center = {
 					lat: sumLat / this.options.locations.length,
-					lng: sumLng / this.options.locations.length
+					lng: sumLng / this.options.locations.length,
 				};
 			} else {
 				// Default fallback center (e.g., somewhere generic if no locations provided)
@@ -75,8 +72,9 @@ class OpenStreetMap extends gia.Component {
 		this.map.attributionControl.setPrefix(false);
 
 		// Add OpenStreetMap tile layer
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '<details class="osm-attribution-details"><summary class="osm-attribution-summary" title="Attribution"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></summary><span class="osm-attribution-text">&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</span></details>'
+		L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+			attribution:
+				'<details class="osm-attribution-details"><summary class="osm-attribution-summary" title="Attribution"><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></summary><span class="osm-attribution-text">&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</span></details>',
 		}).addTo(this.map);
 
 		// Add markers
@@ -87,11 +85,11 @@ class OpenStreetMap extends gia.Component {
 
 				if (this.options.useAnimatedDot) {
 					const animatedIcon = L.divIcon({
-						className: 'custom-animated-dot-icon',
+						className: "custom-animated-dot-icon",
 						html: '<div class="animated-dot"><div class="middle-dot"></div><div class="signal"></div><div class="signal2"></div></div>',
 						iconSize: [20, 20],
 						iconAnchor: [10, 10],
-						popupAnchor: [0, -10]
+						popupAnchor: [0, -10],
 					});
 					marker = L.marker([loc.lat, loc.lng], { icon: animatedIcon }).addTo(this.map);
 				} else {
@@ -100,7 +98,7 @@ class OpenStreetMap extends gia.Component {
 
 				if (loc.title) {
 					// Prevent XSS by using a text node rather than a raw HTML string
-					const popupDiv = document.createElement('div');
+					const popupDiv = document.createElement("div");
 					popupDiv.textContent = loc.title;
 					marker.bindPopup(popupDiv);
 				}
@@ -116,7 +114,7 @@ class OpenStreetMap extends gia.Component {
 	}
 }
 
-gia.register(OpenStreetMap);
+gia.register(OpenStreetMap, { priority: -50 });
 
 /*
 ========================================
