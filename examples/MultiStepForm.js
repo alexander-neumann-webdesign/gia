@@ -52,7 +52,7 @@ class MultiStepForm extends gia.Component {
 				stepIndicators[i].addEventListener('click', this.handleStepIndicatorClick);
 			}
 
-			if (this.ref.step && (this.ref.step.length > 0)) {
+			if (this.ref.step.length > 0) {
 				gia.mutate(() => {
 					this._updateStepUI(this.state.currentStep);
 				});

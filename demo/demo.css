@@ -1260,9 +1260,104 @@ div[data-component=VideoHolder] .video-controls {
   bottom: 16px;
   right: 16px;
   display: flex;
+  align-items: flex-end;
   gap: 8px;
 }
+div[data-component=VideoHolder] .mute-container {
+  position: relative;
+  display: block; /* Simplified: no longer needs flex column */
+  z-index: 10;
+}
+div[data-component=VideoHolder] .volume-slider-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  width: 48px;
+  height: 150px; /* Start at 150px for a 30px expansion */
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
+  overflow: hidden; /* Ensure slider doesn't leak out when collapsed */
+}
+div[data-component=VideoHolder] .volume-slider-wrapper:has(.volume-slider:focus-visible) {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+div[data-component=VideoHolder] .mute-container:hover .volume-slider-wrapper,
+div[data-component=VideoHolder] .mute-container:focus-within .volume-slider-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+  height: 180px; /* Expand upwards */
+}
+div[data-component=VideoHolder] .mute-container:hover .volume-slider,
+div[data-component=VideoHolder] .mute-container:focus-within .volume-slider {
+  transform: rotate(-90deg) translateX(0px); /* Slide up to final position */
+}
+div[data-component=VideoHolder] .volume-slider {
+  position: absolute;
+  bottom: 91px; /* Adjusted to account for new padding offset */
+  left: -21px; /* Center horizontally (24px - 45px) */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  transform: rotate(-90deg) translateX(-10px); /* Start slightly lower (along rotated axis) */
+  width: 90px;
+  height: 36px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+div[data-component=VideoHolder] .volume-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, #ffffff calc(6px + var(--volume-progress, 1) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
+  border-radius: 2px;
+}
+div[data-component=VideoHolder] .volume-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, #ffffff calc(6px + var(--volume-progress, 1) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
+  border-radius: 2px;
+}
+div[data-component=VideoHolder] .volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  margin-top: -4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+div[data-component=VideoHolder] .volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+div[data-component=VideoHolder] .volume-slider:active::-webkit-slider-thumb, div[data-component=VideoHolder] .volume-slider:focus-visible::-webkit-slider-thumb, div[data-component=VideoHolder] .volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+div[data-component=VideoHolder] .volume-slider:active::-moz-range-thumb, div[data-component=VideoHolder] .volume-slider:focus-visible::-moz-range-thumb, div[data-component=VideoHolder] .volume-slider::-moz-range-thumb:hover {
+  transform: scale(1.3);
+}
 div[data-component=VideoHolder] button[data-ref=playPauseButton],
+div[data-component=VideoHolder] button[data-ref=subtitleButton],
 div[data-component=VideoHolder] button[data-ref=muteButton] {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
@@ -1279,23 +1374,32 @@ div[data-component=VideoHolder] button[data-ref=muteButton] {
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.8) translateZ(0);
+  transform: scale(0.8) translateZ(0); /* Hardware acceleration for smooth blur */
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, opacity, backdrop-filter;
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton] svg path.icon-shape,
+div[data-component=VideoHolder] button[data-ref=subtitleButton] svg path.icon-shape,
 div[data-component=VideoHolder] button[data-ref=muteButton] svg path.icon-shape {
   transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
+div[data-component=VideoHolder] {
+  /* Reveal on hover/focus */
+}
 div[data-component=VideoHolder]:hover button[data-ref=playPauseButton],
-div[data-component=VideoHolder]:hover button[data-ref=muteButton],
-div[data-component=VideoHolder]:focus-within button[data-ref=playPauseButton],
+div[data-component=VideoHolder]:hover button[data-ref=subtitleButton],
+div[data-component=VideoHolder]:hover button[data-ref=muteButton], div[data-component=VideoHolder]:focus-within button[data-ref=playPauseButton],
+div[data-component=VideoHolder]:focus-within button[data-ref=subtitleButton],
 div[data-component=VideoHolder]:focus-within button[data-ref=muteButton] {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1) translateZ(0);
 }
+div[data-component=VideoHolder] {
+  /* Interactive states (placed after reveal to override transform) */
+}
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover,
+div[data-component=VideoHolder] button[data-ref=subtitleButton]:hover,
 div[data-component=VideoHolder] button[data-ref=muteButton]:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
@@ -1303,11 +1407,13 @@ div[data-component=VideoHolder] button[data-ref=muteButton]:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:active,
+div[data-component=VideoHolder] button[data-ref=subtitleButton]:active,
 div[data-component=VideoHolder] button[data-ref=muteButton]:active {
   transform: scale(0.95) translateZ(0);
   background: rgba(255, 255, 255, 0.3);
 }
 div[data-component=VideoHolder] button[data-ref=playPauseButton]:focus-visible,
+div[data-component=VideoHolder] button[data-ref=subtitleButton]:focus-visible,
 div[data-component=VideoHolder] button[data-ref=muteButton]:focus-visible {
   outline: 2px solid white;
   outline-offset: 2px;

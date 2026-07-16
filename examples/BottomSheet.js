@@ -53,10 +53,8 @@ class BottomSheet extends gia.Component {
 			this.triggers[i].addEventListener("click", this.handleTriggerClick);
 		}
 
-		if (this.ref.closeBtn) {
-			for (let i = 0; i < this.ref.closeBtn.length; i++) {
-				this.ref.closeBtn[i].addEventListener("click", this.close);
-			}
+		for (let i = 0; i < this.ref.closeBtn.length; i++) {
+			this.ref.closeBtn[i].addEventListener("click", this.close);
 		}
 
 		if (this.ref.overlay) {
@@ -86,10 +84,8 @@ class BottomSheet extends gia.Component {
 			this.triggers[i].removeEventListener("click", this.handleTriggerClick);
 		}
 
-		if (this.ref.closeBtn) {
-			for (let i = 0; i < this.ref.closeBtn.length; i++) {
-				this.ref.closeBtn[i].removeEventListener("click", this.close);
-			}
+		for (let i = 0; i < this.ref.closeBtn.length; i++) {
+			this.ref.closeBtn[i].removeEventListener("click", this.close);
 		}
 
 		if (this.ref.overlay) {

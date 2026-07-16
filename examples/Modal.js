@@ -41,11 +41,9 @@ class Modal extends gia.Component {
 		}
 
 		// Attach events to close buttons from refs
-		if (this.ref.closeButton) {
-			const buttons = this.ref.closeButton;
-			for (let i = 0; i < buttons.length; i++) {
-				buttons[i].addEventListener("click", this.handleCloseClick);
-			}
+		const buttons = this.ref.closeButton;
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].addEventListener("click", this.handleCloseClick);
 		}
 
 		// Attach backdrop click
@@ -82,11 +80,9 @@ class Modal extends gia.Component {
 			this.triggers[i].removeEventListener("click", this.handleTriggerClick);
 		}
 
-		if (this.ref.closeButton) {
-			const buttons = this.ref.closeButton;
-			for (let i = 0; i < buttons.length; i++) {
-				buttons[i].removeEventListener("click", this.handleCloseClick);
-			}
+		const buttons = this.ref.closeButton;
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].removeEventListener("click", this.handleCloseClick);
 		}
 
 		this.element.removeEventListener("click", this.handleBackdropClick);

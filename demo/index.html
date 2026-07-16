@@ -671,14 +671,24 @@
     <h2>VideoHolder</h2>
     <div class="demo-block">
       <div data-component="VideoHolder" tabindex="0" role="region" aria-label="Video player">
-        <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata"></video>
+        <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata">
+          <track kind="subtitles" srclang="en" label="English" src="sample-subtitles.vtt">
+        </video>
         <div class="video-controls">
-          <button data-ref="playPauseButton" aria-label="Play video" class="is-paused">
+          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
             <!-- Icons injected via JS -->
           </button>
-          <button data-ref="muteButton" aria-label="Unmute video" class="is-muted">
+          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
             <!-- Icons injected via JS -->
           </button>
+          <div class="mute-container">
+            <div class="volume-slider-wrapper">
+              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
+            </div>
+            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
+              <!-- Icons injected via JS -->
+            </button>
+          </div>
         </div>
       </div>
 
