@@ -135,18 +135,22 @@ class Toaster extends gia.Component {
 		toastEl.setAttribute("data-removed", "false");
 		toastEl.setAttribute("data-front", "true");
 
-		// Build inner HTML markup
-		let html = "";
+		// Build inner HTML markup safely
 		if (options.title) {
-			html += `<div class="gia-toast-title">${options.title}</div>`;
+			const titleEl = document.createElement("div");
+			titleEl.className = "gia-toast-title";
+			titleEl.textContent = options.title;
+			toastEl.appendChild(titleEl);
 		}
 		if (options.description) {
-			html += `<div class="gia-toast-desc">${options.description}</div>`;
+			const descEl = document.createElement("div");
+			descEl.className = "gia-toast-desc";
+			descEl.textContent = options.description;
+			toastEl.appendChild(descEl);
 		}
 		if (options.closeButton) {
-			html += `<button class="gia-toast-close" aria-label="Close"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`;
+			toastEl.insertAdjacentHTML('beforeend', `<button class="gia-toast-close" aria-label="Close"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`);
 		}
-		toastEl.innerHTML = html;
 
 		// Setup auto-dismiss timeout
 		let timeout = null;
