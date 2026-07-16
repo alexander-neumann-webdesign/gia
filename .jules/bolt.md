@@ -74,3 +74,7 @@
 ## 2026-07-15 - Eliminate Layout Thrashing with DOM Scheduler (measure/mutate)
 **Learning:** Mixing DOM reads (like `getBoundingClientRect()`, `offsetWidth`) and DOM writes (like `element.style.transform`) inside the same animation frame or component lifecycle causes forced synchronous layouts, leading to severe layout thrashing. Older guidelines suggested manually deferring reads outside of rAF entirely.
 **Action:** Use Gia's FastDOM-inspired scheduler to safely batch operations inside frames. Wrap all DOM reads in `gia.measure(() => { ... })` and all DOM writes in `gia.mutate(() => { ... })`. The scheduler guarantees that all measures across the entire page execute before any mutates in a single `requestAnimationFrame` tick, mathematically preventing layout thrashing without needing to extract reads to external events.
+
+## 2024-05-24 - Eliminate 1-frame latency in Header scroll handler
+**Learning:** In modern browsers, `scroll` and `resize` events are natively throttled and dispatched just before the animation frame. Debouncing them by wrapping their callbacks in `requestAnimationFrame` introduces an unnecessary 1-frame latency and can cause layout thrashing if those callbacks read DOM properties.
+**Action:** When handling `scroll` or `resize` events that only perform DOM writes (like calling `update()` which manages state changes that are already batched safely), eliminate `requestAnimationFrame` debouncing and call the update methods synchronously.

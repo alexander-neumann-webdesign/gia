@@ -13,7 +13,6 @@ class Header extends gia.Component {
 
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
-		this.ticking = false;
 
 		this.setState({
 			isHidden: false,
@@ -57,8 +56,6 @@ class Header extends gia.Component {
 					window.swup.hooks.off("page:view", this.handleSwupPageChange);
 				} catch (e) {}
 			}
-
-			gia.clear(this.tickUpdate);
 		}
 	}
 
@@ -75,15 +72,7 @@ class Header extends gia.Component {
 			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
 
-		if (!this.ticking) {
-			gia.mutate(this.tickUpdate);
-			this.ticking = true;
-		}
-	}
-
-	tickUpdate() {
 		this.update();
-		this.ticking = false;
 	}
 
 	handleSwupPageChange() {
