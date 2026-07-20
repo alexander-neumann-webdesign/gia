@@ -445,32 +445,30 @@ class CustomCursor extends gia.Component {
     }
 
     _updateBounds() {
-        gia.measure(() => {
-            this._preloadImages();
+        this._preloadImages();
 
-            // Rebuild the cache of all magnetic elements
-            const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
-            this.cachedMagneticElements = [];
+        // Rebuild the cache of all magnetic elements
+        const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
+        this.cachedMagneticElements = [];
 
-            const scrollX = this.scroll.x;
-            const scrollY = this.scroll.y;
+        const scrollX = this.scroll.x;
+        const scrollY = this.scroll.y;
 
-            // DEFERRED BOUNDS CALCULATION: Calculates bounds without synchronous layout thrashing
-            for (let i = 0; i < elements.length; i++) {
-                const el = elements[i];
-                const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
+        // SYNCHRONOUS BOUNDS CALCULATION: Calculates bounds during event to prevent layout thrashing in rAF
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            const { bounds, type } = this._calculateElementBounds(el, scrollX, scrollY);
 
-                this.cachedMagneticElements.push({ el, bounds, type });
+            this.cachedMagneticElements.push({ el, bounds, type });
 
-                if (el === this.magneticTarget) {
-                    this.magneticBounds = bounds;
-                }
+            if (el === this.magneticTarget) {
+                this.magneticBounds = bounds;
             }
+        }
 
-            // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
-            // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
-            this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
-        });
+        // ⚡ BOLT OPTIMIZATION: 1D Spatial Partitioning.
+        // Sort elements by their top bound to allow early exit in the high-frequency O(N) loop.
+        this.cachedMagneticElements.sort((a, b) => a.bounds.top - b.bounds.top);
     }
 
     _calculateMagneticPull(targetX, targetY) {
