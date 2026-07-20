@@ -1101,6 +1101,210 @@
     </div>
   </section>
 
+  <section id="FilterableListClassic">
+    <h2>FilterableListClassic</h2>
+    <div class="demo-block">
+      <div data-component="FilterableListClassic" data-options='{"defaultSort": "name:asc"}'>
+        <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <!-- Filter Controls -->
+          <div>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true"
+              class="is-active">All Shapes</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle"
+              aria-pressed="false">Circle</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="square"
+              aria-pressed="false">Square</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle"
+              aria-pressed="false">Triangle</button>
+          </div>
+
+          <div>
+            <label for="color-select" class="sr-only">Color Filter</label>
+            <select id="color-select" data-ref="filter" data-filter-type="color">
+              <option value="">All Colors</option>
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="green">Green</option>
+              <option value="yellow">Yellow</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="search-name" class="sr-only">Search by name</label>
+            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes"
+              placeholder="Search by name...">
+          </div>
+
+          <div style="display: flex; flex-direction: column; width: 200px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+              <label for="price-min">Min Price: $<output for="price-min">0</output></label>
+              <label for="price-max">Max Price: $<output for="price-max">50</output></label>
+            </div>
+            <div data-component="RangeSlider"
+              data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}'
+              class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
+              <div data-ref="slider"></div>
+              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50"
+                value="0" style="display: none;">
+              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50"
+                value="50" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Sorter Controls -->
+          <select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;">
+            <option value="name:asc">Name (A-Z)</option>
+            <option value="name:desc">Name (Z-A)</option>
+            <option value="price:asc">Price (Low-High)</option>
+            <option value="price:desc">Price (High-Low)</option>
+          </select>
+        </div>
+
+        <div aria-live="polite" data-ref="announcer" class="results-announcer">
+          <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
+          <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
+          <span data-ref="announcerEmpty" hidden>
+            No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
+          </span>
+        </div>
+
+        <div data-ref="container" class="grid">
+          <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
+            <div class="shape-visual" data-shape="circle" data-color="red"></div>
+            <div class="item-details">
+              <span class="item-name">Apple</span>
+              <span class="price-tag">$10</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
+            <div class="shape-visual" data-shape="square" data-color="blue"></div>
+            <div class="item-details">
+              <span class="item-name">Box</span>
+              <span class="price-tag">$20</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
+            <div class="shape-visual" data-shape="circle" data-color="blue"></div>
+            <div class="item-details">
+              <span class="item-name">Blueberry</span>
+              <span class="price-tag">$5</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15">
+            <div class="shape-visual" data-shape="triangle" data-color="green"></div>
+            <div class="item-details">
+              <span class="item-name">Tree</span>
+              <span class="price-tag">$15</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50">
+            <div class="shape-visual" data-shape="circle" data-color="yellow"></div>
+            <div class="item-details">
+              <span class="item-name">Sun</span>
+              <span class="price-tag">$50</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2">
+            <div class="shape-visual" data-shape="square" data-color="red"></div>
+            <div class="item-details">
+              <span class="item-name">Brick</span>
+              <span class="price-tag">$2</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30">
+            <div class="shape-visual" data-shape="triangle" data-color="blue"></div>
+            <div class="item-details">
+              <span class="item-name">Sail</span>
+              <span class="price-tag">$30</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8">
+            <div class="shape-visual" data-shape="square" data-color="green"></div>
+            <div class="item-details">
+              <span class="item-name">Grass</span>
+              <span class="price-tag">$8</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6">
+            <div class="shape-visual" data-shape="circle" data-color="green"></div>
+            <div class="item-details">
+              <span class="item-name">Lime</span>
+              <span class="price-tag">$6</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign"
+            data-price="40">
+            <div class="shape-visual" data-shape="triangle" data-color="red"></div>
+            <div class="item-details">
+              <span class="item-name">Yield Sign</span>
+              <span class="price-tag">$40</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note"
+            data-price="1">
+            <div class="shape-visual" data-shape="square" data-color="yellow"></div>
+            <div class="item-details">
+              <span class="item-name">Sticky Note</span>
+              <span class="price-tag">$1</span>
+            </div>
+          </div>
+          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese"
+            data-price="12">
+            <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
+            <div class="item-details">
+              <span class="item-name">Cheese</span>
+              <span class="price-tag">$12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline script to prevent layout shift on initial load when URL params are present -->
+        <script>
+          (function () {
+            var params = new URLSearchParams(window.location.search);
+            var items = document.querySelectorAll('#FilterableListClassic .item');
+
+            var activeFilters = {};
+            for (var key of params.keys()) {
+              if (key.startsWith('filter-')) {
+                var type = key.replace('filter-', '');
+                var vals = params.get(key).split(',').filter(Boolean);
+                if (vals.length > 0) {
+                  activeFilters[type] = vals;
+                }
+              }
+            }
+
+            var hasFilters = false;
+            for (var _k in activeFilters) {
+              hasFilters = true;
+              break;
+            }
+
+            if (hasFilters) {
+              items.forEach(function (item) {
+                var isVisible = true;
+                for (var type in activeFilters) {
+                  var activeValues = activeFilters[type];
+                  var itemVal = item.getAttribute('data-' + type);
+                  if (!itemVal || activeValues.indexOf(itemVal) === -1) {
+                    isVisible = false;
+                    break;
+                  }
+                }
+                if (!isVisible) {
+                  item.hidden = true;
+                }
+              });
+            }
+          })();
+        </script>
+      </div>
+
+
+    </div>
+  </section>
+
   <section id="FilterableListGSAP">
     <h2>FilterableListGSAP</h2>
     <div class="demo-block">
@@ -1730,6 +1934,7 @@
   <script src="../examples/Accordion.js"></script>
   <script src="../examples/ClipboardCopy.js"></script>
   <script src="../examples/FilterableList.js"></script>
+  <script src="../examples/FilterableListClassic.js"></script>
   <script src="../examples/Form.js"></script>
   <script src="../examples/UploadField.js"></script>
   <script src="../examples/MultiStepForm.js"></script>

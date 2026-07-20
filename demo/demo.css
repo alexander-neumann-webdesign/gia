@@ -160,13 +160,13 @@ button[data-component=ClipboardCopy][data-status=error] {
 }
 
 /* --- FilterableList --- */
-div[data-component=FilterableList] .results-announcer, div[data-component=FilterableListGSAP] .results-announcer {
+div[data-component=FilterableList] .results-announcer, div[data-component=FilterableListGSAP] .results-announcer, div[data-component=FilterableListClassic] .results-announcer {
   margin-bottom: 1rem;
   font-weight: bold;
   font-size: 0.9rem;
   color: #555;
 }
-div[data-component=FilterableList] .results-announcer .reset-filters-btn, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn {
+div[data-component=FilterableList] .results-announcer .reset-filters-btn, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn, div[data-component=FilterableListClassic] .results-announcer .reset-filters-btn {
   margin-left: 0.5rem;
   padding: 0.25rem 0.75rem;
   font-size: 0.8rem;
@@ -175,41 +175,41 @@ div[data-component=FilterableList] .results-announcer .reset-filters-btn, div[da
   border-radius: 4px;
   cursor: pointer;
 }
-div[data-component=FilterableList] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableList] .results-announcer .reset-filters-btn:focus-visible, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:focus-visible {
+div[data-component=FilterableList] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableList] .results-announcer .reset-filters-btn:focus-visible, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableListGSAP] .results-announcer .reset-filters-btn:focus-visible, div[data-component=FilterableListClassic] .results-announcer .reset-filters-btn:hover, div[data-component=FilterableListClassic] .results-announcer .reset-filters-btn:focus-visible {
   background: #e1e1e1;
   outline: none;
 }
-div[data-component=FilterableList] .controls, div[data-component=FilterableListGSAP] .controls {
+div[data-component=FilterableList] .controls, div[data-component=FilterableListGSAP] .controls, div[data-component=FilterableListClassic] .controls {
   margin-bottom: 2rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-div[data-component=FilterableList] .controls button, div[data-component=FilterableListGSAP] .controls button {
+div[data-component=FilterableList] .controls button, div[data-component=FilterableListGSAP] .controls button, div[data-component=FilterableListClassic] .controls button {
   padding: 0.5rem 1rem;
   border: 1px solid #ccc;
   background: white;
   cursor: pointer;
   border-radius: 4px;
 }
-div[data-component=FilterableList] .controls button.is-active, div[data-component=FilterableListGSAP] .controls button.is-active {
+div[data-component=FilterableList] .controls button.is-active, div[data-component=FilterableListGSAP] .controls button.is-active, div[data-component=FilterableListClassic] .controls button.is-active {
   background: #007bff;
   color: white;
   border-color: #007bff;
 }
-div[data-component=FilterableList] .controls select, div[data-component=FilterableListGSAP] .controls select {
+div[data-component=FilterableList] .controls select, div[data-component=FilterableListGSAP] .controls select, div[data-component=FilterableListClassic] .controls select {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
   margin-left: auto;
 }
-div[data-component=FilterableList] .grid, div[data-component=FilterableListGSAP] .grid {
+div[data-component=FilterableList] .grid, div[data-component=FilterableListGSAP] .grid, div[data-component=FilterableListClassic] .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   transition: height 0.4s ease;
 }
-div[data-component=FilterableList] .item, div[data-component=FilterableListGSAP] .item {
+div[data-component=FilterableList] .item, div[data-component=FilterableListGSAP] .item, div[data-component=FilterableListClassic] .item {
   border: 1px solid #eee;
   border-radius: 8px;
   padding: 1.5rem;
@@ -220,20 +220,20 @@ div[data-component=FilterableList] .item, div[data-component=FilterableListGSAP]
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-div[data-component=FilterableList] .item[hidden], div[data-component=FilterableListGSAP] .item[hidden] {
+div[data-component=FilterableList] .item[hidden], div[data-component=FilterableListGSAP] .item[hidden], div[data-component=FilterableListClassic] .item[hidden] {
   display: none !important;
 }
-div[data-component=FilterableList] .item .shape-visual, div[data-component=FilterableListGSAP] .item .shape-visual {
+div[data-component=FilterableList] .item .shape-visual, div[data-component=FilterableListGSAP] .item .shape-visual, div[data-component=FilterableListClassic] .item .shape-visual {
   width: 60px;
   height: 60px;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=circle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=circle] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=circle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=circle], div[data-component=FilterableListClassic] .item .shape-visual[data-shape=circle] {
   border-radius: 50%;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=square], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=square] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=square], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=square], div[data-component=FilterableListClassic] .item .shape-visual[data-shape=square] {
   border-radius: 8px;
 }
-div[data-component=FilterableList] .item .shape-visual[data-shape=triangle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=triangle] {
+div[data-component=FilterableList] .item .shape-visual[data-shape=triangle], div[data-component=FilterableListGSAP] .item .shape-visual[data-shape=triangle], div[data-component=FilterableListClassic] .item .shape-visual[data-shape=triangle] {
   width: 0;
   height: 0;
   border-left: 30px solid transparent;
@@ -241,33 +241,33 @@ div[data-component=FilterableList] .item .shape-visual[data-shape=triangle], div
   border-bottom: 60px solid currentColor;
   background-color: transparent !important;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=red], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=red] {
+div[data-component=FilterableList] .item .shape-visual[data-color=red], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=red], div[data-component=FilterableListClassic] .item .shape-visual[data-color=red] {
   background-color: #ff4d4d;
   color: #ff4d4d;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=blue], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=blue] {
+div[data-component=FilterableList] .item .shape-visual[data-color=blue], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=blue], div[data-component=FilterableListClassic] .item .shape-visual[data-color=blue] {
   background-color: #4d4dff;
   color: #4d4dff;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=green], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=green] {
+div[data-component=FilterableList] .item .shape-visual[data-color=green], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=green], div[data-component=FilterableListClassic] .item .shape-visual[data-color=green] {
   background-color: #4dff4d;
   color: #4dff4d;
 }
-div[data-component=FilterableList] .item .shape-visual[data-color=yellow], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=yellow] {
+div[data-component=FilterableList] .item .shape-visual[data-color=yellow], div[data-component=FilterableListGSAP] .item .shape-visual[data-color=yellow], div[data-component=FilterableListClassic] .item .shape-visual[data-color=yellow] {
   background-color: #ffd700;
   color: #ffd700;
 }
-div[data-component=FilterableList] .item .item-details, div[data-component=FilterableListGSAP] .item .item-details {
+div[data-component=FilterableList] .item .item-details, div[data-component=FilterableListGSAP] .item .item-details, div[data-component=FilterableListClassic] .item .item-details {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
 }
-div[data-component=FilterableList] .item .item-details .item-name, div[data-component=FilterableListGSAP] .item .item-details .item-name {
+div[data-component=FilterableList] .item .item-details .item-name, div[data-component=FilterableListGSAP] .item .item-details .item-name, div[data-component=FilterableListClassic] .item .item-details .item-name {
   font-weight: bold;
   font-size: 1.1rem;
 }
-div[data-component=FilterableList] .item .item-details .price-tag, div[data-component=FilterableListGSAP] .item .item-details .price-tag {
+div[data-component=FilterableList] .item .item-details .price-tag, div[data-component=FilterableListGSAP] .item .item-details .price-tag, div[data-component=FilterableListClassic] .item .item-details .price-tag {
   color: #666;
   background: #f0f0f0;
   padding: 0.2rem 0.5rem;
