@@ -616,18 +616,6 @@ class FilterableListClassic extends gia.Component {
 		}
 	}
 
-	_cancelOngoingAnimations() {
-		if (this._currentAnimations) {
-			for (let i = 0; i < this._currentAnimations.length; i++) {
-				this._currentAnimations[i].finish(); // Immediately jump to end
-			}
-			this._currentAnimations = null;
-		}
-		if (this._heightAnimation) {
-			this._heightAnimation.finish();
-			this._heightAnimation = null;
-		}
-	}
 
 	_applyFLIPAnimation(visibleItems, hiddenItems) {
 		gia.measure(() => {
@@ -653,7 +641,9 @@ class FilterableListClassic extends gia.Component {
 						item.style.height = `${rect.height}px`;
 						item.style.margin = '0';
 					} else {
-						item.hidden = true;
+						if (item.style.position !== 'absolute') {
+							item.hidden = true;
+						}
 					}
 				}
 
@@ -671,6 +661,22 @@ class FilterableListClassic extends gia.Component {
 
 				this._updateAnnouncers(visibleItems.length);
 
+				// Cancel animations on elements that are part of this new FLIP cycle
+				for (let i = 0; i < visibleItems.length; i++) {
+					const anims = visibleItems[i].getAnimations();
+					for (let j = 0; j < anims.length; j++) anims[j].cancel();
+				}
+				for (let i = 0; i < hiddenItems.length; i++) {
+					if (firstRects.has(hiddenItems[i])) {
+						const anims = hiddenItems[i].getAnimations();
+						for (let j = 0; j < anims.length; j++) anims[j].cancel();
+					}
+				}
+				if (this._heightAnimation) {
+					this._heightAnimation.cancel();
+					this._heightAnimation = null;
+				}
+
 				// Force synchronous layout to measure Last rects before the browser paints
 				const lastRects = new Map();
 				const newContainerRect = this.ref.container.getBoundingClientRect();
@@ -680,7 +686,6 @@ class FilterableListClassic extends gia.Component {
 					lastRects.set(item, item.getBoundingClientRect());
 				}
 
-				const animations = [];
 				let staggerIndex = 0;
 
 				if (containerRect.height !== newContainerRect.height) {
@@ -691,7 +696,6 @@ class FilterableListClassic extends gia.Component {
 						duration: 400,
 						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
 					});
-					animations.push(this._heightAnimation);
 				}
 
 				for (let i = 0; i < visibleItems.length; i++) {
@@ -704,7 +708,7 @@ class FilterableListClassic extends gia.Component {
 						const dx = first.left - last.left;
 						const dy = first.top - last.top;
 						if (dx !== 0 || dy !== 0) {
-							const anim = item.animate([
+							item.animate([
 								{ transform: `translate(${dx}px, ${dy}px)` },
 								{ transform: 'translate(0, 0)' }
 							], {
@@ -713,11 +717,10 @@ class FilterableListClassic extends gia.Component {
 								delay: delay,
 								fill: 'backwards'
 							});
-							animations.push(anim);
 							staggerIndex++;
 						}
 					} else if (!first && last) {
-						const anim = item.animate([
+						item.animate([
 							{ opacity: 0, transform: 'scale(0.8)' },
 							{ opacity: 1, transform: 'scale(1)' }
 						], {
@@ -726,12 +729,10 @@ class FilterableListClassic extends gia.Component {
 							delay: delay,
 							fill: 'backwards'
 						});
-						animations.push(anim);
 						staggerIndex++;
 					}
 				}
 
-				const exitingItems = [];
 				for (let i = 0; i < hiddenItems.length; i++) {
 					const item = hiddenItems[i];
 					if (firstRects.has(item)) {
@@ -743,47 +744,21 @@ class FilterableListClassic extends gia.Component {
 							easing: 'ease-out',
 							fill: 'both'
 						});
-						animations.push(anim);
-						exitingItems.push(item);
-					}
-				}
-
-				this._currentAnimations = animations;
-
-				if (animations.length > 0) {
-					Promise.all(animations.map(a => a.finished)).catch(() => {}).finally(() => {
-						gia.mutate(() => {
-							for (let i = 0; i < exitingItems.length; i++) {
-								const item = exitingItems[i];
-								item.hidden = true;
-								item.style.position = '';
-								item.style.top = '';
-								item.style.left = '';
-								item.style.width = '';
-								item.style.height = '';
-								item.style.margin = '';
-							}
-							
-							// Clean up old animations so fill states (like opacity: 0) don't persist
-							for (let i = 0; i < animations.length; i++) {
-								animations[i].cancel();
-							}
-
-							if (this._currentAnimations === animations) {
-								this._currentAnimations = null;
-							}
+						
+						anim.finished.catch(() => {}).finally(() => {
+							gia.mutate(() => {
+								if (item.style.position === 'absolute') {
+									item.hidden = true;
+									item.style.position = '';
+									item.style.top = '';
+									item.style.left = '';
+									item.style.width = '';
+									item.style.height = '';
+									item.style.margin = '';
+								}
+								anim.cancel();
+							});
 						});
-					});
-				} else {
-					for (let i = 0; i < exitingItems.length; i++) {
-						const item = exitingItems[i];
-						item.hidden = true;
-						item.style.position = '';
-						item.style.top = '';
-						item.style.left = '';
-						item.style.width = '';
-						item.style.height = '';
-						item.style.margin = '';
 					}
 				}
 			});
@@ -791,8 +766,6 @@ class FilterableListClassic extends gia.Component {
 	}
 
 	updateList(animate = true) {
-		this._cancelOngoingAnimations();
-
 		const items = this.ref.item;
 		const { visibleItems, hiddenItems, currentItemsHiddenBehindMoreButtonCount } = this._filterItems(items);
 
@@ -803,6 +776,14 @@ class FilterableListClassic extends gia.Component {
 			this._applyFLIPAnimation(visibleItems, hiddenItems);
 		} else {
 			gia.mutate(() => {
+				for (let i = 0; i < visibleItems.length; i++) {
+					const anims = visibleItems[i].getAnimations();
+					for (let j = 0; j < anims.length; j++) anims[j].cancel();
+				}
+				if (this._heightAnimation) {
+					this._heightAnimation.cancel();
+					this._heightAnimation = null;
+				}
 				this.applyDOMChangesSynchronously(visibleItems, hiddenItems);
 			});
 		}
