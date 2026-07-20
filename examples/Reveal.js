@@ -35,14 +35,14 @@ class Reveal extends gia.Component {
 		}
 	}
 
-	unmount() {}
+	unmount() { }
 
 	stateChange(stateChanges) {
 		// Classes are now automatically mapped to data-is-inview by BaseComponent
 	}
 }
 
-gia.register(Reveal);
+gia.register(Reveal, { priority: 90 });
 
 /*
 ========================================
@@ -51,11 +51,11 @@ EXPECTED HTML
 
 <noscript>
   <style>
-    [data-component="Reveal"] {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      transform: translateY(0) !important;
-    }
+	[data-component="Reveal"] {
+	  opacity: 1 !important;
+	  pointer-events: auto !important;
+	  transform: translateY(0) !important;
+	}
   </style>
 </noscript>
 
@@ -76,9 +76,9 @@ SUGGESTED SCSS
   will-change: opacity, transform;
 
   &[data-is-inview="true"] {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
   }
 }
 */

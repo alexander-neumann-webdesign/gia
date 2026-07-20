@@ -734,6 +734,46 @@
     </div>
   </section>
 
+  <section id="ScrollEffect">
+    <h2>Scroll Effect</h2>
+    <div class="demo-block scroll-effect-demo">
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--scroll-progress"}'>
+        <div class="scroll-effect-box">Scroll to see me move & rotate!</div>
+      </div>
+    </div>
+    
+    <h3 style="margin-top: 4rem;">Stacked Cards Effect</h3>
+    <p>Using <code>startFromTop: true</code> to scale and darken sticky cards as the next one scrolls over.</p>
+    <div class="stacked-cards-container">
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
+        <div class="stacked-card-inner">Card 1</div>
+      </div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
+        <div class="stacked-card-inner">Card 2</div>
+      </div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
+        <div class="stacked-card-inner">Card 3</div>
+      </div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
+        <div class="stacked-card-inner">Card 4</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 4rem;">Staggered Parallax Grid</h3>
+    <p>Using <code>ScrollEffect</code> to drive individual column parallax speeds. They perfectly align when in the center of the viewport.</p>
+    <div class="staggered-grid-container">
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">1</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">2</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">3</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">4</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">5</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">6</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">7</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">8</div>
+      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">9</div>
+    </div>
+  </section>
+
   <section id="Marquee">
     <h2>Marquee</h2>
     <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
@@ -1703,6 +1743,7 @@
   <script src="../examples/PongGame.js"></script>
   <script src="../examples/MatterPhysicsBackground.js"></script>
   <script src="../examples/Reveal.js"></script>
+  <script src="../examples/ScrollEffect.js"></script>
   <script src="../examples/Slider.js"></script>
   <script src="../examples/SplitText.js"></script>
   <script src="../examples/Tabs.js"></script>

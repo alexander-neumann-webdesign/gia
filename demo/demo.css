@@ -780,6 +780,115 @@ html.off-canvas-menu-open::after {
   transform: translateY(0);
 }
 
+/* --- ScrollEffect --- */
+.scroll-effect-demo {
+  height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.scroll-effect-demo .scroll-effect-box {
+  padding: 2rem 4rem;
+  background: var(--primary);
+  color: var(--on-primary);
+  border-radius: var(--radius-md);
+  font-size: 1.5rem;
+  font-weight: bold;
+  transform: translateX(calc((var(--scroll-progress, 0.5) - 0.5) * 150vw)) rotate(calc((var(--scroll-progress, 0.5) - 0.5) * 360deg));
+  will-change: transform;
+}
+
+.stacked-cards-container {
+  position: relative;
+  margin-top: 10vh;
+  margin-bottom: 50vh;
+}
+
+.stacked-card {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  transform-origin: center top;
+  will-change: transform, filter;
+  transform: scale(calc(1 - var(--card-progress, 0) * 0.05)) translateY(calc(var(--card-progress, 0) * 2%));
+  filter: brightness(calc(1 - var(--card-progress, 0) * 0.4));
+}
+.stacked-card .stacked-card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+}
+.stacked-card:nth-child(1) .stacked-card-inner {
+  background: #ff5e5e;
+}
+.stacked-card:nth-child(2) .stacked-card-inner {
+  background: #3b82f6;
+}
+.stacked-card:nth-child(3) .stacked-card-inner {
+  background: #10b981;
+}
+.stacked-card:nth-child(4) .stacked-card-inner {
+  background: #f59e0b;
+}
+
+.staggered-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 10vh;
+  margin-bottom: 20vh;
+}
+@media (max-width: 768px) {
+  .staggered-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .staggered-grid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.staggered-card {
+  height: 30vh;
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  will-change: transform;
+  /* Progress goes from 0 to 1. At 0.5 (center of screen), they align perfectly. */
+  transform: translateY(calc((var(--card-progress, 0.5) - 0.5) * var(--parallax-speed, 100px)));
+}
+.staggered-card:nth-child(3n+1) {
+  --parallax-speed: -150px;
+  background: #ff5e5e;
+}
+.staggered-card:nth-child(3n+2) {
+  --parallax-speed: 50px;
+  background: #3b82f6;
+}
+.staggered-card:nth-child(3n+3) {
+  --parallax-speed: 250px;
+  background: #10b981;
+}
+
 /* --- Slider --- */
 /* --- Slider --- */
 .slider-wrapper[data-component=Slider] {

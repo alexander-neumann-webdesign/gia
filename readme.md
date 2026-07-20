@@ -583,6 +583,7 @@ A comprehensive suite of examples demonstrating best practices is available. You
 
 - **[Marquee](examples/Marquee.js)**: An infinite-scrolling marquee that automatically clones elements and handles continuous, sub-pixel perfect `requestAnimationFrame` updates.
 - **[Reveal](examples/Reveal.js)**: A stagger-ready scroll-reveal component leveraging the globally shared Intersection Observer to handle hundreds of elements without memory leaks.
+- **[ScrollEffect](examples/ScrollEffect.js)**: A versatile scroll tracking component that maps viewport scroll progress to CSS variables, enabling complex animations like staggered grids and sticky stacked cards.
 - **[SplitText](examples/SplitText.js)**: A specialized typography component that intelligently divides text into lines, words, and characters using the native `Intl.Segmenter` API.
 - **[TextFit](examples/TextFit.js)**: A typography utility integrating the `fitty` library to seamlessly scale text to fit its container perfectly.
 
