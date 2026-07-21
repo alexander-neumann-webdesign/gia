@@ -363,6 +363,30 @@ class CustomCursor extends gia.Component {
         this._updateVisualState(finalState, closestMagneticEl, targetState, targetText, targetImg, targetVideo, targetIcon);
     }
 
+    _updateDOMContent(targetState, targetText, targetImg, targetVideo, targetIcon) {
+        if (targetState === 'text' && this.ref.text) {
+            this.ref.text.textContent = targetText || '';
+        } else if (targetState === 'media' && this.ref.mediaBox) {
+            this.ref.mediaBox.replaceChildren();
+            if (targetImg) {
+                const img = document.createElement('img');
+                img.src = targetImg;
+                this.ref.mediaBox.appendChild(img);
+            } else if (targetVideo) {
+                const vid = document.createElement('video');
+                vid.src = targetVideo;
+                vid.autoplay = true;
+                vid.loop = true;
+                vid.muted = true;
+                vid.playsInline = true;
+                this.ref.mediaBox.appendChild(vid);
+            }
+        } else if (targetState === 'icon' && this.ref.icon) {
+            // Basic SVG use handling; can be customized based on project's icon strategy
+            this.ref.icon.innerHTML = targetIcon ? `<svg><use href="#${targetIcon}"></use></svg>` : '';
+        }
+    }
+
     _preloadImages() {
         const imageElements = document.querySelectorAll('[data-cursor-img]');
         for (let i = 0; i < imageElements.length; i++) {

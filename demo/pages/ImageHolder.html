@@ -5,58 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImageHolder - Gia Components Demo</title>
   
-  <!-- Vendor scripts from demo/index.html -->
-  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
-  <script id="vendor/embla/embla-carousel.umd-js" data-src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
-  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js"
-    data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
-  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script id="Flip" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
-  <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
-  <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3"></script>
-  <script id="photoswipe-js" data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe.umd.min.js"></script>
-  <script id="photoswipe-lightbox-js"
-    data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe-lightbox.umd.min.js"></script>
-  <script id="matter-js-script"
-    data-src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-  <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-  <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
-  <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
-  <link id="photoswipe-css" rel="stylesheet" data-href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
-  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <!-- Component Dependencies -->
+  <link rel="stylesheet" href="../assets/css/demo.css">
   
-  <link rel="stylesheet" href="../demo.css">
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    .demo-block {
-      margin-top: 1rem;
-      border: 1px dashed #aaa;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-    .options-pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    nav {
-      margin-bottom: 2rem;
-    }
-  </style>
 </head>
 <body>
+<main class="demo-container">
   <nav>
-    <a href="index.html">&larr; Back to all components</a>
+    <a href="../index.html">&larr; Back to all components</a>
   </nav>
   
   <h1>ImageHolder</h1>
@@ -72,18 +28,75 @@
   
   <section id="ImageHolder">
     <h2>Interactive Demo</h2>
-    <h2>ImageHolder</h2>
+    
+    <h3>Vertical Parallax (Default)</h3>
     <div class="demo-block">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="../sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div>
+          <h4 style="margin-top: 0;">Speed: 0 (No Parallax)</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+          </div>
         </div>
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="../sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+        <div>
+          <h4 style="margin-top: 0;">Speed: 0.2</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+          </div>
         </div>
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="../sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
+        <div>
+          <h4 style="margin-top: 0;">Speed: 0.5 (Fast)</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.5}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.5 parallax" loading="lazy" />
+          </div>
         </div>
+        <div>
+          <h4 style="margin-top: 0;">Speed: -0.2 (Reverse)</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": -0.2}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="-0.2 parallax" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Horizontal Parallax</h3>
+    <div class="demo-block">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div>
+          <h4 style="margin-top: 0;">Direction: horizontal, Speed: 0.3</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.3, "parallaxDirection": "horizontal"}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Horizontal parallax" loading="lazy" />
+          </div>
+        </div>
+        <div>
+          <h4 style="margin-top: 0;">Direction: horizontal, Speed: -0.3</h4>
+          <div data-component="ImageHolder" data-options='{"parallaxSpeed": -0.3, "parallaxDirection": "horizontal"}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Horizontal reverse" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>CSS Variable Parallax</h3>
+    <p>Using <code>parallaxCssVar: true</code> allows you to drive any CSS property via the <code>--parallax-scroll-progress</code> variable.</p>
+    <style>
+      .css-var-demo img {
+        /* Instead of translate, let's scale and rotate based on scroll progress (0 to 1) */
+        transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.5))) rotate(calc(var(--parallax-scroll-progress, 0) * 5deg)) !important;
+      }
+    </style>
+    <div class="demo-block">
+      <h4 style="margin-top: 0;">Scaling & Rotation via CSS Var</h4>
+      <div data-component="ImageHolder" data-options='{"parallaxCssVar": true}' class="css-var-demo" style="aspect-ratio: 21 / 9; border-radius: 12px;">
+        <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="CSS var parallax" loading="lazy" />
+      </div>
+    </div>
+
+    <h3>Start From Top</h3>
+    <p>With <code>startFromTop: true</code>, the parallax progress is calculated starting from when the top of the element hits the top of the viewport. (Useful for hero banners at the very top of the page).</p>
+    <div class="demo-block">
+      <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4, "startFromTop": true}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
+        <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Start from top" loading="lazy" />
       </div>
     </div>
   </section>
@@ -92,39 +105,7 @@
   <script src="../../dist/gia.full.umd.js"></script>
   
   <!-- Component scripts -->
-  <script src="../../examples/Accordion.js"></script>
-  <script src="../../examples/ClipboardCopy.js"></script>
-  <script src="../../examples/CountUp.js"></script>
-  <script src="../../examples/CustomCursor.js"></script>
-  <script src="../../examples/FilterableList.js"></script>
-  <script src="../../examples/FilterableListGSAP.js"></script>
-  <script src="../../examples/Form.js"></script>
-  <script src="../../examples/Header.js"></script>
-  <script src="../../examples/ImageComparison.js"></script>
   <script src="../../examples/ImageHolder.js"></script>
-  <script src="../../examples/LightboxGallery.js"></script>
-  <script src="../../examples/Magnetic.js"></script>
-  <script src="../../examples/MapLibreMap.js"></script>
-  <script src="../../examples/Marquee.js"></script>
-  <script src="../../examples/MatterPhysicsBackground.js"></script>
-  <script src="../../examples/Modal.js"></script>
-  <script src="../../examples/MultiStepForm.js"></script>
-  <script src="../../examples/MultipleSelect.js"></script>
-  <script src="../../examples/OffCanvasMenu.js"></script>
-  <script src="../../examples/OpenStreetMap.js"></script>
-  <script src="../../examples/PongGame.js"></script>
-  <script src="../../examples/QRCode.js"></script>
-  <script src="../../examples/RangeSlider.js"></script>
-  <script src="../../examples/Reveal.js"></script>
-  <script src="../../examples/Slider.js"></script>
-  <script src="../../examples/SplitText.js"></script>
-  <script src="../../examples/Tabs.js"></script>
-  <script src="../../examples/TextFit.js"></script>
-  <script src="../../examples/ThemeToggle.js"></script>
-  <script src="../../examples/TodoApp.js"></script>
-  <script src="../../examples/Tooltip.js"></script>
-  <script src="../../examples/UploadField.js"></script>
-  <script src="../../examples/VideoHolder.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -134,5 +115,6 @@
         }
     });
   </script>
+</main>
 </body>
 </html>

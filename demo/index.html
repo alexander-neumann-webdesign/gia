@@ -1,1982 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gia Components Demo</title>
-  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
-  <link rel="stylesheet" href="./demo.css">
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    section {
-      margin-bottom: 4rem;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .demo-block {
-      margin-top: 1rem;
-      border: 1px dashed #aaa;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-
-    .demo-block>* {
-      max-width: 100%;
-    }
-
-    /* specific tweaks */
-    .pong-section {
-      height: 400px;
-      position: relative;
-    }
-
-    .pong-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
-
-  <!-- Vendor scripts required by some components -->
-  <script id="vendor/embla/embla-carousel.umd-js" data-src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
-  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js"
-    data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
-  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script id="Flip" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
-  <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
-  <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3"></script>
-  <script id="photoswipe-js" data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe.umd.min.js"></script>
-  <script id="photoswipe-lightbox-js"
-    data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe-lightbox.umd.min.js"></script>
-  <link id="photoswipe-css" rel="stylesheet" data-href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
-  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script id="matter-js-script"
-    data-src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <!-- MapLibre -->
-  <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
-
-  <!-- QRCode Generator -->
-  <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-  <!-- noUiSlider -->
-  <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <title>Gia Components - All Pages</title>
+  
+  <link rel="stylesheet" href="assets/css/demo.css">
 </head>
-
 <body>
-  <h1>Gia Components Demo</h1>
-  <nav class="main-nav" style="margin-bottom: 2rem;">
-    <a href="cursor.html" style="color: #007bff; text-decoration: none; font-weight: bold;">&rarr; View Custom Cursor
-      Demo</a>
-  </nav>
-  <p>Enable auto-mounting or bind actions globally to test.</p>
-
-
-  <section id="Header">
-    <h2>Header</h2>
-    <div class="demo-block">
-      <header data-component="Header" id="main-header">
-        <div class="header-inner">
-          <div class="logo">Logo</div>
-          <nav>Nav Items</nav>
-        </div>
-      </header>
-
-
+<main class="demo-container">
+  <h1>Gia Components Library</h1>
+  <p>Select a component to view its demo and configuration options.</p>
+    <div class="category-grid">
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Navigation & Layout</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/Header.html">
+        <div class="component-info">
+          <span class="component-name">Header</span>
+          <span class="component-desc">A scroll-aware site header caching layout dimensions to apply CSS transforms via <code>requestAnimationFrame</code> without layout thrashing.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/OffCanvasMenu.html">
+        <div class="component-info">
+          <span class="component-name">OffCanvasMenu</span>
+          <span class="component-desc">A slide-out navigation menu demonstrating state-based class toggling, inert trapping for accessibility, and click-outside handling.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="OffCanvasMenu">
-    <h2>OffCanvasMenu</h2>
-    <div class="demo-block">
-      <!-- Trigger inside Header, e.g., a burger button -->
-      <header>
-        <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
-      </header>
-
-      <div data-component="OffCanvasMenu" id="main-menu" role="dialog" aria-modal="true" aria-label="Main Navigation"
-        aria-hidden="true">
-        <div class="offcanvas-content">
-          <button data-action="click->handleCloseClick" data-offcanvas-close aria-label="Close menu">✕</button>
-          <nav>
-            <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="/about">About</a></li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Accordions & Tabs</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/Accordion.html">
+        <div class="component-info">
+          <span class="component-name">Accordion</span>
+          <span class="component-desc">Semantic, accessible accordion utilizing <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>. Manages state to auto-close sibling panels and syncs with the URL hash.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Tabs.html">
+        <div class="component-info">
+          <span class="component-name">Tabs</span>
+          <span class="component-desc">A modern tabbed interface powered by the View Transitions API for seamless cross-fading and sliding animations. Handles ARIA attributes and URL syncing automatically.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="Tabs">
-    <h2>Tabs</h2>
-    <div class="demo-block">
-      <div data-component="Tabs">
-        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Sample Tabs">
-          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1">Tab 1</button>
-          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1">Tab
-            2</button>
-          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-3" id="tab-3" tabindex="-1">Tab
-            3</button>
-        </div>
-        <div class="tab-panels">
-          <div data-ref="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
-            <h3>Full-width Tab 1</h3>
-            <p>This tabs layout adapts to different screen sizes using grid. We added some extra content here so you can
-              see how heights change depending on what's active.</p>
-          </div>
-          <div data-ref="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
-            <h3>Shorter Tab 2</h3>
-            <p>Just a small amount of text here.</p>
-          </div>
-          <div data-ref="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
-            <h3>Tab 3 with ImageHolder</h3>
-            <p>This panel contains the requested ImageHolder component.</p>
-            <div data-component="ImageHolder"
-              data-options='{"parallaxSpeed": 0.2, "parallaxCssVar": false, "startFromTop": false}'
-              style="height: 300px; width: 100%;">
-              <img data-ref="img" src="gallery-1.jpg" sizes="100vw" alt="A nice image" loading="lazy" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Overlays & Notifications</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/BottomSheet.html">
+        <div class="component-info">
+          <span class="component-name">BottomSheet</span>
+          <span class="component-desc">A highly interactive, touch-friendly bottom sheet (drawer) inspired by Vaul. It features responsive CSS variable-driven physics, a "mid-air catch" gesture engine, focus-trapping for WCAG accessibility, and full compatibility with Lenis smooth scrolling.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Modal.html">
+        <div class="component-info">
+          <span class="component-name">Modal</span>
+          <span class="component-desc">An accessible dialog leveraging the native <code>&lt;dialog&gt;</code> element. Supports complex triggering, click-outside logic, and URL hash syncing.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Toaster.html">
+        <div class="component-info">
+          <span class="component-name">Toaster</span>
+          <span class="component-desc">A highly optimized, Sonner-inspired toast notification system featuring physics-based swipe-to-dismiss gestures, dynamic hover expansion, smooth height recalculation, and comprehensive WCAG accessibility.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="Accordion">
-    <h2>Accordion</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <div>
-        <h3>Group 1: Multiple Open Allowed (Plus Icon)</h3>
-        <details data-component="Accordion" id="faq-1" open>
-          <summary>Question 1 (Starts open)</summary>
-          <div class="content">
-            <p>This accordion starts open because of the "open" attribute in the HTML markup.</p>
-          </div>
-        </details>
-        <details data-component="Accordion" id="faq-2">
-          <summary>Question 2</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-        <details data-component="Accordion" id="faq-3">
-          <summary>Question 3</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-      </div>
-
-      <div id="accordion-group-2">
-        <h3>Group 2: Close Others (Arrow Icon)</h3>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-4">
-          <summary>Question 4</summary>
-          <div class="content">
-            <p>Opening this will close other accordions in the same group (same parent element).</p>
-          </div>
-        </details>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-5">
-          <summary>Question 5</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-6">
-          <summary>Question 6</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-      </div>
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Mouse & Interaction</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/CustomCursor.html">
+        <div class="component-info">
+          <span class="component-name">CustomCursor</span>
+          <span class="component-desc">A performant custom cursor replacement featuring frame-rate independent exponential smoothing for magnetic snapping and morphing.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Magnetic.html">
+        <div class="component-info">
+          <span class="component-name">Magnetic</span>
+          <span class="component-desc">A physical "magnetic pull" effect for interactive elements that uses dual-layer parallax and recalculates spring physics dynamically.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Tooltip.html">
+        <div class="component-info">
+          <span class="component-name">Tooltip</span>
+          <span class="component-desc">A robust tooltip component asynchronously importing the Floating UI library via <code>require()</code> for collision-aware positioning.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="Modal">
-    <h2>Modal</h2>
-    <div class="demo-block">
-      <!-- Triggers can be anywhere -->
-      <button data-modal-target="my-modal">Open Modal</button>
-
-      <!-- The modal itself -->
-      <dialog data-component="Modal" id="my-modal">
-        <div class="modal-content">
-          <h2>Modal Title</h2>
-          <button data-ref="closeButton">Close</button>
-        </div>
-      </dialog>
-
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>UI Elements</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/ClipboardCopy.html">
+        <div class="component-info">
+          <span class="component-name">ClipboardCopy</span>
+          <span class="component-desc">A utility component that copies text to the clipboard and provides temporary UI feedback based on state transitions.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/CountUp.html">
+        <div class="component-info">
+          <span class="component-name">CountUp</span>
+          <span class="component-desc">An auto-parsing counting animation that triggers when scrolled into view, optimized for zero garbage collection during its loop.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/ThemeToggle.html">
+        <div class="component-info">
+          <span class="component-name">ThemeToggle</span>
+          <span class="component-desc">A dark/light mode toggle switch interacting with <code>localStorage</code> and mutating global document state.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/QRCode.html">
+        <div class="component-info">
+          <span class="component-name">QRCode</span>
+          <span class="component-desc">A dynamic QR code generator that asynchronously loads dependencies to render customizable, reactive QR codes based on element attributes.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="Tooltip">
-    <h2>Tooltip</h2>
-    <div class="demo-block">
-      <!-- Required External Script: -->
-      <!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
-
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; padding: 2rem;">
-        <button data-component="Tooltip" data-tooltip="Tooltip on Top" data-position="top">
-          Top
-        </button>
-        <button data-component="Tooltip" data-tooltip="Tooltip on Right" data-position="right">
-          Right
-        </button>
-        <button data-component="Tooltip" data-tooltip="Tooltip on Bottom" data-position="bottom">
-          Bottom
-        </button>
-        <button data-component="Tooltip" data-tooltip="Tooltip on Left" data-position="left">
-          Left
-        </button>
-      </div>
-
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Media & Galleries</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/ImageComparison.html">
+        <div class="component-info">
+          <span class="component-name">ImageComparison</span>
+          <span class="component-desc">A responsive, fluid before/after comparison component utilizing CSS Grid stacking and a visually hidden range slider to dynamically adjust a <code>clip-path</code> mask via CSS variables.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/ImageHolder.html">
+        <div class="component-info">
+          <span class="component-name">ImageHolder</span>
+          <span class="component-desc">A highly optimized image component providing smooth parallax, viewport entrance tracking, and dynamic <code>sizes</code> calculations.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/LightboxGallery.html">
+        <div class="component-info">
+          <span class="component-name">LightboxGallery</span>
+          <span class="component-desc">A fully-featured gallery demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Slider.html">
+        <div class="component-info">
+          <span class="component-name">Slider</span>
+          <span class="component-desc">A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/VideoHolder.html">
+        <div class="component-info">
+          <span class="component-name">VideoHolder</span>
+          <span class="component-desc">A custom-styled video player featuring an animated expandable volume slider, scrubbable timeline, and IntersectionObserver logic that automatically pauses playback when out of view.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="ThemeToggle">
-    <h2>ThemeToggle</h2>
-    <div class="demo-block">
-      <button data-component="ThemeToggle" aria-label="Toggle dark mode">
-        <span class="icon-light" aria-hidden="true">☀️</span>
-        <span class="icon-dark" aria-hidden="true">🌙</span>
-      </button>
-
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Scroll & Visual Effects</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/Marquee.html">
+        <div class="component-info">
+          <span class="component-name">Marquee</span>
+          <span class="component-desc">An infinite-scrolling marquee that automatically clones elements and handles continuous, sub-pixel perfect <code>requestAnimationFrame</code> updates.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/Reveal.html">
+        <div class="component-info">
+          <span class="component-name">Reveal</span>
+          <span class="component-desc">A stagger-ready scroll-reveal component leveraging the globally shared Intersection Observer to handle hundreds of elements without memory leaks.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/ScrollEffect.html">
+        <div class="component-info">
+          <span class="component-name">ScrollEffect</span>
+          <span class="component-desc">A versatile scroll tracking component that maps viewport scroll progress to CSS variables, enabling complex animations like staggered grids and sticky stacked cards.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/SplitText.html">
+        <div class="component-info">
+          <span class="component-name">SplitText</span>
+          <span class="component-desc">A specialized typography component that intelligently divides text into lines, words, and characters using the native <code>Intl.Segmenter</code> API.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/TextFit.html">
+        <div class="component-info">
+          <span class="component-name">TextFit</span>
+          <span class="component-desc">A typography utility integrating the <code>fitty</code> library to seamlessly scale text to fit its container perfectly.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="ClipboardCopy">
-    <h2>ClipboardCopy</h2>
-    <div class="demo-block">
-      <span data-component="Tooltip" data-tooltip="Click to copy" data-position="top">
-        <button data-component="ClipboardCopy" data-copy-text="SAVE20" class="coupon-btn">
-          <span class="stack-children">
-            <span class="sizer" aria-hidden="true">SAVE20</span>
-            <span class="sizer" aria-hidden="true">Copied!</span>
-            <span data-ref="buttonText">SAVE20</span>
-          </span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon"
-            aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
-            <path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"></path>
-          </svg>
-        </button>
-      </span>
-
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Forms & Selection</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/Form.html">
+        <div class="component-info">
+          <span class="component-name">Form</span>
+          <span class="component-desc">An AJAX-powered form component with built-in HTML5 validation handling, animated loading spinners, and state-driven success/error messaging.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/MultiStepForm.html">
+        <div class="component-info">
+          <span class="component-name">MultiStepForm</span>
+          <span class="component-desc">A robust multi-step form manager coordinating validation, step indicators, and smooth back/forward navigation.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/MultipleSelect.html">
+        <div class="component-info">
+          <span class="component-name">MultipleSelect</span>
+          <span class="component-desc">A wrapper for <code>multiple-select-vanilla</code> dynamically loading its dependencies and exposing standard value getters/setters.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/RangeSlider.html">
+        <div class="component-info">
+          <span class="component-name">RangeSlider</span>
+          <span class="component-desc">A flexible range slider wrapping the <code>noUiSlider</code> library, implementing two-way data binding with native hidden inputs.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/UploadField.html">
+        <div class="component-info">
+          <span class="component-name">UploadField</span>
+          <span class="component-desc">An accessible, drag-and-drop file upload field supporting multiple files, custom labels, and comprehensive keyboard interaction.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-
-
-  <section id="TextFit">
-    <h2>TextFit</h2>
-    <div class="demo-block"
-      style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
-      <div style="width: 100%;">
-        <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}'
-          style="display: inline-block; white-space: nowrap;">
-          Resize this container to see text scaling
-        </div>
-      </div>
+  <section class="demo-category">
+    <div class="category-header">
+      <h2>Complex Interactivity</h2>
+      
     </div>
+    <ul class="demo-index-grid">
+      <li><a href="pages/FilterableList.html">
+        <div class="component-info">
+          <span class="component-name">FilterableList</span>
+          <span class="component-desc">A filtering and sorting component synchronizing state with URL parameters and utilizing the modern View Transitions API.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/FilterableListClassic.html">
+        <div class="component-info">
+          <span class="component-name">FilterableListClassic</span>
+          <span class="component-desc">A filtering and sorting component using native DOM manipulations without the View Transitions API, ideal for legacy browser support.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/FilterableListGSAP.html">
+        <div class="component-info">
+          <span class="component-name">FilterableListGSAP</span>
+          <span class="component-desc">A filtering and sorting component utilizing GSAP's Flip plugin for complex, hardware-accelerated grid reordering animations.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/MapLibreMap.html">
+        <div class="component-info">
+          <span class="component-name">MapLibreMap</span>
+          <span class="component-desc">An interactive WebGL map component loading maplibre-gl asynchronously. Features dynamic marker plotting from live Google Sheets CSV data, interactive popups, and custom map layers.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/OpenStreetMap.html">
+        <div class="component-info">
+          <span class="component-name">OpenStreetMap</span>
+          <span class="component-desc">A Leaflet-based interactive map component asynchronously loading dependencies to plot markers dynamically.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/MatterPhysicsBackground.html">
+        <div class="component-info">
+          <span class="component-name">MatterPhysicsBackground</span>
+          <span class="component-desc">An interactive physics-based canvas utilizing Matter.js, including automatic pausing via IntersectionObserver to save CPU.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/PongGame.html">
+        <div class="component-info">
+          <span class="component-name">PongGame</span>
+          <span class="component-desc">A complete, playable Pong game running a custom loop within <code>requestAnimationFrame</code>, demonstrating canvas drawing and input handling.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+      <li><a href="pages/TodoApp.html">
+        <div class="component-info">
+          <span class="component-name">TodoApp</span>
+          <span class="component-desc">A fully-featured todo application highlighting complex state arrays, local storage syncing, and accessible ARIA live regions.</span>
+        </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></li>
+    </ul>
   </section>
-
-  <section id="QRCode">
-    <h2>QR Code</h2>
-    <div class="demo-block">
-      <div data-component="QRCode" data-contents="https://github.com/web-padawan/awesome-web-components"
-        data-type-number="4" data-error-correction-level="L" style="width: 200px; height: 200px;">
-      </div>
-    </div>
-  </section>
-
-  <section id="Slider">
-    <h2>Slider</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <!-- Remember to add the vendor script at the bottom of the body: -->
-      <!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
-
-      <div>
-        <h3>Default Slider (Loop: true, Align: center)</h3>
-        <div class="slider-wrapper" data-component="Slider">
-          <div class="embla" data-ref="viewport">
-            <div class="embla__container" data-ref="container">
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
-                  <div class="card-caption">Slide 1</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-                  <div class="card-caption">Slide 2</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-                  <div class="card-caption">Slide 3</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-                  <div class="card-caption">Slide 4</div>
-                </div>
-              </div>
-
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-1.jpg" alt="Gallery Image 5" loading="lazy" />
-                  <div class="card-caption">Slide 5</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-2.jpg" alt="Gallery Image 6" loading="lazy" />
-                  <div class="card-caption">Slide 6</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-3.jpg" alt="Gallery Image 7" loading="lazy" />
-                  <div class="card-caption">Slide 7</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-4.jpg" alt="Gallery Image 8" loading="lazy" />
-                  <div class="card-caption">Slide 8</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <div class="slider-controls">
-            <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <div class="embla__dots" data-ref="dotsContainer"></div>
-            <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>Tween Slider (Loop: true, Align: center, Tween: true)</h3>
-        <div class="slider-wrapper" data-component="Slider"
-          data-options='{"loop": true, "align": "center", "tween": true}'>
-          <div class="embla" data-ref="viewport">
-            <div class="embla__container" data-ref="container">
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-                  <div class="card-caption">Tween Slide 1</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
-                  <div class="card-caption">Tween Slide 2</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
-                  <div class="card-caption">Tween Slide 3</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
-                  <div class="card-caption">Tween Slide 4</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
-                  <div class="card-caption">Tween Slide 5</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="slider-controls">
-            <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <div class="embla__dots" data-ref="dotsContainer"></div>
-            <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3>
-        <div class="slider-wrapper" data-component="Slider"
-          data-options='{"loop": true, "align": "center", "parallax": true}'>
-          <div class="embla" data-ref="viewport">
-            <div class="embla__container" data-ref="container">
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
-                  </div>
-                  <div class="card-caption">Parallax Slide 1</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-                  </div>
-                  <div class="card-caption">Parallax Slide 2</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-                  </div>
-                  <div class="card-caption">Parallax Slide 3</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-                  </div>
-                  <div class="card-caption">Parallax Slide 4</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-                  </div>
-                  <div class="card-caption">Parallax Slide 5</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="slider-controls">
-            <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <div class="embla__dots" data-ref="dotsContainer"></div>
-            <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>Custom Slider (Loop: false, Align: start)</h3>
-        <div class="slider-wrapper" data-component="Slider" data-options='{"loop": false, "align": "start"}'>
-          <div class="embla" data-ref="viewport">
-            <div class="embla__container" data-ref="container">
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-                  <div class="card-caption">Slide A</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
-                  <div class="card-caption">Slide B</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
-                  <div class="card-caption">Slide C</div>
-                </div>
-              </div>
-              <div class="embla__slide" data-ref="slide">
-                <div class="card-content">
-                  <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-                  <div class="card-caption">Slide D</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="slider-controls">
-            <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-            <div class="embla__dots" data-ref="dotsContainer"></div>
-            <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section id="LightboxGallery">
-    <h2>LightboxGallery</h2>
-    <div class="demo-block">
-      <div data-component="LightboxGallery">
-        <a href="gallery-1.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-2.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-3.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-4.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-5.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-6.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-7.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-8.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-9.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-10.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-11.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
-          </div>
-        </a>
-        <a href="gallery-12.jpg" data-lightbox data-pswp-width="1200" data-pswp-height="800" data-cropped="true"
-          target="_blank" rel="noopener noreferrer">
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}'>
-            <img src="gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
-          </div>
-        </a>
-
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="ImageHolder">
-    <h2>ImageHolder</h2>
-    <div class="demo-block">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
-        </div>
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
-        </div>
-        <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4}' style="aspect-ratio: 4 / 3;">
-          <img data-ref="img" src="sample-image.jpg" sizes="100vw" alt="0.4 parallax" loading="lazy" />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="VideoHolder">
-    <h2>VideoHolder</h2>
-    <div class="demo-block">
-      <div data-component="VideoHolder" tabindex="0" role="region" aria-label="Video player">
-        <video data-ref="video" src="sample-video.mp4" loop muted playsinline preload="metadata">
-          <track kind="subtitles" srclang="en" label="English" src="sample-subtitles.vtt">
-        </video>
-        <div class="video-controls">
-          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
-            <!-- Icons injected via JS -->
-          </button>
-          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
-            <!-- Icons injected via JS -->
-          </button>
-          <div class="mute-container">
-            <div class="volume-slider-wrapper">
-              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
-            </div>
-            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
-              <!-- Icons injected via JS -->
-            </button>
-          </div>
-        </div>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="ImageComparison">
-    <div class="container">
-      <h2>Image Comparison</h2>
-      <div class="demo-block">
-        <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
-          <!-- Left/Before side -->
-          <div class="image-comparison__before">
-            <img src="sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
-          </div>
-          <!-- Right/After side -->
-          <div class="image-comparison__after">
-            <img src="sample-image.jpg" alt="After" />
-          </div>
-
-          <input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50"
-            aria-label="Image comparison slider" data-ref="slider" />
-
-          <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
-            <div class="image-comparison__handle-line"></div>
-            <div class="image-comparison__handle-button"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="Reveal">
-    <h2>Reveal</h2>
-    <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
-        <h2 class="reveal-item">Fade me in</h2>
-        <p class="reveal-item" style="transition-delay: 0.1s;">When I scroll into view.</p>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="ScrollEffect">
-    <h2>Scroll Effect</h2>
-    <div class="demo-block scroll-effect-demo">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--scroll-progress"}'>
-        <div class="scroll-effect-box">Scroll to see me move & rotate!</div>
-      </div>
-    </div>
-    
-    <h3 style="margin-top: 4rem;">Stacked Cards Effect</h3>
-    <p>Using <code>startFromTop: true</code> to scale and darken sticky cards as the next one scrolls over.</p>
-    <div class="stacked-cards-container">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 1</div>
-      </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 2</div>
-      </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 3</div>
-      </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 4</div>
-      </div>
-    </div>
-
-    <h3 style="margin-top: 4rem;">Staggered Parallax Grid</h3>
-    <p>Using <code>ScrollEffect</code> to drive individual column parallax speeds. They perfectly align when in the center of the viewport.</p>
-    <div class="staggered-grid-container">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">1</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">2</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">3</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">4</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">5</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">6</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">7</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">8</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">9</div>
-    </div>
-  </section>
-
-  <section id="Marquee">
-    <h2>Marquee</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <div>
-        <h3>Left Direction</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
-          <div data-ref="track" class="marquee-track">
-            <div class="marquee-item">Item 1</div>
-            <div class="marquee-item">Item 2</div>
-            <div class="marquee-item">Item 3</div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>Right Direction</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
-          <div data-ref="track" class="marquee-track">
-            <div class="marquee-item">Item A</div>
-            <div class="marquee-item">Item B</div>
-            <div class="marquee-item">Item C</div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>With Images and Text</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'
-          class="marquee-demo">
-          <div data-ref="track" class="marquee-track">
-            <div class="marquee-item">
-              <img src="gallery-1.jpg" alt="Gallery 1"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-            </div>
-            <div class="marquee-item">
-              <span>Beautiful Landscapes</span>
-            </div>
-            <div class="marquee-item">
-              <img src="gallery-2.jpg" alt="Gallery 2"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-            </div>
-            <div class="marquee-item">
-              <span>City Vibes</span>
-            </div>
-            <div class="marquee-item">
-              <img src="gallery-3.jpg" alt="Gallery 3"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
-            </div>
-            <div class="marquee-item">
-              <span>Nature Discovery</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>Cards Variant</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
-          <div data-ref="track" class="marquee-track marquee-cards-track">
-            <div class="marquee-item marquee-card">
-              <img src="gallery-1.jpg" alt="Gallery 1">
-              <div class="marquee-card-content">
-                <h4>Mountain Retreat</h4>
-                <p>Discover the serene beauty of the mountains.</p>
-              </div>
-            </div>
-            <div class="marquee-item marquee-card">
-              <img src="gallery-2.jpg" alt="Gallery 2">
-              <div class="marquee-card-content">
-                <h4>City Exploration</h4>
-                <p>Experience the bustling life of the city.</p>
-              </div>
-            </div>
-            <div class="marquee-item marquee-card">
-              <img src="gallery-3.jpg" alt="Gallery 3">
-              <div class="marquee-card-content">
-                <h4>Forest Adventure</h4>
-                <p>Wander through lush green forests.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="SplitText">
-    <h2>SplitText</h2>
-    <div class="demo-block">
-      <div style="display: flex; flex-direction: column; gap: 4rem;">
-        <!-- Splitting Lines -->
-        <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-          <h3>Splitting Lines</h3>
-          <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"], "wrapLines": true}'>
-            This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
-            or <em>italic</em> words in-between to show that formatting is preserved. As you scroll down and this comes
-            into view, the lines will animate in one by one.
-          </p>
-        </div>
-
-        <!-- Splitting Words -->
-        <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-          <h3>Splitting Words</h3>
-          <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
-            Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the
-            entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block
-            reaches the viewport threshold.
-          </p>
-        </div>
-
-        <!-- Splitting Characters -->
-        <div data-component="Reveal" data-options='{"threshold": 0.5, "once": true}'>
-          <h3>Splitting Characters</h3>
-          <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
-            Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like
-            👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates
-            each letter.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="FilterableList">
-    <h2>FilterableList</h2>
-    <div class="demo-block">
-      <div data-component="FilterableList" data-options='{"defaultSort": "name:asc"}'>
-        <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-          <!-- Filter Controls -->
-          <div>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true"
-              class="is-active">All Shapes</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle"
-              aria-pressed="false">Circle</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="square"
-              aria-pressed="false">Square</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle"
-              aria-pressed="false">Triangle</button>
-          </div>
-
-          <div>
-            <label for="color-select" class="sr-only">Color Filter</label>
-            <select id="color-select" data-ref="filter" data-filter-type="color">
-              <option value="">All Colors</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-              <option value="yellow">Yellow</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="search-name" class="sr-only">Search by name</label>
-            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes"
-              placeholder="Search by name...">
-          </div>
-
-          <div style="display: flex; flex-direction: column; width: 200px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <label for="price-min">Min Price: $<output for="price-min">0</output></label>
-              <label for="price-max">Max Price: $<output for="price-max">50</output></label>
-            </div>
-            <div data-component="RangeSlider"
-              data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}'
-              class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
-              <div data-ref="slider"></div>
-              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50"
-                value="0" style="display: none;">
-              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50"
-                value="50" style="display: none;">
-            </div>
-          </div>
-
-          <!-- Sorter Controls -->
-          <select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;">
-            <option value="name:asc">Name (A-Z)</option>
-            <option value="name:desc">Name (Z-A)</option>
-            <option value="price:asc">Price (Low-High)</option>
-            <option value="price:desc">Price (High-Low)</option>
-          </select>
-        </div>
-
-        <div aria-live="polite" data-ref="announcer" class="results-announcer">
-          <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
-          <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
-          <span data-ref="announcerEmpty" hidden>
-            No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
-          </span>
-        </div>
-
-        <div data-ref="container" class="grid">
-          <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
-            <div class="shape-visual" data-shape="circle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Apple</span>
-              <span class="price-tag">$10</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
-            <div class="shape-visual" data-shape="square" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Box</span>
-              <span class="price-tag">$20</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
-            <div class="shape-visual" data-shape="circle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Blueberry</span>
-              <span class="price-tag">$5</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15">
-            <div class="shape-visual" data-shape="triangle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Tree</span>
-              <span class="price-tag">$15</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50">
-            <div class="shape-visual" data-shape="circle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sun</span>
-              <span class="price-tag">$50</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2">
-            <div class="shape-visual" data-shape="square" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Brick</span>
-              <span class="price-tag">$2</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30">
-            <div class="shape-visual" data-shape="triangle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Sail</span>
-              <span class="price-tag">$30</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8">
-            <div class="shape-visual" data-shape="square" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Grass</span>
-              <span class="price-tag">$8</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6">
-            <div class="shape-visual" data-shape="circle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Lime</span>
-              <span class="price-tag">$6</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign"
-            data-price="40">
-            <div class="shape-visual" data-shape="triangle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Yield Sign</span>
-              <span class="price-tag">$40</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note"
-            data-price="1">
-            <div class="shape-visual" data-shape="square" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sticky Note</span>
-              <span class="price-tag">$1</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese"
-            data-price="12">
-            <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Cheese</span>
-              <span class="price-tag">$12</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Inline script to prevent layout shift on initial load when URL params are present -->
-        <script>
-          (function () {
-            var params = new URLSearchParams(window.location.search);
-            var items = document.querySelectorAll('#FilterableList .item');
-
-            var activeFilters = {};
-            for (var key of params.keys()) {
-              if (key.startsWith('filter-')) {
-                var type = key.replace('filter-', '');
-                var vals = params.get(key).split(',').filter(Boolean);
-                if (vals.length > 0) {
-                  activeFilters[type] = vals;
-                }
-              }
-            }
-
-            var hasFilters = false;
-            for (var _k in activeFilters) {
-              hasFilters = true;
-              break;
-            }
-
-            if (hasFilters) {
-              items.forEach(function (item) {
-                var isVisible = true;
-                for (var type in activeFilters) {
-                  var activeValues = activeFilters[type];
-                  var itemVal = item.getAttribute('data-' + type);
-                  if (!itemVal || activeValues.indexOf(itemVal) === -1) {
-                    isVisible = false;
-                    break;
-                  }
-                }
-                if (!isVisible) {
-                  item.hidden = true;
-                }
-              });
-            }
-          })();
-        </script>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="FilterableListClassic">
-    <h2>FilterableListClassic</h2>
-    <div class="demo-block">
-      <div data-component="FilterableListClassic" data-options='{"defaultSort": "name:asc"}'>
-        <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-          <!-- Filter Controls -->
-          <div>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true"
-              class="is-active">All Shapes</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle"
-              aria-pressed="false">Circle</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="square"
-              aria-pressed="false">Square</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle"
-              aria-pressed="false">Triangle</button>
-          </div>
-
-          <div>
-            <label for="color-select" class="sr-only">Color Filter</label>
-            <select id="color-select" data-ref="filter" data-filter-type="color">
-              <option value="">All Colors</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-              <option value="yellow">Yellow</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="search-name" class="sr-only">Search by name</label>
-            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes"
-              placeholder="Search by name...">
-          </div>
-
-          <div style="display: flex; flex-direction: column; width: 200px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <label for="price-min">Min Price: $<output for="price-min">0</output></label>
-              <label for="price-max">Max Price: $<output for="price-max">50</output></label>
-            </div>
-            <div data-component="RangeSlider"
-              data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}'
-              class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
-              <div data-ref="slider"></div>
-              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50"
-                value="0" style="display: none;">
-              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50"
-                value="50" style="display: none;">
-            </div>
-          </div>
-
-          <!-- Sorter Controls -->
-          <select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;">
-            <option value="name:asc">Name (A-Z)</option>
-            <option value="name:desc">Name (Z-A)</option>
-            <option value="price:asc">Price (Low-High)</option>
-            <option value="price:desc">Price (High-Low)</option>
-          </select>
-        </div>
-
-        <div aria-live="polite" data-ref="announcer" class="results-announcer">
-          <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
-          <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
-          <span data-ref="announcerEmpty" hidden>
-            No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
-          </span>
-        </div>
-
-        <div data-ref="container" class="grid">
-          <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
-            <div class="shape-visual" data-shape="circle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Apple</span>
-              <span class="price-tag">$10</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
-            <div class="shape-visual" data-shape="square" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Box</span>
-              <span class="price-tag">$20</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
-            <div class="shape-visual" data-shape="circle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Blueberry</span>
-              <span class="price-tag">$5</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15">
-            <div class="shape-visual" data-shape="triangle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Tree</span>
-              <span class="price-tag">$15</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50">
-            <div class="shape-visual" data-shape="circle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sun</span>
-              <span class="price-tag">$50</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2">
-            <div class="shape-visual" data-shape="square" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Brick</span>
-              <span class="price-tag">$2</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30">
-            <div class="shape-visual" data-shape="triangle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Sail</span>
-              <span class="price-tag">$30</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8">
-            <div class="shape-visual" data-shape="square" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Grass</span>
-              <span class="price-tag">$8</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6">
-            <div class="shape-visual" data-shape="circle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Lime</span>
-              <span class="price-tag">$6</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign"
-            data-price="40">
-            <div class="shape-visual" data-shape="triangle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Yield Sign</span>
-              <span class="price-tag">$40</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note"
-            data-price="1">
-            <div class="shape-visual" data-shape="square" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sticky Note</span>
-              <span class="price-tag">$1</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese"
-            data-price="12">
-            <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Cheese</span>
-              <span class="price-tag">$12</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Inline script to prevent layout shift on initial load when URL params are present -->
-        <script>
-          (function () {
-            var params = new URLSearchParams(window.location.search);
-            var items = document.querySelectorAll('#FilterableListClassic .item');
-
-            var activeFilters = {};
-            for (var key of params.keys()) {
-              if (key.startsWith('filter-')) {
-                var type = key.replace('filter-', '');
-                var vals = params.get(key).split(',').filter(Boolean);
-                if (vals.length > 0) {
-                  activeFilters[type] = vals;
-                }
-              }
-            }
-
-            var hasFilters = false;
-            for (var _k in activeFilters) {
-              hasFilters = true;
-              break;
-            }
-
-            if (hasFilters) {
-              items.forEach(function (item) {
-                var isVisible = true;
-                for (var type in activeFilters) {
-                  var activeValues = activeFilters[type];
-                  var itemVal = item.getAttribute('data-' + type);
-                  if (!itemVal || activeValues.indexOf(itemVal) === -1) {
-                    isVisible = false;
-                    break;
-                  }
-                }
-                if (!isVisible) {
-                  item.hidden = true;
-                }
-              });
-            }
-          })();
-        </script>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="FilterableListGSAP">
-    <h2>FilterableListGSAP</h2>
-    <div class="demo-block">
-      <div data-component="FilterableListGSAP" data-options='{"defaultSort": "name:asc"}'>
-        <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-          <!-- Filter Controls -->
-          <div>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true"
-              class="is-active">All Shapes</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle"
-              aria-pressed="false">Circle</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="square"
-              aria-pressed="false">Square</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle"
-              aria-pressed="false">Triangle</button>
-          </div>
-
-          <div>
-            <label for="color-select" class="sr-only">Color Filter</label>
-            <select id="color-select" data-ref="filter" data-filter-type="color">
-              <option value="">All Colors</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-              <option value="yellow">Yellow</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="search-name" class="sr-only">Search by name</label>
-            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes"
-              placeholder="Search by name...">
-          </div>
-
-          <div style="display: flex; flex-direction: column; width: 200px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-              <label for="price-min">Min Price: $<output for="price-min">0</output></label>
-              <label for="price-max">Max Price: $<output for="price-max">50</output></label>
-            </div>
-            <div data-component="RangeSlider"
-              data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}'
-              class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
-              <div data-ref="slider"></div>
-              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50"
-                value="0" style="display: none;">
-              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50"
-                value="50" style="display: none;">
-            </div>
-          </div>
-
-          <!-- Sorter Controls -->
-          <select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;">
-            <option value="name:asc">Name (A-Z)</option>
-            <option value="name:desc">Name (Z-A)</option>
-            <option value="price:asc">Price (Low-High)</option>
-            <option value="price:desc">Price (High-Low)</option>
-          </select>
-        </div>
-
-        <div aria-live="polite" data-ref="announcer" class="results-announcer">
-          <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
-          <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
-          <span data-ref="announcerEmpty" hidden>
-            No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
-          </span>
-        </div>
-
-        <div data-ref="container" class="grid">
-          <div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10">
-            <div class="shape-visual" data-shape="circle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Apple</span>
-              <span class="price-tag">$10</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20">
-            <div class="shape-visual" data-shape="square" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Box</span>
-              <span class="price-tag">$20</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5">
-            <div class="shape-visual" data-shape="circle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Blueberry</span>
-              <span class="price-tag">$5</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15">
-            <div class="shape-visual" data-shape="triangle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Tree</span>
-              <span class="price-tag">$15</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50">
-            <div class="shape-visual" data-shape="circle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sun</span>
-              <span class="price-tag">$50</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2">
-            <div class="shape-visual" data-shape="square" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Brick</span>
-              <span class="price-tag">$2</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30">
-            <div class="shape-visual" data-shape="triangle" data-color="blue"></div>
-            <div class="item-details">
-              <span class="item-name">Sail</span>
-              <span class="price-tag">$30</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8">
-            <div class="shape-visual" data-shape="square" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Grass</span>
-              <span class="price-tag">$8</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6">
-            <div class="shape-visual" data-shape="circle" data-color="green"></div>
-            <div class="item-details">
-              <span class="item-name">Lime</span>
-              <span class="price-tag">$6</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign"
-            data-price="40">
-            <div class="shape-visual" data-shape="triangle" data-color="red"></div>
-            <div class="item-details">
-              <span class="item-name">Yield Sign</span>
-              <span class="price-tag">$40</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note"
-            data-price="1">
-            <div class="shape-visual" data-shape="square" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Sticky Note</span>
-              <span class="price-tag">$1</span>
-            </div>
-          </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese"
-            data-price="12">
-            <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
-            <div class="item-details">
-              <span class="item-name">Cheese</span>
-              <span class="price-tag">$12</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Inline script to prevent layout shift on initial load when URL params are present -->
-        <script>
-          (function () {
-            var params = new URLSearchParams(window.location.search);
-            var items = document.querySelectorAll('#FilterableListGSAP .item');
-
-            var activeFilters = {};
-            for (var key of params.keys()) {
-              if (key.startsWith('filter-')) {
-                var type = key.replace('filter-', '');
-                var vals = params.get(key).split(',').filter(Boolean);
-                if (vals.length > 0) {
-                  activeFilters[type] = vals;
-                }
-              }
-            }
-
-            var hasFiltersGsap = false;
-            for (var _k in activeFilters) {
-              hasFiltersGsap = true;
-              break;
-            }
-
-            if (hasFiltersGsap) {
-              items.forEach(function (item) {
-                var isVisible = true;
-                for (var type in activeFilters) {
-                  var activeValues = activeFilters[type];
-                  var itemVal = item.getAttribute('data-' + type);
-                  if (!itemVal || activeValues.indexOf(itemVal) === -1) {
-                    isVisible = false;
-                    break;
-                  }
-                }
-                if (!isVisible) {
-                  item.hidden = true;
-                }
-              });
-            }
-          })();
-        </script>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="Form">
-    <h2>Form</h2>
-    <div class="demo-block">
-      <div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action"}'>
-        <form data-ref="form" method="POST">
-          <div style="margin-bottom: 1rem;">
-            <label for="name" style="display: block; margin-bottom: 0.5rem;">Name</label>
-            <input type="text" id="name" name="name" required style="width: 100%; padding: 0.5rem;" />
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
-            <input type="email" id="email" name="email" required style="width: 100%; padding: 0.5rem;" />
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label for="phone" style="display: block; margin-bottom: 0.5rem;">Telephone</label>
-            <input type="tel" id="phone" name="phone" style="width: 100%; padding: 0.5rem;" />
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label for="age" style="display: block; margin-bottom: 0.5rem;">Age (Number)</label>
-            <input type="number" id="age" name="age" min="0" max="120" style="width: 100%; padding: 0.5rem;" />
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label for="file-upload" style="display: block; margin-bottom: 0.5rem;">Upload Files</label>
-            <div data-component="UploadField" class="form-dropzone"
-              style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
-              <input type="file" id="file-upload" name="files[]" multiple
-                style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" />
-              <label for="file-upload" class="form-dropzone-label">Drag and drop files here or click to browse</label>
-            </div>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <fieldset style="border: 1px solid #ccc; padding: 1rem;">
-              <legend>Preferences</legend>
-              <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" name="preferences" value="newsletter" /> Subscribe to newsletter
-              </label>
-              <div style="margin-top: 0.5rem; margin-bottom: 1rem;" data-condition="preferences:newsletter">
-                <label for="newsletter_email"
-                  style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;">Newsletter Email
-                  (Conditional)</label>
-                <input type="email" id="newsletter_email" name="newsletter_email" required
-                  style="width: 100%; padding: 0.5rem;" />
-              </div>
-              <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" name="preferences" value="updates" /> Receive product updates
-              </label>
-            </fieldset>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <fieldset style="border: 1px solid #ccc; padding: 1rem;">
-              <legend>Contact Method</legend>
-              <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="radio" name="contactMethod" value="email" checked /> Email
-              </label>
-              <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="radio" name="contactMethod" value="phone" /> Phone
-              </label>
-            </fieldset>
-          </div>
-          <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem;">Satisfaction (1-10)</label>
-            <div data-component="RangeSlider"
-              data-options='{"start": [5], "connect": "lower", "range": {"min": 1, "max": 10}, "step": 1}'
-              style="margin-bottom: 1rem;">
-              <div data-ref="slider"></div>
-              <input type="hidden" name="satisfaction" data-ref="inputs" />
-            </div>
-          </div>
-          <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem;">Budget Range</label>
-            <div data-component="RangeSlider"
-              data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'
-              style="margin-bottom: 1rem;">
-              <div data-ref="slider"></div>
-              <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-                <label
-                  style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
-                  Min Budget
-                  <input type="number" name="budget_min" data-ref="inputs"
-                    style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-                </label>
-                <label
-                  style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
-                  Max Budget
-                  <input type="number" name="budget_max" data-ref="inputs"
-                    style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-                </label>
-              </div>
-            </div>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
-            <textarea id="message" name="message" required style="width: 100%; padding: 0.5rem;" rows="4"></textarea>
-          </div>
-          <button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Send
-            Message</button>
-        </form>
-
-        <div data-ref="successMessage" hidden class="form-success" role="status">
-          Thank you for your message. It has been sent successfully.
-        </div>
-        <div data-ref="errorMessage" hidden class="form-error" role="alert">
-          There was an error trying to send your message. Please try again later.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="MultiStepForm">
-    <h2>Multi Step Form</h2>
-    <div class="demo-block">
-      <div data-component="MultiStepForm" data-options='{"scrollToTopOnStep": false}'>
-        <div data-component="Form"
-          data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action_multistep"}'>
-
-          <div class="step-indicators">
-            <button type="button" data-ref="stepIndicator" class="step-indicator">Step 1: Personal</button>
-            <button type="button" data-ref="stepIndicator" class="step-indicator">Step 2: Details</button>
-            <button type="button" data-ref="stepIndicator" class="step-indicator">Step 3: Submit</button>
-          </div>
-
-          <form data-ref="form" method="POST">
-
-            <div data-ref="step">
-              <h3 style="margin-bottom: 1rem;">Personal Information</h3>
-              <div style="margin-bottom: 1rem;">
-                <label for="ms_name" style="display: block; margin-bottom: 0.5rem;">Name *</label>
-                <input type="text" id="ms_name" name="ms_name" required style="width: 100%; padding: 0.5rem;" />
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label for="ms_email" style="display: block; margin-bottom: 0.5rem;">Email *</label>
-                <input type="email" id="ms_email" name="ms_email" required style="width: 100%; padding: 0.5rem;" />
-              </div>
-              <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-                <button type="button" data-ref="nextBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Next
-                  Step</button>
-              </div>
-            </div>
-
-            <div data-ref="step" hidden>
-              <h3 style="margin-bottom: 1rem;">Additional Details</h3>
-              <div style="margin-bottom: 1rem;">
-                <label for="ms_age" style="display: block; margin-bottom: 0.5rem;">Age</label>
-                <input type="number" id="ms_age" name="ms_age" min="18" max="100"
-                  style="width: 100%; padding: 0.5rem;" />
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label for="ms_city" style="display: block; margin-bottom: 0.5rem;">City</label>
-                <input type="text" id="ms_city" name="ms_city" style="width: 100%; padding: 0.5rem;" />
-              </div>
-              <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
-                <button type="button" data-ref="prevBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Previous
-                  Step</button>
-                <button type="button" data-ref="nextBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Next
-                  Step</button>
-              </div>
-            </div>
-
-            <div data-ref="step" hidden>
-              <h3 style="margin-bottom: 1rem;">Review & Submit</h3>
-              <p style="margin-bottom: 1rem;">Please confirm your details and submit the form.</p>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                  <input type="checkbox" name="ms_terms" required /> I agree to the terms and conditions *
-                </label>
-              </div>
-              <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
-                <button type="button" data-ref="prevBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Previous
-                  Step</button>
-                <button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Submit
-                  Form</button>
-              </div>
-            </div>
-
-          </form>
-
-          <div data-ref="successMessage" hidden class="form-success" role="status">
-            Thank you! Your multi-step form has been submitted.
-          </div>
-          <div data-ref="errorMessage" hidden class="form-error" role="alert">
-            There was an error. Please try again later.
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="RangeSlider">
-    <h2>RangeSlider</h2>
-    <div class="demo-block">
-      <div data-component="RangeSlider"
-        data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
-        <div data-ref="slider"></div>
-
-        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-          <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
-            Min Value
-            <input type="number" data-ref="inputs"
-              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-          </label>
-          <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
-            Max Value
-            <input type="number" data-ref="inputs"
-              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
-          </label>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="MapLibreMap">
-    <h2>MapLibreMap</h2>
-    <div class="demo-block">
-      <div data-component="MapLibreMap"
-        data-options='{"projection": "globe", "centerCoords": [12.550343, 55.665957], "initialZoomLevel": 2, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
-        style="width: 100%; height: 500px;">
-      </div>
-    </div>
-  </section>
-
-  <section id="OpenStreetMap">
-    <h2>OpenStreetMap</h2>
-    <div class="demo-block">
-      <div data-component="OpenStreetMap"
-        data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12, "useAnimatedDot": true}'
-        style="height: 400px; width: 100%;">
-      </div>
-    </div>
-  </section>
-
-  <section id="MatterPhysicsBackground">
-    <h2>MatterPhysicsBackground</h2>
-    <div class="demo-block">
-
-      <section class="physics-section" data-component="MatterPhysicsBackground">
-        <!-- The canvas sits in the background -->
-        <canvas class="physics-canvas" data-ref="MatterPhysicsBackground:canvas" aria-hidden="true"></canvas>
-
-        <!-- Content overlay -->
-        <div class="physics-content">
-          <h2>Physics Background</h2>
-          <p>Powered by Matter.js. Click anywhere to drop shapes!</p>
-
-          <button type="button" class="btn" data-action="click->togglePause">
-            Toggle Physics
-          </button>
-        </div>
-      </section>
-
-    </div>
-  </section>
-
-  <section id="TodoApp">
-    <h2>TodoApp</h2>
-    <div class="demo-block">
-      <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
-      <div data-component="TodoApp" class="todo-app">
-        <!-- Screen reader announcer for accessibility -->
-        <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
-
-        <form data-action="submit->handleFormSubmit" class="todo-form">
-          <label for="new-todo" class="sr-only">Add new task</label>
-          <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input"
-            required />
-          <button type="submit" class="todo-submit-btn">Add Task</button>
-        </form>
-
-        <ul data-ref="list" class="todo-list" aria-label="Task list">
-          <!-- Tasks will be rendered here dynamically -->
-        </ul>
-      </div>
-
-
-    </div>
-  </section>
-
-  <section id="CountUp">
-    <h2>CountUp</h2>
-    <div class="demo-block" style="text-align: center; padding: 3rem;">
-      <p>An auto-parsing counting animation that triggers when scrolled into view.</p>
-      <div data-component="CountUp"
-        data-options='{"duration": 3000, "start": 0, "end": 1500, "decimals": 0, "suffix": "+"}'
-        style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">1,500+</div>
-      <div data-component="CountUp"
-        data-options='{"duration": 3000, "start": 0, "end": 250.50, "decimals": 2, "prefix": "$"}'
-        style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;">$0</div>
-    </div>
-  </section>
-
-  <section id="Magnetic">
-    <h2>Magnetic</h2>
-    <div class="demo-block" style="text-align: center; padding: 4rem;">
-      <p>A physics-based component that pulls elements and their inner text toward the cursor on hover.</p>
-
-      <div class="magnetic-wrap" data-component="Magnetic"
-        style="display: inline-block; padding: 2rem; cursor: pointer; margin-right: 2rem;">
-        <button data-ref="element" class="magnetic-element"
-          style="display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; border-radius: 9999px; background: #333; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
-          <span data-ref="text" class="magnetic-text"
-            style="display: inline-block; pointer-events: none; will-change: transform;">Hover Me!</span>
-        </button>
-      </div>
-
-      <div class="magnetic-wrap" data-component="Magnetic" data-options='{"strength": 0.3, "textStrength": 0.1}'
-        style="display: inline-block; padding: 2rem; cursor: pointer;">
-        <button data-ref="element" class="magnetic-element"
-          style="display: inline-flex; align-items: center; justify-content: center; padding: 1.5rem 3rem; border-radius: 9999px; background: #007bff; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
-          <span data-ref="text" class="magnetic-text"
-            style="display: inline-block; pointer-events: none; will-change: transform;">Parallax Hover</span>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <section id="PongGame">
-    <h2>PongGame</h2>
-    <div class="demo-block">
-
-      <section class="pong-section" data-component="PongGame">
-        <!-- The canvas sits in the background -->
-        <canvas class="pong-canvas" data-ref="PongGame:canvas" aria-hidden="true"></canvas>
-
-        <!-- Content overlay -->
-        <div class="pong-content">
-          <h2>Interactive Background</h2>
-          <p>The canvas runs a Pong simulation you can interact with!</p>
-
-          <div class="pong-scoreboard">
-            <div class="score-card">
-              <span>Player</span>
-              <span class="score" data-ref="PongGame:playerScoreDisplay">0</span>
-            </div>
-            <div class="score-card">
-              <span>AI</span>
-              <span class="score" data-ref="PongGame:aiScoreDisplay">0</span>
-            </div>
-          </div>
-
-          <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle"
-            aria-label="Pause Background Animation">
-            <!-- Icon will be injected by component state -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-            </svg>
-          </button>
-        </div>
-      </section>
-
-
-    </div>
-  </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!-- Invisible SVG definitions for Icons -->
-  <svg style="display: none;">
-    <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-      stroke-linejoin="round">
-      <polygon points="5 3 19 12 5 21 5 3"></polygon>
-    </symbol>
-  </svg>
-
-
-
-
-  <script src="../dist/gia.full.umd.js"></script>
-
-  <!-- Include all component scripts -->
-  <script src="../examples/Accordion.js"></script>
-  <script src="../examples/ClipboardCopy.js"></script>
-  <script src="../examples/FilterableList.js"></script>
-  <script src="../examples/FilterableListClassic.js"></script>
-  <script src="../examples/Form.js"></script>
-  <script src="../examples/UploadField.js"></script>
-  <script src="../examples/MultiStepForm.js"></script>
-  <script src="../examples/Header.js"></script>
-  <script src="../examples/ImageComparison.js"></script>
-  <script src="../examples/ImageHolder.js"></script>
-  <script src="../examples/LightboxGallery.js"></script>
-  <script src="../examples/Marquee.js"></script>
-  <script src="../examples/Modal.js"></script>
-  <script src="../examples/OffCanvasMenu.js"></script>
-  <script src="../examples/PongGame.js"></script>
-  <script src="../examples/MatterPhysicsBackground.js"></script>
-  <script src="../examples/Reveal.js"></script>
-  <script src="../examples/ScrollEffect.js"></script>
-  <script src="../examples/Slider.js"></script>
-  <script src="../examples/SplitText.js"></script>
-  <script src="../examples/Tabs.js"></script>
-  <script src="../examples/ThemeToggle.js"></script>
-  <script src="../examples/TodoApp.js"></script>
-  <script src="../examples/Tooltip.js"></script>
-  <script src="../examples/VideoHolder.js"></script>
-  <script src="../examples/OpenStreetMap.js"></script>
-  <script src="../examples/MapLibreMap.js"></script>
-  <script src="../examples/QRCode.js"></script>
-  <script src="../examples/TextFit.js"></script>
-  <script src="../examples/RangeSlider.js"></script>
-  <script src="../examples/CountUp.js"></script>
-  <script src="../examples/Magnetic.js"></script>
-
-  <script src="./demo.js"></script>
-
-  <!-- Required External Script (usually at end of <body>): -->
-  <script id="leaflet-js" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
-  <script src="../examples/FilterableListGSAP.js"></script>
-
-  <script>
-    gia.config.set('log', true);
-    gia.config.set('attrPrefix', 'data');
-    gia.config.set('autoBindActions', true);
-    gia.config.set('autoMountComponents', true);
-  </script>
+</div>
+</main>
 </body>
-
 </html>

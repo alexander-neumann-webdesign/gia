@@ -554,30 +554,40 @@ A comprehensive suite of examples demonstrating best practices is available. You
 
 ### Navigation & Layout
 
-- **[Accordion](examples/Accordion.js)**: Semantic, accessible accordion utilizing `<details>`/`<summary>`. Manages state to auto-close sibling panels and syncs with the URL hash.
 - **[Header](examples/Header.js)**: A scroll-aware site header caching layout dimensions to apply CSS transforms via `requestAnimationFrame` without layout thrashing.
 - **[OffCanvasMenu](examples/OffCanvasMenu.js)**: A slide-out navigation menu demonstrating state-based class toggling, inert trapping for accessibility, and click-outside handling.
-- **[Tabs](examples/Tabs.js)**: A classic tabbed interface relying on Gia's state management to toggle active views and ARIA attributes, complete with URL syncing.
+
+### Accordions & Tabs
+
+- **[Accordion](examples/Accordion.js)**: Semantic, accessible accordion utilizing `<details>`/`<summary>`. Manages state to auto-close sibling panels and syncs with the URL hash.
+- **[Tabs](examples/Tabs.js)**: A modern tabbed interface powered by the View Transitions API for seamless cross-fading and sliding animations. Handles ARIA attributes and URL syncing automatically.
+
+### Overlays & Notifications
+
+- **[BottomSheet](examples/BottomSheet.js)**: A highly interactive, touch-friendly bottom sheet (drawer) inspired by [Vaul](https://github.com/emilkowalski/vaul). It features responsive CSS variable-driven physics, a "mid-air catch" gesture engine, focus-trapping for WCAG accessibility, and full compatibility with Lenis smooth scrolling.
+- **[Modal](examples/Modal.js)**: An accessible dialog leveraging the native `<dialog>` element. Supports complex triggering, click-outside logic, and URL hash syncing.
+- **[Toaster](examples/Toaster.js)**: A highly optimized, [Sonner-inspired](https://github.com/emilkowalski/sonner) toast notification system featuring physics-based swipe-to-dismiss gestures, dynamic hover expansion, smooth height recalculation, and comprehensive WCAG accessibility.
+
+### Mouse & Interaction
+
+- **[CustomCursor](examples/CustomCursor.js)**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for magnetic snapping and morphing.
+- **[Magnetic](examples/Magnetic.js)**: A physical "magnetic pull" effect for interactive elements that uses dual-layer parallax and recalculates spring physics dynamically.
+- **[Tooltip](examples/Tooltip.js)**: A robust tooltip component asynchronously importing the Floating UI library via `require()` for collision-aware positioning.
 
 ### UI Elements
 
-- **[BottomSheet](examples/BottomSheet.js)**: A highly interactive, touch-friendly bottom sheet (drawer) inspired by [Vaul](https://github.com/emilkowalski/vaul). It features responsive CSS variable-driven physics, a "mid-air catch" gesture engine, focus-trapping for WCAG accessibility, and full compatibility with Lenis smooth scrolling.
 - **[ClipboardCopy](examples/ClipboardCopy.js)**: A utility component that copies text to the clipboard and provides temporary UI feedback based on state transitions.
 - **[CountUp](examples/CountUp.js)**: An auto-parsing counting animation that triggers when scrolled into view, optimized for zero garbage collection during its loop.
-- **[CustomCursor](examples/CustomCursor.js)**: A performant custom cursor replacement featuring frame-rate independent exponential smoothing for magnetic snapping and morphing.
-- **[Magnetic](examples/Magnetic.js)**: A physical "magnetic pull" effect for interactive elements that uses dual-layer parallax and recalculates spring physics dynamically.
-- **[Modal](examples/Modal.js)**: An accessible dialog leveraging the native `<dialog>` element. Supports complex triggering, click-outside logic, and URL hash syncing.
 - **[ThemeToggle](examples/ThemeToggle.js)**: A dark/light mode toggle switch interacting with `localStorage` and mutating global document state.
-- **[Toaster](examples/Toaster.js)**: A highly optimized, [Sonner-inspired](https://github.com/emilkowalski/sonner) toast notification system featuring physics-based swipe-to-dismiss gestures, dynamic hover expansion, smooth height recalculation, and comprehensive WCAG accessibility.
-- **[Tooltip](examples/Tooltip.js)**: A robust tooltip component asynchronously importing the Floating UI library via `require()` for collision-aware positioning.
+- **[QRCode](examples/QRCode.js)**: A dynamic QR code generator that asynchronously loads dependencies to render customizable, reactive QR codes based on element attributes.
 
 ### Media & Galleries
 
-- **[ImageComparison](examples/ImageComparison.js)**: A before/after comparison component using a visually hidden range slider to dynamically update a `clip-path` mask via CSS variables.
+- **[ImageComparison](examples/ImageComparison.js)**: A responsive, fluid before/after comparison component utilizing CSS Grid stacking and a visually hidden range slider to dynamically adjust a `clip-path` mask via CSS variables.
 - **[ImageHolder](examples/ImageHolder.js)**: A highly optimized image component providing smooth parallax, viewport entrance tracking, and dynamic `sizes` calculations.
 - **[LightboxGallery](examples/LightboxGallery.js)**: A fully-featured gallery demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked.
 - **[Slider](examples/Slider.js)**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms.
-- **[VideoHolder](examples/VideoHolder.js)**: A lazy-loading video component that automatically pauses playback when scrolled out of view to save system resources.
+- **[VideoHolder](examples/VideoHolder.js)**: A custom-styled video player featuring an animated expandable volume slider, scrubbable timeline, and IntersectionObserver logic that automatically pauses playback when out of view.
 
 ### Scroll & Visual Effects
 
@@ -590,12 +600,17 @@ A comprehensive suite of examples demonstrating best practices is available. You
 ### Forms & Selection
 
 - **[Form](examples/Form.js)**: An AJAX-powered form component with built-in HTML5 validation handling, animated loading spinners, and state-driven success/error messaging.
+- **[MultiStepForm](examples/MultiStepForm.js)**: A robust multi-step form manager coordinating validation, step indicators, and smooth back/forward navigation.
 - **[MultipleSelect](examples/MultipleSelect.js)**: A wrapper for `multiple-select-vanilla` dynamically loading its dependencies and exposing standard value getters/setters.
 - **[RangeSlider](examples/RangeSlider.js)**: A flexible range slider wrapping the `noUiSlider` library, implementing two-way data binding with native hidden inputs.
+- **[UploadField](examples/UploadField.js)**: An accessible, drag-and-drop file upload field supporting multiple files, custom labels, and comprehensive keyboard interaction.
 
 ### Complex Interactivity
 
 - **[FilterableList](examples/FilterableList.js)**: A filtering and sorting component synchronizing state with URL parameters and utilizing the modern View Transitions API.
+- **[FilterableListClassic](examples/FilterableListClassic.js)**: A filtering and sorting component using native DOM manipulations without the View Transitions API, ideal for legacy browser support.
+- **[FilterableListGSAP](examples/FilterableListGSAP.js)**: A filtering and sorting component utilizing GSAP's Flip plugin for complex, hardware-accelerated grid reordering animations.
+- **[MapLibreMap](examples/MapLibreMap.js)**: An interactive WebGL map component loading maplibre-gl asynchronously. Features dynamic marker plotting from live Google Sheets CSV data, interactive popups, and custom map layers.
 - **[OpenStreetMap](examples/OpenStreetMap.js)**: A Leaflet-based interactive map component asynchronously loading dependencies to plot markers dynamically.
 - **[MatterPhysicsBackground](examples/MatterPhysicsBackground.js)**: An interactive physics-based canvas utilizing Matter.js, including automatic pausing via IntersectionObserver to save CPU.
 - **[PongGame](examples/PongGame.js)**: A complete, playable Pong game running a custom loop within `requestAnimationFrame`, demonstrating canvas drawing and input handling.

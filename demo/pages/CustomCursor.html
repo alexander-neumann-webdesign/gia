@@ -5,58 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CustomCursor - Gia Components Demo</title>
   
-  <!-- Vendor scripts from demo/index.html -->
-  <script id="fitty-js" data-src="https://unpkg.com/fitty@2.4.2/dist/fitty.min.js"></script>
-  <script id="vendor/embla/embla-carousel.umd-js" data-src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
-  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js"
-    data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
-  <script id="gsap" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script id="Flip" data-src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
-  <script id="floating-ui-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
-  <script id="floating-ui-dom-js" data-src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3"></script>
-  <script id="photoswipe-js" data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe.umd.min.js"></script>
-  <script id="photoswipe-lightbox-js"
-    data-src="https://unpkg.com/photoswipe@5.4.3/dist/umd/photoswipe-lightbox.umd.min.js"></script>
-  <script id="matter-js-script"
-    data-src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-  <script id="qrcode-generator-js" data-src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-  <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script>
-  <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
-  <link id="photoswipe-css" rel="stylesheet" data-href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
-  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <!-- Component Dependencies -->
+  <link rel="stylesheet" href="../assets/css/demo.css">
   
-  <link rel="stylesheet" href="../demo.css">
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    .demo-block {
-      margin-top: 1rem;
-      border: 1px dashed #aaa;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-    .options-pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    nav {
-      margin-bottom: 2rem;
-    }
-  </style>
+  <link rel="stylesheet" href="../cursor.css">
 </head>
 <body>
+<main class="demo-container">
   <nav>
-    <a href="index.html">&larr; Back to all components</a>
+    <a href="../index.html">&larr; Back to all components</a>
   </nav>
   
   <h1>CustomCursor</h1>
@@ -75,50 +32,58 @@
   
   <section id="CustomCursor">
     <h2>Interactive Demo</h2>
-    <div class="demo-block">
-      <div data-component="CustomCursor">
-         <p>Placeholder for CustomCursor component markup.</p>
-      </div>
+    <div class="demo-block" style="padding: 0;">
+        <div style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <article class="news-card" data-cursor-text="Read more" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;">
+                    <h3 style="margin-top: 0;">Text Cursor</h3>
+                    <p style="margin-bottom: 0;">Hover me for a text cursor state.</p>
+                </article>
+
+                <article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;">
+                    <h3 style="margin-top: 0;">Image Cursor</h3>
+                    <p style="margin-bottom: 0;">Hover me to see an image inside the cursor.</p>
+                </article>
+
+                <article class="news-card" data-cursor-icon="icon-play" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;">
+                    <h3 style="margin-top: 0;">Icon Cursor</h3>
+                    <p style="margin-bottom: 0;">Hover me to see an SVG icon inside the cursor.</p>
+                </article>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <div data-cursor-stick style="padding: 3rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-weight: 500; color: var(--text-color);">data-cursor-stick</span>
+                </div>
+
+                <div style="padding: 3rem; background: #f3f4f6; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <button type="button" data-magnetic style="padding: 1rem 2rem; background: var(--text-color); color: #fff; border: none; border-radius: 30px; font-weight: 500;">
+                        data-magnetic
+                    </button>
+                </div>
+            </div>
+
+            <div style="width: 100%; text-align: center; margin-top: 1rem;">
+                <p style="margin-bottom: 0;">Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
+            </div>
+        </div>
     </div>
   </section>
+
+  <div class="custom-cursor" data-component="CustomCursor" data-cursor-state="default">
+      <div class="custom-cursor__dot" data-ref="CustomCursor:dot">
+          <span class="custom-cursor__text" data-ref="CustomCursor:text"></span>
+          <div class="custom-cursor__media-box" data-ref="CustomCursor:mediaBox"></div>
+          <div class="custom-cursor__icon" data-ref="CustomCursor:icon"></div>
+      </div>
+  </div>
 
   <!-- Core library -->
   <script src="../../dist/gia.full.umd.js"></script>
   
   <!-- Component scripts -->
-  <script src="../../examples/Accordion.js"></script>
-  <script src="../../examples/ClipboardCopy.js"></script>
-  <script src="../../examples/CountUp.js"></script>
   <script src="../../examples/CustomCursor.js"></script>
-  <script src="../../examples/FilterableList.js"></script>
-  <script src="../../examples/FilterableListGSAP.js"></script>
-  <script src="../../examples/Form.js"></script>
-  <script src="../../examples/Header.js"></script>
-  <script src="../../examples/ImageComparison.js"></script>
-  <script src="../../examples/ImageHolder.js"></script>
-  <script src="../../examples/LightboxGallery.js"></script>
-  <script src="../../examples/Magnetic.js"></script>
-  <script src="../../examples/MapLibreMap.js"></script>
-  <script src="../../examples/Marquee.js"></script>
-  <script src="../../examples/MatterPhysicsBackground.js"></script>
-  <script src="../../examples/Modal.js"></script>
-  <script src="../../examples/MultiStepForm.js"></script>
-  <script src="../../examples/MultipleSelect.js"></script>
-  <script src="../../examples/OffCanvasMenu.js"></script>
-  <script src="../../examples/OpenStreetMap.js"></script>
-  <script src="../../examples/PongGame.js"></script>
-  <script src="../../examples/QRCode.js"></script>
-  <script src="../../examples/RangeSlider.js"></script>
-  <script src="../../examples/Reveal.js"></script>
-  <script src="../../examples/Slider.js"></script>
-  <script src="../../examples/SplitText.js"></script>
-  <script src="../../examples/Tabs.js"></script>
-  <script src="../../examples/TextFit.js"></script>
-  <script src="../../examples/ThemeToggle.js"></script>
-  <script src="../../examples/TodoApp.js"></script>
-  <script src="../../examples/Tooltip.js"></script>
-  <script src="../../examples/UploadField.js"></script>
-  <script src="../../examples/VideoHolder.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -128,5 +93,6 @@
         }
     });
   </script>
+</main>
 </body>
 </html>
