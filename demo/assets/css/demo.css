@@ -549,7 +549,7 @@ input[type=radio]::before {
 .form-dropzone {
   transition: background-color 0.2s, border-color 0.2s;
 }
-.form-dropzone.is-focused, .form-dropzone:focus-within {
+.form-dropzone.is-focused, .form-dropzone:focus-within, .form-dropzone:focus-visible {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }

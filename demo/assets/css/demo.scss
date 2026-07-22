@@ -581,7 +581,8 @@ input[type="radio"] {
   transition: background-color 0.2s, border-color 0.2s;
 
   &.is-focused,
-  &:focus-within {
+  &:focus-within,
+  &:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 2px;
   }

@@ -18,6 +18,9 @@ class UploadField extends gia.Component {
 		this.element.addEventListener('dragleave', this.handleDragLeave);
 		this.element.addEventListener('drop', this.handleDrop);
 
+		this.element.addEventListener('focus', this.handleFocus);
+		this.element.addEventListener('blur', this.handleBlur);
+
 		const fileInput = this.element.querySelector('input[type="file"]');
 		if (fileInput) {
 			fileInput.addEventListener('change', this.handleFileChange);
@@ -42,6 +45,9 @@ class UploadField extends gia.Component {
 		this.element.removeEventListener('dragover', this.handleDragOver);
 		this.element.removeEventListener('dragleave', this.handleDragLeave);
 		this.element.removeEventListener('drop', this.handleDrop);
+
+		this.element.removeEventListener('focus', this.handleFocus);
+		this.element.removeEventListener('blur', this.handleBlur);
 
 		const fileInput = this.element.querySelector('input[type="file"]');
 		if (fileInput) {
