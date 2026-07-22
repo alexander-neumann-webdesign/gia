@@ -74,3 +74,7 @@
 ## 2026-07-15 - Eliminate Layout Thrashing with DOM Scheduler (measure/mutate)
 **Learning:** Mixing DOM reads (like `getBoundingClientRect()`, `offsetWidth`) and DOM writes (like `element.style.transform`) inside the same animation frame or component lifecycle causes forced synchronous layouts, leading to severe layout thrashing. Older guidelines suggested manually deferring reads outside of rAF entirely.
 **Action:** Use Gia's FastDOM-inspired scheduler to safely batch operations inside frames. Wrap all DOM reads in `gia.measure(() => { ... })` and all DOM writes in `gia.mutate(() => { ... })`. The scheduler guarantees that all measures across the entire page execute before any mutates in a single `requestAnimationFrame` tick, mathematically preventing layout thrashing without needing to extract reads to external events.
+
+## 2026-07-20 - Inline single-use callbacks in Hot Paths
+**Learning:** The MutationObserver in autoMount.js triggers very frequently. Having an intermediate `_processAddedNode` closure defined out of scope and called inside the mutation loop adds unnecessary function invocation overhead and complexity with intermediate state (`_currentComponentsToLoad`).
+**Action:** Inline the body of single-use helper functions into the loop. This avoids the function call overhead and eliminates the need to manage intermediate state variables in hot paths.
