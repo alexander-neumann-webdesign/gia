@@ -40,3 +40,7 @@
 **Vulnerability:** The Toaster component used `innerHTML` string concatenation to build toast notifications from configuration options (`title` and `description`), allowing DOM-based XSS if options originated from user input.
 **Learning:** Component options in Gia frameworks (or generally) may originate from `data-options` attributes or other inputs, which could be influenced by users. Dynamically rendering them via `innerHTML` without sanitization introduces XSS risks.
 **Prevention:** Always use safe DOM manipulation APIs like `document.createElement()` and `textContent` for dynamic text properties, or sanitize input when HTML rendering is strictly required. For static structural HTML, safe APIs like `insertAdjacentHTML` with hardcoded strings are acceptable.
+## 2024-07-23 - DOM-based XSS via innerHTML when dynamically constructing SVGs
+**Vulnerability:** XSS vulnerability occurs when untrusted data (like `data-cursor-icon` attribute) is dynamically injected back into the DOM using `innerHTML` with string interpolation to construct an SVG element.
+**Learning:** Even simple SVG constructions like `<svg><use href="#${targetIcon}"></use></svg>` are vulnerable to DOM-based XSS if the injected string (`targetIcon`) is user-controlled.
+**Prevention:** Avoid `innerHTML` entirely when constructing SVGs dynamically. Use safe DOM APIs like `document.createElementNS('http://www.w3.org/2000/svg', 'svg')` and `.setAttribute()` to construct the SVG and its elements. Clear the container using `.textContent = ''`.
