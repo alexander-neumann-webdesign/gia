@@ -383,7 +383,14 @@ class CustomCursor extends gia.Component {
             }
         } else if (targetState === 'icon' && this.ref.icon) {
             // Basic SVG use handling; can be customized based on project's icon strategy
-            this.ref.icon.innerHTML = targetIcon ? `<svg><use href="#${targetIcon}"></use></svg>` : '';
+            this.ref.icon.textContent = '';
+            if (targetIcon) {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                use.setAttribute('href', `#${targetIcon}`);
+                svg.appendChild(use);
+                this.ref.icon.appendChild(svg);
+            }
         }
     }
 
