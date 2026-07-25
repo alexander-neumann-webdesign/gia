@@ -361,7 +361,17 @@ class rt {
       this.n = null, this.element && (h.delete(this.element), this.element = null);
       return;
     }
-    this.t && (this.t.forEach(this.unobserveScroll, this), this.t = null), this.e && (this.e.forEach(this.unobserveWindowResize, this), this.e = null), this.s && (this.s.forEach(D, this), this.s = null), this.i && (this.i.forEach(tt, this), this.i = null), this.n = null, this.element && (h.delete(this.element), this.element = null);
+    if (this.t) {
+      for (let t = this.t.length - 1; t >= 0; t--)
+        this.unobserveScroll(this.t[t]);
+      this.t = null;
+    }
+    if (this.e) {
+      for (let t = this.e.length - 1; t >= 0; t--)
+        this.unobserveWindowResize(this.e[t]);
+      this.e = null;
+    }
+    this.s && (this.s.forEach(D, this), this.s = null), this.i && (this.i.forEach(tt, this), this.i = null), this.n = null, this.element && (h.delete(this.element), this.element = null);
   }
   observeScroll(t) {
     typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (A || (A = !0, window.lenis ? (p = window.lenis, p.on("scroll", O)) : window.addEventListener("scroll", O, { passive: !0 })), this.t || (this.t = []), this.t.indexOf(t) === -1 && this.t.push(t), d.indexOf(t) === -1 && d.push(t));
