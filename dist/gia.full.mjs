@@ -217,18 +217,18 @@ const $ = { scroll: 0, velocity: 0 }, P = { width: 0, height: 0 }, I = [null], r
   this.unobserveIntersection(t);
 };
 let S = !1;
-const v = [];
+const E = [];
 function ft() {
   S = !1;
-  for (let i = 0; i < v.length; i++)
-    v[i].d();
-  v.length = 0;
+  for (let i = 0; i < E.length; i++)
+    E[i].d();
+  E.length = 0;
 }
 function ut() {
   for (let i = 0; i < g.length; i++)
     g[i]($);
 }
-function E(i) {
+function v(i) {
   let t, e;
   _ ? (t = _.scroll, e = _.velocity) : i && typeof i.scroll == "number" ? (t = i.scroll, e = i.velocity || 0) : (t = window.scrollY || window.pageYOffset, e = 0), $.scroll = t, $.velocity = e, ut();
 }
@@ -361,10 +361,20 @@ class Y {
       this.n = null, this.element && (d.delete(this.element), this.element = null);
       return;
     }
-    this.t && (this.t.forEach(this.unobserveScroll, this), this.t = null), this.e && (this.e.forEach(this.unobserveWindowResize, this), this.e = null), this.s && (this.s.forEach(rt, this), this.s = null), this.i && (this.i.forEach(lt, this), this.i = null), this.n = null, this.element && (d.delete(this.element), this.element = null);
+    if (this.t) {
+      for (let t = this.t.length - 1; t >= 0; t--)
+        this.unobserveScroll(this.t[t]);
+      this.t = null;
+    }
+    if (this.e) {
+      for (let t = this.e.length - 1; t >= 0; t--)
+        this.unobserveWindowResize(this.e[t]);
+      this.e = null;
+    }
+    this.s && (this.s.forEach(rt, this), this.s = null), this.i && (this.i.forEach(lt, this), this.i = null), this.n = null, this.element && (d.delete(this.element), this.element = null);
   }
   observeScroll(t) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (N || (N = !0, window.lenis ? (_ = window.lenis, _.on("scroll", E)) : window.addEventListener("scroll", E, { passive: !0 })), this.t || (this.t = []), this.t.indexOf(t) === -1 && this.t.push(t), g.indexOf(t) === -1 && g.push(t));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (N || (N = !0, window.lenis ? (_ = window.lenis, _.on("scroll", v)) : window.addEventListener("scroll", v, { passive: !0 })), this.t || (this.t = []), this.t.indexOf(t) === -1 && this.t.push(t), g.indexOf(t) === -1 && g.push(t));
   }
   unobserveScroll(t) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__) return;
@@ -373,7 +383,7 @@ class Y {
       n !== -1 && (this.t[n] = this.t[this.t.length - 1], this.t.pop());
     }
     const e = g.indexOf(t);
-    e !== -1 && (g[e] = g[g.length - 1], g.pop()), g.length === 0 && N && (N = !1, _ ? (_.off("scroll", E), _ = null) : window.removeEventListener("scroll", E));
+    e !== -1 && (g[e] = g[g.length - 1], g.pop()), g.length === 0 && N && (N = !1, _ ? (_.off("scroll", v), _ = null) : window.removeEventListener("scroll", v));
   }
   observeWindowResize(t) {
     typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (x || (x = !0, window.addEventListener(W, T, { passive: !0 })), this.e || (this.e = []), this.e.indexOf(t) === -1 && this.e.push(t), p.indexOf(t) === -1 && p.push(t));
@@ -534,7 +544,7 @@ class Y {
       for (const e in t) {
         if (!Object.prototype.hasOwnProperty.call(t, e)) continue;
         const n = t[e];
-        if (this.a[e] !== n && (this.a[e] = n, this.c || (this.c = this.g || {}, this.l = this.h || {}, v.push(this), S || (S = !0, st(ft))), this.c[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
+        if (this.a[e] !== n && (this.a[e] = n, this.c || (this.c = this.g || {}, this.l = this.h || {}, E.push(this), S || (S = !0, st(ft))), this.c[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const o = typeof n;
           if (o === "boolean" || o === "string") {
             let r = q.get(e);
