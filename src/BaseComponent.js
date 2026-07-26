@@ -314,12 +314,18 @@ export default class BaseComponent {
 		}
 
 		if (this._observedScrollCallbacks) {
-			this._observedScrollCallbacks.forEach(this.unobserveScroll, this);
+			// ⚡ BOLT OPTIMIZATION: Use backward for loop to safely iterate arrays that use swap-and-pop removal, preventing skipped elements and GC overhead
+			for (let i = this._observedScrollCallbacks.length - 1; i >= 0; i--) {
+				this.unobserveScroll(this._observedScrollCallbacks[i]);
+			}
 			this._observedScrollCallbacks = null;
 		}
 
 		if (this._observedWindowResizeCallbacks) {
-			this._observedWindowResizeCallbacks.forEach(this.unobserveWindowResize, this);
+			// ⚡ BOLT OPTIMIZATION: Use backward for loop to safely iterate arrays that use swap-and-pop removal, preventing skipped elements and GC overhead
+			for (let i = this._observedWindowResizeCallbacks.length - 1; i >= 0; i--) {
+				this.unobserveWindowResize(this._observedWindowResizeCallbacks[i]);
+			}
 			this._observedWindowResizeCallbacks = null;
 		}
 
