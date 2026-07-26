@@ -74,3 +74,7 @@
 ## 2026-07-15 - Eliminate Layout Thrashing with DOM Scheduler (measure/mutate)
 **Learning:** Mixing DOM reads (like `getBoundingClientRect()`, `offsetWidth`) and DOM writes (like `element.style.transform`) inside the same animation frame or component lifecycle causes forced synchronous layouts, leading to severe layout thrashing. Older guidelines suggested manually deferring reads outside of rAF entirely.
 **Action:** Use Gia's FastDOM-inspired scheduler to safely batch operations inside frames. Wrap all DOM reads in `gia.measure(() => { ... })` and all DOM writes in `gia.mutate(() => { ... })`. The scheduler guarantees that all measures across the entire page execute before any mutates in a single `requestAnimationFrame` tick, mathematically preventing layout thrashing without needing to extract reads to external events.
+
+## 2024-07-26 - Iterate arrays mutating via swap-and-pop backwards
+**Learning:** When iterating over an array that mutates itself during the loop using a swap-and-pop removal pattern (e.g., inside `unobserveScroll` or `unobserveWindowResize`), using `Array.prototype.forEach()` will cause elements to be skipped due to index shifting, and also introduces GC overhead by allocating iterators.
+**Action:** Use a backward standard `for` loop (e.g., `for (let i = arr.length - 1; i >= 0; i--)`) to completely eliminate allocations and safely process all elements without index shift bugs.
