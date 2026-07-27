@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ThemeToggle - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>ThemeToggle</h1>
@@ -28,14 +26,33 @@
   
   <section id="ThemeToggle">
     <h2>Interactive Demo</h2>
-    <h2>ThemeToggle</h2>
     <div class="demo-block">
-      <button data-component="ThemeToggle" aria-label="Toggle dark mode">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <button data-component="ThemeToggle" aria-label="Toggle dark mode">
         <span class="icon-light" aria-hidden="true">☀️</span>
         <span class="icon-dark" aria-hidden="true">🌙</span>
       </button>
-
-
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;button data-component="ThemeToggle" aria-label="Toggle dark mode"&gt;
+        &lt;span class="icon-light" aria-hidden="true"&gt;☀️&lt;/span&gt;
+        &lt;span class="icon-dark" aria-hidden="true"&gt;🌙&lt;/span&gt;
+      &lt;/button&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -44,6 +61,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/ThemeToggle.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -54,5 +72,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

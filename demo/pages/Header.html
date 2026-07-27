@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Header - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Header</h1>
@@ -30,16 +28,37 @@
   
   <section id="Header">
     <h2>Interactive Demo</h2>
-    <h2>Header</h2>
     <div class="demo-block">
-      <header data-component="Header" id="main-header">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <header data-component="Header" id="main-header">
         <div class="header-inner">
           <div class="logo">Logo</div>
           <nav>Nav Items</nav>
         </div>
       </header>
-
-
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;header data-component="Header" id="main-header"&gt;
+        &lt;div class="header-inner"&gt;
+          &lt;div class="logo"&gt;Logo&lt;/div&gt;
+          &lt;nav&gt;Nav Items&lt;/nav&gt;
+        &lt;/div&gt;
+      &lt;/header&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -48,6 +67,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Header.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -58,5 +78,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

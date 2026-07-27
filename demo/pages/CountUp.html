@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CountUp - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>CountUp</h1>
@@ -36,15 +34,31 @@
   
   <section id="CountUp">
     <h2>Interactive Demo</h2>
-    <h2>CountUp</h2>
-    <div class="demo-block" style="text-align: center; padding: 3rem;">
-      <p>An auto-parsing counting animation that triggers when scrolled into view.</p>
-      <div data-component="CountUp"
-        data-options='{"duration": 3000, "start": 0, "end": 1500, "decimals": 0, "suffix": "+"}'
-        style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">1,500+</div>
-      <div data-component="CountUp"
-        data-options='{"duration": 3000, "start": 0, "end": 250.50, "decimals": 2, "prefix": "$"}'
-        style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;">$0</div>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div style="text-align: center; padding: 3rem;">
+              <p>An auto-parsing counting animation that triggers when scrolled into view.</p>
+      <div data-component="CountUp" data-options="{&quot;duration&quot;: 3000, &quot;start&quot;: 0, &quot;end&quot;: 1500, &quot;decimals&quot;: 0, &quot;suffix&quot;: &quot;+&quot;}" style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;">1,500+</div>
+      <div data-component="CountUp" data-options="{&quot;duration&quot;: 3000, &quot;start&quot;: 0, &quot;end&quot;: 250.50, &quot;decimals&quot;: 2, &quot;prefix&quot;: &quot;$&quot;}" style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;">$0</div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;p&gt;An auto-parsing counting animation that triggers when scrolled into view.&lt;/p&gt;
+      &lt;div data-component="CountUp" data-options="{"duration": 3000, "start": 0, "end": 1500, "decimals": 0, "suffix": "+"}" style="font-size: 4rem; font-weight: bold; margin-bottom: 1rem;"&gt;1,500+&lt;/div&gt;
+      &lt;div data-component="CountUp" data-options="{"duration": 3000, "start": 0, "end": 250.50, "decimals": 2, "prefix": "$"}" style="font-size: 4rem; font-weight: bold; margin-bottom: 2rem;"&gt;$0&lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -53,6 +67,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/CountUp.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -63,5 +78,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

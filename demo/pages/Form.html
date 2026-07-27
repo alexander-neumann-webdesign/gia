@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
   <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css">
   <link rel="stylesheet" href="../assets/css/demo.css">
   
 </head>
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Form</h1>
@@ -28,32 +26,38 @@
   
   <section id="Form">
     <h2>Interactive Demo</h2>
-    <h2>Form</h2>
     <div class="demo-block">
-      <div data-component="Form" data-options='{"ajaxUrl": "https://httpbin.org/post", "action": "test_action"}'>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="Form" data-options="{&quot;ajaxUrl&quot;: &quot;https://httpbin.org/post&quot;, &quot;action&quot;: &quot;test_action&quot;}">
         <form data-ref="form" method="POST">
           <div style="margin-bottom: 1rem;">
             <label for="name" style="display: block; margin-bottom: 0.5rem;">Name</label>
-            <input type="text" id="name" name="name" required style="width: 100%; padding: 0.5rem;" />
+            <input type="text" id="name" name="name" required="" style="width: 100%; padding: 0.5rem;">
           </div>
           <div style="margin-bottom: 1rem;">
             <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
-            <input type="email" id="email" name="email" required style="width: 100%; padding: 0.5rem;" />
+            <input type="email" id="email" name="email" required="" style="width: 100%; padding: 0.5rem;">
           </div>
           <div style="margin-bottom: 1rem;">
             <label for="phone" style="display: block; margin-bottom: 0.5rem;">Telephone</label>
-            <input type="tel" id="phone" name="phone" style="width: 100%; padding: 0.5rem;" />
+            <input type="tel" id="phone" name="phone" style="width: 100%; padding: 0.5rem;">
           </div>
           <div style="margin-bottom: 1rem;">
             <label for="age" style="display: block; margin-bottom: 0.5rem;">Age (Number)</label>
-            <input type="number" id="age" name="age" min="0" max="120" style="width: 100%; padding: 0.5rem;" />
+            <input type="number" id="age" name="age" min="0" max="120" style="width: 100%; padding: 0.5rem;">
           </div>
           <div style="margin-bottom: 1rem;">
             <label for="file-upload" style="display: block; margin-bottom: 0.5rem;">Upload Files</label>
-            <div data-component="UploadField" class="form-dropzone"
-              style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
-              <input type="file" id="file-upload" name="files[]" multiple
-                style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" />
+            <div data-component="UploadField" class="form-dropzone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;">
+              <input type="file" id="file-upload" name="files[]" multiple="" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
               <label for="file-upload" class="form-dropzone-label">Drag and drop files here or click to browse</label>
             </div>
           </div>
@@ -61,17 +65,15 @@
             <fieldset style="border: 1px solid #ccc; padding: 1rem;">
               <legend>Preferences</legend>
               <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" name="preferences" value="newsletter" /> Subscribe to newsletter
+                <input type="checkbox" name="preferences" value="newsletter"> Subscribe to newsletter
               </label>
               <div style="margin-top: 0.5rem; margin-bottom: 1rem;" data-condition="preferences:newsletter">
-                <label for="newsletter_email"
-                  style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;">Newsletter Email
+                <label for="newsletter_email" style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;">Newsletter Email
                   (Conditional)</label>
-                <input type="email" id="newsletter_email" name="newsletter_email" required
-                  style="width: 100%; padding: 0.5rem;" />
+                <input type="email" id="newsletter_email" name="newsletter_email" required="" style="width: 100%; padding: 0.5rem;">
               </div>
               <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" name="preferences" value="updates" /> Receive product updates
+                <input type="checkbox" name="preferences" value="updates"> Receive product updates
               </label>
             </fieldset>
           </div>
@@ -79,57 +81,148 @@
             <fieldset style="border: 1px solid #ccc; padding: 1rem;">
               <legend>Contact Method</legend>
               <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="radio" name="contactMethod" value="email" checked /> Email
+                <input type="radio" name="contactMethod" value="email" checked=""> Email
               </label>
               <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="radio" name="contactMethod" value="phone" /> Phone
+                <input type="radio" name="contactMethod" value="phone"> Phone
               </label>
             </fieldset>
           </div>
           <div style="margin-bottom: 1.5rem;">
             <label style="display: block; margin-bottom: 0.5rem;">Satisfaction (1-10)</label>
-            <div data-component="RangeSlider"
-              data-options='{"start": [5], "connect": "lower", "range": {"min": 1, "max": 10}, "step": 1}'
-              style="margin-bottom: 1rem;">
+            <div data-component="RangeSlider" data-options="{&quot;start&quot;: [5], &quot;connect&quot;: &quot;lower&quot;, &quot;range&quot;: {&quot;min&quot;: 1, &quot;max&quot;: 10}, &quot;step&quot;: 1}" style="margin-bottom: 1rem;">
               <div data-ref="slider"></div>
-              <input type="hidden" name="satisfaction" data-ref="inputs" />
+              <input type="hidden" name="satisfaction" data-ref="inputs">
             </div>
           </div>
           <div style="margin-bottom: 1.5rem;">
             <label style="display: block; margin-bottom: 0.5rem;">Budget Range</label>
-            <div data-component="RangeSlider"
-              data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'
-              style="margin-bottom: 1rem;">
+            <div data-component="RangeSlider" data-options="{&quot;start&quot;: [20, 80], &quot;connect&quot;: true, &quot;range&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 100}, &quot;step&quot;: 1}" style="margin-bottom: 1rem;">
               <div data-ref="slider"></div>
               <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-                <label
-                  style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
+                <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
                   Min Budget
-                  <input type="number" name="budget_min" data-ref="inputs"
-                    style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                  <input type="number" name="budget_min" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
                 </label>
-                <label
-                  style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
+                <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;">
                   Max Budget
-                  <input type="number" name="budget_max" data-ref="inputs"
-                    style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+                  <input type="number" name="budget_max" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
                 </label>
               </div>
             </div>
           </div>
           <div style="margin-bottom: 1rem;">
             <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
-            <textarea id="message" name="message" required style="width: 100%; padding: 0.5rem;" rows="4"></textarea>
+            <textarea id="message" name="message" required="" style="width: 100%; padding: 0.5rem;" rows="4"></textarea>
           </div>
           <button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;">Send
             Message</button>
         </form>
 
-        <div data-ref="successMessage" hidden class="form-success" role="status">
+        <div data-ref="successMessage" hidden="" class="form-success" role="status">
           Thank you for your message. It has been sent successfully.
         </div>
-        <div data-ref="errorMessage" hidden class="form-error" role="alert">
+        <div data-ref="errorMessage" hidden="" class="form-error" role="alert">
           There was an error trying to send your message. Please try again later.
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Form" data-options="{"ajaxUrl": "https://httpbin.org/post", "action": "test_action"}"&gt;
+        &lt;form data-ref="form" method="POST"&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="name" style="display: block; margin-bottom: 0.5rem;"&gt;Name&lt;/label&gt;
+            &lt;input type="text" id="name" name="name" required="" style="width: 100%; padding: 0.5rem;"&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="email" style="display: block; margin-bottom: 0.5rem;"&gt;Email&lt;/label&gt;
+            &lt;input type="email" id="email" name="email" required="" style="width: 100%; padding: 0.5rem;"&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="phone" style="display: block; margin-bottom: 0.5rem;"&gt;Telephone&lt;/label&gt;
+            &lt;input type="tel" id="phone" name="phone" style="width: 100%; padding: 0.5rem;"&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="age" style="display: block; margin-bottom: 0.5rem;"&gt;Age (Number)&lt;/label&gt;
+            &lt;input type="number" id="age" name="age" min="0" max="120" style="width: 100%; padding: 0.5rem;"&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="file-upload" style="display: block; margin-bottom: 0.5rem;"&gt;Upload Files&lt;/label&gt;
+            &lt;div data-component="UploadField" class="form-dropzone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; cursor: pointer; position: relative;"&gt;
+              &lt;input type="file" id="file-upload" name="files[]" multiple="" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;"&gt;
+              &lt;label for="file-upload" class="form-dropzone-label"&gt;Drag and drop files here or click to browse&lt;/label&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;fieldset style="border: 1px solid #ccc; padding: 1rem;"&gt;
+              &lt;legend&gt;Preferences&lt;/legend&gt;
+              &lt;label style="display: block; margin-bottom: 0.5rem; cursor: pointer;"&gt;
+                &lt;input type="checkbox" name="preferences" value="newsletter"&gt; Subscribe to newsletter
+              &lt;/label&gt;
+              &lt;div style="margin-top: 0.5rem; margin-bottom: 1rem;" data-condition="preferences:newsletter"&gt;
+                &lt;label for="newsletter_email" style="display: block; margin-bottom: 0.5rem; font-size: 0.9em;"&gt;Newsletter Email
+                  (Conditional)&lt;/label&gt;
+                &lt;input type="email" id="newsletter_email" name="newsletter_email" required="" style="width: 100%; padding: 0.5rem;"&gt;
+              &lt;/div&gt;
+              &lt;label style="display: block; margin-bottom: 0.5rem; cursor: pointer;"&gt;
+                &lt;input type="checkbox" name="preferences" value="updates"&gt; Receive product updates
+              &lt;/label&gt;
+            &lt;/fieldset&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;fieldset style="border: 1px solid #ccc; padding: 1rem;"&gt;
+              &lt;legend&gt;Contact Method&lt;/legend&gt;
+              &lt;label style="display: block; margin-bottom: 0.5rem; cursor: pointer;"&gt;
+                &lt;input type="radio" name="contactMethod" value="email" checked=""&gt; Email
+              &lt;/label&gt;
+              &lt;label style="display: block; margin-bottom: 0.5rem; cursor: pointer;"&gt;
+                &lt;input type="radio" name="contactMethod" value="phone"&gt; Phone
+              &lt;/label&gt;
+            &lt;/fieldset&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1.5rem;"&gt;
+            &lt;label style="display: block; margin-bottom: 0.5rem;"&gt;Satisfaction (1-10)&lt;/label&gt;
+            &lt;div data-component="RangeSlider" data-options="{"start": [5], "connect": "lower", "range": {"min": 1, "max": 10}, "step": 1}" style="margin-bottom: 1rem;"&gt;
+              &lt;div data-ref="slider"&gt;&lt;/div&gt;
+              &lt;input type="hidden" name="satisfaction" data-ref="inputs"&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1.5rem;"&gt;
+            &lt;label style="display: block; margin-bottom: 0.5rem;"&gt;Budget Range&lt;/label&gt;
+            &lt;div data-component="RangeSlider" data-options="{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}" style="margin-bottom: 1rem;"&gt;
+              &lt;div data-ref="slider"&gt;&lt;/div&gt;
+              &lt;div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;"&gt;
+                &lt;label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;"&gt;
+                  Min Budget
+                  &lt;input type="number" name="budget_min" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;"&gt;
+                &lt;/label&gt;
+                &lt;label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer; font-size: 0.9em;"&gt;
+                  Max Budget
+                  &lt;input type="number" name="budget_max" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;"&gt;
+                &lt;/label&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div style="margin-bottom: 1rem;"&gt;
+            &lt;label for="message" style="display: block; margin-bottom: 0.5rem;"&gt;Message&lt;/label&gt;
+            &lt;textarea id="message" name="message" required="" style="width: 100%; padding: 0.5rem;" rows="4"&gt;&lt;/textarea&gt;
+          &lt;/div&gt;
+          &lt;button type="submit" data-ref="submitBtn" style="padding: 0.75rem 1.5rem; cursor: pointer;"&gt;Send
+            Message&lt;/button&gt;
+        &lt;/form&gt;
+
+        &lt;div data-ref="successMessage" hidden="" class="form-success" role="status"&gt;
+          Thank you for your message. It has been sent successfully.
+        &lt;/div&gt;
+        &lt;div data-ref="errorMessage" hidden="" class="form-error" role="alert"&gt;
+          There was an error trying to send your message. Please try again later.
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -140,6 +233,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Form.js"></script>
+  <script src="../../examples/Tabs.js"></script>
   <script src="../../examples/RangeSlider.js"></script>
   <script src="../../examples/UploadField.js"></script>
 
@@ -152,5 +246,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

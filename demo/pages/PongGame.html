@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PongGame - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>PongGame</h1>
@@ -30,10 +28,17 @@
   
   <section id="PongGame">
     <h2>Interactive Demo</h2>
-    <h2>PongGame</h2>
     <div class="demo-block">
-
-      <section class="pong-section" data-component="PongGame">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <section class="pong-section" data-component="PongGame">
         <!-- The canvas sits in the background -->
         <canvas class="pong-canvas" data-ref="PongGame:canvas" aria-hidden="true"></canvas>
 
@@ -53,11 +58,10 @@
             </div>
           </div>
 
-          <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle"
-            aria-label="Pause Background Animation">
+          <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation">
             <!-- Icon will be injected by component state -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
             </svg>
           </button>
         </div>
@@ -68,6 +72,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/PongGame.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -77,6 +82,59 @@
         }
     });
   </script>
-</main>
-</body>
-</html>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;section class="pong-section" data-component="PongGame"&gt;
+        &lt;!-- The canvas sits in the background --&gt;
+        &lt;canvas class="pong-canvas" data-ref="PongGame:canvas" aria-hidden="true"&gt;&lt;/canvas&gt;
+
+        &lt;!-- Content overlay --&gt;
+        &lt;div class="pong-content"&gt;
+          &lt;h2&gt;Interactive Background&lt;/h2&gt;
+          &lt;p&gt;The canvas runs a Pong simulation you can interact with!&lt;/p&gt;
+
+          &lt;div class="pong-scoreboard"&gt;
+            &lt;div class="score-card"&gt;
+              &lt;span&gt;Player&lt;/span&gt;
+              &lt;span class="score" data-ref="PongGame:playerScoreDisplay"&gt;0&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="score-card"&gt;
+              &lt;span&gt;AI&lt;/span&gt;
+              &lt;span class="score" data-ref="PongGame:aiScoreDisplay"&gt;0&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation"&gt;
+            &lt;!-- Icon will be injected by component state --&gt;
+            &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"&gt;
+              &lt;path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"&gt;&lt;/path&gt;
+            &lt;/svg&gt;
+          &lt;/button&gt;
+        &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;!-- Core library --&gt;
+  &lt;script src="../../dist/gia.full.umd.js"&gt;&lt;/script&gt;
+  
+  &lt;!-- Component scripts --&gt;
+  &lt;script src="../../examples/PongGame.js"&gt;&lt;/script&gt;
+
+  &lt;!-- Initialization --&gt;
+  &lt;script&gt;
+    document.addEventListener('DOMContentLoaded', () =&gt; {
+        if (window.gia &amp;&amp; window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  &lt;/script&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section></main>
+
+</body></html>

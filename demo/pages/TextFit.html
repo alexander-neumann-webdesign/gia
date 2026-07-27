@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TextFit - Gia Components Demo</title>
@@ -13,7 +11,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>TextFit</h1>
@@ -29,13 +27,33 @@
   
   <section id="TextFit">
     <h2>Interactive Demo</h2>
-    <h2>TextFit</h2>
-    <div class="demo-block"
-      style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
-      <div style="width: 100%;">
-        <div data-component="TextFit" data-options='{"minSize": 10, "maxSize": 100, "multiLine": false}'
-          style="display: inline-block; white-space: nowrap;">
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div style="width: 50%; border: 1px solid #ccc; padding: 10px; resize: horizontal; overflow: hidden; max-width: 100%;">
+              <div style="width: 100%;">
+        <div data-component="TextFit" data-options="{&quot;minSize&quot;: 10, &quot;maxSize&quot;: 100, &quot;multiLine&quot;: false}" style="display: inline-block; white-space: nowrap;">
           Resize this container to see text scaling
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div style="width: 100%;"&gt;
+        &lt;div data-component="TextFit" data-options="{"minSize": 10, "maxSize": 100, "multiLine": false}" style="display: inline-block; white-space: nowrap;"&gt;
+          Resize this container to see text scaling
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -46,6 +64,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/TextFit.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -56,5 +75,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

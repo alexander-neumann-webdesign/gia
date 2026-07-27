@@ -27,50 +27,265 @@
   
   <section id="Accordion">
     <h2>Interactive Demo</h2>
-    <h2>Accordion</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <div>
-        <h3>Group 1: Multiple Open Allowed (Plus Icon)</h3>
-        <details data-component="Accordion" id="faq-1" open>
-          <summary>Question 1 (Starts open)</summary>
-          <div class="content">
-            <p>This accordion starts open because of the "open" attribute in the HTML markup.</p>
-          </div>
-        </details>
-        <details data-component="Accordion" id="faq-2">
-          <summary>Question 2</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-        <details data-component="Accordion" id="faq-3">
-          <summary>Question 3</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
-          </div>
-        </details>
-      </div>
 
-      <div id="accordion-group-2">
-        <h3>Group 2: Close Others (Arrow Icon)</h3>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-4">
-          <summary>Question 4</summary>
-          <div class="content">
-            <p>Opening this will close other accordions in the same group (same parent element).</p>
+    <h3>Group 1: Multiple Open Allowed (Plus Icon)</h3>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-1" id="tab-preview-1">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-1" id="tab-html-1" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-1" id="tab-css-1" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-1" aria-labelledby="tab-preview-1">
+            <details data-component="Accordion" id="faq-1" open>
+              <summary>Question 1 (Starts open)</summary>
+              <div class="content">
+                <p>This accordion starts open because of the "open" attribute in the HTML markup.</p>
+              </div>
+            </details>
+            <details data-component="Accordion" id="faq-2">
+              <summary>Question 2</summary>
+              <div class="content">
+                <p>Answer content goes here.</p>
+              </div>
+            </details>
+            <details data-component="Accordion" id="faq-3">
+              <summary>Question 3</summary>
+              <div class="content">
+                <p>Answer content goes here.</p>
+              </div>
+            </details>
           </div>
-        </details>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-5">
-          <summary>Question 5</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
+          <div data-ref="panel" role="tabpanel" id="panel-html-1" aria-labelledby="tab-html-1" hidden>
+            <pre class="options-pre"><code>&lt;details data-component="Accordion" id="faq-1" open&gt;
+  &lt;summary&gt;Question 1 (Starts open)&lt;/summary&gt;
+  &lt;div class="content"&gt;
+    &lt;p&gt;This accordion starts open because of the "open" attribute in the HTML markup.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/details&gt;
+&lt;details data-component="Accordion" id="faq-2"&gt;
+  &lt;summary&gt;Question 2&lt;/summary&gt;
+  &lt;div class="content"&gt;
+    &lt;p&gt;Answer content goes here.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/details&gt;
+&lt;details data-component="Accordion" id="faq-3"&gt;
+  &lt;summary&gt;Question 3&lt;/summary&gt;
+  &lt;div class="content"&gt;
+    &lt;p&gt;Answer content goes here.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/details&gt;</code></pre>
           </div>
-        </details>
-        <details data-component="Accordion" data-options='{"closeOthers": true, "icon": "arrow"}' id="faq-6">
-          <summary>Question 6</summary>
-          <div class="content">
-            <p>Answer content goes here.</p>
+          <div data-ref="panel" role="tabpanel" id="panel-css-1" aria-labelledby="tab-css-1" hidden>
+            <pre class="options-pre"><code class="language-css">details[data-component="Accordion"] {
+  @supports (interpolate-size: allow-keywords) {
+    &amp;::details-content {
+      transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+      height: 0;
+      opacity: 0;
+      overflow: clip;
+      display: block;
+    }
+  }
+
+  &amp;[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+
+  .content {
+    padding: 0 1rem 1rem;
+
+    &gt; :first-child {
+      margin-top: 0;
+    }
+
+    &gt; :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  summary {
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+
+    &amp;:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &amp;::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .accordion-icon {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+
+    &amp;.accordion-icon--plus {
+      .vertical-line {
+        transition: transform 0.3s ease;
+        transform-origin: center;
+      }
+    }
+  }
+
+  &amp;[open] {
+    .accordion-icon--arrow {
+      transform: rotate(180deg);
+    }
+
+    .accordion-icon--plus {
+      .vertical-line {
+        transform: rotate(90deg);
+      }
+    }
+  }
+}</code></pre>
           </div>
-        </details>
+        </div>
+      </div>
+    </div>
+
+    <h3>Group 2: Close Others (Arrow Icon)</h3>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-2" id="tab-preview-2">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-2" id="tab-html-2" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-2" id="tab-css-2" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-2" aria-labelledby="tab-preview-2">
+            <div id="accordion-group-2">
+              <details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-4">
+                <summary>Question 4</summary>
+                <div class="content">
+                  <p>Opening this will close other accordions in the same group (same parent element).</p>
+                </div>
+              </details>
+              <details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-5">
+                <summary>Question 5</summary>
+                <div class="content">
+                  <p>Answer content goes here.</p>
+                </div>
+              </details>
+              <details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-6">
+                <summary>Question 6</summary>
+                <div class="content">
+                  <p>Answer content goes here.</p>
+                </div>
+              </details>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-2" aria-labelledby="tab-html-2" hidden>
+            <pre class="options-pre"><code>&lt;div id="accordion-group-2"&gt;
+  &lt;details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-4"&gt;
+    &lt;summary&gt;Question 4&lt;/summary&gt;
+    &lt;div class="content"&gt;
+      &lt;p&gt;Opening this will close other accordions in the same group (same parent element).&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-5"&gt;
+    &lt;summary&gt;Question 5&lt;/summary&gt;
+    &lt;div class="content"&gt;
+      &lt;p&gt;Answer content goes here.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+  &lt;details data-component="Accordion" data-options='{"closeOthers": true, "group": "group2", "icon": "arrow"}' id="faq-6"&gt;
+    &lt;summary&gt;Question 6&lt;/summary&gt;
+    &lt;div class="content"&gt;
+      &lt;p&gt;Answer content goes here.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-2" aria-labelledby="tab-css-2" hidden>
+            <pre class="options-pre"><code class="language-css">/* Standard Accordion CSS applies here as well */
+details[data-component="Accordion"] {
+  @supports (interpolate-size: allow-keywords) {
+    &amp;::details-content {
+      transition: height 0.5s ease, opacity 0.5s ease, display 0.5s ease allow-discrete, content-visibility 0.5s ease allow-discrete;
+      height: 0;
+      opacity: 0;
+      overflow: clip;
+      display: block;
+    }
+  }
+
+  &amp;[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+
+  .content {
+    padding: 0 1rem 1rem;
+
+    &gt; :first-child {
+      margin-top: 0;
+    }
+
+    &gt; :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  summary {
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+
+    &amp;:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &amp;::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .accordion-icon {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+
+    &amp;.accordion-icon--plus {
+      .vertical-line {
+        transition: transform 0.3s ease;
+        transform-origin: center;
+      }
+    }
+  }
+
+  &amp;[open] {
+    .accordion-icon--arrow {
+      transform: rotate(180deg);
+    }
+
+    .accordion-icon--plus {
+      .vertical-line {
+        transform: rotate(90deg);
+      }
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -80,6 +295,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Accordion.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>

@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Magnetic - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Magnetic</h1>
@@ -29,26 +27,50 @@
   
   <section id="Magnetic">
     <h2>Interactive Demo</h2>
-    <h2>Magnetic</h2>
-    <div class="demo-block" style="text-align: center; padding: 4rem;">
-      <p>A physics-based component that pulls elements and their inner text toward the cursor on hover.</p>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div style="text-align: center; padding: 4rem;">
+              <p>A physics-based component that pulls elements and their inner text toward the cursor on hover.</p>
 
-      <div class="magnetic-wrap" data-component="Magnetic"
-        style="display: inline-block; padding: 2rem; cursor: pointer; margin-right: 2rem;">
-        <button data-ref="element" class="magnetic-element"
-          style="display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; border-radius: 9999px; background: #333; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
-          <span data-ref="text" class="magnetic-text"
-            style="display: inline-block; pointer-events: none; will-change: transform;">Hover Me!</span>
+      <div class="magnetic-wrap" data-component="Magnetic" style="display: inline-block; padding: 2rem; cursor: pointer; margin-right: 2rem;">
+        <button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; border-radius: 9999px; background: #333; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
+          <span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;">Hover Me!</span>
         </button>
       </div>
 
-      <div class="magnetic-wrap" data-component="Magnetic" data-options='{"strength": 0.3, "textStrength": 0.1}'
-        style="display: inline-block; padding: 2rem; cursor: pointer;">
-        <button data-ref="element" class="magnetic-element"
-          style="display: inline-flex; align-items: center; justify-content: center; padding: 1.5rem 3rem; border-radius: 9999px; background: #007bff; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
-          <span data-ref="text" class="magnetic-text"
-            style="display: inline-block; pointer-events: none; will-change: transform;">Parallax Hover</span>
+      <div class="magnetic-wrap" data-component="Magnetic" data-options="{&quot;strength&quot;: 0.3, &quot;textStrength&quot;: 0.1}" style="display: inline-block; padding: 2rem; cursor: pointer;">
+        <button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1.5rem 3rem; border-radius: 9999px; background: #007bff; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;">
+          <span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;">Parallax Hover</span>
         </button>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;p&gt;A physics-based component that pulls elements and their inner text toward the cursor on hover.&lt;/p&gt;
+
+      &lt;div class="magnetic-wrap" data-component="Magnetic" style="display: inline-block; padding: 2rem; cursor: pointer; margin-right: 2rem;"&gt;
+        &lt;button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; border-radius: 9999px; background: #333; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;"&gt;
+          &lt;span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;"&gt;Hover Me!&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;div class="magnetic-wrap" data-component="Magnetic" data-options="{"strength": 0.3, "textStrength": 0.1}" style="display: inline-block; padding: 2rem; cursor: pointer;"&gt;
+        &lt;button data-ref="element" class="magnetic-element" style="display: inline-flex; align-items: center; justify-content: center; padding: 1.5rem 3rem; border-radius: 9999px; background: #007bff; color: #fff; border: none; font-size: 1.1rem; transition: background-color 0.3s ease; will-change: transform;"&gt;
+          &lt;span data-ref="text" class="magnetic-text" style="display: inline-block; pointer-events: none; will-change: transform;"&gt;Parallax Hover&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -58,6 +80,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Magnetic.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -68,5 +91,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

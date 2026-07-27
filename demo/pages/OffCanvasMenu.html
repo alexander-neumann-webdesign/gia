@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OffCanvasMenu - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>OffCanvasMenu</h1>
@@ -27,17 +25,24 @@
   
   <section id="OffCanvasMenu">
     <h2>Interactive Demo</h2>
-    <h2>OffCanvasMenu</h2>
     <div class="demo-block">
-      <!-- Trigger inside Header, e.g., a burger button -->
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <!-- Trigger inside Header, e.g., a burger button -->
       <header>
         <button data-offcanvas-target="main-menu" aria-label="Open menu">☰</button>
       </header>
 
-      <div data-component="OffCanvasMenu" id="main-menu" role="dialog" aria-modal="true" aria-label="Main Navigation"
-        aria-hidden="true">
+      <div data-component="OffCanvasMenu" id="main-menu" role="dialog" aria-modal="true" aria-label="Main Navigation" aria-hidden="true">
         <div class="offcanvas-content">
-          <button data-action="click->handleCloseClick" data-offcanvas-close aria-label="Close menu">✕</button>
+          <button data-action="click->handleCloseClick" data-offcanvas-close="" aria-label="Close menu">✕</button>
           <nav>
             <ul>
               <li><a href="/">Home</a></li>
@@ -46,8 +51,31 @@
           </nav>
         </div>
       </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;!-- Trigger inside Header, e.g., a burger button --&gt;
+      &lt;header&gt;
+        &lt;button data-offcanvas-target="main-menu" aria-label="Open menu"&gt;☰&lt;/button&gt;
+      &lt;/header&gt;
 
-
+      &lt;div data-component="OffCanvasMenu" id="main-menu" role="dialog" aria-modal="true" aria-label="Main Navigation" aria-hidden="true"&gt;
+        &lt;div class="offcanvas-content"&gt;
+          &lt;button data-action="click-&gt;handleCloseClick" data-offcanvas-close="" aria-label="Close menu"&gt;✕&lt;/button&gt;
+          &lt;nav&gt;
+            &lt;ul&gt;
+              &lt;li&gt;&lt;a href="/"&gt;Home&lt;/a&gt;&lt;/li&gt;
+              &lt;li&gt;&lt;a href="/about"&gt;About&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/nav&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -56,6 +84,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/OffCanvasMenu.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -66,5 +95,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

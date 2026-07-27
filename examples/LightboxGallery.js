@@ -34,6 +34,12 @@ class LightboxGallery extends gia.Component {
 			this.ref.triggers = this.element.querySelectorAll("[data-lightbox]");
 		}
 
+		if (history.state && history.state.pswpOpen) {
+			const state = { ...history.state };
+			delete state.pswpOpen;
+			history.replaceState(state, "");
+		}
+
 		if (!window.PhotoSwipeLightbox || !window.PhotoSwipe) {
 			console.error("LightboxGallery: PhotoSwipe is not loaded.");
 			return;
@@ -64,9 +70,27 @@ class LightboxGallery extends gia.Component {
 			});
 		}
 
+		this.photoswipe.on("beforeOpen", () => {
+			history.pushState({ pswpOpen: true }, "");
+			window.addEventListener("popstate", this.handlePopState);
+		});
+
+		this.photoswipe.on("close", () => {
+			window.removeEventListener("popstate", this.handlePopState);
+			if (history.state && history.state.pswpOpen) {
+				history.back();
+			}
+		});
+
 		// Swup integration: cleanup on page transition
 		if (typeof window.swup !== "undefined" && window.swup.hooks) {
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
+		}
+	}
+
+	handlePopState() {
+		if (this.photoswipe && this.photoswipe.pswp && this.photoswipe.pswp.isOpen) {
+			this.photoswipe.pswp.close();
 		}
 	}
 
@@ -78,6 +102,8 @@ class LightboxGallery extends gia.Component {
 	}
 
 	unmount() {
+		window.removeEventListener("popstate", this.handlePopState);
+		
 		if (typeof window.swup !== "undefined" && window.swup.hooks) {
 			// Try to remove the hook listener (swup handles off with same args)
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
@@ -86,6 +112,11 @@ class LightboxGallery extends gia.Component {
 		if (this.photoswipe) {
 			this.photoswipe.destroy();
 			this.photoswipe = null;
+		}
+
+		// Failsafe: Ensure smooth scrolling is re-enabled if unmounted abruptly
+		if (typeof window.lenis !== "undefined") {
+			window.lenis.start();
 		}
 	}
 

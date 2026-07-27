@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marquee - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Marquee</h1>
@@ -28,77 +26,173 @@
 }</code></pre>
   
   <section id="Marquee">
-    <h2>Interactive Demo</h2>
-    <h2>Marquee</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <div>
-        <h3>Left Direction</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+    
+    <h3>Left Direction</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Left Direction Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-1" id="tab-preview-1">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-1" id="tab-html-1" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-1" id="tab-css-1" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-1" aria-labelledby="tab-preview-1">
+            <div data-component="Marquee" data-options="{&quot;speed&quot;: 1.5, &quot;direction&quot;: &quot;left&quot;, &quot;pauseOnHover&quot;: true}">
           <div data-ref="track" class="marquee-track">
             <div class="marquee-item">Item 1</div>
             <div class="marquee-item">Item 2</div>
             <div class="marquee-item">Item 3</div>
           </div>
         </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-1" aria-labelledby="tab-html-1" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Marquee" data-options="{"speed": 1.5, "direction": "left", "pauseOnHover": true}"&gt;
+          &lt;div data-ref="track" class="marquee-track"&gt;
+            &lt;div class="marquee-item"&gt;Item 1&lt;/div&gt;
+            &lt;div class="marquee-item"&gt;Item 2&lt;/div&gt;
+            &lt;div class="marquee-item"&gt;Item 3&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-1" aria-labelledby="tab-css-1" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
-
-      <div>
-        <h3>Right Direction</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "right", "pauseOnHover": true}'>
+    </div><h3>Right Direction</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Right Direction Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-2" id="tab-preview-2">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-2" id="tab-html-2" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-2" id="tab-css-2" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-2" aria-labelledby="tab-preview-2">
+            <div data-component="Marquee" data-options="{&quot;speed&quot;: 1.5, &quot;direction&quot;: &quot;right&quot;, &quot;pauseOnHover&quot;: true}">
           <div data-ref="track" class="marquee-track">
             <div class="marquee-item">Item A</div>
             <div class="marquee-item">Item B</div>
             <div class="marquee-item">Item C</div>
           </div>
         </div>
-      </div>
-
-      <div>
-        <h3>React To Mouse</h3>
-        <div data-component="Marquee" data-options='{"speed": 3, "reactToMouse": true}'
-          style="background: #f0f8ff; padding: 1rem 0; border-radius: 8px;">
-          <div data-ref="track" class="marquee-track">
-            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse &harr;</div>
-            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse &harr;</div>
-            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse &harr;</div>
-            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse &harr;</div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-2" aria-labelledby="tab-html-2" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Marquee" data-options="{"speed": 1.5, "direction": "right", "pauseOnHover": true}"&gt;
+          &lt;div data-ref="track" class="marquee-track"&gt;
+            &lt;div class="marquee-item"&gt;Item A&lt;/div&gt;
+            &lt;div class="marquee-item"&gt;Item B&lt;/div&gt;
+            &lt;div class="marquee-item"&gt;Item C&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-2" aria-labelledby="tab-css-2" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
           </div>
         </div>
       </div>
-
-      <div>
-        <h3>With Images and Text</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'
-          class="marquee-demo">
+    </div><h3>React To Mouse</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="React To Mouse Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-3" id="tab-preview-3">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-3" id="tab-html-3" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-3" id="tab-css-3" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-3" aria-labelledby="tab-preview-3">
+            <div data-component="Marquee" data-options="{&quot;speed&quot;: 3, &quot;reactToMouse&quot;: true}" style="background: #f0f8ff; padding: 1rem 0; border-radius: 8px;">
+          <div data-ref="track" class="marquee-track">
+            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse ↔</div>
+            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse ↔</div>
+            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse ↔</div>
+            <div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;">Move Mouse ↔</div>
+          </div>
+        </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-3" aria-labelledby="tab-html-3" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Marquee" data-options="{"speed": 3, "reactToMouse": true}" style="background: #f0f8ff; padding: 1rem 0; border-radius: 8px;"&gt;
+          &lt;div data-ref="track" class="marquee-track"&gt;
+            &lt;div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;"&gt;Move Mouse ↔&lt;/div&gt;
+            &lt;div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;"&gt;Move Mouse ↔&lt;/div&gt;
+            &lt;div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;"&gt;Move Mouse ↔&lt;/div&gt;
+            &lt;div class="marquee-item" style="font-weight: bold; font-size: 1.5rem; color: #007bff;"&gt;Move Mouse ↔&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-3" aria-labelledby="tab-css-3" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div><h3>With Images and Text</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="With Images and Text Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-4" id="tab-preview-4">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-4" id="tab-html-4" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-4" id="tab-css-4" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-4" aria-labelledby="tab-preview-4">
+            <div data-component="Marquee" data-options="{&quot;speed&quot;: 1.5, &quot;direction&quot;: &quot;left&quot;, &quot;pauseOnHover&quot;: true}" class="marquee-demo">
           <div data-ref="track" class="marquee-track">
             <div class="marquee-item">
-              <img src="../assets/img/gallery-1.jpg" alt="Gallery 1"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+              <img src="../assets/img/gallery-1.jpg" alt="Gallery 1" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
             </div>
             <div class="marquee-item">
               <span>Beautiful Landscapes</span>
             </div>
             <div class="marquee-item">
-              <img src="../assets/img/gallery-2.jpg" alt="Gallery 2"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+              <img src="../assets/img/gallery-2.jpg" alt="Gallery 2" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
             </div>
             <div class="marquee-item">
               <span>City Vibes</span>
             </div>
             <div class="marquee-item">
-              <img src="../assets/img/gallery-3.jpg" alt="Gallery 3"
-                style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
+              <img src="../assets/img/gallery-3.jpg" alt="Gallery 3" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;">
             </div>
             <div class="marquee-item">
               <span>Nature Discovery</span>
             </div>
           </div>
         </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-4" aria-labelledby="tab-html-4" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Marquee" data-options="{"speed": 1.5, "direction": "left", "pauseOnHover": true}" class="marquee-demo"&gt;
+          &lt;div data-ref="track" class="marquee-track"&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;img src="../assets/img/gallery-1.jpg" alt="Gallery 1" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;"&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;span&gt;Beautiful Landscapes&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;img src="../assets/img/gallery-2.jpg" alt="Gallery 2" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;"&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;span&gt;City Vibes&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;img src="../assets/img/gallery-3.jpg" alt="Gallery 3" style="height: 50px; width: 50px; object-fit: cover; border-radius: 50%;"&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item"&gt;
+              &lt;span&gt;Nature Discovery&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-4" aria-labelledby="tab-css-4" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
-
-      <div>
-        <h3>Cards Variant</h3>
-        <div data-component="Marquee" data-options='{"speed": 1.5, "direction": "left", "pauseOnHover": true}'>
+    </div><h3>Cards Variant</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Cards Variant Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-5" id="tab-preview-5">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-5" id="tab-html-5" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-5" id="tab-css-5" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-5" aria-labelledby="tab-preview-5">
+            <div data-component="Marquee" data-options="{&quot;speed&quot;: 1.5, &quot;direction&quot;: &quot;left&quot;, &quot;pauseOnHover&quot;: true}">
           <div data-ref="track" class="marquee-track marquee-cards-track">
             <div class="marquee-item marquee-card">
               <img src="../assets/img/gallery-1.jpg" alt="Gallery 1">
@@ -123,6 +217,38 @@
             </div>
           </div>
         </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-5" aria-labelledby="tab-html-5" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Marquee" data-options="{"speed": 1.5, "direction": "left", "pauseOnHover": true}"&gt;
+          &lt;div data-ref="track" class="marquee-track marquee-cards-track"&gt;
+            &lt;div class="marquee-item marquee-card"&gt;
+              &lt;img src="../assets/img/gallery-1.jpg" alt="Gallery 1"&gt;
+              &lt;div class="marquee-card-content"&gt;
+                &lt;h4&gt;Mountain Retreat&lt;/h4&gt;
+                &lt;p&gt;Discover the serene beauty of the mountains.&lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item marquee-card"&gt;
+              &lt;img src="../assets/img/gallery-2.jpg" alt="Gallery 2"&gt;
+              &lt;div class="marquee-card-content"&gt;
+                &lt;h4&gt;City Exploration&lt;/h4&gt;
+                &lt;p&gt;Experience the bustling life of the city.&lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="marquee-item marquee-card"&gt;
+              &lt;img src="../assets/img/gallery-3.jpg" alt="Gallery 3"&gt;
+              &lt;div class="marquee-card-content"&gt;
+                &lt;h4&gt;Forest Adventure&lt;/h4&gt;
+                &lt;p&gt;Wander through lush green forests.&lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-5" aria-labelledby="tab-css-5" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -132,6 +258,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Marquee.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -142,5 +269,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

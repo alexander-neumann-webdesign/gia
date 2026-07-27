@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reveal - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Reveal</h1>
@@ -27,130 +25,36 @@
   
   <section id="Reveal">
     <h2>Interactive Demo</h2>
-    <p>Scroll down to see the different reveal animations.</p>
-    
-    <style>
-      .spacer {
-        height: 50vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #9ca3af;
-        border-bottom: 1px dashed var(--border-color);
-        margin-bottom: 3rem;
-      }
-
-      /* 1. Fade Up */
-      .reveal-fade-up {
-        opacity: 0;
-        transform: translateY(40px);
-        transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-        will-change: opacity, transform;
-      }
-      [data-is-inview="true"] .reveal-fade-up {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      /* 2. Scale In */
-      .reveal-scale-in {
-        opacity: 0;
-        transform: scale(0.85);
-        transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      [data-is-inview="true"] .reveal-scale-in {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      /* 3. Slide In Left */
-      .reveal-slide-left {
-        opacity: 0;
-        transform: translateX(-50px);
-        transition: opacity 0.7s ease-out, transform 0.7s ease-out;
-      }
-      [data-is-inview="true"] .reveal-slide-left,
-      [data-is-inview="true"].reveal-slide-left {
-        opacity: 1;
-        transform: translateX(0);
-      }
-
-      /* 4. Blur In */
-      .reveal-blur {
-        opacity: 0;
-        filter: blur(10px);
-        transform: translateY(20px);
-        transition: opacity 1s ease, filter 1s ease, transform 1s ease;
-      }
-      [data-is-inview="true"] .reveal-blur {
-        opacity: 1;
-        filter: blur(0);
-        transform: translateY(0);
-      }
-
-      .demo-box {
-        background: #f9fafb;
-        border: 1px solid var(--border-color);
-        padding: 4rem 2rem;
-        border-radius: 12px;
-        text-align: center;
-      }
-    </style>
-
-    <div class="spacer">Scroll Down &darr;</div>
-
-    <h3>1. Fade Up (Staggered Children)</h3>
     <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}' class="demo-box">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="Reveal" data-options="{&quot;threshold&quot;: 0.2, &quot;once&quot;: true}" class="demo-box">
         <h2 class="reveal-fade-up" style="margin-top: 0; transition-delay: 0s;">Fade Up Animation</h2>
         <p class="reveal-fade-up" style="transition-delay: 0.15s;">This paragraph appears slightly after the heading.</p>
         <button class="reveal-fade-up" style="transition-delay: 0.3s; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: var(--main-color); color: white; cursor: pointer;">Awesome</button>
       </div>
-    </div>
-
-    <div class="spacer">Keep Scrolling &darr;</div>
-
-    <h3>2. Scale In (Bouncy)</h3>
-    <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.3, "once": true}' class="demo-box">
-        <div class="reveal-scale-in" style="width: 80px; height: 80px; background: var(--main-color); border-radius: 50%; margin: 0 auto 1.5rem auto;"></div>
-        <h2 class="reveal-scale-in" style="margin-top: 0; transition-delay: 0.1s;">Scale In Reveal</h2>
-      </div>
-    </div>
-
-    <div class="spacer">Keep Scrolling &darr;</div>
-
-    <h3>3. Slide In From Left</h3>
-    <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}'>
-        <div class="demo-box reveal-slide-left">
-          <h2 style="margin-top: 0;">Sliding from the left</h2>
-          <p style="margin-bottom: 0;">The entire container slides in because the class is on the container itself.</p>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="Reveal" data-options="{"threshold": 0.2, "once": true}" class="demo-box"&gt;
+        &lt;h2 class="reveal-fade-up" style="margin-top: 0; transition-delay: 0s;"&gt;Fade Up Animation&lt;/h2&gt;
+        &lt;p class="reveal-fade-up" style="transition-delay: 0.15s;"&gt;This paragraph appears slightly after the heading.&lt;/p&gt;
+        &lt;button class="reveal-fade-up" style="transition-delay: 0.3s; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: var(--main-color); color: white; cursor: pointer;"&gt;Awesome&lt;/button&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="spacer">Keep Scrolling &darr;</div>
-
-    <h3>4. Blur Reveal</h3>
-    <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.2, "once": true}' class="demo-box">
-        <h2 class="reveal-blur" style="margin-top: 0;">Unblurring the future</h2>
-        <p class="reveal-blur" style="margin-bottom: 0; transition-delay: 0.2s;">Great for dramatic text reveals.</p>
-      </div>
-    </div>
-
-    <div class="spacer">Keep Scrolling &darr;</div>
-
-    <h3>5. Repeatable (once: false)</h3>
-    <p>Because `once` is set to false, this element will fade out when it leaves the viewport and reveal itself again every time you scroll back down.</p>
-    <div class="demo-block">
-      <div data-component="Reveal" data-options='{"threshold": 0.2, "once": false}' class="demo-box">
-        <h2 class="reveal-fade-up" style="margin-top: 0;">I will disappear if you scroll up!</h2>
-        <p class="reveal-fade-up" style="margin-bottom: 0; transition-delay: 0.1s;">Scroll up and down to see it reset.</p>
-      </div>
-    </div>
-
   </section>
 
   <!-- Core library -->
@@ -158,6 +62,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Reveal.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -168,5 +73,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FilterableListClassic - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
   <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css">
   <link rel="stylesheet" href="../assets/css/demo.css">
   
 </head>
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>FilterableListClassic</h1>
@@ -31,20 +29,24 @@
   
   <section id="FilterableListClassic">
     <h2>Interactive Demo</h2>
-    <h2>FilterableListClassic</h2>
     <div class="demo-block">
-      <div data-component="FilterableListClassic" data-options='{"defaultSort": "name:asc"}'>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="FilterableListClassic" data-options="{&quot;defaultSort&quot;: &quot;name:asc&quot;}">
         <div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
           <!-- Filter Controls -->
           <div>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true"
-              class="is-active">All Shapes</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle"
-              aria-pressed="false">Circle</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="square"
-              aria-pressed="false">Square</button>
-            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle"
-              aria-pressed="false">Triangle</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true" class="is-active">All Shapes</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="circle" aria-pressed="false">Circle</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="square" aria-pressed="false">Square</button>
+            <button data-ref="filter" data-filter-type="shape" data-filter-value="triangle" aria-pressed="false">Triangle</button>
           </div>
 
           <div>
@@ -60,8 +62,7 @@
 
           <div>
             <label for="search-name" class="sr-only">Search by name</label>
-            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes"
-              placeholder="Search by name...">
+            <input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes" placeholder="Search by name...">
           </div>
 
           <div style="display: flex; flex-direction: column; width: 200px;">
@@ -69,14 +70,10 @@
               <label for="price-min">Min Price: $<output for="price-min">0</output></label>
               <label for="price-max">Max Price: $<output for="price-max">50</output></label>
             </div>
-            <div data-component="RangeSlider"
-              data-options='{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}'
-              class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
+            <div data-component="RangeSlider" data-options="{&quot;start&quot;: [0, 50], &quot;connect&quot;: true, &quot;range&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 50}, &quot;step&quot;: 1}" class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
               <div data-ref="slider"></div>
-              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50"
-                value="0" style="display: none;">
-              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50"
-                value="50" style="display: none;">
+              <input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0" style="display: none;">
+              <input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50" style="display: none;">
             </div>
           </div>
 
@@ -90,9 +87,9 @@
         </div>
 
         <div aria-live="polite" data-ref="announcer" class="results-announcer">
-          <span data-ref="announcerSingular" hidden><span data-ref="announcerCount">1</span> item found</span>
+          <span data-ref="announcerSingular" hidden=""><span data-ref="announcerCount">1</span> item found</span>
           <span data-ref="announcerPlural"><span data-ref="announcerCount">12</span> items found</span>
-          <span data-ref="announcerEmpty" hidden>
+          <span data-ref="announcerEmpty" hidden="">
             No items found. <button type="button" data-ref="resetBtn" class="reset-filters-btn">Reset filters</button>
           </span>
         </div>
@@ -161,24 +158,21 @@
               <span class="price-tag">$6</span>
             </div>
           </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign"
-            data-price="40">
+          <div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign" data-price="40">
             <div class="shape-visual" data-shape="triangle" data-color="red"></div>
             <div class="item-details">
               <span class="item-name">Yield Sign</span>
               <span class="price-tag">$40</span>
             </div>
           </div>
-          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note"
-            data-price="1">
+          <div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note" data-price="1">
             <div class="shape-visual" data-shape="square" data-color="yellow"></div>
             <div class="item-details">
               <span class="item-name">Sticky Note</span>
               <span class="price-tag">$1</span>
             </div>
           </div>
-          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese"
-            data-price="12">
+          <div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese" data-price="12">
             <div class="shape-visual" data-shape="triangle" data-color="yellow"></div>
             <div class="item-details">
               <span class="item-name">Cheese</span>
@@ -229,8 +223,199 @@
           })();
         </script>
       </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="FilterableListClassic" data-options="{"defaultSort": "name:asc"}"&gt;
+        &lt;div class="controls" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;"&gt;
+          &lt;!-- Filter Controls --&gt;
+          &lt;div&gt;
+            &lt;button data-ref="filter" data-filter-type="shape" data-filter-value="*" aria-pressed="true" class="is-active"&gt;All Shapes&lt;/button&gt;
+            &lt;button data-ref="filter" data-filter-type="shape" data-filter-value="circle" aria-pressed="false"&gt;Circle&lt;/button&gt;
+            &lt;button data-ref="filter" data-filter-type="shape" data-filter-value="square" aria-pressed="false"&gt;Square&lt;/button&gt;
+            &lt;button data-ref="filter" data-filter-type="shape" data-filter-value="triangle" aria-pressed="false"&gt;Triangle&lt;/button&gt;
+          &lt;/div&gt;
 
+          &lt;div&gt;
+            &lt;label for="color-select" class="sr-only"&gt;Color Filter&lt;/label&gt;
+            &lt;select id="color-select" data-ref="filter" data-filter-type="color"&gt;
+              &lt;option value=""&gt;All Colors&lt;/option&gt;
+              &lt;option value="red"&gt;Red&lt;/option&gt;
+              &lt;option value="blue"&gt;Blue&lt;/option&gt;
+              &lt;option value="green"&gt;Green&lt;/option&gt;
+              &lt;option value="yellow"&gt;Yellow&lt;/option&gt;
+            &lt;/select&gt;
+          &lt;/div&gt;
 
+          &lt;div&gt;
+            &lt;label for="search-name" class="sr-only"&gt;Search by name&lt;/label&gt;
+            &lt;input type="text" id="search-name" data-ref="filter" data-filter-type="name-includes" placeholder="Search by name..."&gt;
+          &lt;/div&gt;
+
+          &lt;div style="display: flex; flex-direction: column; width: 200px;"&gt;
+            &lt;div style="display: flex; justify-content: space-between; font-size: 0.8rem;"&gt;
+              &lt;label for="price-min"&gt;Min Price: $&lt;output for="price-min"&gt;0&lt;/output&gt;&lt;/label&gt;
+              &lt;label for="price-max"&gt;Max Price: $&lt;output for="price-max"&gt;50&lt;/output&gt;&lt;/label&gt;
+            &lt;/div&gt;
+            &lt;div data-component="RangeSlider" data-options="{"start": [0, 50], "connect": true, "range": {"min": 0, "max": 50}, "step": 1}" class="dual-range-slider" style="position: relative; margin-top: 10px; margin-bottom: 20px;"&gt;
+              &lt;div data-ref="slider"&gt;&lt;/div&gt;
+              &lt;input type="range" id="price-min" data-ref="filter" data-filter-type="price-min" min="0" max="50" value="0" style="display: none;"&gt;
+              &lt;input type="range" id="price-max" data-ref="filter" data-filter-type="price-max" min="0" max="50" value="50" style="display: none;"&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Sorter Controls --&gt;
+          &lt;select data-ref="sorter" aria-label="Sort options" style="margin-left: auto;"&gt;
+            &lt;option value="name:asc"&gt;Name (A-Z)&lt;/option&gt;
+            &lt;option value="name:desc"&gt;Name (Z-A)&lt;/option&gt;
+            &lt;option value="price:asc"&gt;Price (Low-High)&lt;/option&gt;
+            &lt;option value="price:desc"&gt;Price (High-Low)&lt;/option&gt;
+          &lt;/select&gt;
+        &lt;/div&gt;
+
+        &lt;div aria-live="polite" data-ref="announcer" class="results-announcer"&gt;
+          &lt;span data-ref="announcerSingular" hidden=""&gt;&lt;span data-ref="announcerCount"&gt;1&lt;/span&gt; item found&lt;/span&gt;
+          &lt;span data-ref="announcerPlural"&gt;&lt;span data-ref="announcerCount"&gt;12&lt;/span&gt; items found&lt;/span&gt;
+          &lt;span data-ref="announcerEmpty" hidden=""&gt;
+            No items found. &lt;button type="button" data-ref="resetBtn" class="reset-filters-btn"&gt;Reset filters&lt;/button&gt;
+          &lt;/span&gt;
+        &lt;/div&gt;
+
+        &lt;div data-ref="container" class="grid"&gt;
+          &lt;div class="item" data-ref="item" data-shape="circle" data-color="red" data-name="Apple" data-price="10"&gt;
+            &lt;div class="shape-visual" data-shape="circle" data-color="red"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Apple&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$10&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="square" data-color="blue" data-name="Box" data-price="20"&gt;
+            &lt;div class="shape-visual" data-shape="square" data-color="blue"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Box&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$20&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="circle" data-color="blue" data-name="Blueberry" data-price="5"&gt;
+            &lt;div class="shape-visual" data-shape="circle" data-color="blue"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Blueberry&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$5&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="triangle" data-color="green" data-name="Tree" data-price="15"&gt;
+            &lt;div class="shape-visual" data-shape="triangle" data-color="green"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Tree&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$15&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="circle" data-color="yellow" data-name="Sun" data-price="50"&gt;
+            &lt;div class="shape-visual" data-shape="circle" data-color="yellow"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Sun&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$50&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="square" data-color="red" data-name="Brick" data-price="2"&gt;
+            &lt;div class="shape-visual" data-shape="square" data-color="red"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Brick&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$2&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="triangle" data-color="blue" data-name="Sail" data-price="30"&gt;
+            &lt;div class="shape-visual" data-shape="triangle" data-color="blue"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Sail&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$30&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="square" data-color="green" data-name="Grass" data-price="8"&gt;
+            &lt;div class="shape-visual" data-shape="square" data-color="green"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Grass&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$8&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="circle" data-color="green" data-name="Lime" data-price="6"&gt;
+            &lt;div class="shape-visual" data-shape="circle" data-color="green"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Lime&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$6&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="triangle" data-color="red" data-name="Yield Sign" data-price="40"&gt;
+            &lt;div class="shape-visual" data-shape="triangle" data-color="red"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Yield Sign&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$40&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="square" data-color="yellow" data-name="Sticky Note" data-price="1"&gt;
+            &lt;div class="shape-visual" data-shape="square" data-color="yellow"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Sticky Note&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$1&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="item" data-ref="item" data-shape="triangle" data-color="yellow" data-name="Cheese" data-price="12"&gt;
+            &lt;div class="shape-visual" data-shape="triangle" data-color="yellow"&gt;&lt;/div&gt;
+            &lt;div class="item-details"&gt;
+              &lt;span class="item-name"&gt;Cheese&lt;/span&gt;
+              &lt;span class="price-tag"&gt;$12&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Inline script to prevent layout shift on initial load when URL params are present --&gt;
+        &lt;script&gt;
+          (function () {
+            var params = new URLSearchParams(window.location.search);
+            var items = document.querySelectorAll('#FilterableListClassic .item');
+
+            var activeFilters = {};
+            for (var key of params.keys()) {
+              if (key.startsWith('filter-')) {
+                var type = key.replace('filter-', '');
+                var vals = params.get(key).split(',').filter(Boolean);
+                if (vals.length &gt; 0) {
+                  activeFilters[type] = vals;
+                }
+              }
+            }
+
+            var hasFilters = false;
+            for (var _k in activeFilters) {
+              hasFilters = true;
+              break;
+            }
+
+            if (hasFilters) {
+              items.forEach(function (item) {
+                var isVisible = true;
+                for (var type in activeFilters) {
+                  var activeValues = activeFilters[type];
+                  var itemVal = item.getAttribute('data-' + type);
+                  if (!itemVal || activeValues.indexOf(itemVal) === -1) {
+                    isVisible = false;
+                    break;
+                  }
+                }
+                if (!isVisible) {
+                  item.hidden = true;
+                }
+              });
+            }
+          })();
+        &lt;/script&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -239,6 +424,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/FilterableListClassic.js"></script>
+  <script src="../../examples/Tabs.js"></script>
   <script src="../../examples/RangeSlider.js"></script>
 
   <!-- Initialization -->
@@ -250,5 +436,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

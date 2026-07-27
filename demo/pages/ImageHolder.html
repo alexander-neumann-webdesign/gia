@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImageHolder - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>ImageHolder</h1>
@@ -28,75 +26,76 @@
   
   <section id="ImageHolder">
     <h2>Interactive Demo</h2>
-    
-    <h3>Vertical Parallax (Default)</h3>
     <div class="demo-block">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
         <div>
           <h4 style="margin-top: 0;">Speed: 0 (No Parallax)</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy" />
+          <div data-component="ImageHolder" data-options="{&quot;parallaxSpeed&quot;: 0}" style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy">
           </div>
         </div>
         <div>
           <h4 style="margin-top: 0;">Speed: 0.2</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.2}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy" />
+          <div data-component="ImageHolder" data-options="{&quot;parallaxSpeed&quot;: 0.2}" style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy">
           </div>
         </div>
         <div>
           <h4 style="margin-top: 0;">Speed: 0.5 (Fast)</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.5}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.5 parallax" loading="lazy" />
+          <div data-component="ImageHolder" data-options="{&quot;parallaxSpeed&quot;: 0.5}" style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.5 parallax" loading="lazy">
           </div>
         </div>
         <div>
           <h4 style="margin-top: 0;">Speed: -0.2 (Reverse)</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": -0.2}' style="aspect-ratio: 4 / 3; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="-0.2 parallax" loading="lazy" />
+          <div data-component="ImageHolder" data-options="{&quot;parallaxSpeed&quot;: -0.2}" style="aspect-ratio: 4 / 3; border-radius: 8px;">
+            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="-0.2 parallax" loading="lazy">
           </div>
         </div>
       </div>
-    </div>
-
-    <h3>Horizontal Parallax</h3>
-    <div class="demo-block">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-        <div>
-          <h4 style="margin-top: 0;">Direction: horizontal, Speed: 0.3</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.3, "parallaxDirection": "horizontal"}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Horizontal parallax" loading="lazy" />
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;"&gt;
+        &lt;div&gt;
+          &lt;h4 style="margin-top: 0;"&gt;Speed: 0 (No Parallax)&lt;/h4&gt;
+          &lt;div data-component="ImageHolder" data-options="{"parallaxSpeed": 0}" style="aspect-ratio: 4 / 3; border-radius: 8px;"&gt;
+            &lt;img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="No parallax" loading="lazy"&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;h4 style="margin-top: 0;"&gt;Speed: 0.2&lt;/h4&gt;
+          &lt;div data-component="ImageHolder" data-options="{"parallaxSpeed": 0.2}" style="aspect-ratio: 4 / 3; border-radius: 8px;"&gt;
+            &lt;img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.2 parallax" loading="lazy"&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;h4 style="margin-top: 0;"&gt;Speed: 0.5 (Fast)&lt;/h4&gt;
+          &lt;div data-component="ImageHolder" data-options="{"parallaxSpeed": 0.5}" style="aspect-ratio: 4 / 3; border-radius: 8px;"&gt;
+            &lt;img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="0.5 parallax" loading="lazy"&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;h4 style="margin-top: 0;"&gt;Speed: -0.2 (Reverse)&lt;/h4&gt;
+          &lt;div data-component="ImageHolder" data-options="{"parallaxSpeed": -0.2}" style="aspect-ratio: 4 / 3; border-radius: 8px;"&gt;
+            &lt;img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="-0.2 parallax" loading="lazy"&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
           </div>
         </div>
-        <div>
-          <h4 style="margin-top: 0;">Direction: horizontal, Speed: -0.3</h4>
-          <div data-component="ImageHolder" data-options='{"parallaxSpeed": -0.3, "parallaxDirection": "horizontal"}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
-            <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Horizontal reverse" loading="lazy" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <h3>CSS Variable Parallax</h3>
-    <p>Using <code>parallaxCssVar: true</code> allows you to drive any CSS property via the <code>--parallax-scroll-progress</code> variable.</p>
-    <style>
-      .css-var-demo img {
-        /* Instead of translate, let's scale and rotate based on scroll progress (0 to 1) */
-        transform: scale(calc(1 + (var(--parallax-scroll-progress, 0) * 0.5))) rotate(calc(var(--parallax-scroll-progress, 0) * 5deg)) !important;
-      }
-    </style>
-    <div class="demo-block">
-      <h4 style="margin-top: 0;">Scaling & Rotation via CSS Var</h4>
-      <div data-component="ImageHolder" data-options='{"parallaxCssVar": true}' class="css-var-demo" style="aspect-ratio: 21 / 9; border-radius: 12px;">
-        <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="CSS var parallax" loading="lazy" />
-      </div>
-    </div>
-
-    <h3>Start From Top</h3>
-    <p>With <code>startFromTop: true</code>, the parallax progress is calculated starting from when the top of the element hits the top of the viewport. (Useful for hero banners at the very top of the page).</p>
-    <div class="demo-block">
-      <div data-component="ImageHolder" data-options='{"parallaxSpeed": 0.4, "startFromTop": true}' style="aspect-ratio: 16 / 9; border-radius: 8px;">
-        <img data-ref="img" src="../assets/img/sample-image.jpg" sizes="100vw" alt="Start from top" loading="lazy" />
       </div>
     </div>
   </section>
@@ -106,6 +105,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/ImageHolder.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -116,5 +116,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

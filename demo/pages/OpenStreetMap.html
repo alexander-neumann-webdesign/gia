@@ -1,19 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpenStreetMap - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
-  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link id="leaflet-css" rel="stylesheet" data-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="../assets/css/demo.css">
   
 </head>
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>OpenStreetMap</h1>
@@ -29,11 +27,28 @@
   
   <section id="OpenStreetMap">
     <h2>Interactive Demo</h2>
-    <h2>OpenStreetMap</h2>
     <div class="demo-block">
-      <div data-component="OpenStreetMap"
-        data-options='{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12, "useAnimatedDot": true}'
-        style="height: 400px; width: 100%;">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="OpenStreetMap" data-options="{&quot;locations&quot;: [{&quot;lat&quot;: 51.505, &quot;lng&quot;: -0.09, &quot;title&quot;: &quot;London&quot;}, {&quot;lat&quot;: 51.51, &quot;lng&quot;: -0.1, &quot;title&quot;: &quot;Another Point&quot;}], &quot;initialZoomLevel&quot;: 12, &quot;useAnimatedDot&quot;: true}" style="height: 400px; width: 100%;">
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="OpenStreetMap" data-options="{"locations": [{"lat": 51.505, "lng": -0.09, "title": "London"}, {"lat": 51.51, "lng": -0.1, "title": "Another Point"}], "initialZoomLevel": 12, "useAnimatedDot": true}" style="height: 400px; width: 100%;"&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -43,6 +58,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/OpenStreetMap.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -53,5 +69,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

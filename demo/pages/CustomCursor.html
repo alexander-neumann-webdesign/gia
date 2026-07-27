@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CustomCursor - Gia Components Demo</title>
@@ -13,7 +11,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>CustomCursor</h1>
@@ -32,8 +30,17 @@
   
   <section id="CustomCursor">
     <h2>Interactive Demo</h2>
-    <div class="demo-block" style="padding: 0;">
-        <div style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div style="padding: 0;">
+              <div style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;">
 
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
                 <article class="news-card" data-cursor-text="Read more" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;">
@@ -53,12 +60,12 @@
             </div>
 
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
-                <div data-cursor-stick style="padding: 3rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;">
+                <div data-cursor-stick="" style="padding: 3rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;">
                     <span style="font-weight: 500; color: var(--text-color);">data-cursor-stick</span>
                 </div>
 
                 <div style="padding: 3rem; background: #f3f4f6; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;">
-                    <button type="button" data-magnetic style="padding: 1rem 2rem; background: var(--text-color); color: #fff; border: none; border-radius: 30px; font-weight: 500;">
+                    <button type="button" data-magnetic="" style="padding: 1rem 2rem; background: var(--text-color); color: #fff; border: none; border-radius: 30px; font-weight: 500;">
                         data-magnetic
                     </button>
                 </div>
@@ -68,6 +75,50 @@
                 <p style="margin-bottom: 0;">Move your mouse around quickly to see the <strong>skewing</strong> velocity distortion effect!</p>
             </div>
         </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; align-items: flex-start;"&gt;
+
+            &lt;div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;"&gt;
+                &lt;article class="news-card" data-cursor-text="Read more" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;"&gt;
+                    &lt;h3 style="margin-top: 0;"&gt;Text Cursor&lt;/h3&gt;
+                    &lt;p style="margin-bottom: 0;"&gt;Hover me for a text cursor state.&lt;/p&gt;
+                &lt;/article&gt;
+
+                &lt;article class="news-card" data-cursor-img="https://picsum.photos/400/400?1" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;"&gt;
+                    &lt;h3 style="margin-top: 0;"&gt;Image Cursor&lt;/h3&gt;
+                    &lt;p style="margin-bottom: 0;"&gt;Hover me to see an image inside the cursor.&lt;/p&gt;
+                &lt;/article&gt;
+
+                &lt;article class="news-card" data-cursor-icon="icon-play" style="padding: 2rem; border: 1px dashed var(--border-color); flex: 1; border-radius: 12px;"&gt;
+                    &lt;h3 style="margin-top: 0;"&gt;Icon Cursor&lt;/h3&gt;
+                    &lt;p style="margin-bottom: 0;"&gt;Hover me to see an SVG icon inside the cursor.&lt;/p&gt;
+                &lt;/article&gt;
+            &lt;/div&gt;
+
+            &lt;div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;"&gt;
+                &lt;div data-cursor-stick="" style="padding: 3rem; background: #f9fafb; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;"&gt;
+                    &lt;span style="font-weight: 500; color: var(--text-color);"&gt;data-cursor-stick&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;div style="padding: 3rem; background: #f3f4f6; border: 1px solid var(--border-color); border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center;"&gt;
+                    &lt;button type="button" data-magnetic="" style="padding: 1rem 2rem; background: var(--text-color); color: #fff; border: none; border-radius: 30px; font-weight: 500;"&gt;
+                        data-magnetic
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;div style="width: 100%; text-align: center; margin-top: 1rem;"&gt;
+                &lt;p style="margin-bottom: 0;"&gt;Move your mouse around quickly to see the &lt;strong&gt;skewing&lt;/strong&gt; velocity distortion effect!&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -84,6 +135,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/CustomCursor.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -94,5 +146,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

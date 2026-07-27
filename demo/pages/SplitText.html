@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SplitText - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>SplitText</h1>
@@ -29,37 +27,92 @@
   
   <section id="SplitText">
     <h2>Interactive Demo</h2>
-    <h2>SplitText</h2>
     <div class="demo-block">
-      <div style="display: flex; flex-direction: column; gap: 4rem;">
-        <!-- Splitting Lines -->
-        <div>
-          <h3>Splitting Lines</h3>
-          <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"], "wrapLines": true}'>
-            This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
-            or <em>italic</em> words in-between to show that formatting is preserved. As you scroll down and this comes
-            into view, the lines will animate in one by one.
-          </p>
+      <h3>Splitting Lines</h3>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Splitting Lines Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-1" id="tab-preview-1">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-1" id="tab-html-1" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-1" id="tab-css-1" tabindex="-1">CSS</button>
         </div>
-
-        <!-- Splitting Words -->
-        <div>
-          <h3>Splitting Words</h3>
-          <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
-            Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the
-            entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block
-            reaches the viewport threshold.
-          </p>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-1" aria-labelledby="tab-preview-1">
+            <p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"], "wrapLines": true}'>
+              This is a longer text that spans across multiple lines. We can apply <strong>bold</strong> words
+              or <em>italic</em> words in-between to show that formatting is preserved. As you scroll down and this comes
+              into view, the lines will animate in one by one.
+            </p>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-1" aria-labelledby="tab-html-1" hidden>
+            <pre class="options-pre"><code>&lt;p data-component="SplitText" class="split-lines-demo" data-options='{"split": ["lines"], "wrapLines": true}'&gt;
+  This is a longer text that spans across multiple lines. We can apply &lt;strong&gt;bold&lt;/strong&gt; words
+  or &lt;em&gt;italic&lt;/em&gt; words in-between to show that formatting is preserved. As you scroll down and this comes
+  into view, the lines will animate in one by one.
+&lt;/p&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-1" aria-labelledby="tab-css-1" hidden>
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Splitting Characters -->
-        <div>
-          <h3>Splitting Characters</h3>
-          <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
-            Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like
-            👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates
-            each letter.
-          </p>
+    <div class="demo-block">
+      <h3>Splitting Words</h3>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Splitting Words Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-2" id="tab-preview-2">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-2" id="tab-html-2" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-2" id="tab-css-2" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-2" aria-labelledby="tab-preview-2">
+            <p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'>
+              Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the
+              entire line fading in at once, each <strong>individual word</strong> pops in sequentially when this block
+              reaches the viewport threshold.
+            </p>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-2" aria-labelledby="tab-html-2" hidden>
+            <pre class="options-pre"><code>&lt;p data-component="SplitText" class="split-words-demo" data-options='{"split": ["words"]}'&gt;
+  Here is another paragraph demonstrating word splitting. It also spans multiple lines, but instead of the
+  entire line fading in at once, each &lt;strong&gt;individual word&lt;/strong&gt; pops in sequentially when this block
+  reaches the viewport threshold.
+&lt;/p&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-2" aria-labelledby="tab-css-2" hidden>
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-block">
+      <h3>Splitting Characters</h3>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Splitting Characters Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-3" id="tab-preview-3">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-3" id="tab-html-3" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-3" id="tab-css-3" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-3" aria-labelledby="tab-preview-3">
+            <p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'>
+              Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like
+              👨‍👩‍👧‍👦 or formatted text like <strong>bold</strong> and <em>italic</em>, it cleanly splits and animates
+              each letter.
+            </p>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-3" aria-labelledby="tab-html-3" hidden>
+            <pre class="options-pre"><code>&lt;p data-component="SplitText" class="split-chars-demo" data-options='{"split": ["words", "chars"]}'&gt;
+  Finally, this block demonstrates character-by-character splitting. Even with complex graphemes like
+  👨‍👩‍👧‍👦 or formatted text like &lt;strong&gt;bold&lt;/strong&gt; and &lt;em&gt;italic&lt;/em&gt;, it cleanly splits and animates
+  each letter.
+&lt;/p&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-3" aria-labelledby="tab-css-3" hidden>
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -70,6 +123,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/SplitText.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -80,5 +134,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

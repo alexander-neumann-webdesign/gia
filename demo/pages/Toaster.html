@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Toaster - Gia Components Demo</title>
@@ -11,7 +9,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Toaster</h1>
@@ -30,7 +28,16 @@
   <section id="Toaster">
     <h2>Interactive Demo</h2>
     <div class="demo-block">
-      <button onclick="gia.eventbus.emit('toast', { title: 'Default Toast', description: 'This is a default toast notification.' })">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <button onclick="gia.eventbus.emit('toast', { title: 'Default Toast', description: 'This is a default toast notification.' })">
         Add Default Toast
       </button>
       <button onclick="gia.eventbus.emit('toast', { title: 'Success', description: 'Your changes have been saved.', type: 'success' })">
@@ -39,26 +46,26 @@
       <button class="btn btn-error" onclick="gia.eventbus.emit('toast', { title: 'Error', description: 'Failed to save the document. Please try again.', type: 'error' })">Error Toast</button>
       <button class="btn btn-outline" onclick="gia.eventbus.emit('toast', { title: 'Long Description', description: 'This toast contains a lot of text to show how the container automatically adjusts its height dynamically during the measure phase!', duration: 8000 })">Long Description</button>
       <button class="btn btn-outline" onclick="gia.eventbus.emit('toast', { title: 'Dismissable', description: 'This one has a close button!', closeButton: true, duration: Infinity })">With Close Button</button>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;button onclick="gia.eventbus.emit('toast', { title: 'Default Toast', description: 'This is a default toast notification.' })"&gt;
+        Add Default Toast
+      &lt;/button&gt;
+      &lt;button onclick="gia.eventbus.emit('toast', { title: 'Success', description: 'Your changes have been saved.', type: 'success' })"&gt;
+        Add Success Toast
+      &lt;/button&gt;
+      &lt;button class="btn btn-error" onclick="gia.eventbus.emit('toast', { title: 'Error', description: 'Failed to save the document. Please try again.', type: 'error' })"&gt;Error Toast&lt;/button&gt;
+      &lt;button class="btn btn-outline" onclick="gia.eventbus.emit('toast', { title: 'Long Description', description: 'This toast contains a lot of text to show how the container automatically adjusts its height dynamically during the measure phase!', duration: 8000 })"&gt;Long Description&lt;/button&gt;
+      &lt;button class="btn btn-outline" onclick="gia.eventbus.emit('toast', { title: 'Dismissable', description: 'This one has a close button!', closeButton: true, duration: Infinity })"&gt;With Close Button&lt;/button&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
+  </section></main>
 
-    <!-- 
-      The Toaster component wrapper. typically just once at the end of body -->
-  <ol data-component="Toaster" class="gia-toaster"></ol>
 
-  <!-- Core library -->
-  <script src="../../dist/gia.full.umd.js"></script>
-  
-  <!-- Component scripts -->
-  <script src="../../examples/Toaster.js"></script>
-
-  <!-- Initialization -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.gia && window.gia.components) {
-            gia.loadComponents(window.gia.components);
-        }
-    });
-  </script>
-</main>
-</body>
-</html>
+</body></html>

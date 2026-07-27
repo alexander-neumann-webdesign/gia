@@ -4,6 +4,7 @@ class Accordion extends gia.Component {
 
 		this.options = {
 			closeOthers: false, // If true, only one accordion item can be open at a time within the same group
+			group: null, // Optional group name for cross-container closeOthers
 			icon: "plus", // 'plus', 'arrow', or 'none'
 			animationDuration: 500, // Matches the CSS transition duration for WAAPI fallback
 		};
@@ -64,6 +65,12 @@ class Accordion extends gia.Component {
 			}
 		}
 
+		// Bind methods explicitly just in case BaseComponent binding is bypassed
+		this.handleToggle = this.handleToggle.bind(this);
+		this.handleClick = this.handleClick.bind(this);
+		this.handleAccordionOpen = this.handleAccordionOpen.bind(this);
+
+		// Event Listeners
 		this.element.addEventListener("toggle", this.handleToggle);
 
 		// If no native support, intercept clicks to use WAAPI
@@ -231,9 +238,19 @@ class Accordion extends gia.Component {
 	}
 
 	handleAccordionOpen(event) {
-		const { instance, parent } = event.detail;
+		const { instance, parent, group } = event.detail;
 
-		if (instance !== this && parent === this.element.parentElement && this.state.isOpen) {
+		if (instance === this || !this.state.isOpen) return;
+
+		let isSameGroup = false;
+		if (this.options.group && group) {
+			isSameGroup = this.options.group === group;
+		} else if (parent && this.element.parentElement) {
+			// Fallback to strict parent equality if no explicit group is set
+			isSameGroup = parent === this.element.parentElement;
+		}
+
+		if (isSameGroup) {
 			if (this.supportsNativeAnimation) {
 				this.setState({ isOpen: false });
 			} else {
@@ -255,7 +272,7 @@ class Accordion extends gia.Component {
 				// Dispatch event for other accordions
 				if (isOpen && this.options.closeOthers) {
 					const customEvent = new CustomEvent("accordion:open", {
-						detail: { instance: this, parent: this.element.parentElement },
+						detail: { instance: this, parent: this.element.parentElement, group: this.options.group },
 					});
 					window.dispatchEvent(customEvent);
 				}

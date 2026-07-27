@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Slider - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
   <script id="vendor/embla/embla-carousel.umd-js" data-src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
-  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js"
-    data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
+  <script id="vendor/embla/embla-carousel-wheel-gestures.anweb.umd-js" data-src="https://unpkg.com/embla-carousel-wheel-gestures/dist/embla-carousel-wheel-gestures.umd.js"></script>
   <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script>
   <link rel="stylesheet" href="../assets/css/demo.css">
   
@@ -16,7 +13,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Slider</h1>
@@ -33,63 +30,65 @@
 }</code></pre>
   
   <section id="Slider">
-    <h2>Interactive Demo</h2>
-    <h2>Slider</h2>
-    <div class="demo-block" style="display: flex; flex-direction: column; gap: 2rem;">
-      <!-- Remember to add the vendor script at the bottom of the body: -->
-      <!-- <script id="embla-carousel-js" data-src="vendor/embla/embla-carousel.umd.js"></script> -->
-
-      <div>
-        <h3>Default Slider (Loop: true, Align: center)</h3>
-        <div class="slider-wrapper" data-component="Slider">
+    
+    <h3>Default Slider (Loop: true, Align: center)</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Default Slider (Loop: true, Align: center) Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-1" id="tab-preview-1">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-1" id="tab-html-1" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-1" id="tab-css-1" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-1" aria-labelledby="tab-preview-1">
+            <div class="slider-wrapper" data-component="Slider">
           <div class="embla" data-ref="viewport">
             <div class="embla__container" data-ref="container">
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+                  <img src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy">
                   <div class="card-caption">Slide 1</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+                  <img src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy">
                   <div class="card-caption">Slide 2</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+                  <img src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy">
                   <div class="card-caption">Slide 3</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+                  <img src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy">
                   <div class="card-caption">Slide 4</div>
                 </div>
               </div>
 
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-1.jpg" alt="Gallery Image 5" loading="lazy" />
+                  <img src="../assets/img/gallery-1.jpg" alt="Gallery Image 5" loading="lazy">
                   <div class="card-caption">Slide 5</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-2.jpg" alt="Gallery Image 6" loading="lazy" />
+                  <img src="../assets/img/gallery-2.jpg" alt="Gallery Image 6" loading="lazy">
                   <div class="card-caption">Slide 6</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-3.jpg" alt="Gallery Image 7" loading="lazy" />
+                  <img src="../assets/img/gallery-3.jpg" alt="Gallery Image 7" loading="lazy">
                   <div class="card-caption">Slide 7</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-4.jpg" alt="Gallery Image 8" loading="lazy" />
+                  <img src="../assets/img/gallery-4.jpg" alt="Gallery Image 8" loading="lazy">
                   <div class="card-caption">Slide 8</div>
                 </div>
               </div>
@@ -99,55 +98,135 @@
 
           <div class="slider-controls">
             <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </button>
             <div class="embla__dots" data-ref="dotsContainer"></div>
             <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"></path>
               </svg>
             </button>
           </div>
         </div>
-      </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-1" aria-labelledby="tab-html-1" hidden="">
+            <pre class="options-pre"><code>&lt;div class="slider-wrapper" data-component="Slider"&gt;
+          &lt;div class="embla" data-ref="viewport"&gt;
+            &lt;div class="embla__container" data-ref="container"&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 1&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 2&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 3&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 4&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
 
-      <div>
-        <h3>Tween Slider (Loop: true, Align: center, Tween: true)</h3>
-        <div class="slider-wrapper" data-component="Slider"
-          data-options='{"loop": true, "align": "center", "tween": true}'>
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-1.jpg" alt="Gallery Image 5" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 5&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-2.jpg" alt="Gallery Image 6" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 6&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-3.jpg" alt="Gallery Image 7" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 7&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-4.jpg" alt="Gallery Image 8" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide 8&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class="slider-controls"&gt;
+            &lt;button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M15 18l-6-6 6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+            &lt;div class="embla__dots" data-ref="dotsContainer"&gt;&lt;/div&gt;
+            &lt;button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M9 18l6-6-6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-1" aria-labelledby="tab-css-1" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div><h3>Tween Slider (Loop: true, Align: center, Tween: true)</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Tween Slider (Loop: true, Align: center, Tween: true) Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-2" id="tab-preview-2">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-2" id="tab-html-2" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-2" id="tab-css-2" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-2" aria-labelledby="tab-preview-2">
+            <div class="slider-wrapper" data-component="Slider" data-options="{&quot;loop&quot;: true, &quot;align&quot;: &quot;center&quot;, &quot;tween&quot;: true}">
           <div class="embla" data-ref="viewport">
             <div class="embla__container" data-ref="container">
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
+                  <img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy">
                   <div class="card-caption">Tween Slide 1</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-9.jpg" alt="Gallery Image 9" loading="lazy" />
+                  <img src="../assets/img/gallery-9.jpg" alt="Gallery Image 9" loading="lazy">
                   <div class="card-caption">Tween Slide 2</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-10.jpg" alt="Gallery Image 10" loading="lazy" />
+                  <img src="../assets/img/gallery-10.jpg" alt="Gallery Image 10" loading="lazy">
                   <div class="card-caption">Tween Slide 3</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-11.jpg" alt="Gallery Image 11" loading="lazy" />
+                  <img src="../assets/img/gallery-11.jpg" alt="Gallery Image 11" loading="lazy">
                   <div class="card-caption">Tween Slide 4</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-12.jpg" alt="Gallery Image 12" loading="lazy" />
+                  <img src="../assets/img/gallery-12.jpg" alt="Gallery Image 12" loading="lazy">
                   <div class="card-caption">Tween Slide 5</div>
                 </div>
               </div>
@@ -156,32 +235,92 @@
 
           <div class="slider-controls">
             <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </button>
             <div class="embla__dots" data-ref="dotsContainer"></div>
             <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"></path>
               </svg>
             </button>
           </div>
         </div>
-      </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-2" aria-labelledby="tab-html-2" hidden="">
+            <pre class="options-pre"><code>&lt;div class="slider-wrapper" data-component="Slider" data-options="{"loop": true, "align": "center", "tween": true}"&gt;
+          &lt;div class="embla" data-ref="viewport"&gt;
+            &lt;div class="embla__container" data-ref="container"&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Tween Slide 1&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-9.jpg" alt="Gallery Image 9" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Tween Slide 2&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-10.jpg" alt="Gallery Image 10" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Tween Slide 3&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-11.jpg" alt="Gallery Image 11" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Tween Slide 4&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-12.jpg" alt="Gallery Image 12" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Tween Slide 5&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
 
-      <div>
-        <h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3>
-        <div class="slider-wrapper" data-component="Slider"
-          data-options='{"loop": true, "align": "center", "parallax": true}'>
+          &lt;div class="slider-controls"&gt;
+            &lt;button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M15 18l-6-6 6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+            &lt;div class="embla__dots" data-ref="dotsContainer"&gt;&lt;/div&gt;
+            &lt;button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M9 18l6-6-6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-2" aria-labelledby="tab-css-2" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div><h3>Parallax Slider (Loop: true, Align: center, Parallax: true)</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Parallax Slider (Loop: true, Align: center, Parallax: true) Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-3" id="tab-preview-3">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-3" id="tab-html-3" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-3" id="tab-css-3" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-3" aria-labelledby="tab-preview-3">
+            <div class="slider-wrapper" data-component="Slider" data-options="{&quot;loop&quot;: true, &quot;align&quot;: &quot;center&quot;, &quot;parallax&quot;: true}">
           <div class="embla" data-ref="viewport">
             <div class="embla__container" data-ref="container">
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
                   <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy" />
+                    <img class="embla__parallax-img" src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy">
                   </div>
                   <div class="card-caption">Parallax Slide 1</div>
                 </div>
@@ -189,7 +328,7 @@
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
                   <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy" />
+                    <img class="embla__parallax-img" src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy">
                   </div>
                   <div class="card-caption">Parallax Slide 2</div>
                 </div>
@@ -197,7 +336,7 @@
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
                   <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy" />
+                    <img class="embla__parallax-img" src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy">
                   </div>
                   <div class="card-caption">Parallax Slide 3</div>
                 </div>
@@ -205,7 +344,7 @@
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
                   <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy" />
+                    <img class="embla__parallax-img" src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy">
                   </div>
                   <div class="card-caption">Parallax Slide 4</div>
                 </div>
@@ -213,7 +352,7 @@
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
                   <div class="embla__parallax">
-                    <img class="embla__parallax-img" src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+                    <img class="embla__parallax-img" src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy">
                   </div>
                   <div class="card-caption">Parallax Slide 5</div>
                 </div>
@@ -223,48 +362,119 @@
 
           <div class="slider-controls">
             <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </button>
             <div class="embla__dots" data-ref="dotsContainer"></div>
             <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"></path>
               </svg>
             </button>
           </div>
         </div>
-      </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-3" aria-labelledby="tab-html-3" hidden="">
+            <pre class="options-pre"><code>&lt;div class="slider-wrapper" data-component="Slider" data-options="{"loop": true, "align": "center", "parallax": true}"&gt;
+          &lt;div class="embla" data-ref="viewport"&gt;
+            &lt;div class="embla__container" data-ref="container"&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;div class="embla__parallax"&gt;
+                    &lt;img class="embla__parallax-img" src="../assets/img/gallery-1.jpg" alt="Gallery Image 1" loading="lazy"&gt;
+                  &lt;/div&gt;
+                  &lt;div class="card-caption"&gt;Parallax Slide 1&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;div class="embla__parallax"&gt;
+                    &lt;img class="embla__parallax-img" src="../assets/img/gallery-2.jpg" alt="Gallery Image 2" loading="lazy"&gt;
+                  &lt;/div&gt;
+                  &lt;div class="card-caption"&gt;Parallax Slide 2&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;div class="embla__parallax"&gt;
+                    &lt;img class="embla__parallax-img" src="../assets/img/gallery-3.jpg" alt="Gallery Image 3" loading="lazy"&gt;
+                  &lt;/div&gt;
+                  &lt;div class="card-caption"&gt;Parallax Slide 3&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;div class="embla__parallax"&gt;
+                    &lt;img class="embla__parallax-img" src="../assets/img/gallery-4.jpg" alt="Gallery Image 4" loading="lazy"&gt;
+                  &lt;/div&gt;
+                  &lt;div class="card-caption"&gt;Parallax Slide 4&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;div class="embla__parallax"&gt;
+                    &lt;img class="embla__parallax-img" src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy"&gt;
+                  &lt;/div&gt;
+                  &lt;div class="card-caption"&gt;Parallax Slide 5&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
 
-      <div>
-        <h3>Custom Slider (Loop: false, Align: start)</h3>
-        <div class="slider-wrapper" data-component="Slider" data-options='{"loop": false, "align": "start"}'>
+          &lt;div class="slider-controls"&gt;
+            &lt;button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M15 18l-6-6 6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+            &lt;div class="embla__dots" data-ref="dotsContainer"&gt;&lt;/div&gt;
+            &lt;button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M9 18l6-6-6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-3" aria-labelledby="tab-css-3" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div><h3>Custom Slider (Loop: false, Align: start)</h3><div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Custom Slider (Loop: false, Align: start) Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-4" id="tab-preview-4">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-4" id="tab-html-4" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-4" id="tab-css-4" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-4" aria-labelledby="tab-preview-4">
+            <div class="slider-wrapper" data-component="Slider" data-options="{&quot;loop&quot;: false, &quot;align&quot;: &quot;start&quot;}">
           <div class="embla" data-ref="viewport">
             <div class="embla__container" data-ref="container">
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy" />
+                  <img src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy">
                   <div class="card-caption">Slide A</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-6.jpg" alt="Gallery Image 6" loading="lazy" />
+                  <img src="../assets/img/gallery-6.jpg" alt="Gallery Image 6" loading="lazy">
                   <div class="card-caption">Slide B</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-7.jpg" alt="Gallery Image 7" loading="lazy" />
+                  <img src="../assets/img/gallery-7.jpg" alt="Gallery Image 7" loading="lazy">
                   <div class="card-caption">Slide C</div>
                 </div>
               </div>
               <div class="embla__slide" data-ref="slide">
                 <div class="card-content">
-                  <img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy" />
+                  <img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy">
                   <div class="card-caption">Slide D</div>
                 </div>
               </div>
@@ -273,22 +483,70 @@
 
           <div class="slider-controls">
             <button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </button>
             <div class="embla__dots" data-ref="dotsContainer"></div>
             <button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M9 18l6-6-6-6" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"></path>
               </svg>
             </button>
           </div>
         </div>
-      </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-4" aria-labelledby="tab-html-4" hidden="">
+            <pre class="options-pre"><code>&lt;div class="slider-wrapper" data-component="Slider" data-options="{"loop": false, "align": "start"}"&gt;
+          &lt;div class="embla" data-ref="viewport"&gt;
+            &lt;div class="embla__container" data-ref="container"&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-5.jpg" alt="Gallery Image 5" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide A&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-6.jpg" alt="Gallery Image 6" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide B&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-7.jpg" alt="Gallery Image 7" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide C&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="embla__slide" data-ref="slide"&gt;
+                &lt;div class="card-content"&gt;
+                  &lt;img src="../assets/img/gallery-8.jpg" alt="Gallery Image 8" loading="lazy"&gt;
+                  &lt;div class="card-caption"&gt;Slide D&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
 
+          &lt;div class="slider-controls"&gt;
+            &lt;button data-ref="prevBtn" class="slider-btn slider-btn--prev" aria-label="Previous slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M15 18l-6-6 6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+            &lt;div class="embla__dots" data-ref="dotsContainer"&gt;&lt;/div&gt;
+            &lt;button data-ref="nextBtn" class="slider-btn slider-btn--next" aria-label="Next slide"&gt;
+              &lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"&gt;
+                &lt;path d="M9 18l6-6-6-6"&gt;&lt;/path&gt;
+              &lt;/svg&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-4" aria-labelledby="tab-css-4" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -297,6 +555,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Slider.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -307,5 +566,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

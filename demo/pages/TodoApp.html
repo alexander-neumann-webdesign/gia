@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TodoApp - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>TodoApp</h1>
@@ -26,17 +24,24 @@
   
   <section id="TodoApp">
     <h2>Interactive Demo</h2>
-    <h2>TodoApp</h2>
     <div class="demo-block">
-      <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. -->
       <div data-component="TodoApp" class="todo-app">
         <!-- Screen reader announcer for accessibility -->
         <div class="sr-only" aria-live="polite" data-ref="announcer"></div>
 
         <form data-action="submit->handleFormSubmit" class="todo-form">
           <label for="new-todo" class="sr-only">Add new task</label>
-          <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input"
-            required />
+          <input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required="">
           <button type="submit" class="todo-submit-btn">Add Task</button>
         </form>
 
@@ -44,8 +49,30 @@
           <!-- Tasks will be rendered here dynamically -->
         </ul>
       </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;!-- Note: Ensure `gia.config.set('autoBindActions', true);` is called to enable `data-action` binding. --&gt;
+      &lt;div data-component="TodoApp" class="todo-app"&gt;
+        &lt;!-- Screen reader announcer for accessibility --&gt;
+        &lt;div class="sr-only" aria-live="polite" data-ref="announcer"&gt;&lt;/div&gt;
 
+        &lt;form data-action="submit-&gt;handleFormSubmit" class="todo-form"&gt;
+          &lt;label for="new-todo" class="sr-only"&gt;Add new task&lt;/label&gt;
+          &lt;input type="text" id="new-todo" data-ref="input" placeholder="What needs to be done?" class="todo-input" required=""&gt;
+          &lt;button type="submit" class="todo-submit-btn"&gt;Add Task&lt;/button&gt;
+        &lt;/form&gt;
 
+        &lt;ul data-ref="list" class="todo-list" aria-label="Task list"&gt;
+          &lt;!-- Tasks will be rendered here dynamically --&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -54,6 +81,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/TodoApp.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -64,5 +92,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

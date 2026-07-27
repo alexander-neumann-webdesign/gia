@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tooltip - Gia Components Demo</title>
@@ -14,7 +12,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Tooltip</h1>
@@ -25,9 +23,17 @@
   
   <section id="Tooltip">
     <h2>Interactive Demo</h2>
-    <h2>Tooltip</h2>
     <div class="demo-block">
-      <!-- Required External Script: -->
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <!-- Required External Script: -->
       <!-- <script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"></script> -->
 
       <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; padding: 2rem;">
@@ -44,8 +50,32 @@
           Left
         </button>
       </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;!-- Required External Script: --&gt;
+      &lt;!-- &lt;script id="floating-ui-js" data-src="vendor/floating-ui.umd.js"&gt;&lt;/script&gt; --&gt;
 
-
+      &lt;div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; padding: 2rem;"&gt;
+        &lt;button data-component="Tooltip" data-tooltip="Tooltip on Top" data-position="top"&gt;
+          Top
+        &lt;/button&gt;
+        &lt;button data-component="Tooltip" data-tooltip="Tooltip on Right" data-position="right"&gt;
+          Right
+        &lt;/button&gt;
+        &lt;button data-component="Tooltip" data-tooltip="Tooltip on Bottom" data-position="bottom"&gt;
+          Bottom
+        &lt;/button&gt;
+        &lt;button data-component="Tooltip" data-tooltip="Tooltip on Left" data-position="left"&gt;
+          Left
+        &lt;/button&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -54,6 +84,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Tooltip.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -64,5 +95,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

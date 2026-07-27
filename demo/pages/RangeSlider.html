@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RangeSlider - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
   <script id="nouislider-js" data-src="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.js"></script>
-  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css" />
+  <link id="nouislider-css" rel="stylesheet" data-href="https://unpkg.com/nouislider@15.8.1/dist/nouislider.min.css">
   <link rel="stylesheet" href="../assets/css/demo.css">
   
 </head>
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>RangeSlider</h1>
@@ -34,23 +32,51 @@
   
   <section id="RangeSlider">
     <h2>Interactive Demo</h2>
-    <h2>RangeSlider</h2>
     <div class="demo-block">
-      <div data-component="RangeSlider"
-        data-options='{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}'>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="RangeSlider" data-options="{&quot;start&quot;: [20, 80], &quot;connect&quot;: true, &quot;range&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 100}, &quot;step&quot;: 1}">
         <div data-ref="slider"></div>
 
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
           <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
             Min Value
-            <input type="number" data-ref="inputs"
-              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+            <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
           </label>
           <label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;">
             Max Value
-            <input type="number" data-ref="inputs"
-              style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;" />
+            <input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
           </label>
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="RangeSlider" data-options="{"start": [20, 80], "connect": true, "range": {"min": 0, "max": 100}, "step": 1}"&gt;
+        &lt;div data-ref="slider"&gt;&lt;/div&gt;
+
+        &lt;div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;"&gt;
+          &lt;label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;"&gt;
+            Min Value
+            &lt;input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;"&gt;
+          &lt;/label&gt;
+          &lt;label style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; cursor: pointer;"&gt;
+            Max Value
+            &lt;input type="number" data-ref="inputs" style="padding: 0.5rem; width: 100%; border: 1px solid #ccc; border-radius: 4px;"&gt;
+          &lt;/label&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -61,6 +87,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/RangeSlider.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -71,5 +98,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

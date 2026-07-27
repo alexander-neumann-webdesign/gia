@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MapLibreMap - Gia Components Demo</title>
   
   <!-- Component Dependencies -->
   <script id="maplibre-js" data-src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+  <link id="maplibre-css" rel="stylesheet" data-href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
   <link rel="stylesheet" href="../assets/css/demo.css">
   
 </head>
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>MapLibreMap</h1>
@@ -33,7 +31,7 @@
 				tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
 				tileSize: 256,
 				maxzoom: 19,
-				attribution: '&copy; OpenStreetMap Contributors'
+				attribution: '© OpenStreetMap Contributors'
 			}
 		},
 		layers: [{
@@ -48,11 +46,28 @@
   
   <section id="MapLibreMap">
     <h2>Interactive Demo</h2>
-    <h2>MapLibreMap</h2>
     <div class="demo-block">
-      <div data-component="MapLibreMap"
-        data-options='{"projection": "globe", "centerCoords": [12.550343, 55.665957], "initialZoomLevel": 2, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}'
-        style="width: 100%; height: 500px;">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="MapLibreMap" data-options="{&quot;projection&quot;: &quot;globe&quot;, &quot;centerCoords&quot;: [12.550343, 55.665957], &quot;initialZoomLevel&quot;: 2, &quot;locations&quot;: [{&quot;lng&quot;: 12.550343, &quot;lat&quot;: 55.665957, &quot;title&quot;: &quot;Copenhagen Central&quot;}, {&quot;lng&quot;: 12.56, &quot;lat&quot;: 55.67, &quot;title&quot;: &quot;Another Point&quot;}]}" style="width: 100%; height: 500px;">
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="MapLibreMap" data-options="{"projection": "globe", "centerCoords": [12.550343, 55.665957], "initialZoomLevel": 2, "locations": [{"lng": 12.550343, "lat": 55.665957, "title": "Copenhagen Central"}, {"lng": 12.56, "lat": 55.67, "title": "Another Point"}]}" style="width: 100%; height: 500px;"&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -62,6 +77,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/MapLibreMap.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -72,5 +88,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

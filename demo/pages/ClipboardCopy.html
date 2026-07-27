@@ -28,25 +28,124 @@
   
   <section id="ClipboardCopy">
     <h2>Interactive Demo</h2>
-    <h2>ClipboardCopy</h2>
     <div class="demo-block">
-      <span data-component="Tooltip" data-tooltip="Click to copy" data-position="top">
-        <button data-component="ClipboardCopy" data-copy-text="SAVE20" class="coupon-btn">
-          <span class="stack-children">
-            <span class="sizer" aria-hidden="true">SAVE20</span>
-            <span class="sizer" aria-hidden="true">Copied!</span>
-            <span data-ref="buttonText">SAVE20</span>
-          </span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon"
-            aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
-            <path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"></path>
-          </svg>
-        </button>
-      </span>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <span data-component="Tooltip" data-tooltip="Click to copy" data-position="top">
+              <button data-component="ClipboardCopy" data-copy-text="SAVE20" class="coupon-btn">
+                <span class="stack-children">
+                  <span class="sizer" aria-hidden="true">SAVE20</span>
+                  <span class="sizer" aria-hidden="true">Copied!</span>
+                  <span data-ref="buttonText">SAVE20</span>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"></path>
+                  <path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"></path>
+                </svg>
+              </button>
+            </span>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden>
+            <pre class="options-pre"><code>&lt;span data-component="Tooltip" data-tooltip="Click to copy" data-position="top"&gt;
+  &lt;button data-component="ClipboardCopy" data-copy-text="SAVE20" class="coupon-btn"&gt;
+    &lt;span class="stack-children"&gt;
+      &lt;span class="sizer" aria-hidden="true"&gt;SAVE20&lt;/span&gt;
+      &lt;span class="sizer" aria-hidden="true"&gt;Copied!&lt;/span&gt;
+      &lt;span data-ref="buttonText"&gt;SAVE20&lt;/span&gt;
+    &lt;/span&gt;
+    &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clipboard-icon" aria-hidden="true"&gt;
+      &lt;rect x="9" y="9" width="13" height="13" rx="2" ry="2" class="copy-icon"&gt;&lt;/rect&gt;
+      &lt;path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" class="copy-icon"&gt;&lt;/path&gt;
+      &lt;path d="M20 6L9 17l-5-5" class="check-icon" stroke-dasharray="24" stroke-dashoffset="24"&gt;&lt;/path&gt;
+    &lt;/svg&gt;
+  &lt;/button&gt;
+&lt;/span&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden>
+            <pre class="options-pre"><code class="language-css">button[data-component="ClipboardCopy"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  justify-content: center;
 
+  &amp;:focus-visible {
+    outline: 2px solid var(--form-control-color, #007bff);
+    outline-offset: 2px;
+  }
+
+  .stack-children {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+
+    &gt;* {
+      grid-row-start: 1;
+      grid-column-start: 1;
+    }
+
+    .sizer {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  svg {
+    width: 1.25em;
+    height: 1.25em;
+  }
+
+  .copy-icon {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  .check-icon {
+    transition: stroke-dashoffset 0.4s ease;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    stroke: #4caf50;
+  }
+
+  &amp;[data-status="copied"] {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #4caf50;
+
+    .copy-icon {
+      opacity: 0;
+    }
+
+    .check-icon {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &amp;[data-status="error"] {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #f44336;
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -56,6 +155,7 @@
   <!-- Component scripts -->
   <script src="../../examples/ClipboardCopy.js"></script>
   <script src="../../examples/Tooltip.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>

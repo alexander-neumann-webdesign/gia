@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScrollEffect - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>ScrollEffect</h1>
@@ -28,50 +26,31 @@
   
   <section id="ScrollEffect">
     <h2>Interactive Demo</h2>
-    
-    <div class="margin-scroll">
-      Scroll down to see the effect...
-    </div>
-    
-    <div class="demo-block scroll-effect-demo">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--scroll-progress"}'>
-        <div class="scroll-effect-box">Scroll to see me move & rotate!</div>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="ScrollEffect" data-options="{&quot;cssVar&quot;: &quot;--scroll-progress&quot;}">
+        <div class="scroll-effect-box">Scroll to see me move &amp; rotate!</div>
       </div>
-    </div>
-    
-    <h3 style="margin-top: 6rem; text-align: center;">Stacked Cards Effect</h3>
-    <p style="text-align: center;">Using <code>startFromTop: true</code> to scale and darken sticky cards as the next one scrolls over.</p>
-    <div class="stacked-cards-container">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 1</div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="ScrollEffect" data-options="{"cssVar": "--scroll-progress"}"&gt;
+        &lt;div class="scroll-effect-box"&gt;Scroll to see me move &amp; rotate!&lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
       </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 2</div>
-      </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 3</div>
-      </div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress", "startFromTop": true}' class="stacked-card">
-        <div class="stacked-card-inner">Card 4</div>
-      </div>
-    </div>
-    
-    <h3 style="margin-top: 8rem; text-align: center;">Staggered Parallax Grid</h3>
-    <p style="text-align: center;">Using <code>ScrollEffect</code> to drive individual column parallax speeds. They perfectly align when in the center of the viewport.</p>
-    <div class="staggered-grid-container">
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">1</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">2</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">3</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">4</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">5</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">6</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">7</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">8</div>
-      <div data-component="ScrollEffect" data-options='{"cssVar": "--card-progress"}' class="staggered-card">9</div>
-    </div>
-    
-    <div class="margin-scroll">
-      Keep scrolling...
     </div>
   </section>
 
@@ -80,6 +59,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/ScrollEffect.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -90,5 +70,6 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+
+</body></html>

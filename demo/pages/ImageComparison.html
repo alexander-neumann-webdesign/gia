@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImageComparison - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>ImageComparison</h1>
@@ -23,25 +21,56 @@
   
   <section id="ImageComparison">
     <h2>Interactive Demo</h2>
-    <div class="container">
-      <h2>Image Comparison</h2>
-      <div class="demo-block">
-        <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;">
           <!-- Left/Before side -->
           <div class="image-comparison__before">
-            <img src="../assets/img/sample-image.jpg" alt="Before" style="filter: grayscale(100%);" />
+            <img src="../assets/img/sample-image.jpg" alt="Before" style="filter: grayscale(100%);">
           </div>
           <!-- Right/After side -->
           <div class="image-comparison__after">
-            <img src="../assets/img/sample-image.jpg" alt="After" />
+            <img src="../assets/img/sample-image.jpg" alt="After">
           </div>
 
-          <input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50"
-            aria-label="Image comparison slider" data-ref="slider" />
+          <input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50" aria-label="Image comparison slider" data-ref="slider">
 
           <div class="image-comparison__handle" aria-hidden="true" data-ref="handle">
             <div class="image-comparison__handle-line"></div>
             <div class="image-comparison__handle-button"></div>
+          </div>
+        </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div class="image-comparison" data-component="ImageComparison" style="--exposure: 50%;"&gt;
+          &lt;!-- Left/Before side --&gt;
+          &lt;div class="image-comparison__before"&gt;
+            &lt;img src="../assets/img/sample-image.jpg" alt="Before" style="filter: grayscale(100%);"&gt;
+          &lt;/div&gt;
+          &lt;!-- Right/After side --&gt;
+          &lt;div class="image-comparison__after"&gt;
+            &lt;img src="../assets/img/sample-image.jpg" alt="After"&gt;
+          &lt;/div&gt;
+
+          &lt;input type="range" class="image-comparison__slider" min="0" max="100" step="any" value="50" aria-label="Image comparison slider" data-ref="slider"&gt;
+
+          &lt;div class="image-comparison__handle" aria-hidden="true" data-ref="handle"&gt;
+            &lt;div class="image-comparison__handle-line"&gt;&lt;/div&gt;
+            &lt;div class="image-comparison__handle-button"&gt;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
           </div>
         </div>
       </div>
@@ -53,6 +82,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/ImageComparison.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -63,5 +93,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

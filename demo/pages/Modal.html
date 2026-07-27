@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modal - Gia Components Demo</title>
@@ -12,7 +10,7 @@
 <body>
 <main class="demo-container">
   <nav>
-    <a href="../index.html">&larr; Back to all components</a>
+    <a href="../index.html">← Back to all components</a>
   </nav>
   
   <h1>Modal</h1>
@@ -25,9 +23,17 @@
   
   <section id="Modal">
     <h2>Interactive Demo</h2>
-    <h2>Modal</h2>
     <div class="demo-block">
-      <!-- Triggers can be anywhere -->
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <!-- Triggers can be anywhere -->
       <button data-modal-target="my-modal">Open Modal</button>
 
       <!-- The modal itself -->
@@ -37,8 +43,25 @@
           <button data-ref="closeButton">Close</button>
         </div>
       </dialog>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;!-- Triggers can be anywhere --&gt;
+      &lt;button data-modal-target="my-modal"&gt;Open Modal&lt;/button&gt;
 
-
+      &lt;!-- The modal itself --&gt;
+      &lt;dialog data-component="Modal" id="my-modal"&gt;
+        &lt;div class="modal-content"&gt;
+          &lt;h2&gt;Modal Title&lt;/h2&gt;
+          &lt;button data-ref="closeButton"&gt;Close&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/dialog&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -47,6 +70,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/Modal.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
@@ -57,5 +81,5 @@
     });
   </script>
 </main>
-</body>
-</html>
+
+</body></html>

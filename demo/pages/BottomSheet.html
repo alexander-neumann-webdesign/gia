@@ -29,9 +29,130 @@
   <section id="BottomSheet">
     <h2>Interactive Demo</h2>
     <div class="demo-block">
-      
-      <button class="open-drawer-btn" data-bottom-sheet-target="my-sheet" aria-expanded="false" aria-controls="my-sheet">Open Bottom Sheet</button>
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <button class="open-drawer-btn" data-bottom-sheet-target="my-sheet" aria-expanded="false" aria-controls="my-sheet">Open Bottom Sheet</button>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden>
+            <pre class="options-pre"><code>&lt;button class="open-drawer-btn" data-bottom-sheet-target="my-sheet" aria-expanded="false" aria-controls="my-sheet"&gt;Open Bottom Sheet&lt;/button&gt;
 
+&lt;!-- The bottom sheet itself --&gt;
+&lt;div class="bottom-sheet" data-component="BottomSheet" data-options='{"scaleBackground": true}' id="my-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"&gt;
+  &lt;div data-ref="overlay" aria-hidden="true"&gt;&lt;/div&gt;
+  &lt;div data-ref="drawer" tabindex="-1"&gt;
+    &lt;div data-ref="handle" aria-hidden="true"&gt;&lt;/div&gt;
+    &lt;div data-ref="scrollable"&gt;
+      &lt;h2 id="sheet-title"&gt;Bottom Sheet Title&lt;/h2&gt;
+      &lt;p&gt;You can drag this drawer up and down natively. Try swiping it!&lt;/p&gt;
+      &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.&lt;/p&gt;
+      &lt;button class="open-drawer-btn" data-ref="closeBtn"&gt;Close&lt;/button&gt;
+      &lt;div style="height: 1000px; background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e0e0e0 10px, #e0e0e0 20px); margin-top: 24px; border-radius: 8px;"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden>
+            <pre class="options-pre"><code class="language-css">.bottom-sheet[data-component="BottomSheet"] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="overlay"] {
+  --bs-opacity: 0.4;
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"] {
+  position: relative;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+  pointer-events: auto;
+  touch-action: none;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"]:focus {
+  outline: none;
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="drawer"]::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 200vh;
+  background-color: inherit;
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="handle"] {
+  width: 36px;
+  height: 5px;
+  background: #ddd;
+  border-radius: 3px;
+  margin: 12px auto;
+  flex-shrink: 0;
+}
+.bottom-sheet[data-component="BottomSheet"] [data-ref="scrollable"] {
+  padding: 0 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  flex-grow: 1;
+}
+.bottom-sheet[data-component="BottomSheet"][data-is-open="true"] {
+  pointer-events: auto;
+}
+.bottom-sheet[data-component="BottomSheet"][data-is-open="true"] [data-ref="overlay"] {
+  opacity: var(--bs-opacity);
+  pointer-events: auto;
+}
+.bottom-sheet[data-component="BottomSheet"][data-is-open="true"] [data-ref="drawer"] {
+  transform: translateY(0);
+}
+.bottom-sheet[data-component="BottomSheet"][data-is-dragging="true"] [data-ref="drawer"],
+.bottom-sheet[data-component="BottomSheet"][data-is-dragging="true"] [data-ref="overlay"] {
+  transition: none !important;
+}
+[data-bottom-sheet-wrapper] {
+  --bs-scale: 0.97;
+  --bs-radius: 12px;
+  --bs-offset: 14px;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.5s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.5s cubic-bezier(0.32, 0.72, 0, 1), color 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  background: var(--bg-color, #fff);
+  min-height: 100vh;
+}
+[data-bottom-sheet-wrapper][data-bottom-sheet-scaled="true"] {
+  transform: scale(var(--bs-scale)) translateY(calc(env(safe-area-inset-top) + var(--bs-offset)));
+  border-radius: var(--bs-radius);
+  overflow: hidden;
+}
+body:has(.bottom-sheet[data-is-dragging="true"]) [data-bottom-sheet-wrapper] {
+  user-select: none;
+  -webkit-user-select: none;
+  transition: none !important;
+}</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -56,6 +177,7 @@
   
   <!-- Component scripts -->
   <script src="../../examples/BottomSheet.js"></script>
+  <script src="../../examples/Tabs.js"></script>
 
   <!-- Initialization -->
   <script>
