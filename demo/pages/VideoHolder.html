@@ -5,7 +5,49 @@
   
   <!-- Component Dependencies -->
   <link rel="stylesheet" href="../assets/css/demo.css">
-  
+  <style>
+    div[data-component="VideoHolder"] {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    div[data-component="VideoHolder"] video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    div[data-component="VideoHolder"] button[data-ref="playPauseButton"] {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.8) translateZ(0);
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    div[data-component="VideoHolder"]:hover button[data-ref="playPauseButton"],
+    div[data-component="VideoHolder"]:focus-within button[data-ref="playPauseButton"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateZ(0);
+    }
+    div[data-component="VideoHolder"] button[data-ref="playPauseButton"] svg path.icon-shape {
+      transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  </style>
 </head>
 <body>
 <main class="demo-container">
@@ -14,7 +56,7 @@
   </nav>
   
   <h1>VideoHolder</h1>
-  <p>Demo showcasing all configuration options for <strong>VideoHolder</strong>.</p>
+  <p>Demo showcasing the lightweight <strong>VideoHolder</strong> background video component. Acts as a highly performant GIF replacement by tracking intersections and automatically pausing when out of view.</p>
   
   <h2>Available Options</h2>
   <pre class="options-pre"><code>{
@@ -28,65 +70,21 @@
         <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
           <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
           <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
-          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
         </div>
         <div class="tab-panels">
           <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
             <div>
-              <div data-component="VideoHolder" tabindex="0" role="region" aria-label="Video player">
-        <video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata">
-          <track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt">
-        </video>
-        <div class="video-controls">
-          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
-            <!-- Icons injected via JS -->
-          </button>
-          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
-            <!-- Icons injected via JS -->
-          </button>
-          <div class="mute-container">
-            <div class="volume-slider-wrapper">
-              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
-            </div>
-            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
-              <!-- Icons injected via JS -->
-            </button>
-          </div>
-        </div>
-        <div class="timeline-container">
-          <input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline">
-        </div>
-      </div>
+              <div data-component="VideoHolder">
+                <video data-ref="video" src="../assets/video/sample-video.mp4" loop muted playsinline preload="metadata"></video>
+                <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="play-pause-btn is-paused"></button>
+              </div>
             </div>
           </div>
           <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
-            <pre class="options-pre"><code>&lt;div data-component="VideoHolder" tabindex="0" role="region" aria-label="Video player"&gt;
-        &lt;video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata"&gt;
-          &lt;track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt"&gt;
-        &lt;/video&gt;
-        &lt;div class="video-controls"&gt;
-          &lt;button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused"&gt;
-            &lt;!-- Icons injected via JS --&gt;
-          &lt;/button&gt;
-          &lt;button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled"&gt;
-            &lt;!-- Icons injected via JS --&gt;
-          &lt;/button&gt;
-          &lt;div class="mute-container"&gt;
-            &lt;div class="volume-slider-wrapper"&gt;
-              &lt;input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume"&gt;
-            &lt;/div&gt;
-            &lt;button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted"&gt;
-              &lt;!-- Icons injected via JS --&gt;
-            &lt;/button&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
-        &lt;div class="timeline-container"&gt;
-          &lt;input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline"&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;</code></pre>
-          </div>
-          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
-            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+            <pre class="options-pre"><code>&lt;div data-component="VideoHolder"&gt;
+  &lt;video data-ref="video" src="../assets/video/sample-video.mp4" loop muted playsinline preload="metadata"&gt;&lt;/video&gt;
+  &lt;button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="play-pause-btn is-paused"&gt;&lt;/button&gt;
+&lt;/div&gt;</code></pre>
           </div>
         </div>
       </div>
@@ -109,5 +107,4 @@
     });
   </script>
 </main>
-
 </body></html>

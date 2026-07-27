@@ -587,7 +587,8 @@ A comprehensive suite of examples demonstrating best practices is available. You
 - **[ImageHolder](examples/ImageHolder.js)**: A highly optimized image component providing smooth parallax, viewport entrance tracking, and dynamic `sizes` calculations.
 - **[LightboxGallery](examples/LightboxGallery.js)**: A fully-featured gallery demonstrating dynamic script loading by pulling in the PhotoSwipe library only when actually clicked.
 - **[Slider](examples/Slider.js)**: A swipeable, touch-friendly content slider demonstrating advanced pointer event handling and batched hardware-accelerated CSS transforms.
-- **[VideoHolder](examples/VideoHolder.js)**: A custom-styled video player featuring an animated expandable volume slider, scrubbable timeline, and IntersectionObserver logic that automatically pauses playback when out of view.
+- **[VideoHolder](examples/VideoHolder.js)**: A highly optimized, lightweight background video player acting as a rich GIF replacement. Uses IntersectionObserver to pause when out of view to save CPU/GPU.
+- **[VideoPlayer](examples/VideoPlayer.js)**: A custom-styled video player featuring an animated expandable volume slider, scrubbable timeline, and IntersectionObserver logic that automatically pauses playback when out of view.
 
 ### Scroll & Visual Effects
 

@@ -1521,23 +1521,23 @@ button[data-component=ThemeToggle][data-theme=dark] .icon-dark {
   transform: rotate(45deg);
 }
 
-/* --- VideoHolder --- */
-div[data-component=VideoHolder] {
+/* --- VideoPlayer --- */
+div[data-component=VideoPlayer] {
   position: relative;
   border-radius: 8px;
   /* Smooth corners */
   overflow: hidden;
 }
-div[data-component=VideoHolder]:focus-visible {
+div[data-component=VideoPlayer]:focus-visible {
   outline: 3px solid #005fcc;
   outline-offset: 4px;
 }
-div[data-component=VideoHolder] video {
+div[data-component=VideoPlayer] video {
   width: 100%;
   height: auto;
   display: block;
 }
-div[data-component=VideoHolder] .video-controls {
+div[data-component=VideoPlayer] .video-controls {
   position: absolute;
   bottom: 16px;
   right: 16px;
@@ -1545,13 +1545,13 @@ div[data-component=VideoHolder] .video-controls {
   align-items: flex-end;
   gap: 8px;
 }
-div[data-component=VideoHolder] .mute-container {
+div[data-component=VideoPlayer] .mute-container {
   position: relative;
   display: block;
   /* Simplified: no longer needs flex column */
   z-index: 10;
 }
-div[data-component=VideoHolder] .volume-slider-wrapper {
+div[data-component=VideoPlayer] .volume-slider-wrapper {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -1571,23 +1571,23 @@ div[data-component=VideoHolder] .volume-slider-wrapper {
   overflow: hidden;
   /* Ensure slider doesn't leak out when collapsed */
 }
-div[data-component=VideoHolder] .volume-slider-wrapper:has(.volume-slider:focus-visible) {
+div[data-component=VideoPlayer] .volume-slider-wrapper:has(.volume-slider:focus-visible) {
   outline: 2px solid white;
   outline-offset: 2px;
 }
-div[data-component=VideoHolder] .mute-container:hover .volume-slider-wrapper,
-div[data-component=VideoHolder] .mute-container:focus-within .volume-slider-wrapper {
+div[data-component=VideoPlayer] .mute-container:hover .volume-slider-wrapper,
+div[data-component=VideoPlayer] .mute-container:focus-within .volume-slider-wrapper {
   opacity: 1;
   pointer-events: auto;
   height: 180px;
   /* Expand upwards */
 }
-div[data-component=VideoHolder] .mute-container:hover .volume-slider,
-div[data-component=VideoHolder] .mute-container:focus-within .volume-slider {
+div[data-component=VideoPlayer] .mute-container:hover .volume-slider,
+div[data-component=VideoPlayer] .mute-container:focus-within .volume-slider {
   transform: rotate(-90deg) translateX(0px);
   /* Slide up to final position */
 }
-div[data-component=VideoHolder] .volume-slider {
+div[data-component=VideoPlayer] .volume-slider {
   position: absolute;
   bottom: 91px;
   /* Adjusted to account for new padding offset */
@@ -1606,19 +1606,19 @@ div[data-component=VideoHolder] .volume-slider {
   outline: none;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-div[data-component=VideoHolder] .volume-slider::-webkit-slider-runnable-track {
+div[data-component=VideoPlayer] .volume-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right, #ffffff calc(6px + var(--volume-progress, 1) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
   border-radius: 2px;
 }
-div[data-component=VideoHolder] .volume-slider::-moz-range-track {
+div[data-component=VideoPlayer] .volume-slider::-moz-range-track {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right, #ffffff calc(6px + var(--volume-progress, 1) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
   border-radius: 2px;
 }
-div[data-component=VideoHolder] .volume-slider::-webkit-slider-thumb {
+div[data-component=VideoPlayer] .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 12px;
@@ -1630,7 +1630,7 @@ div[data-component=VideoHolder] .volume-slider::-webkit-slider-thumb {
   cursor: pointer;
   transition: transform 0.2s;
 }
-div[data-component=VideoHolder] .volume-slider::-moz-range-thumb {
+div[data-component=VideoPlayer] .volume-slider::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border: none;
@@ -1640,15 +1640,15 @@ div[data-component=VideoHolder] .volume-slider::-moz-range-thumb {
   cursor: pointer;
   transition: transform 0.2s;
 }
-div[data-component=VideoHolder] .volume-slider:active::-webkit-slider-thumb, div[data-component=VideoHolder] .volume-slider:focus-visible::-webkit-slider-thumb, div[data-component=VideoHolder] .volume-slider::-webkit-slider-thumb:hover {
+div[data-component=VideoPlayer] .volume-slider:active::-webkit-slider-thumb, div[data-component=VideoPlayer] .volume-slider:focus-visible::-webkit-slider-thumb, div[data-component=VideoPlayer] .volume-slider::-webkit-slider-thumb:hover {
   transform: scale(1.3);
 }
-div[data-component=VideoHolder] .volume-slider:active::-moz-range-thumb, div[data-component=VideoHolder] .volume-slider:focus-visible::-moz-range-thumb, div[data-component=VideoHolder] .volume-slider::-moz-range-thumb:hover {
+div[data-component=VideoPlayer] .volume-slider:active::-moz-range-thumb, div[data-component=VideoPlayer] .volume-slider:focus-visible::-moz-range-thumb, div[data-component=VideoPlayer] .volume-slider::-moz-range-thumb:hover {
   transform: scale(1.3);
 }
-div[data-component=VideoHolder] button[data-ref=playPauseButton],
-div[data-component=VideoHolder] button[data-ref=subtitleButton],
-div[data-component=VideoHolder] button[data-ref=muteButton] {
+div[data-component=VideoPlayer] button[data-ref=playPauseButton],
+div[data-component=VideoPlayer] button[data-ref=subtitleButton],
+div[data-component=VideoPlayer] button[data-ref=muteButton] {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1669,45 +1669,81 @@ div[data-component=VideoHolder] button[data-ref=muteButton] {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, opacity, backdrop-filter;
 }
-div[data-component=VideoHolder] button[data-ref=playPauseButton] svg path.icon-shape,
-div[data-component=VideoHolder] button[data-ref=subtitleButton] svg path.icon-shape,
-div[data-component=VideoHolder] button[data-ref=muteButton] svg path.icon-shape {
+div[data-component=VideoPlayer] button[data-ref=playPauseButton] svg path.icon-shape,
+div[data-component=VideoPlayer] button[data-ref=subtitleButton] svg path.icon-shape,
+div[data-component=VideoPlayer] button[data-ref=muteButton] svg path.icon-shape {
   transition: d 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-div[data-component=VideoHolder] {
+div[data-component=VideoPlayer] {
   /* Reveal on hover/focus */
 }
-div[data-component=VideoHolder]:hover button[data-ref=playPauseButton],
-div[data-component=VideoHolder]:hover button[data-ref=subtitleButton],
-div[data-component=VideoHolder]:hover button[data-ref=muteButton], div[data-component=VideoHolder]:focus-within button[data-ref=playPauseButton],
-div[data-component=VideoHolder]:focus-within button[data-ref=subtitleButton],
-div[data-component=VideoHolder]:focus-within button[data-ref=muteButton] {
+div[data-component=VideoPlayer]:hover button[data-ref=playPauseButton],
+div[data-component=VideoPlayer]:hover button[data-ref=subtitleButton],
+div[data-component=VideoPlayer]:hover button[data-ref=muteButton], div[data-component=VideoPlayer]:focus-within button[data-ref=playPauseButton],
+div[data-component=VideoPlayer]:focus-within button[data-ref=subtitleButton],
+div[data-component=VideoPlayer]:focus-within button[data-ref=muteButton] {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1) translateZ(0);
 }
-div[data-component=VideoHolder] {
+div[data-component=VideoPlayer] {
   /* Interactive states (placed after reveal to override transform) */
 }
-div[data-component=VideoHolder] button[data-ref=playPauseButton]:hover,
-div[data-component=VideoHolder] button[data-ref=subtitleButton]:hover,
-div[data-component=VideoHolder] button[data-ref=muteButton]:hover {
+div[data-component=VideoPlayer] button[data-ref=playPauseButton]:hover,
+div[data-component=VideoPlayer] button[data-ref=subtitleButton]:hover,
+div[data-component=VideoPlayer] button[data-ref=muteButton]:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
   transform: scale(1.1) translateZ(0);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
-div[data-component=VideoHolder] button[data-ref=playPauseButton]:active,
-div[data-component=VideoHolder] button[data-ref=subtitleButton]:active,
-div[data-component=VideoHolder] button[data-ref=muteButton]:active {
+div[data-component=VideoPlayer] button[data-ref=playPauseButton]:active,
+div[data-component=VideoPlayer] button[data-ref=subtitleButton]:active,
+div[data-component=VideoPlayer] button[data-ref=muteButton]:active {
   transform: scale(0.95) translateZ(0);
   background: rgba(255, 255, 255, 0.3);
 }
-div[data-component=VideoHolder] button[data-ref=playPauseButton]:focus-visible,
-div[data-component=VideoHolder] button[data-ref=subtitleButton]:focus-visible,
-div[data-component=VideoHolder] button[data-ref=muteButton]:focus-visible {
+div[data-component=VideoPlayer] button[data-ref=playPauseButton]:focus-visible,
+div[data-component=VideoPlayer] button[data-ref=subtitleButton]:focus-visible,
+div[data-component=VideoPlayer] button[data-ref=muteButton]:focus-visible {
   outline: 2px solid white;
   outline-offset: 2px;
+}
+
+/* --- VideoPlayer playOnClick styles --- */
+div[data-component="VideoPlayer"][data-has-started="false"] .big-play-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+div[data-component="VideoPlayer"][data-has-started="false"] .video-controls,
+div[data-component="VideoPlayer"][data-has-started="false"] .timeline-container {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+div[data-component="VideoPlayer"] .big-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+div[data-component="VideoPlayer"] .big-play-button:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .physics-section {
@@ -2325,15 +2361,15 @@ body:has(.bottom-sheet[data-is-dragging=true]) [data-bottom-sheet-wrapper] {
   cursor: pointer;
 }
 
-/* --- VideoHolder Styles --- */
-div[data-component=VideoHolder]:hover .timeline-container,
-div[data-component=VideoHolder]:focus-within .timeline-container {
+/* --- VideoPlayer Styles --- */
+div[data-component=VideoPlayer]:hover .timeline-container,
+div[data-component=VideoPlayer]:focus-within .timeline-container {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) translateZ(0);
 }
 
-div[data-component=VideoHolder] .timeline-container {
+div[data-component=VideoPlayer] .timeline-container {
   position: absolute;
   bottom: 16px;
   left: 16px;
@@ -2355,12 +2391,12 @@ div[data-component=VideoHolder] .timeline-container {
   will-change: transform, opacity;
 }
 
-div[data-component=VideoHolder] .timeline-container:hover {
+div[data-component=VideoPlayer] .timeline-container:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-div[data-component=VideoHolder] .timeline-slider {
+div[data-component=VideoPlayer] .timeline-slider {
   width: 100%;
   margin: 0;
   padding: 16px 0;
@@ -2370,21 +2406,21 @@ div[data-component=VideoHolder] .timeline-slider {
   background: transparent;
 }
 
-div[data-component=VideoHolder] .timeline-slider::-webkit-slider-runnable-track {
+div[data-component=VideoPlayer] .timeline-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right, #ffffff calc(6px + var(--timeline-progress, 0) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
   border-radius: 2px;
 }
 
-div[data-component=VideoHolder] .timeline-slider::-moz-range-track {
+div[data-component=VideoPlayer] .timeline-slider::-moz-range-track {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right, #ffffff calc(6px + var(--timeline-progress, 0) * (100% - 12px)), rgba(255, 255, 255, 0.3) 0);
   border-radius: 2px;
 }
 
-div[data-component=VideoHolder] .timeline-slider::-webkit-slider-thumb {
+div[data-component=VideoPlayer] .timeline-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 12px;
   width: 12px;
@@ -2395,7 +2431,7 @@ div[data-component=VideoHolder] .timeline-slider::-webkit-slider-thumb {
   transition: transform 0.1s;
 }
 
-div[data-component=VideoHolder] .timeline-slider::-moz-range-thumb {
+div[data-component=VideoPlayer] .timeline-slider::-moz-range-thumb {
   height: 12px;
   width: 12px;
   border: none;
@@ -2405,13 +2441,13 @@ div[data-component=VideoHolder] .timeline-slider::-moz-range-thumb {
   transition: transform 0.1s;
 }
 
-div[data-component=VideoHolder] .timeline-slider:active::-webkit-slider-thumb,
-div[data-component=VideoHolder] .timeline-slider:focus-visible::-webkit-slider-thumb {
+div[data-component=VideoPlayer] .timeline-slider:active::-webkit-slider-thumb,
+div[data-component=VideoPlayer] .timeline-slider:focus-visible::-webkit-slider-thumb {
   transform: scale(1.3);
 }
 
-div[data-component=VideoHolder] .timeline-slider:active::-moz-range-thumb,
-div[data-component=VideoHolder] .timeline-slider:focus-visible::-moz-range-thumb {
+div[data-component=VideoPlayer] .timeline-slider:active::-moz-range-thumb,
+div[data-component=VideoPlayer] .timeline-slider:focus-visible::-moz-range-thumb {
   transform: scale(1.3);
 }
 

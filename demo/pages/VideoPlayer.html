@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoPlayer - Gia Components Demo</title>
+  
+  <!-- Component Dependencies -->
+  <link rel="stylesheet" href="../assets/css/demo.css">
+  
+</head>
+<body>
+<main class="demo-container">
+  <nav>
+    <a href="../index.html">← Back to all components</a>
+  </nav>
+  
+  <h1>VideoPlayer</h1>
+  <p>Demo showcasing all configuration options for <strong>VideoPlayer</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>{
+	playOnHover: false,
+	playOnClick: false,
+	autoplay: true,
+}</code></pre>
+  
+  <section id="VideoPlayer">
+    <h2>Interactive Demo</h2>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+              <div data-component="VideoPlayer" tabindex="0" role="region" aria-label="Video player">
+        <video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata">
+          <track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt">
+        </video>
+        <div class="video-controls">
+          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
+            <!-- Icons injected via JS -->
+          </button>
+          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
+            <!-- Icons injected via JS -->
+          </button>
+          <div class="mute-container">
+            <div class="volume-slider-wrapper">
+              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
+            </div>
+            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
+              <!-- Icons injected via JS -->
+            </button>
+          </div>
+        </div>
+        <div class="timeline-container">
+          <input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline">
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="VideoPlayer" tabindex="0" role="region" aria-label="Video player"&gt;
+        &lt;video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata"&gt;
+          &lt;track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt"&gt;
+        &lt;/video&gt;
+        &lt;div class="video-controls"&gt;
+          &lt;button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused"&gt;
+            &lt;!-- Icons injected via JS --&gt;
+          &lt;/button&gt;
+          &lt;button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled"&gt;
+            &lt;!-- Icons injected via JS --&gt;
+          &lt;/button&gt;
+          &lt;div class="mute-container"&gt;
+            &lt;div class="volume-slider-wrapper"&gt;
+              &lt;input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume"&gt;
+            &lt;/div&gt;
+            &lt;button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted"&gt;
+              &lt;!-- Icons injected via JS --&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="timeline-container"&gt;
+          &lt;input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline"&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="VideoPlayer-playOnClick">
+    <h2>Interactive Demo (playOnClick)</h2>
+    <p>This demo uses <code>data-options='{"playOnClick": true}'</code> to require a click before playing or showing controls.</p>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-2" id="tab-preview-2">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-2" id="tab-html-2" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-2" id="tab-css-2" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-2" aria-labelledby="tab-preview-2">
+            <div>
+              <div data-component="VideoPlayer" data-options='{"playOnClick": true}' tabindex="0" role="region" aria-label="Video player">
+        <video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata">
+          <track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt">
+        </video>
+        <button type="button" data-ref="bigPlayButton" aria-label="Start video" class="big-play-button">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="48" height="48" stroke="none" fill="currentColor">
+            <path d="M 6 4 L 20 12 L 6 20 Z"></path>
+          </svg>
+        </button>
+        <div class="video-controls">
+          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
+            <!-- Icons injected via JS -->
+          </button>
+          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
+            <!-- Icons injected via JS -->
+          </button>
+          <div class="mute-container">
+            <div class="volume-slider-wrapper">
+              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
+            </div>
+            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
+              <!-- Icons injected via JS -->
+            </button>
+          </div>
+        </div>
+        <div class="timeline-container">
+          <input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline">
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-2" aria-labelledby="tab-html-2" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="VideoPlayer" data-options='{"playOnClick": true}' tabindex="0" role="region" aria-label="Video player"&gt;
+        &lt;video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata"&gt;
+          &lt;track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt"&gt;
+        &lt;/video&gt;
+        &lt;button type="button" data-ref="bigPlayButton" aria-label="Start video" class="big-play-button"&gt;
+          &lt;svg aria-hidden="true" viewBox="0 0 24 24" width="48" height="48" stroke="none" fill="currentColor"&gt;
+            &lt;path d="M 6 4 L 20 12 L 6 20 Z"&gt;&lt;/path&gt;
+          &lt;/svg&gt;
+        &lt;/button&gt;
+        &lt;div class="video-controls"&gt;
+          &lt;button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused"&gt;
+            &lt;!-- Icons injected via JS --&gt;
+          &lt;/button&gt;
+          &lt;button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled"&gt;
+            &lt;!-- Icons injected via JS --&gt;
+          &lt;/button&gt;
+          &lt;div class="mute-container"&gt;
+            &lt;div class="volume-slider-wrapper"&gt;
+              &lt;input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume"&gt;
+            &lt;/div&gt;
+            &lt;button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted"&gt;
+              &lt;!-- Icons injected via JS --&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="timeline-container"&gt;
+          &lt;input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline"&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-2" aria-labelledby="tab-css-2" hidden="">
+            <pre class="options-pre"><code class="language-css">/* No structural CSS needed for this component */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="VideoPlayer-poster">
+    <h2>Interactive Demo (playOnClick + poster)</h2>
+    <p>This demo uses <code>data-options='{"playOnClick": true, "autoplay": false}'</code>. The video will stay completely paused on the first frame (or poster) until clicked.</p>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview-3" id="tab-preview-3">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html-3" id="tab-html-3" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css-3" id="tab-css-3" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview-3" aria-labelledby="tab-preview-3">
+            <div>
+              <div data-component="VideoPlayer" data-options='{"playOnClick": true, "autoplay": false}' tabindex="0" role="region" aria-label="Video player">
+        <video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata">
+          <track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt">
+        </video>
+        <button type="button" data-ref="bigPlayButton" aria-label="Start video" class="big-play-button">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="48" height="48" stroke="none" fill="currentColor">
+            <path d="M 6 4 L 20 12 L 6 20 Z"></path>
+          </svg>
+        </button>
+        <div class="video-controls">
+          <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="is-paused">
+          </button>
+          <button type="button" data-ref="subtitleButton" aria-label="Toggle subtitles" aria-pressed="false" class="is-disabled">
+          </button>
+          <div class="mute-container">
+            <div class="volume-slider-wrapper">
+              <input type="range" data-ref="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" aria-label="Volume">
+            </div>
+            <button type="button" data-ref="muteButton" aria-label="Mute or unmute video" aria-pressed="true" class="is-muted">
+            </button>
+          </div>
+        </div>
+        <div class="timeline-container">
+          <input type="range" data-ref="timelineSlider" class="timeline-slider" min="0" max="0" step="0.01" value="0" aria-label="Video timeline">
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html-3" aria-labelledby="tab-html-3" hidden="">
+            <pre class="options-pre"><code>&lt;div data-component="VideoPlayer" data-options='{"playOnClick": true, "autoplay": false}' tabindex="0" role="region" aria-label="Video player"&gt;
+        &lt;video data-ref="video" src="../assets/video/sample-video.mp4" loop="" muted="" playsinline="" preload="metadata"&gt;
+          &lt;track kind="subtitles" srclang="en" label="English" src="../assets/video/sample-subtitles.vtt"&gt;
+        &lt;/video&gt;
+        &lt;button type="button" data-ref="bigPlayButton" aria-label="Start video" class="big-play-button"&gt;
+          &lt;svg aria-hidden="true" viewBox="0 0 24 24" width="48" height="48" stroke="none" fill="currentColor"&gt;
+            &lt;path d="M 6 4 L 20 12 L 6 20 Z"&gt;&lt;/path&gt;
+          &lt;/svg&gt;
+        &lt;/button&gt;
+...
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css-3" aria-labelledby="tab-css-3" hidden="">
+            <pre class="options-pre"><code class="language-css">/* Use suggested CSS from VideoPlayer.js */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component scripts -->
+  <script src="../../examples/VideoPlayer.js"></script>
+  <script src="../../examples/Tabs.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</main>
+
+</body></html>
