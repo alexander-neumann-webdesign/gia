@@ -44,7 +44,7 @@ jobs:
         run: npm run build
 
       - name: Build demo CSS
-        run: npx sass demo/demo.scss demo/demo.css
+        run: npx sass demo/assets/css/demo.scss demo/assets/css/demo.css
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
