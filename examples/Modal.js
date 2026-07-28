@@ -44,6 +44,9 @@ class Modal extends gia.Component {
 		const buttons = this.ref.closeButton;
 		for (let i = 0; i < buttons.length; i++) {
 			buttons[i].addEventListener("click", this.handleCloseClick);
+			if (!buttons[i].hasAttribute("aria-label")) {
+				buttons[i].setAttribute("aria-label", "Close modal");
+			}
 		}
 
 		// Attach backdrop click
@@ -210,7 +213,7 @@ EXPECTED HTML
 <dialog data-component="Modal" id="my-modal">
   <div class="modal-content">
     <h2>Modal Title</h2>
-    <button data-ref="closeButton">Close</button>
+    <button data-ref="closeButton" aria-label="Close modal">Close</button>
   </div>
 </dialog>
 
@@ -219,6 +222,13 @@ SUGGESTED SCSS
 ========================================
 
 dialog[data-component="Modal"] {
+  [data-ref="closeButton"] {
+    &:focus-visible {
+      outline: 2px solid var(--form-control-color, #007bff);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
   // Center it via standard dialog rules, or custom
   margin: auto;
   inset: 0;

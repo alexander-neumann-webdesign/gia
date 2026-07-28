@@ -13,3 +13,7 @@
 ## 2025-09-01 - UploadField Keyboard Actionability
 **Learning:** For custom file dropzones (like UploadField) where the actual file input is visually hidden, adding `is-focused` styles via focus events on the input is good, but it's not enough for keyboard actionability. If a user tabs to the dropzone or its container, they need to be able to trigger the file picker using keyboard keys ('Enter' or 'Space'), as the native input isn't directly interactable via the standard click area.
 **Action:** Always add `tabindex="0"` to custom file dropzone containers and implement a `keydown` listener that catches 'Enter' and 'Space' keys to programmatically trigger a click on the hidden file input.
+
+## 2025-10-27 - Add aria-label and focus styles to Modal Close Button
+**Learning:** Modal close buttons often lack explicit context (e.g., just an icon or "Close") making them unclear for screen readers, and they frequently miss explicit `:focus-visible` styles for keyboard navigation within the modal context.
+**Action:** Always dynamically add an `aria-label="Close modal"` (if missing) to modal close buttons and ensure a `:focus-visible` CSS rule is provided in the baseline styles.
