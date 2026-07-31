@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build && vite build -c vite.mini.config.js && vite build -c vite.nano.config.js",
+		"build": "vite build && vite build -c vite.mini.config.mjs && vite build -c vite.nano.config.mjs",
 		"preview": "vite preview"
 	},
 	"keywords": [],
