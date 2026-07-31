@@ -18,7 +18,11 @@ export default class Component extends BaseComponent {
 	_load() {
 		const req = this.require();
 		if (req && typeof req.then === "function") {
-			req.then(() => this.mount());
+			req.then(() => {
+				if (this.element) {
+					this.mount();
+				}
+			});
 		} else {
 			this.mount();
 		}

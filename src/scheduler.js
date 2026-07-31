@@ -2,7 +2,9 @@
 const state = (typeof window !== 'undefined' ? window.__gia_scheduler__ : null) || {
     reads: [],
     writes: [],
-    scheduled: false
+    scheduled: false,
+    currentReads: null,
+    currentWrites: null
 };
 
 if (!state.tempReads) {
@@ -39,6 +41,7 @@ function flush() {
 
     // Flush reads (Measures)
     const currentReads = state.reads;
+    state.currentReads = currentReads;
     state.reads = state.tempReads;
 
     for (let i = 0; i < currentReads.length; i++) {
@@ -59,9 +62,11 @@ function flush() {
 
     currentReads.length = 0;
     state.tempReads = currentReads;
+    state.currentReads = null;
 
     // Flush writes (Mutates)
     const currentWrites = state.writes;
+    state.currentWrites = currentWrites;
     state.writes = state.tempWrites;
 
     for (let i = 0; i < currentWrites.length; i++) {
@@ -82,6 +87,7 @@ function flush() {
 
     currentWrites.length = 0;
     state.tempWrites = currentWrites;
+    state.currentWrites = null;
 
     // If new tasks were scheduled during the flush, schedule another frame
     if (state.reads.length > 0 || state.writes.length > 0) {
@@ -154,6 +160,56 @@ export function clear(task) {
             state.wrapperPool.push(t);
             state.writes[i] = null;
             return true;
+        }
+    }
+
+    if (state.currentReads) {
+        let index = state.currentReads.indexOf(task);
+        if (index > -1) {
+            const t = state.currentReads[index];
+            if (t && t._isGiaWrapper) {
+                t.fn = null;
+                t.ctx = null;
+                state.wrapperPool.push(t);
+            }
+            state.currentReads[index] = null;
+            return true;
+        }
+
+        for (let i = 0; i < state.currentReads.length; i++) {
+            const t = state.currentReads[i];
+            if (t && t._isGiaWrapper && t.fn === task) {
+                t.fn = null;
+                t.ctx = null;
+                state.wrapperPool.push(t);
+                state.currentReads[i] = null;
+                return true;
+            }
+        }
+    }
+
+    if (state.currentWrites) {
+        let index = state.currentWrites.indexOf(task);
+        if (index > -1) {
+            const t = state.currentWrites[index];
+            if (t && t._isGiaWrapper) {
+                t.fn = null;
+                t.ctx = null;
+                state.wrapperPool.push(t);
+            }
+            state.currentWrites[index] = null;
+            return true;
+        }
+
+        for (let i = 0; i < state.currentWrites.length; i++) {
+            const t = state.currentWrites[i];
+            if (t && t._isGiaWrapper && t.fn === task) {
+                t.fn = null;
+                t.ctx = null;
+                state.wrapperPool.push(t);
+                state.currentWrites[i] = null;
+                return true;
+            }
         }
     }
     
