@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TooltipNative - Gia Components Demo</title>
+  
+  <link rel="stylesheet" href="../assets/css/demo.css">
+  
+  <style>
+.gia-tooltip-native-popover {
+  /* Premium Solid Design */
+  background-color: #1e1e20;
+  
+  /* Typography */
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  
+  /* Spacing & Borders */
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #36363a;
+  
+  /* Depth */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+
+  white-space: nowrap;
+  z-index: 1000;
+  overflow: visible;
+
+  margin: 0;
+  inset: auto;
+  
+  transition: opacity 0.3s ease, 
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              inset 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              overlay 0.3s allow-discrete, 
+              display 0.3s allow-discrete;
+              
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.gia-tooltip-native-popover[data-position="top"] {
+  position-try: flip-block;
+}
+.gia-tooltip-native-popover[data-position="bottom"] {
+  position-try: flip-block;
+}
+.gia-tooltip-native-popover[data-position="left"] {
+  position-try: flip-inline;
+}
+.gia-tooltip-native-popover[data-position="right"] {
+  position-try: flip-inline;
+}
+
+.gia-tooltip-native-popover:is(:popover-open, .\:popover-open) {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@starting-style {
+  .gia-tooltip-native-popover:is(:popover-open, .\:popover-open) {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.gia-tooltip-native-popover::backdrop {
+  display: none;
+}
+
+.gia-tooltip-native-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #1e1e20;
+  border: 1px solid #36363a;
+  transform: rotate(45deg);
+}
+
+.gia-tooltip-native-popover[data-position="top"] .gia-tooltip-native-arrow {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  clip-path: polygon(100% 100%, 0 100%, 100% 0);
+}
+
+.gia-tooltip-native-popover[data-position="bottom"] .gia-tooltip-native-arrow {
+  top: -5px;
+  left: 50%;
+  margin-left: -5px;
+  clip-path: polygon(0 0, 0 100%, 100% 0);
+}
+
+.gia-tooltip-native-popover[data-position="left"] .gia-tooltip-native-arrow {
+  right: -5px;
+  top: 50%;
+  margin-top: -5px;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.gia-tooltip-native-popover[data-position="right"] .gia-tooltip-native-arrow {
+  left: -5px;
+  top: 50%;
+  margin-top: -5px;
+  clip-path: polygon(0 100%, 0 0, 100% 100%);
+}
+  </style>
+</head>
+<body>
+<main class="demo-container">
+  <nav>
+    <a href="../index.html">← Back to all components</a>
+  </nav>
+  
+  <h1>TooltipNative</h1>
+  <p>Demo showcasing all configuration options for <strong>TooltipNative</strong>.</p>
+  
+  <h2>Available Options</h2>
+  <pre class="options-pre"><code>No default options found.</code></pre>
+  
+  <section id="TooltipNative">
+    <h2>Interactive Demo</h2>
+    <div class="demo-block">
+      <div data-component="Tabs">
+        <div data-ref="tabList" role="tablist" aria-orientation="horizontal" aria-label="Component Demo Tabs">
+          <button data-ref="tab" role="tab" aria-selected="true" aria-controls="panel-preview" id="tab-preview">Preview</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-html" id="tab-html" tabindex="-1">HTML</button>
+          <button data-ref="tab" role="tab" aria-selected="false" aria-controls="panel-css" id="tab-css" tabindex="-1">CSS</button>
+        </div>
+        <div class="tab-panels">
+          <div data-ref="panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+            <div>
+      <div style="display: flex; flex-direction: column; gap: 3rem; align-items: center; padding: 2rem;">
+        <div>
+          <h3>Individual Tooltips (Default)</h3>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <button data-component="TooltipNative" data-tooltip="Individual Top" data-position="top">Top</button>
+            <button data-component="TooltipNative" data-tooltip="Individual Right" data-position="right">Right</button>
+            <button data-component="TooltipNative" data-tooltip="Individual Bottom" data-position="bottom">Bottom</button>
+            <button data-component="TooltipNative" data-tooltip="Individual Left" data-position="left">Left</button>
+          </div>
+        </div>
+
+        <div>
+          <h3>Grouped Tooltips (Singleton Morphing)</h3>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Profile Settings" data-position="top">Profile</button>
+            <button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Billing Information" data-position="top">Billing</button>
+            <button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Security & Privacy" data-position="top">Security</button>
+            <button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="System Notifications" data-position="top">Notifications</button>
+          </div>
+        </div>
+      </div>
+            </div>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-html" aria-labelledby="tab-html" hidden="">
+            <pre class="options-pre"><code>
+      &lt;div style="display: flex; flex-direction: column; gap: 3rem; align-items: center; padding: 2rem;"&gt;
+        &lt;div&gt;
+          &lt;h3&gt;Individual Tooltips (Default)&lt;/h3&gt;
+          &lt;div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;"&gt;
+            &lt;button data-component="TooltipNative" data-tooltip="Individual Top" data-position="top"&gt;Top&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip="Individual Right" data-position="right"&gt;Right&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip="Individual Bottom" data-position="bottom"&gt;Bottom&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip="Individual Left" data-position="left"&gt;Left&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div&gt;
+          &lt;h3&gt;Grouped Tooltips (Singleton Morphing)&lt;/h3&gt;
+          &lt;div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;"&gt;
+            &lt;button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Profile Settings" data-position="top"&gt;Profile&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Billing Information" data-position="top"&gt;Billing&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="Security &amp; Privacy" data-position="top"&gt;Security&lt;/button&gt;
+            &lt;button data-component="TooltipNative" data-tooltip-group="menu" data-tooltip="System Notifications" data-position="top"&gt;Notifications&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;</code></pre>
+          </div>
+          <div data-ref="panel" role="tabpanel" id="panel-css" aria-labelledby="tab-css" hidden="">
+            <pre class="options-pre"><code class="language-css">/* Included in the head of the page for .gia-tooltip-native-popover */</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component scripts -->
+  <script src="../../examples/TooltipNative.js"></script>
+  <script src="../../examples/Tabs.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
+</main>
+
+</body></html>

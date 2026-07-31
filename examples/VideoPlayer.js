@@ -9,13 +9,13 @@ class VideoPlayer extends gia.Component {
 		};
 
 		this.ref = {
-			video: null, // looks for a single element with data-ref="video"
-			playPauseButton: null, // looks for a single element with data-ref="playPauseButton"
-			subtitleButton: null, // looks for a single element with data-ref="subtitleButton"
-			muteButton: null, // looks for a single element with data-ref="muteButton"
-			volumeSlider: null, // looks for a single element with data-ref="volumeSlider"
-			timelineSlider: null, // looks for a single element with data-ref="timelineSlider"
-			bigPlayButton: null, // looks for a single element with data-ref="bigPlayButton"
+			video: null,
+			playPauseButton: null,
+			subtitleButton: null,
+			muteButton: null,
+			volumeSlider: null,
+			timelineSlider: null,
+			bigPlayButton: null,
 		};
 
 		this.setState({
@@ -321,7 +321,7 @@ class VideoPlayer extends gia.Component {
 			event.preventDefault();
 			event.stopPropagation();
 		}
-		
+
 		if (this.ref.video) {
 			this.ref.video.currentTime = 0;
 		}
@@ -332,7 +332,7 @@ class VideoPlayer extends gia.Component {
 			isPlaying: true,
 			isManuallyPaused: false,
 			isMuted: false,
-			volume: this._previousVolume > 0 ? this._previousVolume : 1
+			volume: this._previousVolume > 0 ? this._previousVolume : 1,
 		});
 	}
 
