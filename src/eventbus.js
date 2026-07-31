@@ -75,13 +75,7 @@ class EventBus {
 
 		const index = handlers.indexOf(targetHandler);
 		if (index !== -1) {
-			// ⚡ OPTIMIZATION: Swap-and-Pop O(1) removal to prevent array element shifts
-			if (index === handlers.length - 1) {
-				handlers.pop();
-			} else {
-				handlers[index] = handlers[handlers.length - 1];
-				handlers.pop();
-			}
+			handlers.splice(index, 1);
 		}
 	}
 }

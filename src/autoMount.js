@@ -39,12 +39,17 @@ function handleMutations(mutations) {
         }
 
         // Track added nodes
-        // ⚡ BOLT OPTIMIZATION: Instead of querying every single added node, 
-        // we just queue the mutation target (parent). This replaces an O(N) query loop
-        // with a single O(1) querySelectorAll on the parent.
-        if (mutation.addedNodes.length > 0 && mutation.target.nodeType === Node.ELEMENT_NODE) {
-            if (_addedElements.indexOf(mutation.target) === -1) {
-                _addedElements.push(mutation.target);
+        // We queue the actual added elements rather than their parent.
+        // This prevents scanning the entire document when a single node is added to <body>,
+        // and correctly ignores text node mutations.
+        if (mutation.addedNodes.length > 0) {
+            for (let j = 0; j < mutation.addedNodes.length; j++) {
+                const node = mutation.addedNodes[j];
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (_addedElements.indexOf(node) === -1) {
+                        _addedElements.push(node);
+                    }
+                }
             }
         }
     }

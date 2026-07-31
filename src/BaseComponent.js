@@ -335,6 +335,13 @@ export default class BaseComponent {
 			this._observedIntersectionElements = null;
 		}
 
+		if (this._boundActions) {
+			for (let i = 0; i < this._boundActions.length; i += 3) {
+				this._boundActions[i].removeEventListener(this._boundActions[i+1], this[this._boundActions[i+2]]);
+			}
+			this._boundActions = null;
+		}
+
 		// ⚡ BOLT OPTIMIZATION: Aggressively clear refs and element to assist GC
 		this._ref = null;
 		if (this.element) {
@@ -846,6 +853,8 @@ export default class BaseComponent {
 	}
 
 	_flushStateChanges() {
+		if (!this.element) return;
+
 		if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
 			// Apply batched attribute changes
 			// ⚡ BOLT OPTIMIZATION: Fast-failing for...in empty check to avoid Object.keys() array allocation
@@ -966,6 +975,9 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 						// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
 						// an inline closure (e => this[method](e)) for every single bound action.
 						el.addEventListener(event, this[method]);
+						
+						if (!this._boundActions) this._boundActions = [];
+						this._boundActions.push(el, event, method);
 					} else {
 						console.warn(`Method "${method}" not found, is restricted, or is not a function in component.`);
 					}
