@@ -44,3 +44,7 @@
 **Vulnerability:** Found `innerHTML` being used with unescaped data (`targetIcon` attribute value) to construct an SVG, leading to DOM-based XSS.
 **Learning:** Using `innerHTML` with string interpolation of attributes can execute malicious payload, even for SVGs.
 **Prevention:** Use DOM-safe APIs like `document.createElementNS` for SVGs or `textContent` for text instead of `innerHTML`.
+## 2025-02-23 - Fix DOM-based XSS in TooltipNative
+**Vulnerability:** Found `contentContainer.innerHTML = '';` used to clear the tooltip content before appending new nodes.
+**Learning:** Using `innerHTML` to clear a node invokes the HTML parser unnecessarily and presents a risk if untrusted content was injected beforehand.
+**Prevention:** Use `element.textContent = '';` to safely and quickly clear element contents without invoking the HTML parser.
