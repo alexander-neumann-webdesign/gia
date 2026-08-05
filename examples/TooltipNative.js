@@ -281,7 +281,7 @@ class TooltipNative extends gia.Component {
 				newSpan.style.opacity = '1';
 				newSpan.style.transform = 'translateX(0)';
 				
-				contentContainer.innerHTML = '';
+				contentContainer.textContent = '';
 				contentContainer.appendChild(newSpan);
 
 				popup.style.width = "auto";

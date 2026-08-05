@@ -44,3 +44,8 @@
 **Vulnerability:** Found `innerHTML` being used with unescaped data (`targetIcon` attribute value) to construct an SVG, leading to DOM-based XSS.
 **Learning:** Using `innerHTML` with string interpolation of attributes can execute malicious payload, even for SVGs.
 **Prevention:** Use DOM-safe APIs like `document.createElementNS` for SVGs or `textContent` for text instead of `innerHTML`.
+
+## 2024-05-28 - Replace innerHTML with textContent for clearing elements
+**Vulnerability:** While assigning an empty string (`element.innerHTML = ''`) doesn't directly cause XSS, using `innerHTML` is broadly risky and can be flagged by SAST tools.
+**Learning:** Using `textContent = ''` is functionally identical for clearing children, slightly faster (avoids HTML parser), and securely indicates text-only manipulation, completely satisfying strict security linters without triggering false positives.
+**Prevention:** Prefer `element.textContent = ''` over `element.innerHTML = ''` when clearing an element's child nodes.
