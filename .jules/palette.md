@@ -16,3 +16,7 @@
 ## 2024-03-12 - Modal Close Button ARIA & Focus
 **Learning:** For a generic Modal component, relying solely on button text like "Close" or an icon isn't sufficient for screen reader context if the modal title isn't explicitly linked. Also, CSS resets often strip native outlines, and relying on basic `outline` without `outline-offset` can cause visual clipping on tight elements.
 **Action:** Always ensure modal close buttons have an explicit `aria-label="Close modal"` (or similar contextual label) injected dynamically if missing, and always define an explicit `:focus-visible` rule with `outline-offset` in the component's base CSS.
+
+## 2025-10-18 - Toaster Close Button ARIA
+**Learning:** Adding `aria-hidden="true"` to decorative SVGs inside components with descriptive text or labels ensures a smoother screen reader experience by preventing redundant announcements.
+**Action:** Always add `aria-hidden="true"` to decorative SVGs within interactive elements.
