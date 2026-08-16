@@ -392,6 +392,11 @@ div[data-component="Tabs"] {
     border-bottom: 2px solid transparent;
     transition: border-color 0.3s ease, color 0.3s ease;
 
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
     &[aria-selected="true"] {
       border-color: currentColor;
       font-weight: bold;

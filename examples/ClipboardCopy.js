@@ -211,6 +211,11 @@ button[data-component="ClipboardCopy"] {
     }
   }
 
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
   &[data-status="error"] {
     background-color: #ffebee;
     border-color: #f44336;
