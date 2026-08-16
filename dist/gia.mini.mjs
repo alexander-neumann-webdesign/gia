@@ -49,7 +49,7 @@ function ct(i) {
 function H(i, t = document) {
   return typeof i != "string" ? i : t.querySelector(i);
 }
-function v(i, t = document) {
+function I(i, t = document) {
   return typeof i != "string" ? i : t.querySelectorAll(i);
 }
 function Y(i, t, e = null) {
@@ -98,7 +98,7 @@ const at = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   addClass: U,
   debounce: Q,
   query: H,
-  queryAll: v,
+  queryAll: I,
   removeClass: K,
   toggleClass: Y,
   triggerEvent: J
@@ -117,7 +117,7 @@ function ht(i = {}, t = document.documentElement) {
     console.warn("App has no components");
     return;
   }
-  const n = [], s = `${w.get("attrPrefix")}-component`, o = v(`[${s}]`, t), r = o.length;
+  const n = [], s = `${w.get("attrPrefix")}-component`, o = I(`[${s}]`, t), r = o.length;
   for (let f = 0; f < r; f++) {
     const u = o[f];
     if (!h.get(u)) {
@@ -158,7 +158,7 @@ function V(i) {
   }
 }
 function dt(i = document.documentElement) {
-  const t = v(`[${w.get("attrPrefix")}-component]`, i);
+  const t = I(`[${w.get("attrPrefix")}-component]`, i);
   for (let e = 0; e < t.length; e++)
     V(t[e]);
 }
@@ -325,11 +325,11 @@ function ot(i) {
   return f || (f = {
     observer: new IntersectionObserver((c) => {
       for (let a = 0; a < c.length; a++) {
-        const _ = c[a], I = f.callbacks.get(_.target);
-        if (I) {
+        const _ = c[a], v = f.callbacks.get(_.target);
+        if (v) {
           N[0] = _;
-          for (let E = 0; E < I.length; E++)
-            I[E](N);
+          for (let E = 0; E < v.length; E++)
+            v[E](N);
         }
       }
     }, i),
@@ -346,7 +346,7 @@ class lt {
     return this.i;
   }
   set ref(t) {
-    const e = `${w.get("attrPrefix")}-ref`, n = v(`[${e}]`, this.element), s = /* @__PURE__ */ Object.create(null);
+    const e = `${w.get("attrPrefix")}-ref`, n = I(`[${e}]`, this.element), s = /* @__PURE__ */ Object.create(null);
     for (let r = 0; r < n.length; r++) {
       const f = n[r], u = f.getAttribute(e);
       let c = s[u];
@@ -698,13 +698,13 @@ class ft {
   }
   off(t, e) {
     if (!e) {
-      this.listeners[t] = [];
+      this.listeners[t] && (this.listeners[t].length = 0);
       return;
     }
     const n = this.listeners[t];
     if (!n) return;
     let s = e;
-    e.c && e.c[t] ? (s = e.c[t], delete e.c[t]) : e.v && (s = e.v);
+    e.c && e.c[t] ? (s = e.c[t], delete e.c[t]) : e.I && (s = e.I);
     const o = n.indexOf(s);
     o !== -1 && n.splice(o, 1);
   }

@@ -715,7 +715,7 @@ class dt {
   }
   off(t, e) {
     if (!e) {
-      this.listeners[t] = [];
+      this.listeners[t] && (this.listeners[t].length = 0);
       return;
     }
     const n = this.listeners[t];
