@@ -77,3 +77,6 @@
 ## 2025-02-18 - Fix memory leak in array mutation using backward for loop
 **Learning:** When using a swap-and-pop pattern to remove items from an array in JavaScript, iterating over that same array using Array.prototype.forEach() causes elements to be skipped due to index shifting. This left lingering global scroll/resize event listeners attached after component destruction, creating a memory leak.
 **Action:** Always use a standard backward for loop (e.g., for (let i = arr.length - 1; i >= 0; i--)) when an array might mutate itself (especially during cleanup functions) to ensure all items are processed without index skipping.
+## 2024-05-24 - Prevent GC churn with array length reset
+**Learning:** Assigning `[]` to clear arrays creates new references and causes garbage collection overhead, especially in hot paths like event listeners or ResizeObserver callbacks.
+**Action:** Use `.length = 0` to clear existing array references to prevent GC churn and memory reallocation.

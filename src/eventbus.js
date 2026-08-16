@@ -58,7 +58,9 @@ class EventBus {
 	off(event, handler) {
 		if (!handler) {
 			// Clear all listeners for this event if no handler provided
-			this.listeners[event] = [];
+			if (this.listeners[event]) {
+				this.listeners[event].length = 0;
+			}
 			return;
 		}
 

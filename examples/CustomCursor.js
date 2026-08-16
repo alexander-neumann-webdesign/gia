@@ -481,7 +481,7 @@ class CustomCursor extends gia.Component {
 
             // Rebuild the cache of all magnetic elements
             const elements = document.querySelectorAll('[data-magnetic], [data-cursor-stick]');
-            this.cachedMagneticElements = [];
+            this.cachedMagneticElements.length = 0;
 
             const scrollX = this.scroll.x;
             const scrollY = this.scroll.y;
