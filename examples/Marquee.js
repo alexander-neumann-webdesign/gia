@@ -460,7 +460,7 @@ class Marquee extends gia.Component {
 		for (let i = 0; i < this.clones.length; i++) {
 			this.clones[i].remove();
 		}
-		this.clones = [];
+		this.clones.length = 0;
 
 		// We need to calculate how many clones are needed.
 		// Create a single container wrapper for the original items to easily measure its full width.
