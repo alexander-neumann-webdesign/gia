@@ -80,3 +80,7 @@
 ## 2024-05-24 - Prevent GC churn with array length reset
 **Learning:** Assigning `[]` to clear arrays creates new references and causes garbage collection overhead, especially in hot paths like event listeners or ResizeObserver callbacks.
 **Action:** Use `.length = 0` to clear existing array references to prevent GC churn and memory reallocation.
+
+## 2024-08-25 - Eliminate Iterator allocation in hot Map iterations
+**Learning:** Using `Map.prototype.entries()` and `for...of` loops inside `requestAnimationFrame` loops (such as range input UI synchronization) allocates Iterator objects on every frame, generating garbage collection churn.
+**Action:** Replaced the `Map` with a flat array (`this._pendingOutputs = []`) where keys and values are pushed sequentially. Iteration now uses a zero-allocation standard `for` loop (`for (let i = 0; i < arr.length; i += 2)`), clearing the array with `.length = 0` afterward to completely eliminate GC overhead.
