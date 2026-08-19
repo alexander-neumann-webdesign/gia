@@ -80,3 +80,6 @@
 ## 2024-05-24 - Prevent GC churn with array length reset
 **Learning:** Assigning `[]` to clear arrays creates new references and causes garbage collection overhead, especially in hot paths like event listeners or ResizeObserver callbacks.
 **Action:** Use `.length = 0` to clear existing array references to prevent GC churn and memory reallocation.
+## 2024-05-22 - Optimize DOM loadComponents in MutationObserver
+**Learning:** Calling `node.querySelector` synchronously inside a `MutationObserver` callback forces a deep DOM traversal on the main thread precisely during DOM insertions, blocking rendering. It is a performance anti-pattern.
+**Action:** Keep observer callbacks ultra-lightweight (e.g., using only lightweight checks like `.nodeType`) and defer deep traversals to batched, asynchronous steps or just rely on the existing batching logic.
