@@ -6,6 +6,8 @@ import { queryAll } from "./utils.js";
 let observer = null;
 let _currentComponentsToLoad = null;
 const _addedElements = [];
+const _removedElements = [];
+let _isRafQueued = false;
 
 const _processAddedNode = (node) => {
     if (node.isConnected) {
@@ -13,35 +15,51 @@ const _processAddedNode = (node) => {
     }
 };
 
-function handleMutations(mutations) {
+const _flushMutations = () => {
+    _isRafQueued = false;
     const attrName = `${config.get("attrPrefix")}-component`;
-    const componentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
 
-    // ⚡ BOLT OPTIMIZATION: Prevent garbage collection churn by clearing and reusing the module-scoped _addedElements array
+    // Process removed nodes
+    for (let i = 0; i < _removedElements.length; i++) {
+        const node = _removedElements[i];
+        if (!node.isConnected) {
+            if (node.hasAttribute(attrName)) {
+                destroyInstance(node);
+            }
+            const nestedComponents = queryAll(`[${attrName}]`, node);
+            for (let j = 0; j < nestedComponents.length; j++) {
+                destroyInstance(nestedComponents[j]);
+            }
+        }
+    }
+    _removedElements.length = 0;
+
+    // Process added nodes
+    _currentComponentsToLoad = typeof window !== "undefined" && window.gia ? window.gia.components : {};
+    for (let i = 0; i < _addedElements.length; i++) {
+        _processAddedNode(_addedElements[i]);
+    }
     _addedElements.length = 0;
+    _currentComponentsToLoad = null;
+};
 
-    // ⚡ BOLT OPTIMIZATION: Use standard for loops to avoid Array/NodeList iteration overhead
+function handleMutations(mutations) {
+    // ⚡ BOLT OPTIMIZATION: Keep observer callbacks ultra-lightweight and defer deep traversals
+    // to batched, asynchronous steps to prevent layout thrashing during DOM insertions.
     for (let m = 0; m < mutations.length; m++) {
         const mutation = mutations[m];
 
-        // Handle removed nodes
+        // Track removed nodes
         for (let i = 0; i < mutation.removedNodes.length; i++) {
             const node = mutation.removedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
-                if (node.hasAttribute(attrName)) {
-                    destroyInstance(node);
-                }
-                const nestedComponents = queryAll(`[${attrName}]`, node);
-                for (let j = 0; j < nestedComponents.length; j++) {
-                    destroyInstance(nestedComponents[j]);
+                if (_removedElements.indexOf(node) === -1) {
+                    _removedElements.push(node);
                 }
             }
         }
 
         // Track added nodes
-        // We queue the actual added elements rather than their parent.
-        // This prevents scanning the entire document when a single node is added to <body>,
-        // and correctly ignores text node mutations.
         if (mutation.addedNodes.length > 0) {
             for (let j = 0; j < mutation.addedNodes.length; j++) {
                 const node = mutation.addedNodes[j];
@@ -54,14 +72,14 @@ function handleMutations(mutations) {
         }
     }
 
-    // If nodes were added, run loadComponents ONLY on the added nodes rather than the whole body
-    // This turns an O(N) operation (N = total DOM nodes) into O(K) (K = added DOM nodes)
-    // ⚡ BOLT OPTIMIZATION: Avoid Array Iterator allocation by using standard for loop
-    _currentComponentsToLoad = componentsToLoad;
-    for (let i = 0; i < _addedElements.length; i++) {
-        _processAddedNode(_addedElements[i]);
+    if (!_isRafQueued && (_addedElements.length > 0 || _removedElements.length > 0)) {
+        _isRafQueued = true;
+        if (typeof window !== "undefined" && window.requestAnimationFrame) {
+            window.requestAnimationFrame(_flushMutations);
+        } else {
+            _flushMutations();
+        }
     }
-    _currentComponentsToLoad = null;
 }
 
 export function initObserver() {
