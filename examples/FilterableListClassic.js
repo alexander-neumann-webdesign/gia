@@ -31,20 +31,24 @@ class FilterableListClassic extends gia.Component {
 
 		this.applyChangesDebounced = gia.utils.debounce(this.applyChanges, 300);
 
-		this._pendingOutputs = new Map();
+		this._pendingOutputs = [];
 		this._outputRafId = null;
 		this._syncOutputs = this._syncOutputs.bind(this);
 	}
 
 	_syncOutputs() {
 		gia.mutate(() => {
-			for (const [id, value] of this._pendingOutputs.entries()) {
+			// ⚡ BOLT OPTIMIZATION: Avoid using Map.entries() and for...of loops in RAF hot paths
+			// to prevent Iterator allocation and GC churn. Iterate sequentially over a flat array instead.
+			for (let i = 0; i < this._pendingOutputs.length; i += 2) {
+				const id = this._pendingOutputs[i];
+				const value = this._pendingOutputs[i + 1];
 				const outputEl = document.querySelector(`output[for="${id}"]`);
 				if (outputEl && outputEl.value !== value) {
 					outputEl.value = value;
 				}
 			}
-			this._pendingOutputs.clear();
+			this._pendingOutputs.length = 0;
 		});
 		this._outputRafId = null;
 	}
@@ -382,7 +386,19 @@ class FilterableListClassic extends gia.Component {
 
 		if (e.type === 'input') {
 			if (el.type === 'range' && el.id) {
-				this._pendingOutputs.set(el.id, el.value);
+				// ⚡ BOLT OPTIMIZATION: Use a flat array instead of a Map to avoid GC churn
+				let found = false;
+				for (let i = 0; i < this._pendingOutputs.length; i += 2) {
+					if (this._pendingOutputs[i] === el.id) {
+						this._pendingOutputs[i + 1] = el.value;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					this._pendingOutputs.push(el.id, el.value);
+				}
+
 				if (!this._outputRafId) {
 					this._outputRafId = requestAnimationFrame(this._syncOutputs);
 				}
