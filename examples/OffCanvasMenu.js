@@ -5,16 +5,22 @@ class OffCanvasMenu extends gia.Component {
 		this.options = {
 			preventScroll: true,
 			mainContentSelector: "main",
-			updateLocationHash: false,
+			skipSwupAnimation: false,
+			closeOnEscape: true,
+			closeOnOutsideClick: true,
+			trapBackButton: true,
 		};
 
 		this.setState({
 			isOpen: false,
 		});
 
+		this.ref = {
+			closeButtons: [],
+		};
+
 		this.menuId = this.element.id;
 		this.triggers = this.menuId ? document.querySelectorAll(`[data-offcanvas-target="${this.menuId}"]`) : [];
-		this.closeButtons = this.element.querySelectorAll("[data-offcanvas-close]");
 	}
 
 	mount() {
@@ -22,20 +28,23 @@ class OffCanvasMenu extends gia.Component {
 			this.triggers[i].addEventListener("click", this.handleTriggerClick);
 		}
 
-		for (let i = 0; i < this.closeButtons.length; i++) {
-			this.closeButtons[i].addEventListener("click", this.handleCloseClick);
+		for (let i = 0; i < this.ref.closeButtons.length; i++) {
+			this.ref.closeButtons[i].addEventListener("click", this.handleCloseClick);
 		}
 
 		if (window.swup) {
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
+			window.swup.hooks.on("visit:start", this.handleSwupVisitStart);
+			window.swup.hooks.on("content:replace", this.handleSwupContentReplace);
 		}
 
-		const hash = window.location.hash;
+		if (history.state && history.state.giaOffCanvasMenuOpen) {
+			const state = { ...history.state };
+			delete state.giaOffCanvasMenuOpen;
+			history.replaceState(state, "");
+		}
+
 		let shouldBeOpen = this.element.classList.contains("is-open");
-
-		if (this.options.updateLocationHash && hash && this.menuId && hash === `#${this.menuId}`) {
-			shouldBeOpen = true;
-		}
 
 		gia.mutate(() => {
 			for (let i = 0; i < this.triggers.length; i++) {
@@ -59,16 +68,20 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	unmount() {
+
+
 		if (window.swup) {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
+			window.swup.hooks.off("visit:start", this.handleSwupVisitStart);
+			window.swup.hooks.off("content:replace", this.handleSwupContentReplace);
 		}
 
 		for (let i = 0; i < this.triggers.length; i++) {
 			this.triggers[i].removeEventListener("click", this.handleTriggerClick);
 		}
 
-		for (let i = 0; i < this.closeButtons.length; i++) {
-			this.closeButtons[i].removeEventListener("click", this.handleCloseClick);
+		for (let i = 0; i < this.ref.closeButtons.length; i++) {
+			this.ref.closeButtons[i].removeEventListener("click", this.handleCloseClick);
 		}
 
 		document.removeEventListener("click", this.handleDocumentClick);
@@ -92,7 +105,7 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	handleDocumentClick(e) {
-		if (!this.element.contains(e.target)) {
+		if (this.options.closeOnOutsideClick && !this.element.contains(e.target)) {
 			let isTriggerClick = false;
 			for (let i = 0; i < this.triggers.length; i++) {
 				if (this.triggers[i].contains(e.target)) {
@@ -108,12 +121,37 @@ class OffCanvasMenu extends gia.Component {
 	}
 
 	handleKeyDown(e) {
-		if (e.key === "Escape") {
+		if (this.options.closeOnEscape && e.key === "Escape") {
 			this.setState({ isOpen: false });
 		}
 	}
 
 	handleSwupOut() {
+		if (this.state.isOpen) {
+			this.setState({ isOpen: false });
+		}
+	}
+
+	handleSwupVisitStart(visit) {
+		if (
+			this.state.isOpen &&
+			this.options.skipSwupAnimation &&
+			visit.trigger &&
+			visit.trigger.el &&
+			this.element.contains(visit.trigger.el)
+		) {
+			visit.animation.animate = false;
+			visit.giaCloseOffCanvasMenu = true;
+		}
+	}
+
+	handleSwupContentReplace(visit) {
+		if (visit.giaCloseOffCanvasMenu) {
+			this.setState({ isOpen: false });
+		}
+	}
+
+	handlePopState() {
 		if (this.state.isOpen) {
 			this.setState({ isOpen: false });
 		}
@@ -161,8 +199,9 @@ class OffCanvasMenu extends gia.Component {
 			window.lenis.stop();
 		}
 
-		if (this.options.updateLocationHash && this.menuId && window.location.hash !== `#${this.menuId}`) {
-			history.pushState(null, "", `#${this.menuId}`);
+		if (this.options.trapBackButton) {
+			history.pushState({ giaOffCanvasMenuOpen: true }, "");
+			window.addEventListener("popstate", this.handlePopState);
 		}
 	}
 
@@ -194,9 +233,11 @@ class OffCanvasMenu extends gia.Component {
 			window.lenis.start();
 		}
 
-		if (this.options.updateLocationHash && this.menuId && window.location.hash === `#${this.menuId}`) {
-			const urlWithoutHash = window.location.pathname + window.location.search;
-			history.pushState(null, "", urlWithoutHash || "#");
+		if (this.options.trapBackButton) {
+			window.removeEventListener("popstate", this.handlePopState);
+			if (history.state && history.state.giaOffCanvasMenuOpen) {
+				history.back();
+			}
 		}
 	}
 }
@@ -226,6 +267,7 @@ EXPECTED HTML
 	aria-label="<?= __('Main Navigation', 'anweb') ?>"
 	aria-hidden="true">
 	<div class="inner-container">
+		<button data-ref="closeButtons" aria-label="<?= __('Close menu', 'anweb') ?>">Close</button>
 		<nav aria-label="<?= __('Primary', 'anweb') ?>">
 			<?php wp_nav_menu(array(
 				'menu' => 'off-canvas-menu',

@@ -67,5 +67,21 @@
     </div>
   </section></main>
 
+  <ol class="gia-toaster" data-component="Toaster"></ol>
 
+  <!-- Core library -->
+  <script src="../../dist/gia.full.umd.js"></script>
+  
+  <!-- Component scripts -->
+  <script src="../../examples/Toaster.js"></script>
+  <script src="../../examples/Tabs.js"></script>
+
+  <!-- Initialization -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.gia && window.gia.components) {
+            gia.loadComponents(window.gia.components);
+        }
+    });
+  </script>
 </body></html>

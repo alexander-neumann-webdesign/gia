@@ -332,7 +332,7 @@ class FilterableListGSAP extends gia.Component {
 		}
 
 		const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}${window.location.hash}`;
-		window.history.pushState({ path: newUrl }, '', newUrl);
+		window.history.replaceState({ path: newUrl }, '', newUrl);
 	}
 
 	_getFilterValues(el, filterType) {

@@ -4,11 +4,15 @@ class Modal extends gia.Component {
 
 		this.options = {
 			preventScroll: true,
+			closeOnEscape: true,
+			closeOnOutsideClick: true,
+			trapBackButton: true,
 		};
 
 		this.ref = {
 			closeButton: [], // Looks for [data-ref="closeButton"]
 		};
+
 
 		this.setState({
 			isOpen: false,
@@ -61,6 +65,10 @@ class Modal extends gia.Component {
 			window.swup.hooks.on("animation:out:start", this.handleSwupOut);
 		}
 
+		if (this.options.trapBackButton) {
+			window.addEventListener("popstate", this.handlePopState);
+		}
+
 		// Initial state based on URL hash or DOM
 		const hash = window.location.hash;
 		let shouldBeOpen = this.element.hasAttribute("open");
@@ -75,6 +83,10 @@ class Modal extends gia.Component {
 	}
 
 	unmount() {
+		if (this.options.trapBackButton) {
+			window.removeEventListener("popstate", this.handlePopState);
+		}
+
 		if (window.swup && this.handleSwupOut) {
 			window.swup.hooks.off("animation:out:start", this.handleSwupOut);
 		}
@@ -114,6 +126,10 @@ class Modal extends gia.Component {
 	}
 
 	handleNativeCancel(e) {
+		if (!this.options.closeOnEscape) {
+			e.preventDefault();
+			return;
+		}
 		if (!CSS.supports("transition-behavior", "allow-discrete")) {
 			e.preventDefault();
 			this.setState({ isOpen: false });
@@ -121,7 +137,7 @@ class Modal extends gia.Component {
 	}
 
 	handleBackdropClick(event) {
-		if (event.target === this.element) {
+		if (this.options.closeOnOutsideClick && event.target === this.element) {
 			this.setState({ isOpen: false });
 		}
 	}
@@ -129,6 +145,14 @@ class Modal extends gia.Component {
 	handleSwupOut() {
 		if (this.state.isOpen) {
 			this.setState({ isOpen: false });
+		}
+	}
+
+	handlePopState() {
+		if (this.state.isOpen && window.location.hash !== `#${this.modalId}`) {
+			this.setState({ isOpen: false });
+		} else if (!this.state.isOpen && window.location.hash === `#${this.modalId}`) {
+			this.setState({ isOpen: true });
 		}
 	}
 
@@ -157,8 +181,8 @@ class Modal extends gia.Component {
 					}
 
 					// Write modal ID to URL
-					if (this.modalId && window.location.hash !== `#${this.modalId}`) {
-						history.pushState(null, "", `#${this.modalId}`);
+					if (this.options.trapBackButton && this.modalId && window.location.hash !== `#${this.modalId}`) {
+						history.pushState({ giaModalOpen: this.modalId }, "", `#${this.modalId}`);
 					}
 				} else {
 					if (this.element.open) {
@@ -189,9 +213,13 @@ class Modal extends gia.Component {
 					}
 
 					// Remove modal ID from URL
-					if (this.modalId && window.location.hash === `#${this.modalId}`) {
-						const urlWithoutHash = window.location.pathname + window.location.search;
-						history.pushState(null, "", urlWithoutHash || "#");
+					if (this.options.trapBackButton && this.modalId && window.location.hash === `#${this.modalId}`) {
+						if (history.state && history.state.giaModalOpen === this.modalId) {
+							history.back();
+						} else {
+							const urlWithoutHash = window.location.pathname + window.location.search;
+							history.replaceState(null, "", urlWithoutHash || "#");
+						}
 					}
 				}
 			});

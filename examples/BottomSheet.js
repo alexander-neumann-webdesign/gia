@@ -10,6 +10,10 @@ class BottomSheet extends gia.Component {
 			scaleFactor: 0.9,
 			scaleRadius: 12,
 			scaleOffset: 14,
+			preventScroll: true,
+			closeOnEscape: true,
+			closeOnOutsideClick: true,
+			trapBackButton: true,
 		};
 
 		this.physics = {
@@ -39,6 +43,7 @@ class BottomSheet extends gia.Component {
 
 		this.activeElementBeforeOpen = null;
 
+
 		this.setState({
 			isOpen: false,
 			isDragging: false,
@@ -58,7 +63,7 @@ class BottomSheet extends gia.Component {
 		}
 
 		if (this.ref.overlay) {
-			this.ref.overlay.addEventListener("click", this.close);
+			this.ref.overlay.addEventListener("click", this.handleOverlayClick);
 		}
 
 		// Make fully compatible with Lenis smooth scrolling
@@ -72,6 +77,9 @@ class BottomSheet extends gia.Component {
 		this.wrapper = document.querySelector("[data-bottom-sheet-wrapper]");
 
 		document.addEventListener("keydown", this.handleKeyDown);
+		if (this.options.trapBackButton) {
+			window.addEventListener("popstate", this.handlePopState);
+		}
 
 		const hash = window.location.hash;
 		if (hash && this.bottomSheetId && hash === `#${this.bottomSheetId}`) {
@@ -89,7 +97,7 @@ class BottomSheet extends gia.Component {
 		}
 
 		if (this.ref.overlay) {
-			this.ref.overlay.removeEventListener("click", this.close);
+			this.ref.overlay.removeEventListener("click", this.handleOverlayClick);
 		}
 
 		if (this.ref.drawer) {
@@ -98,6 +106,9 @@ class BottomSheet extends gia.Component {
 		}
 
 		document.removeEventListener("keydown", this.handleKeyDown);
+		if (this.options.trapBackButton) {
+			window.removeEventListener("popstate", this.handlePopState);
+		}
 	}
 
 	handleTriggerClick(e) {
@@ -106,7 +117,7 @@ class BottomSheet extends gia.Component {
 	}
 
 	handleKeyDown(e) {
-		if (this.state.isOpen && e.key === "Escape") {
+		if (this.options.closeOnEscape && this.state.isOpen && e.key === "Escape") {
 			this.close();
 		}
 	}
@@ -114,6 +125,20 @@ class BottomSheet extends gia.Component {
 	close(e) {
 		if (e) e.preventDefault();
 		this.setState({ isOpen: false });
+	}
+
+	handleOverlayClick(e) {
+		if (this.options.closeOnOutsideClick) {
+			this.close(e);
+		}
+	}
+
+	handlePopState() {
+		if (this.state.isOpen && window.location.hash !== `#${this.bottomSheetId}`) {
+			this.setState({ isOpen: false });
+		} else if (!this.state.isOpen && window.location.hash === `#${this.bottomSheetId}`) {
+			this.setState({ isOpen: true });
+		}
 	}
 
 	handleDrawerResize(entries) {
@@ -300,8 +325,10 @@ class BottomSheet extends gia.Component {
 					this.wrapper.setAttribute("inert", ""); // Traps focus and screen readers in drawer
 				}
 
-				// Lock background scrolling (works natively and stops Lenis)
-				document.body.style.overflow = "hidden";
+				if (this.options.preventScroll) {
+					// Lock background scrolling (works natively and stops Lenis)
+					document.body.style.overflow = "hidden";
+				}
 
 				gia.mutate(() => {
 					if (this.ref.drawer) this.ref.drawer.focus();
@@ -311,7 +338,9 @@ class BottomSheet extends gia.Component {
 					this.wrapper.removeAttribute("inert");
 				}
 
-				document.body.style.overflow = "";
+				if (this.options.preventScroll) {
+					document.body.style.overflow = "";
+				}
 
 				if (this.activeElementBeforeOpen) {
 					this.activeElementBeforeOpen.focus();
@@ -325,7 +354,10 @@ class BottomSheet extends gia.Component {
 				}
 
 				if (isOpen) {
-					document.body.style.overflow = "hidden";
+					if (this.options.preventScroll) {
+						document.body.style.overflow = "hidden";
+						if (window.lenis) window.lenis.stop();
+					}
 
 					if (this.options.scaleBackground) {
 						const wrapper = document.querySelector("[data-bottom-sheet-wrapper]");
@@ -335,13 +367,14 @@ class BottomSheet extends gia.Component {
 						}
 					}
 
-					if (window.lenis) window.lenis.stop();
-
-					if (this.bottomSheetId && window.location.hash !== `#${this.bottomSheetId}`) {
-						history.pushState(null, "", `#${this.bottomSheetId}`);
+					if (this.options.trapBackButton && this.bottomSheetId && window.location.hash !== `#${this.bottomSheetId}`) {
+						history.pushState({ giaBottomSheetOpen: this.bottomSheetId }, "", `#${this.bottomSheetId}`);
 					}
 				} else {
-					document.body.style.overflow = "";
+					if (this.options.preventScroll) {
+						document.body.style.overflow = "";
+						if (window.lenis) window.lenis.start();
+					}
 
 					if (this.options.scaleBackground) {
 						const wrapper = document.querySelector("[data-bottom-sheet-wrapper]");
@@ -352,14 +385,16 @@ class BottomSheet extends gia.Component {
 						}
 					}
 
-					if (window.lenis) window.lenis.start();
-
 					if (this.ref.drawer) this.ref.drawer.style.transform = "";
 					if (this.ref.overlay) this.ref.overlay.style.opacity = "";
 
-					if (this.bottomSheetId && window.location.hash === `#${this.bottomSheetId}`) {
-						const urlWithoutHash = window.location.pathname + window.location.search;
-						history.pushState(null, "", urlWithoutHash || "#");
+					if (this.options.trapBackButton && this.bottomSheetId && window.location.hash === `#${this.bottomSheetId}`) {
+						if (history.state && history.state.giaBottomSheetOpen === this.bottomSheetId) {
+							history.back();
+						} else {
+							const urlWithoutHash = window.location.pathname + window.location.search;
+							history.replaceState(null, "", urlWithoutHash || "#");
+						}
 					}
 				}
 			});

@@ -128,9 +128,18 @@ class MapLibreMap extends gia.Component {
 			}
 		}
 
+		let isInitialResize = true;
+		let resizeTimeout;
 		this.observeResize(this.element, () => {
+			if (isInitialResize) {
+				isInitialResize = false;
+				return;
+			}
 			if (this.map) {
-				this.map.resize();
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(() => {
+					this.map.resize();
+				}, 50);
 			}
 		});
 	}

@@ -260,9 +260,11 @@ class Accordion extends gia.Component {
 	}
 
 	stateChange(stateChanges) {
+		const changes = { ...stateChanges };
+		
 		gia.mutate(() => {
-			if ("isOpen" in stateChanges) {
-				const { isOpen } = stateChanges;
+			if ("isOpen" in changes) {
+				const { isOpen } = changes;
 
 				// Sync DOM if necessary
 				if (this.element.open !== isOpen) {
@@ -278,7 +280,7 @@ class Accordion extends gia.Component {
 				}
 			}
 
-			if ("isClosing" in stateChanges) {
+			if ("isClosing" in changes) {
 				this.element.classList.toggle("is-closing", this.state.isClosing);
 			}
 
