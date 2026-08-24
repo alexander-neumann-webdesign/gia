@@ -28,14 +28,18 @@ class Header extends gia.Component {
 
 			// Observe layout shifts instead of polling documentHeight during scroll
 			this.observeResize(document.body, this.handleBodyResize);
-			window.addEventListener("resize", this.handleBodyResize);
+			this.observeWindowResize(this.handleBodyResize);
 			this.handleBodyResize();
 
 			this.observeScroll(this.handleScroll);
 
 			// Initial check
-			this.currentScrollY = window.scrollY || window.pageYOffset;
-			this.update();
+			gia.measure(() => {
+				this.currentScrollY = window.scrollY || window.pageYOffset;
+				gia.mutate(() => {
+					this.update();
+				});
+			});
 
 			// Swup integration: reset header when navigating
 			if (window.swup) {
@@ -49,7 +53,7 @@ class Header extends gia.Component {
 	unmount() {
 		if (this.options.scrollEvents) {
 			this.unobserveResize(document.body, this.handleBodyResize);
-			window.removeEventListener("resize", this.handleBodyResize);
+			this.unobserveWindowResize(this.handleBodyResize);
 			this.unobserveScroll(this.handleScroll);
 
 			if (window.swup) {
@@ -58,14 +62,16 @@ class Header extends gia.Component {
 				} catch (e) {}
 			}
 
-			gia.clear(this.tickUpdate);
+			if (this.tickTask) gia.clear(this.tickTask);
 		}
 	}
 
 	handleBodyResize() {
 		// Cache expensive layout reads to keep them out of the 60fps scroll loop
-		this._windowHeight = window.innerHeight;
-		this._documentHeight = document.documentElement.scrollHeight;
+		gia.measure(() => {
+			this._windowHeight = window.innerHeight;
+			this._documentHeight = document.documentElement.scrollHeight;
+		});
 	}
 
 	handleScroll(payload) {
@@ -76,7 +82,7 @@ class Header extends gia.Component {
 		}
 
 		if (!this.ticking) {
-			gia.mutate(this.tickUpdate);
+			this.tickTask = gia.mutate(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -92,7 +98,9 @@ class Header extends gia.Component {
 		this.currentScrollY = 0;
 		if (this.options.scrubTransition) {
 			if (this._lastHeaderProgress !== 0) {
-				this.element.style.setProperty("--header-progress", "0");
+				gia.mutate(() => {
+					this.element.style.setProperty("--header-progress", "0");
+				});
 				this._lastHeaderProgress = 0;
 			}
 		}

@@ -52,7 +52,7 @@ class ScrollEffect extends gia.Component {
 
 	unmount() {
 		this.unbindScroll();
-		gia.clear(this.tickUpdate);
+		if (this.tickTask) gia.clear(this.tickTask);
 	}
 
 	bindScroll() {
@@ -95,7 +95,7 @@ class ScrollEffect extends gia.Component {
 
 		this.cacheLayout();
 		if (!this.ticking) {
-			gia.mutate(this.tickUpdate);
+			this.tickTask = gia.mutate(this.tickUpdate);
 			this.ticking = true;
 		}
 	}
@@ -126,7 +126,7 @@ class ScrollEffect extends gia.Component {
 				// Dynamically bind scroll listener only when visible to save resources
 				this.bindScroll();
 				if (!this.ticking) {
-					gia.mutate(this.tickUpdate);
+					this.tickTask = gia.mutate(this.tickUpdate);
 					this.ticking = true;
 				}
 			} else {
