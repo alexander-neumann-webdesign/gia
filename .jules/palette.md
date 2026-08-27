@@ -20,3 +20,7 @@
 ## 2025-10-18 - Toaster Close Button ARIA
 **Learning:** Adding `aria-hidden="true"` to decorative SVGs inside components with descriptive text or labels ensures a smoother screen reader experience by preventing redundant announcements.
 **Action:** Always add `aria-hidden="true"` to decorative SVGs within interactive elements.
+
+## 2025-10-24 - BottomSheet Close Button ARIA & Focus
+**Learning:** Similar to Modals, bottom sheet dialogs must ensure their close buttons have explicitly defined `aria-label`s for screen readers (if not hardcoded in the HTML) and explicit `:focus-visible` states to support keyboard navigation.
+**Action:** Always ensure bottom sheet close buttons have an `aria-label="Close modal"` (or similar) injected dynamically if missing, and define an explicit `:focus-visible` rule in the component's base CSS.

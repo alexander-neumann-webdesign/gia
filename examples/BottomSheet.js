@@ -60,6 +60,9 @@ class BottomSheet extends gia.Component {
 
 		for (let i = 0; i < this.ref.closeBtn.length; i++) {
 			this.ref.closeBtn[i].addEventListener("click", this.close);
+			if (!this.ref.closeBtn[i].hasAttribute("aria-label")) {
+				this.ref.closeBtn[i].setAttribute("aria-label", "Close modal");
+			}
 		}
 
 		if (this.ref.overlay) {
@@ -473,6 +476,11 @@ SUGGESTED SCSS
     opacity: 0;
     transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
     pointer-events: none;
+  }
+
+  [data-ref="closeBtn"]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 
   [data-ref="drawer"] {
