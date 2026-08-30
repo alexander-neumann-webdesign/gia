@@ -83,3 +83,7 @@
 ## 2024-08-23 - Prevent GC Churn in FilterableList hot paths
 **Learning:** Using `Map.prototype.entries()` with `for...of` loops allocates Iterator objects on every iteration, causing garbage collection churn when used in high-frequency batching queues or `requestAnimationFrame` hot paths.
 **Action:** Use a flat array to store keys and values sequentially (e.g. `[key1, value1, key2, value2]`) and iterate with a standard `for` loop (e.g. `for (let i = 0; i < arr.length; i += 2)`). Reuse the existing array by clearing it with `arr.length = 0`.
+
+## 2025-02-18 - Prune MutationObserver queue synchronously
+**Learning:** MutationObserver callbacks execute as microtasks before layout and paint. Deferring component mounting to a macrotask causes a Flash of Unstyled Content (FOUC). Blindly queuing added nodes means `querySelectorAll` must run for every inserted element.
+**Action:** Aggressively filter added nodes synchronously within the MutationObserver callback using `node.hasAttribute()` or `node.querySelector()` to prune the processing queue before initialization, eliminating processing overhead for large blocks of plain HTML.

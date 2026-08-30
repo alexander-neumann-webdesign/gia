@@ -748,7 +748,7 @@ function gt(i) {
     if (s.addedNodes.length > 0)
       for (let r = 0; r < s.addedNodes.length; r++) {
         const o = s.addedNodes[r];
-        o.nodeType === Node.ELEMENT_NODE && O.indexOf(o) === -1 && O.push(o);
+        o.nodeType === Node.ELEMENT_NODE && (o.hasAttribute(t) || o.querySelector(`[${t}]`)) && O.indexOf(o) === -1 && O.push(o);
       }
   }
   S = e;
