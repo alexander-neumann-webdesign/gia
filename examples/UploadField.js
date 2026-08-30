@@ -279,6 +279,7 @@ class UploadField extends gia.Component {
 		removeBtn.style.cursor = 'pointer';
 		removeBtn.style.fontSize = '1.2rem';
 		removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+		removeBtn.setAttribute('title', `Remove ${file.name}`);
 
 		removeBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
