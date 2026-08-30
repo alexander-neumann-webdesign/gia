@@ -46,8 +46,11 @@ function handleMutations(mutations) {
             for (let j = 0; j < mutation.addedNodes.length; j++) {
                 const node = mutation.addedNodes[j];
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    if (_addedElements.indexOf(node) === -1) {
-                        _addedElements.push(node);
+                    // ⚡ BOLT OPTIMIZATION: Aggressively filter nodes synchronously to avoid querySelectorAll overhead for plain HTML
+                    if (node.hasAttribute(attrName) || node.querySelector(`[${attrName}]`)) {
+                        if (_addedElements.indexOf(node) === -1) {
+                            _addedElements.push(node);
+                        }
                     }
                 }
             }
