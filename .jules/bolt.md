@@ -87,3 +87,6 @@
 ## 2025-02-18 - Prune MutationObserver queue synchronously
 **Learning:** MutationObserver callbacks execute as microtasks before layout and paint. Deferring component mounting to a macrotask causes a Flash of Unstyled Content (FOUC). Blindly queuing added nodes means `querySelectorAll` must run for every inserted element.
 **Action:** Aggressively filter added nodes synchronously within the MutationObserver callback using `node.hasAttribute()` or `node.querySelector()` to prune the processing queue before initialization, eliminating processing overhead for large blocks of plain HTML.
+## 2024-09-01 - Remove rAF debounce on scroll events
+**Learning:** In modern browsers, scroll events are natively throttled to the display refresh rate. Wrapping scroll callbacks in `requestAnimationFrame` introduces an unnecessary 1-frame latency and can cause layout thrashing if those callbacks read DOM properties.
+**Action:** Execute scroll handlers synchronously, especially when they only perform DOM writes or update component state (which is natively batched).

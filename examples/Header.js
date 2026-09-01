@@ -13,7 +13,6 @@ class Header extends gia.Component {
 
 		this.lastScrollY = 0;
 		this.currentScrollY = 0;
-		this.ticking = false;
 
 		this.setState({
 			isHidden: false,
@@ -61,8 +60,6 @@ class Header extends gia.Component {
 					window.swup.hooks.off("page:view", this.handleSwupPageChange);
 				} catch (e) {}
 			}
-
-			if (this.tickTask) gia.clear(this.tickTask);
 		}
 	}
 
@@ -81,15 +78,10 @@ class Header extends gia.Component {
 			this.currentScrollY = window.scrollY || window.pageYOffset;
 		}
 
-		if (!this.ticking) {
-			this.tickTask = gia.mutate(this.tickUpdate);
-			this.ticking = true;
-		}
-	}
-
-	tickUpdate() {
+		// Execute synchronously to eliminate 1-frame latency.
+		// Modern browsers throttle scroll events natively to the display refresh rate.
+		// DOM writes inside update() are batched by setState's internal rAF.
 		this.update();
-		this.ticking = false;
 	}
 
 	handleSwupPageChange() {
