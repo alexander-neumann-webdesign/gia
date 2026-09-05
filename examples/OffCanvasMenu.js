@@ -30,6 +30,9 @@ class OffCanvasMenu extends gia.Component {
 
 		for (let i = 0; i < this.ref.closeButtons.length; i++) {
 			this.ref.closeButtons[i].addEventListener("click", this.handleCloseClick);
+			if (!this.ref.closeButtons[i].hasAttribute("aria-label")) {
+				this.ref.closeButtons[i].setAttribute("aria-label", "Close menu");
+			}
 		}
 
 		if (window.swup) {
