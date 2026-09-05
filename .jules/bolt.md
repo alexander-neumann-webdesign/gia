@@ -90,3 +90,6 @@
 ## 2024-09-01 - Remove rAF debounce on scroll events
 **Learning:** In modern browsers, scroll events are natively throttled to the display refresh rate. Wrapping scroll callbacks in `requestAnimationFrame` introduces an unnecessary 1-frame latency and can cause layout thrashing if those callbacks read DOM properties.
 **Action:** Execute scroll handlers synchronously, especially when they only perform DOM writes or update component state (which is natively batched).
+## 2024-03-24 - Avoid Map.forEach for iterating Map objects
+**Learning:** `Map.prototype.forEach()` with a hoisted callback is generally fine, but to further reduce GC churn caused by iterator allocations in hot paths, standard `for...of` loops over `map.entries()` or `map.keys()` can be preferable. Note that `Array.from()` is a de-optimization due to large array allocations.
+**Action:** Replace `Map.prototype.forEach()` with `for...of` loops to avoid unnecessary closure/iterator overhead where possible.
