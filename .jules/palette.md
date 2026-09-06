@@ -24,3 +24,6 @@
 ## 2025-11-20 - Icon-Only Button Tooltips
 **Learning:** For icon-only interactive controls (like a '🗑️' remove file button in a dropzone), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label. Relying solely on icons can cause confusion if the icon is ambiguous.
 **Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`.
+## 2025-11-20 - Icon-Only Button Tooltips
+**Learning:** For icon-only interactive controls (like a '🗑️' remove file button in a dropzone), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label. Relying solely on icons can cause confusion if the icon is ambiguous.
+**Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`.
