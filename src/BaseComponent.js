@@ -21,9 +21,6 @@ const _observerEntryArr = [null];
 
 const _callObserverCb = (cb) => cb(_observerEntryArr);
 
-const _unobserveResizeCb = function(value, element) { this.unobserveResize(element); };
-const _unobserveIntersectionCb = function(value, element) { this.unobserveIntersection(element); };
-
 const _flushComponentState = (comp) => comp._flushStateChanges();
 let isRafQueued = false;
 const dirtyComponents = [];
@@ -328,14 +325,18 @@ export default class BaseComponent {
 		}
 
 		if (this._observedResizeElements) {
-			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
-			this._observedResizeElements.forEach(_unobserveResizeCb, this);
+			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
+			for (const element of this._observedResizeElements.keys()) {
+				this.unobserveResize(element);
+			}
 			this._observedResizeElements = null;
 		}
 
 		if (this._observedIntersectionElements) {
-			// ⚡ BOLT OPTIMIZATION: Use hoisted callback with thisArg to prevent closure allocation
-			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
+			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
+			for (const element of this._observedIntersectionElements.keys()) {
+				this.unobserveIntersection(element);
+			}
 			this._observedIntersectionElements = null;
 		}
 
@@ -638,11 +639,15 @@ export default class BaseComponent {
 		const componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) return;
 
-		// ⚡ BOLT OPTIMIZATION: Avoid inline closure allocation by storing context
-		// and using a bound or class method to process the Map entries.
+		// ⚡ BOLT OPTIMIZATION: Avoid Map.forEach to prevent iterator allocation.
+		// Use standard for...of loop for iteration.
 		this._currentUnobserveElement = element;
 		this._currentUnobserveCallback = callback;
-		componentElementMap.forEach(this._processIntersectionData, this);
+
+		for (const [observerData, componentCallbacks] of componentElementMap.entries()) {
+			this._processIntersectionData(componentCallbacks, observerData);
+		}
+
 		this._currentUnobserveElement = null;
 		this._currentUnobserveCallback = null;
 
