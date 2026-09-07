@@ -24,6 +24,6 @@
 ## 2025-11-20 - Icon-Only Button Tooltips
 **Learning:** For icon-only interactive controls (like a '🗑️' remove file button in a dropzone), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label. Relying solely on icons can cause confusion if the icon is ambiguous.
 **Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`.
-## 2025-11-20 - Icon-Only Button Tooltips
-**Learning:** For icon-only interactive controls (like a '🗑️' remove file button in a dropzone), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label. Relying solely on icons can cause confusion if the icon is ambiguous.
-**Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`.
+## 2024-10-25 - Dynamic ARIA labels for modal close buttons
+**Learning:** Found an accessibility issue pattern specific to this app's components - while the `Modal` and `BottomSheet` components dynamically inject an `aria-label` attribute if missing on their respective close buttons (`this.ref.closeButton`), the `OffCanvasMenu` component (which is functionally similar to a modal) missed this logic for `this.ref.closeButtons`.
+**Action:** Always ensure that dynamically initialized interactive elements that control modal visibility (like off-canvas close buttons) get proper default `aria-label` attributes injected via JavaScript if they are missing in the HTML markup, maintaining consistency across similar components.
