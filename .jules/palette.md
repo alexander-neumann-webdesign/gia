@@ -27,3 +27,6 @@
 ## 2024-10-25 - Dynamic ARIA labels for modal close buttons
 **Learning:** Found an accessibility issue pattern specific to this app's components - while the `Modal` and `BottomSheet` components dynamically inject an `aria-label` attribute if missing on their respective close buttons (`this.ref.closeButton`), the `OffCanvasMenu` component (which is functionally similar to a modal) missed this logic for `this.ref.closeButtons`.
 **Action:** Always ensure that dynamically initialized interactive elements that control modal visibility (like off-canvas close buttons) get proper default `aria-label` attributes injected via JavaScript if they are missing in the HTML markup, maintaining consistency across similar components.
+## 2025-12-05 - Dynamic Title for Icon-Only Status Buttons
+**Learning:** For icon-only interactive controls that track states (like play/pause or mute/unmute buttons), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label, and the `aria-label` alone does not convey the current active state to mouse users as state toggles.
+**Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`, and update the `title` dynamically when the component state changes.
