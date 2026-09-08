@@ -639,14 +639,11 @@ export default class BaseComponent {
 		const componentElementMap = this._observedIntersectionElements.get(element);
 		if (!componentElementMap) return;
 
-		// ⚡ BOLT OPTIMIZATION: Avoid Map.forEach to prevent iterator allocation.
-		// Use standard for...of loop for iteration.
+		// ⚡ BOLT OPTIMIZATION: Use Map.forEach to prevent Iterator array allocation in for...of loops.
 		this._currentUnobserveElement = element;
 		this._currentUnobserveCallback = callback;
 
-		for (const [observerData, componentCallbacks] of componentElementMap.entries()) {
-			this._processIntersectionData(componentCallbacks, observerData);
-		}
+		componentElementMap.forEach(this._processIntersectionData, this);
 
 		this._currentUnobserveElement = null;
 		this._currentUnobserveCallback = null;
