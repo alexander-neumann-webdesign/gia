@@ -93,3 +93,6 @@
 ## 2024-03-24 - Avoid Map.forEach for iterating Map objects
 **Learning:** `Map.prototype.forEach()` with a hoisted callback is generally fine, but to further reduce GC churn caused by iterator allocations in hot paths, standard `for...of` loops over `map.entries()` or `map.keys()` can be preferable. Note that `Array.from()` is a de-optimization due to large array allocations.
 **Action:** Replace `Map.prototype.forEach()` with `for...of` loops to avoid unnecessary closure/iterator overhead where possible.
+## 2024-03-25 - Use Map.forEach over for...of map
+**Learning:** `for (const [key, val] of map)` allocates an array `[key, val]` on every iteration, leading to GC churn in hot paths. `Map.prototype.forEach` does not allocate this intermediate array and is faster.
+**Action:** Use `Map.prototype.forEach` instead of `for...of` loops to iterate over Maps in hot paths.
