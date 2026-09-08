@@ -452,6 +452,7 @@ class VideoPlayer extends gia.Component {
 		const playPauseBtn = this.ref.playPauseButton;
 
 		playPauseBtn.setAttribute("aria-pressed", isPlaying.toString());
+		playPauseBtn.setAttribute("title", isPlaying ? "Pause video" : "Play video");
 
 		if (isPlaying) {
 			playPauseBtn.classList.remove("is-paused");
@@ -528,6 +529,7 @@ class VideoPlayer extends gia.Component {
 		const subtitleBtn = this.ref.subtitleButton;
 
 		subtitleBtn.setAttribute("aria-pressed", isEnabled.toString());
+		subtitleBtn.setAttribute("title", isEnabled ? "Disable subtitles" : "Enable subtitles");
 
 		if (isEnabled) {
 			subtitleBtn.classList.remove("is-disabled");
@@ -568,6 +570,7 @@ class VideoPlayer extends gia.Component {
 		const muteBtn = this.ref.muteButton;
 
 		muteBtn.setAttribute("aria-pressed", isMuted.toString());
+		muteBtn.setAttribute("title", isMuted ? "Unmute video" : "Mute video");
 
 		if (isMuted) {
 			muteBtn.classList.remove("is-unmuted");
