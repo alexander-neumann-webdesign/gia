@@ -142,6 +142,7 @@ class PongGame extends gia.Component {
 
 				gia.mutate(() => {
 					this.ref.pauseToggle.setAttribute("aria-label", label);
+					this.ref.pauseToggle.setAttribute("title", label);
 					if (svgPath) {
 						svgPath.setAttribute("d", d);
 					}
@@ -363,7 +364,7 @@ EXPECTED HTML
             </div>
         </div>
 
-        <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation">
+        <button type="button" class="pong-pause-btn" data-ref="PongGame:pauseToggle" aria-label="Pause Background Animation" title="Pause Background Animation">
             <!-- Icon will be injected by component state -->
             <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path style="transition: d 0.3s ease;" d="M 6 5 L 10 5 L 10 19 L 6 19 Z M 14 5 L 18 5 L 18 19 L 14 19 Z"/></svg>
         </button>
