@@ -96,3 +96,6 @@
 ## 2024-03-25 - Use Map.forEach over for...of map
 **Learning:** `for (const [key, val] of map)` allocates an array `[key, val]` on every iteration, leading to GC churn in hot paths. `Map.prototype.forEach` does not allocate this intermediate array and is faster.
 **Action:** Use `Map.prototype.forEach` instead of `for...of` loops to iterate over Maps in hot paths.
+## 2025-02-18 - Fix memory leak in array mutation using backward for loop
+**Learning:** When using a swap-and-pop pattern to remove items from an array in JavaScript, iterating over that same array using Array.prototype.forEach() causes elements to be skipped due to index shifting. This left lingering global scroll/resize event listeners attached after component destruction, creating a memory leak.
+**Action:** Always use a standard backward for loop (e.g., for (let i = arr.length - 1; i >= 0; i--)) when an array might mutate itself (especially during cleanup functions) to ensure all items are processed without index skipping.

@@ -36,7 +36,7 @@ function flushGlobalStateChanges() {
 }
 
 function _processScroll() {
-	for (let i = 0; i < scrollCallbacks.length; i++) {
+	for (let i = scrollCallbacks.length - 1; i >= 0; i--) {
 		scrollCallbacks[i](_scrollPayload);
 	}
 }
@@ -65,7 +65,7 @@ function handleGlobalScroll(e) {
 }
 
 function _processResize() {
-	for (let i = 0; i < windowResizeCallbacks.length; i++) {
+	for (let i = windowResizeCallbacks.length - 1; i >= 0; i--) {
 		windowResizeCallbacks[i](_resizePayload);
 	}
 }
@@ -146,7 +146,7 @@ function getIntersectionObserverData(options) {
 				const callbacks = observerData.callbacks.get(entry.target);
 				if (callbacks) {
 					_observerEntryArr[0] = entry;
-					for (let j = 0; j < callbacks.length; j++) {
+					for (let j = callbacks.length - 1; j >= 0; j--) {
 						callbacks[j](_observerEntryArr);
 					}
 				}
@@ -462,7 +462,7 @@ export default class BaseComponent {
 			const callbacks = resizeCallbacks.get(entry.target);
 			if (callbacks) {
 						_observerEntryArr[0] = entry;
-						for (let j = 0; j < callbacks.length; j++) {
+						for (let j = callbacks.length - 1; j >= 0; j--) {
 							callbacks[j](_observerEntryArr);
 						}
 	}

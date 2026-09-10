@@ -280,7 +280,7 @@ function lt() {
   v.length = 0;
 }
 function ft() {
-  for (let i = 0; i < p.length; i++)
+  for (let i = p.length - 1; i >= 0; i--)
     p[i](R);
 }
 function E(i) {
@@ -288,7 +288,7 @@ function E(i) {
   w ? (t = w.scroll, e = w.velocity) : i && typeof i.scroll == "number" ? (t = i.scroll, e = i.velocity || 0) : (t = window.scrollY || window.pageYOffset, e = 0), R.scroll = t, R.velocity = e, ft();
 }
 function ut() {
-  for (let i = 0; i < g.length; i++)
+  for (let i = g.length - 1; i >= 0; i--)
     g[i](G);
 }
 function T(i) {
@@ -324,7 +324,7 @@ function ct(i) {
         const _ = c[a], M = f.callbacks.get(_.target);
         if (M) {
           I[0] = _;
-          for (let P = 0; P < M.length; P++)
+          for (let P = M.length - 1; P >= 0; P--)
             M[P](I);
         }
       }
@@ -474,7 +474,7 @@ class K {
         const f = r[o], u = m.get(f.target);
         if (u) {
           I[0] = f;
-          for (let c = 0; c < u.length; c++)
+          for (let c = u.length - 1; c >= 0; c--)
             u[c](I);
         }
       }
