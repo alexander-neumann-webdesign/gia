@@ -181,6 +181,7 @@ class VideoHolder extends gia.Component {
 		const playPauseBtn = this.ref.playPauseButton;
 
 		playPauseBtn.setAttribute("aria-pressed", isPlaying.toString());
+		playPauseBtn.setAttribute("title", isPlaying ? "Pause video" : "Play video");
 
 		if (isPlaying) {
 			playPauseBtn.classList.remove("is-paused");
