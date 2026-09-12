@@ -52,7 +52,7 @@ function k(n, e = document) {
 function g(n, e = document) {
   return typeof n != "string" ? n : e.querySelectorAll(n);
 }
-function S(n, e, t = null) {
+function v(n, e, t = null) {
   t === null ? n.classList.toggle(e) : n.classList.toggle(e, !!t);
 }
 function P(n, e, t) {
@@ -64,13 +64,13 @@ function P(n, e, t) {
     n.classList[t](e);
   return n;
 }
-function C(n, e) {
+function S(n, e) {
   return P(n, e, "remove");
 }
-function E(n, e) {
+function C(n, e) {
   return P(n, e, "add");
 }
-function $(n, e, t = null, r = {
+function E(n, e, t = null, r = {
   bubbles: !0,
   cancelable: !0,
   detail: null
@@ -95,13 +95,13 @@ function I(n, e) {
 }
 const q = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  addClass: E,
+  addClass: C,
   debounce: I,
   query: k,
   queryAll: g,
-  removeClass: C,
-  toggleClass: S,
-  triggerEvent: $
+  removeClass: S,
+  toggleClass: v,
+  triggerEvent: E
 }, Symbol.toStringTag, { value: "Module" }));
 function z(n = {}, e = document.documentElement) {
   if (!n) {
@@ -140,7 +140,7 @@ function z(n = {}, e = document.documentElement) {
     u && u.d();
   }
 }
-function v(n) {
+function $(n) {
   if (!n) return;
   let e = a.get(n);
   if (!e && typeof n == "string") {
@@ -160,7 +160,7 @@ function v(n) {
 function L(n = document.documentElement) {
   const e = g(`[${h.get("attrPrefix")}-component]`, n);
   for (let t = 0; t < e.length; t++)
-    v(e[t]);
+    $(e[t]);
 }
 const i = (typeof window < "u" ? window.a : null) || {
   reads: [],
@@ -347,6 +347,12 @@ class U {
   }
   observeScroll(e) {
   }
+  g(e, t) {
+    this.unobserveResize(t);
+  }
+  m(e, t) {
+    this.unobserveIntersection(t);
+  }
   unobserveScroll(e) {
   }
   observeWindowResize(e) {
@@ -359,8 +365,8 @@ class U {
   }
   observeIntersection(e, t, r = {}) {
   }
-  g(e, t) {
-    const r = this.m, s = this.w;
+  w(e, t) {
+    const r = this.y, s = this.b;
     if (s) {
       const c = e.indexOf(s);
       if (c !== -1 && (e[c] = e[e.length - 1], e.pop(), t && t.callbacks.has(r))) {
@@ -377,7 +383,7 @@ class U {
       }
       e.length = 0;
     }
-    if (e.length === 0 && this.y.get(r).delete(t), t) {
+    if (e.length === 0 && this.x.get(r).delete(t), t) {
       const c = t.callbacks.get(r);
       c && c.length === 0 && (t.callbacks.delete(r), t.observer.unobserve(r), t.elementsCount--), t.elementsCount === 0 && (t.observer.disconnect(), t.nodeMap && t.nodeMap.delete("data"));
     }
@@ -456,7 +462,7 @@ export {
   G as clear,
   h as config,
   b as createInstance,
-  v as destroyInstance,
+  $ as destroyInstance,
   _ as getComponentFromElement,
   z as loadComponents,
   F as measure,

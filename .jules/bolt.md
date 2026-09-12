@@ -99,3 +99,7 @@
 ## 2025-02-18 - Fix memory leak in array mutation using backward for loop
 **Learning:** When using a swap-and-pop pattern to remove items from an array in JavaScript, iterating over that same array using Array.prototype.forEach() causes elements to be skipped due to index shifting. This left lingering global scroll/resize event listeners attached after component destruction, creating a memory leak.
 **Action:** Always use a standard backward for loop (e.g., for (let i = arr.length - 1; i >= 0; i--)) when an array might mutate itself (especially during cleanup functions) to ensure all items are processed without index skipping.
+
+## 2024-05-24 - Do not replace Map.forEach with for...of
+**Learning:** Replacing `Map.prototype.forEach()` with `for...of map.keys()` under the assumption that it avoids allocations is incorrect. `for...of` loops over Iterables allocate an Iterator object on every run, creating garbage collection churn in hot paths.
+**Action:** Always prefer `Map.prototype.forEach()` with a hoisted or bound callback for iterating `Map` objects to truly avoid Iterator and array allocations.

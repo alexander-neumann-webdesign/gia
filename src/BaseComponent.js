@@ -325,18 +325,14 @@ export default class BaseComponent {
 		}
 
 		if (this._observedResizeElements) {
-			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
-			for (const element of this._observedResizeElements.keys()) {
-				this.unobserveResize(element);
-			}
+			// ⚡ BOLT OPTIMIZATION: Use Map.forEach to prevent Iterator allocation from for...of loops
+			this._observedResizeElements.forEach(this._unobserveResizeCb, this);
 			this._observedResizeElements = null;
 		}
 
 		if (this._observedIntersectionElements) {
-			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
-			for (const element of this._observedIntersectionElements.keys()) {
-				this.unobserveIntersection(element);
-			}
+			// ⚡ BOLT OPTIMIZATION: Use Map.forEach to prevent Iterator allocation from for...of loops
+			this._observedIntersectionElements.forEach(this._unobserveIntersectionCb, this);
 			this._observedIntersectionElements = null;
 		}
 
@@ -381,6 +377,14 @@ export default class BaseComponent {
 		if (scrollCallbacks.indexOf(callback) === -1) {
 			scrollCallbacks.push(callback);
 		}
+	}
+
+	_unobserveResizeCb(value, element) {
+		this.unobserveResize(element);
+	}
+
+	_unobserveIntersectionCb(value, element) {
+		this.unobserveIntersection(element);
 	}
 
 	unobserveScroll(callback) {
