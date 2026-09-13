@@ -20,6 +20,8 @@ const _resizePayload = { width: 0, height: 0 };
 const _observerEntryArr = [null];
 
 const _callObserverCb = (cb) => cb(_observerEntryArr);
+const _unobserveResizeCb = function(val, key) { this.unobserveResize(key); };
+const _unobserveIntersectionCb = function(val, key) { this.unobserveIntersection(key); };
 
 const _flushComponentState = (comp) => comp._flushStateChanges();
 let isRafQueued = false;
@@ -325,18 +327,14 @@ export default class BaseComponent {
 		}
 
 		if (this._observedResizeElements) {
-			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
-			for (const element of this._observedResizeElements.keys()) {
-				this.unobserveResize(element);
-			}
+			// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
+			this._observedResizeElements.forEach(_unobserveResizeCb, this);
 			this._observedResizeElements = null;
 		}
 
 		if (this._observedIntersectionElements) {
-			// ⚡ BOLT OPTIMIZATION: Use a standard for loop to avoid Map.forEach iterator allocation
-			for (const element of this._observedIntersectionElements.keys()) {
-				this.unobserveIntersection(element);
-			}
+			// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
+			this._observedIntersectionElements.forEach(_unobserveIntersectionCb, this);
 			this._observedIntersectionElements = null;
 		}
 
