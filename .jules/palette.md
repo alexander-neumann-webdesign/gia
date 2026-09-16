@@ -30,3 +30,7 @@
 ## 2025-12-05 - Dynamic Title for Icon-Only Status Buttons
 **Learning:** For icon-only interactive controls that track states (like play/pause or mute/unmute buttons), an `aria-label` provides accessibility for screen readers, but sighted mouse users still lack context without a visible label, and the `aria-label` alone does not convey the current active state to mouse users as state toggles.
 **Action:** Always add a native `title` attribute to icon-only buttons to provide a built-in tooltip for mouse hover, serving as a simple visual complement to the `aria-label`, and update the `title` dynamically when the component state changes.
+
+## 2024-09-16 - Dynamic titles for icon-only stateful buttons
+**Learning:** In this repository, updating `aria-label` or `aria-pressed` on dynamic icon-only buttons (like play/pause) is insufficient for sighted mouse users who rely on visual tooltips. The native `title` attribute must be updated in tandem with state changes to provide clear context.
+**Action:** When creating or modifying stateful icon-only buttons, always ensure a native `title` attribute is dynamically synced with the component's state alongside accessibility attributes.
