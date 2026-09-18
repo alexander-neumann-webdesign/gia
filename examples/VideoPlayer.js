@@ -452,7 +452,9 @@ class VideoPlayer extends gia.Component {
 		const playPauseBtn = this.ref.playPauseButton;
 
 		playPauseBtn.setAttribute("aria-pressed", isPlaying.toString());
-		playPauseBtn.setAttribute("title", isPlaying ? "Pause video" : "Play video");
+		const label = isPlaying ? "Pause video" : "Play video";
+		playPauseBtn.setAttribute("title", label);
+		playPauseBtn.setAttribute("aria-label", label);
 
 		if (isPlaying) {
 			playPauseBtn.classList.remove("is-paused");
@@ -529,7 +531,9 @@ class VideoPlayer extends gia.Component {
 		const subtitleBtn = this.ref.subtitleButton;
 
 		subtitleBtn.setAttribute("aria-pressed", isEnabled.toString());
-		subtitleBtn.setAttribute("title", isEnabled ? "Disable subtitles" : "Enable subtitles");
+		const label = isEnabled ? "Disable subtitles" : "Enable subtitles";
+		subtitleBtn.setAttribute("title", label);
+		subtitleBtn.setAttribute("aria-label", label);
 
 		if (isEnabled) {
 			subtitleBtn.classList.remove("is-disabled");
@@ -570,7 +574,9 @@ class VideoPlayer extends gia.Component {
 		const muteBtn = this.ref.muteButton;
 
 		muteBtn.setAttribute("aria-pressed", isMuted.toString());
-		muteBtn.setAttribute("title", isMuted ? "Unmute video" : "Mute video");
+		const label = isMuted ? "Unmute video" : "Mute video";
+		muteBtn.setAttribute("title", label);
+		muteBtn.setAttribute("aria-label", label);
 
 		if (isMuted) {
 			muteBtn.classList.remove("is-unmuted");
