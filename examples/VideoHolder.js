@@ -181,6 +181,7 @@ class VideoHolder extends gia.Component {
 		const playPauseBtn = this.ref.playPauseButton;
 
 		playPauseBtn.setAttribute("aria-pressed", isPlaying.toString());
+		playPauseBtn.setAttribute("title", isPlaying ? "Pause video" : "Play video");
 
 		if (isPlaying) {
 			playPauseBtn.classList.remove("is-paused");
@@ -218,7 +219,7 @@ EXPECTED HTML
 
 <div data-component="VideoHolder">
   <video data-ref="video" src="video.mp4" loop muted playsinline preload="metadata"></video>
-  <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" aria-pressed="false" class="play-pause-btn is-paused">
+  <button type="button" data-ref="playPauseButton" aria-label="Play or pause video" title="Play video" aria-pressed="false" class="play-pause-btn is-paused">
     <!-- Icons injected via JS -->
   </button>
 </div>
