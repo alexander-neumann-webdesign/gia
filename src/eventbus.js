@@ -57,6 +57,7 @@ class EventBus {
 
 	off(event, handler) {
 		if (!handler) {
+			console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
 			// Clear all listeners for this event if no handler provided
 			if (this.listeners[event]) {
 				this.listeners[event].length = 0;
@@ -77,7 +78,8 @@ class EventBus {
 
 		const index = handlers.indexOf(targetHandler);
 		if (index !== -1) {
-			handlers.splice(index, 1);
+			handlers[index] = handlers[handlers.length - 1];
+			handlers.pop();
 		}
 	}
 }

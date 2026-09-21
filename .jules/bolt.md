@@ -102,3 +102,6 @@
 ## 2025-03-02 - Prevent GC churn using Map.forEach over for...of map.keys()
 **Learning:** Using `for (const key of map.keys())` allocates an Iterator object on every iteration, leading to GC churn in hot paths like component destruction. Using `Map.prototype.forEach` with a hoisted callback function avoids this iterator allocation entirely.
 **Action:** Replace `for...of map.keys()` loops with `Map.prototype.forEach` using a hoisted, pre-allocated callback function to eliminate iterator overhead.
+## 2025-03-05 - Replace splice with swap-and-pop for array item removal
+**Learning:** `Array.prototype.splice()` causes performance overhead due to O(N) element shifting and array allocations, which degrades performance during high-frequency array item removals like event listeners.
+**Action:** Replace `splice()` with the swap-and-pop pattern (`arr[index] = arr[arr.length - 1]; arr.pop();`) to achieve O(1) removal when element order doesn't matter.
