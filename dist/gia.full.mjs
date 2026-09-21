@@ -715,7 +715,7 @@ class dt {
   }
   off(t, e) {
     if (!e) {
-      this.listeners[t] && (this.listeners[t].length = 0);
+      console.warn("EventBus.off requires a handler to remove a specific listener when using native EventTarget."), this.listeners[t] && (this.listeners[t].length = 0);
       return;
     }
     const n = this.listeners[t];
@@ -723,7 +723,7 @@ class dt {
     let s = e;
     e.a && e.a[t] ? (s = e.a[t], delete e.a[t]) : e.E && (s = e.E);
     const r = n.indexOf(s);
-    r !== -1 && n.splice(r, 1);
+    r !== -1 && (n[r] = n[n.length - 1], n.pop());
   }
 }
 const Nt = new dt();
