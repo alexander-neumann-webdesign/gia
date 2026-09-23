@@ -63,6 +63,9 @@ class BottomSheet extends gia.Component {
 			if (!this.ref.closeBtn[i].hasAttribute("aria-label")) {
 				this.ref.closeBtn[i].setAttribute("aria-label", "Close modal");
 			}
+			if (!this.ref.closeBtn[i].hasAttribute("title")) {
+				this.ref.closeBtn[i].setAttribute("title", "Close modal");
+			}
 		}
 
 		if (this.ref.overlay) {

@@ -51,6 +51,9 @@ class Modal extends gia.Component {
 			if (!buttons[i].hasAttribute("aria-label")) {
 				buttons[i].setAttribute("aria-label", "Close modal");
 			}
+			if (!buttons[i].hasAttribute("title")) {
+				buttons[i].setAttribute("title", "Close modal");
+			}
 		}
 
 		// Attach backdrop click
