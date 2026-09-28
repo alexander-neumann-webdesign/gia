@@ -102,3 +102,7 @@
 ## 2025-03-02 - Prevent GC churn using Map.forEach over for...of map.keys()
 **Learning:** Using `for (const key of map.keys())` allocates an Iterator object on every iteration, leading to GC churn in hot paths like component destruction. Using `Map.prototype.forEach` with a hoisted callback function avoids this iterator allocation entirely.
 **Action:** Replace `for...of map.keys()` loops with `Map.prototype.forEach` using a hoisted, pre-allocated callback function to eliminate iterator overhead.
+
+## 2025-03-10 - Eliminate GC array allocation in EventBus emit
+**Learning:** Using `Array.prototype.slice()` in hot paths (like an EventBus `.emit()` method) allocates a new array on every invocation, causing significant garbage collection (GC) churn. We initially copied the array to prevent iteration errors if a handler removes itself synchronously, which shifts indices.
+**Action:** Instead of slicing to copy the array, use logical deletion (e.g., setting removed handlers to `null`) while iterating, and perform an in-place compaction afterwards. Ensure the array length is cached and the iteration is wrapped in a `try...finally` block to guarantee compaction even if handlers throw exceptions. This completely eliminates array allocation during emits while safely preserving strict FIFO execution order and preventing double-execution bugs.

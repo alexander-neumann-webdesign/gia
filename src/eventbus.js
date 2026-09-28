@@ -23,11 +23,33 @@ class EventBus {
 			eventObject._name = event;
 		}
 
-		// ⚡ OPTIMIZATION: Standard for loop over array, avoids Iterator overhead.
-		// We copy the array in case a handler calls .off() synchronously causing index shifts.
-		const callbacks = handlers.slice();
-		for (let i = 0; i < callbacks.length; i++) {
-			callbacks[i](eventObject);
+		// ⚡ BOLT OPTIMIZATION: Use logical deletion and in-place compaction
+		// to avoid GC array allocation on every emit while preserving FIFO order.
+		handlers._iterating = (handlers._iterating || 0) + 1;
+		let hasNulls = false;
+		const len = handlers.length;
+
+		try {
+			for (let i = 0; i < len; i++) {
+				const cb = handlers[i];
+				if (cb) {
+					cb(eventObject);
+				} else {
+					hasNulls = true;
+				}
+			}
+		} finally {
+			handlers._iterating--;
+
+			if (handlers._iterating === 0 && hasNulls) {
+			let j = 0;
+			for (let i = 0; i < handlers.length; i++) {
+				if (handlers[i]) {
+					handlers[j++] = handlers[i];
+				}
+			}
+			handlers.length = j;
+			}
 		}
 	}
 
@@ -77,7 +99,11 @@ class EventBus {
 
 		const index = handlers.indexOf(targetHandler);
 		if (index !== -1) {
-			handlers.splice(index, 1);
+			if (handlers._iterating) {
+				handlers[index] = null; // Logical deletion during iteration
+			} else {
+				handlers.splice(index, 1); // Safe to splice if not iterating
+			}
 		}
 	}
 }
