@@ -11,7 +11,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
     console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
     return;
   }
-  t.priority !== void 0 && (i._ = t.priority), window.gia.components[e] = i;
+  t.priority !== void 0 && (i.m = t.priority), window.gia.components[e] = i;
 });
 class V {
   constructor() {
@@ -83,8 +83,8 @@ function nt(i, t) {
   let e, n = null, s = null;
   const r = () => {
     if (clearTimeout(e), n) {
-      const f = s, u = n;
-      s = null, n = null, i.apply(f, u);
+      const l = s, u = n;
+      s = null, n = null, i.apply(l, u);
     }
   }, o = function() {
     n = arguments, s = this, clearTimeout(e), e = setTimeout(r, t);
@@ -109,7 +109,7 @@ function it(i = {}, t = document.documentElement) {
     return;
   }
   let e = !1;
-  for (const f in i) {
+  for (const l in i) {
     e = !0;
     break;
   }
@@ -118,8 +118,8 @@ function it(i = {}, t = document.documentElement) {
     return;
   }
   const n = [], s = `${h.get("attrPrefix")}-component`, r = b(`[${s}]`, t), o = r.length;
-  for (let f = 0; f < o; f++) {
-    const u = r[f];
+  for (let l = 0; l < o; l++) {
+    const u = r[l];
     if (!d.get(u)) {
       const a = u.getAttribute(s);
       typeof i[a] == "function" ? n.push(z(u, a, i[a])) : console.warn(`Constructor "${a}" not found.`);
@@ -129,15 +129,15 @@ function it(i = {}, t = document.documentElement) {
     const u = t.getAttribute(s);
     typeof i[u] == "function" ? n.push(z(t, u, i[u])) : console.warn(`Constructor "${u}" not found.`);
   }
-  n.length > 1 && n.sort((f, u) => {
-    if (!f) return 1;
+  n.length > 1 && n.sort((l, u) => {
+    if (!l) return 1;
     if (!u) return -1;
-    const c = f.constructor._ ?? f.constructor.priority ?? 0;
-    return (u.constructor._ ?? u.constructor.priority ?? 0) - c;
+    const c = l.constructor.m ?? l.constructor.priority ?? 0;
+    return (u.constructor.m ?? u.constructor.priority ?? 0) - c;
   });
-  for (let f = 0; f < n.length; f++) {
-    const u = n[f];
-    u && u.m();
+  for (let l = 0; l < n.length; l++) {
+    const u = n[l];
+    u && u.y();
   }
 }
 function C(i) {
@@ -150,7 +150,7 @@ function C(i) {
   if (t) {
     const e = t.c || "Unknown";
     try {
-      typeof t.y == "function" ? t.y() : t.unmount();
+      typeof t.b == "function" ? t.b() : t.unmount();
     } catch (n) {
       console.error(`Gia: Error unmounting component "${e}".`, n);
     }
@@ -162,27 +162,27 @@ function yt(i = document.documentElement) {
   for (let e = 0; e < t.length; e++)
     C(t[e]);
 }
-const l = (typeof window < "u" ? window.b : null) || {
+const f = (typeof window < "u" ? window.A : null) || {
   reads: [],
   writes: [],
   scheduled: !1,
   currentReads: null,
   currentWrites: null
 };
-l.tempReads || (l.tempReads = []);
-l.tempWrites || (l.tempWrites = []);
-l.wrapperPool || (l.wrapperPool = []);
-typeof window < "u" && !window.b && (window.b = l);
+f.tempReads || (f.tempReads = []);
+f.tempWrites || (f.tempWrites = []);
+f.wrapperPool || (f.wrapperPool = []);
+typeof window < "u" && !window.A && (window.A = f);
 function H(i, t) {
-  let e = l.wrapperPool.pop();
+  let e = f.wrapperPool.pop();
   return e || (e = function() {
     e.fn.call(e.ctx);
   }, e.n = !0), e.fn = i, e.ctx = t, e;
 }
 function st() {
-  l.scheduled = !1;
-  const i = l.reads;
-  l.currentReads = i, l.reads = l.tempReads;
+  f.scheduled = !1;
+  const i = f.reads;
+  f.currentReads = i, f.reads = f.tempReads;
   for (let e = 0; e < i.length; e++) {
     const n = i[e];
     if (n) {
@@ -191,12 +191,12 @@ function st() {
       } catch (s) {
         console.error(s);
       }
-      n.n && (n.fn = null, n.ctx = null, l.wrapperPool.push(n));
+      n.n && (n.fn = null, n.ctx = null, f.wrapperPool.push(n));
     }
   }
-  i.length = 0, l.tempReads = i, l.currentReads = null;
-  const t = l.writes;
-  l.currentWrites = t, l.writes = l.tempWrites;
+  i.length = 0, f.tempReads = i, f.currentReads = null;
+  const t = f.writes;
+  f.currentWrites = t, f.writes = f.tempWrites;
   for (let e = 0; e < t.length; e++) {
     const n = t[e];
     if (n) {
@@ -205,64 +205,64 @@ function st() {
       } catch (s) {
         console.error(s);
       }
-      n.n && (n.fn = null, n.ctx = null, l.wrapperPool.push(n));
+      n.n && (n.fn = null, n.ctx = null, f.wrapperPool.push(n));
     }
   }
-  t.length = 0, l.tempWrites = t, l.currentWrites = null, (l.reads.length > 0 || l.writes.length > 0) && W();
+  t.length = 0, f.tempWrites = t, f.currentWrites = null, (f.reads.length > 0 || f.writes.length > 0) && W();
 }
 function W() {
-  !l.scheduled && typeof window < "u" && (l.scheduled = !0, window.requestAnimationFrame(st));
+  !f.scheduled && typeof window < "u" && (f.scheduled = !0, window.requestAnimationFrame(st));
 }
 function bt(i, t) {
   const e = t ? H(i, t) : i;
-  return l.reads.push(e), W(), e;
+  return f.reads.push(e), W(), e;
 }
 function ot(i, t) {
   const e = t ? H(i, t) : i;
-  return l.writes.push(e), W(), e;
+  return f.writes.push(e), W(), e;
 }
 function At(i) {
-  let t = l.reads.indexOf(i);
+  let t = f.reads.indexOf(i);
   if (t > -1) {
-    const e = l.reads[t];
-    return e && e.n && (e.fn = null, e.ctx = null, l.wrapperPool.push(e)), l.reads[t] = null, !0;
+    const e = f.reads[t];
+    return e && e.n && (e.fn = null, e.ctx = null, f.wrapperPool.push(e)), f.reads[t] = null, !0;
   }
-  for (let e = 0; e < l.reads.length; e++) {
-    const n = l.reads[e];
+  for (let e = 0; e < f.reads.length; e++) {
+    const n = f.reads[e];
     if (n && n.n && n.fn === i)
-      return n.fn = null, n.ctx = null, l.wrapperPool.push(n), l.reads[e] = null, !0;
+      return n.fn = null, n.ctx = null, f.wrapperPool.push(n), f.reads[e] = null, !0;
   }
-  if (t = l.writes.indexOf(i), t > -1) {
-    const e = l.writes[t];
-    return e && e.n && (e.fn = null, e.ctx = null, l.wrapperPool.push(e)), l.writes[t] = null, !0;
+  if (t = f.writes.indexOf(i), t > -1) {
+    const e = f.writes[t];
+    return e && e.n && (e.fn = null, e.ctx = null, f.wrapperPool.push(e)), f.writes[t] = null, !0;
   }
-  for (let e = 0; e < l.writes.length; e++) {
-    const n = l.writes[e];
+  for (let e = 0; e < f.writes.length; e++) {
+    const n = f.writes[e];
     if (n && n.n && n.fn === i)
-      return n.fn = null, n.ctx = null, l.wrapperPool.push(n), l.writes[e] = null, !0;
+      return n.fn = null, n.ctx = null, f.wrapperPool.push(n), f.writes[e] = null, !0;
   }
-  if (l.currentReads) {
-    let e = l.currentReads.indexOf(i);
+  if (f.currentReads) {
+    let e = f.currentReads.indexOf(i);
     if (e > -1) {
-      const n = l.currentReads[e];
-      return n && n.n && (n.fn = null, n.ctx = null, l.wrapperPool.push(n)), l.currentReads[e] = null, !0;
+      const n = f.currentReads[e];
+      return n && n.n && (n.fn = null, n.ctx = null, f.wrapperPool.push(n)), f.currentReads[e] = null, !0;
     }
-    for (let n = 0; n < l.currentReads.length; n++) {
-      const s = l.currentReads[n];
+    for (let n = 0; n < f.currentReads.length; n++) {
+      const s = f.currentReads[n];
       if (s && s.n && s.fn === i)
-        return s.fn = null, s.ctx = null, l.wrapperPool.push(s), l.currentReads[n] = null, !0;
+        return s.fn = null, s.ctx = null, f.wrapperPool.push(s), f.currentReads[n] = null, !0;
     }
   }
-  if (l.currentWrites) {
-    let e = l.currentWrites.indexOf(i);
+  if (f.currentWrites) {
+    let e = f.currentWrites.indexOf(i);
     if (e > -1) {
-      const n = l.currentWrites[e];
-      return n && n.n && (n.fn = null, n.ctx = null, l.wrapperPool.push(n)), l.currentWrites[e] = null, !0;
+      const n = f.currentWrites[e];
+      return n && n.n && (n.fn = null, n.ctx = null, f.wrapperPool.push(n)), f.currentWrites[e] = null, !0;
     }
-    for (let n = 0; n < l.currentWrites.length; n++) {
-      const s = l.currentWrites[n];
+    for (let n = 0; n < f.currentWrites.length; n++) {
+      const s = f.currentWrites[n];
       if (s && s.n && s.fn === i)
-        return s.fn = null, s.ctx = null, l.wrapperPool.push(s), l.currentWrites[n] = null, !0;
+        return s.fn = null, s.ctx = null, f.wrapperPool.push(s), f.currentWrites[n] = null, !0;
     }
   }
   return !1;
@@ -280,7 +280,7 @@ const E = [];
 function ut() {
   $ = !1;
   for (let i = 0; i < E.length; i++)
-    E[i].g();
+    E[i].w();
   E.length = 0;
 }
 function ct() {
@@ -295,15 +295,15 @@ function at() {
   for (let i = g.length - 1; i >= 0; i--)
     g[i](G);
 }
-function B(i) {
+function j(i) {
   G.width = window.innerWidth, G.height = window.innerHeight, at();
 }
 let A = null;
-const m = /* @__PURE__ */ new WeakMap(), j = /* @__PURE__ */ new Map(), Y = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), k = /* @__PURE__ */ new WeakMap(), q = /* @__PURE__ */ new Map();
+const m = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new Map(), Y = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), k = /* @__PURE__ */ new WeakMap(), q = /* @__PURE__ */ new Map();
 function ht(i) {
   const t = i.root || null, e = i.rootMargin || "0px 0px 0px 0px", n = i.threshold || 0;
-  let s = j.get(t);
-  s || (s = /* @__PURE__ */ new Map(), j.set(t, s));
+  let s = B.get(t);
+  s || (s = /* @__PURE__ */ new Map(), B.set(t, s));
   let r = s.get(e);
   r || (r = /* @__PURE__ */ new Map(), s.set(e, r));
   let o = r;
@@ -321,11 +321,11 @@ function ht(i) {
     let c = o.get(n);
     c || (c = /* @__PURE__ */ new Map(), o.set(n, c)), o = c;
   }
-  let f = o.get("data");
-  return f || (f = {
+  let l = o.get("data");
+  return l || (l = {
     observer: new IntersectionObserver((c) => {
       for (let a = 0; a < c.length; a++) {
-        const _ = c[a], M = f.callbacks.get(_.target);
+        const _ = c[a], M = l.callbacks.get(_.target);
         if (M) {
           I[0] = _;
           for (let P = M.length - 1; P >= 0; P--)
@@ -336,11 +336,11 @@ function ht(i) {
     callbacks: /* @__PURE__ */ new WeakMap(),
     nodeMap: o,
     elementsCount: 0
-  }, o.set("data", f)), f;
+  }, o.set("data", l)), l;
 }
 class K {
   constructor(t, e) {
-    this.element = t, d.set(this.element, this), this.c = this.constructor.name, this.i = {}, this.l = e || {}, this.d = {}, this.g = this.g.bind(this), this.N(), h.get("autoBindActions") && this.x();
+    this.element = t, d.set(this.element, this), this.c = this.constructor.name, this.i = {}, this.l = e || {}, this.d = {}, this.w = this.w.bind(this), this.x(), h.get("autoBindActions") && this.v();
   }
   get ref() {
     return this.i;
@@ -348,9 +348,9 @@ class K {
   set ref(t) {
     const e = `${h.get("attrPrefix")}-ref`, n = b(`[${e}]`, this.element), s = /* @__PURE__ */ Object.create(null);
     for (let o = 0; o < n.length; o++) {
-      const f = n[o], u = f.getAttribute(e);
+      const l = n[o], u = l.getAttribute(e);
       let c = s[u];
-      c === void 0 && (c = [], s[u] = c), c.push(f);
+      c === void 0 && (c = [], s[u] = c), c.push(l);
     }
     let r = !0;
     for (const o in t) {
@@ -359,9 +359,9 @@ class K {
     }
     if (r)
       for (const o in s) {
-        const f = o.indexOf(":");
-        if (f !== -1) {
-          const u = o.substring(0, f), c = o.substring(f + 1);
+        const l = o.indexOf(":");
+        if (l !== -1) {
+          const u = o.substring(0, l), c = o.substring(l + 1);
           u === this.c && !this.i[c] && (this.i[c] = s[o]);
         } else
           this.i[o] || (this.i[o] = s[o]);
@@ -370,14 +370,14 @@ class K {
       this.i = {};
       for (const o in t) {
         if (!Object.prototype.hasOwnProperty.call(t, o)) continue;
-        const f = Array.isArray(t[o]);
-        if (t[o] !== null && f && t[o].length > 0) {
+        const l = Array.isArray(t[o]);
+        if (t[o] !== null && l && t[o].length > 0) {
           this.i[o] = t[o];
           continue;
         }
         const u = `${this.c}:${o}`;
         let c = s[u] || [];
-        c.length === 0 && (c = s[o] || []), this.i[o] = f ? c : c[0] ?? null;
+        c.length === 0 && (c = s[o] || []), this.i[o] = l ? c : c[0] ?? null;
       }
     }
   }
@@ -412,10 +412,10 @@ class K {
   set state(t) {
     console.warn("Use setState instead."), this.d = t;
   }
-  m() {
+  y() {
     this.mount();
   }
-  y() {
+  b() {
     if (this.unmount(), typeof __GIA_NANO__ < "u" && __GIA_NANO__) {
       this.i = null, this.element && (d.delete(this.element), this.element = null);
       return;
@@ -450,7 +450,7 @@ class K {
     e !== -1 && (p[e] = p[p.length - 1], p.pop()), p.length === 0 && N && (N = !1, w ? (w.off("scroll", v), w = null) : window.removeEventListener("scroll", v));
   }
   observeWindowResize(t) {
-    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (x || (x = !0, window.addEventListener(T, B, { passive: !0 })), this.e || (this.e = []), this.e.indexOf(t) === -1 && this.e.push(t), g.indexOf(t) === -1 && g.push(t));
+    typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || (x || (x = !0, window.addEventListener(T, j, { passive: !0 })), this.e || (this.e = []), this.e.indexOf(t) === -1 && this.e.push(t), g.indexOf(t) === -1 && g.push(t));
   }
   unobserveWindowResize(t) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__) return;
@@ -459,15 +459,15 @@ class K {
       n !== -1 && (this.e[n] = this.e[this.e.length - 1], this.e.pop());
     }
     const e = g.indexOf(t);
-    e !== -1 && (g[e] = g[g.length - 1], g.pop()), g.length === 0 && x && (x = !1, window.removeEventListener(T, B));
+    e !== -1 && (g[e] = g[g.length - 1], g.pop()), g.length === 0 && x && (x = !1, window.removeEventListener(T, j));
   }
   observeResize(t, e) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || typeof window > "u" || !window.ResizeObserver) return;
     A || (A = new ResizeObserver((r) => {
       for (let o = 0; o < r.length; o++) {
-        const f = r[o], u = m.get(f.target);
+        const l = r[o], u = m.get(l.target);
         if (u) {
-          I[0] = f;
+          I[0] = l;
           for (let c = u.length - 1; c >= 0; c--)
             u[c](I);
         }
@@ -487,14 +487,14 @@ class K {
       r !== -1 && (n[r] = n[n.length - 1], n.pop());
       const o = m.get(t);
       if (o) {
-        const f = o.indexOf(e);
-        f !== -1 && (o[f] = o[o.length - 1], o.pop());
+        const l = o.indexOf(e);
+        l !== -1 && (o[l] = o[o.length - 1], o.pop());
       }
     } else {
       const r = m.get(t);
       if (r)
         for (let o = 0; o < n.length; o++) {
-          const f = n[o], u = r.indexOf(f);
+          const l = n[o], u = r.indexOf(l);
           u !== -1 && (r[u] = r[r.length - 1], r.pop());
         }
       n.length = 0;
@@ -510,22 +510,22 @@ class K {
     r || (r = [], s.callbacks.set(t, r), s.observer.observe(t), s.elementsCount++), r.indexOf(e) === -1 && r.push(e), this.s || (this.s = /* @__PURE__ */ new Map());
     let o = this.s.get(t);
     o || (o = /* @__PURE__ */ new Map(), this.s.set(t, o));
-    let f = o.get(s);
-    f || (f = [], o.set(s, f)), f.indexOf(e) === -1 && f.push(e);
+    let l = o.get(s);
+    l || (l = [], o.set(s, l)), l.indexOf(e) === -1 && l.push(e);
   }
-  v(t, e) {
-    const n = this.A, s = this.O;
+  E(t, e) {
+    const n = this.O, s = this.N;
     if (s) {
       const r = t.indexOf(s);
       if (r !== -1 && (t[r] = t[t.length - 1], t.pop(), e && e.callbacks.has(n))) {
-        const o = e.callbacks.get(n), f = o.indexOf(s);
-        f !== -1 && (o[f] = o[o.length - 1], o.pop());
+        const o = e.callbacks.get(n), l = o.indexOf(s);
+        l !== -1 && (o[l] = o[o.length - 1], o.pop());
       }
     } else {
       if (e && e.callbacks.has(n)) {
         const r = e.callbacks.get(n);
         for (let o = 0; o < t.length; o++) {
-          const f = t[o], u = r.indexOf(f);
+          const l = t[o], u = r.indexOf(l);
           u !== -1 && (r[u] = r[r.length - 1], r.pop());
         }
       }
@@ -539,7 +539,7 @@ class K {
   unobserveIntersection(t, e = null) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || !this.s) return;
     const n = this.s.get(t);
-    n && (this.A = t, this.O = e, n.forEach(this.v, this), this.A = null, this.O = null, n.size === 0 && this.s.delete(t));
+    n && (this.O = t, this.N = e, n.forEach(this.E, this), this.O = null, this.N = null, n.size === 0 && this.s.delete(t));
   }
   /**
    * Loads a script that is already defined in the DOM with a data-src attribute.
@@ -587,8 +587,8 @@ class K {
         r(), s(new Error(`Link tag '${t}' has no href or data-href.`));
       else if (e.href && !e.hasAttribute("data-href")) {
         let o = !1;
-        for (let f = 0; f < document.styleSheets.length; f++)
-          if (document.styleSheets[f].href === e.href) {
+        for (let l = 0; l < document.styleSheets.length; l++)
+          if (document.styleSheets[l].href === e.href) {
             o = !0;
             break;
           }
@@ -608,7 +608,7 @@ class K {
       for (const e in t) {
         if (!Object.prototype.hasOwnProperty.call(t, e)) continue;
         const n = t[e];
-        if (this.d[e] !== n && (this.d[e] = n, this.h || (this.h = this.w || {}, this.u = this.p || {}, E.push(this), $ || ($ = !0, ot(ut))), this.h[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
+        if (this.d[e] !== n && (this.d[e] = n, this.h || (this.h = this._ || {}, this.u = this.p || {}, E.push(this), $ || ($ = !0, ot(ut))), this.h[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const s = typeof n;
           if (s === "boolean" || s === "string") {
             let r = q.get(e);
@@ -617,7 +617,7 @@ class K {
         }
       }
   }
-  g() {
+  w() {
     if (this.element) {
       if (typeof __GIA_NANO__ > "u" || !__GIA_NANO__) {
         let t = !1;
@@ -632,9 +632,9 @@ class K {
             this.element.getAttribute(e) !== n && this.element.setAttribute(e, n);
           }
       }
-      this.stateChange(this.h), this.w = this.h, this.p = this.u;
-      for (const t in this.w)
-        delete this.w[t];
+      this.stateChange(this.h), this._ = this.h, this.p = this.u;
+      for (const t in this._)
+        delete this._[t];
       if (this.p)
         for (const t in this.p)
           delete this.p[t];
@@ -644,7 +644,7 @@ class K {
   stateChange(t) {
     return t;
   }
-  N() {
+  x() {
     var n;
     const t = Object.getPrototypeOf(this);
     let e = k.get(t);
@@ -663,7 +663,7 @@ class K {
     }
   }
 }
-K.prototype.x = function() {
+K.prototype.v = function() {
   const i = b("[data-action]", this.element), t = i.length;
   for (let e = 0; e < t; e++) {
     const n = i[e], s = n.getAttribute("data-action");
@@ -672,9 +672,9 @@ K.prototype.x = function() {
     for (; r < s.length; ) {
       let o = s.indexOf(" ", r);
       if (o === -1 && (o = s.length), o > r) {
-        const f = s.substring(r, o), u = f.indexOf("->");
+        const l = s.substring(r, o), u = l.indexOf("->");
         let c, a;
-        u !== -1 ? (c = f.substring(0, u), a = f.substring(u + 2)) : (c = f, a = void 0), this[a] && typeof this[a] == "function" && !a.startsWith("_") && !Y.has(a) ? (n.addEventListener(c, this[a]), this.f || (this.f = []), this.f.push(n, c, a)) : console.warn(`Method "${a}" not found, is restricted, or is not a function in component.`);
+        u !== -1 ? (c = l.substring(0, u), a = l.substring(u + 2)) : (c = l, a = void 0), this[a] && typeof this[a] == "function" && !a.startsWith("_") && !Y.has(a) ? (n.addEventListener(c, this[a]), this.f || (this.f = []), this.f.push(n, c, a)) : console.warn(`Method "${a}" not found, is restricted, or is not a function in component.`);
       }
       r = o + 1;
     }
@@ -683,7 +683,7 @@ K.prototype.x = function() {
 class Ot extends K {
   async require() {
   }
-  m() {
+  y() {
     const t = this.require();
     t && typeof t.then == "function" ? t.then(() => {
       this.element && this.mount();
@@ -698,10 +698,22 @@ class dt {
     h.get("log") && console.info(`Emitting event '${t}'`);
     const n = this.listeners[t];
     if (!n || n.length === 0) return;
-    e && typeof e == "object" && (e.c = t);
-    const s = n.slice();
-    for (let r = 0; r < s.length; r++)
-      s[r](e);
+    e && typeof e == "object" && (e.c = t), n.g = (n.g || 0) + 1;
+    let s = !1;
+    const r = n.length;
+    try {
+      for (let o = 0; o < r; o++) {
+        const l = n[o];
+        l ? l(e) : s = !0;
+      }
+    } finally {
+      if (n.g--, n.g === 0 && s) {
+        let o = 0;
+        for (let l = 0; l < n.length; l++)
+          n[l] && (n[o++] = n[l]);
+        n.length = o;
+      }
+    }
   }
   on(t, e, n = !1) {
     this.listeners[t] || (this.listeners[t] = []);
@@ -721,9 +733,9 @@ class dt {
     const n = this.listeners[t];
     if (!n) return;
     let s = e;
-    e.a && e.a[t] ? (s = e.a[t], delete e.a[t]) : e.E && (s = e.E);
+    e.a && e.a[t] ? (s = e.a[t], delete e.a[t]) : e.I && (s = e.I);
     const r = n.indexOf(s);
-    r !== -1 && n.splice(r, 1);
+    r !== -1 && (n.g ? n[r] = null : n.splice(r, 1));
   }
 }
 const Nt = new dt();
@@ -740,9 +752,9 @@ function gt(i) {
       const o = s.removedNodes[r];
       if (o.nodeType === Node.ELEMENT_NODE) {
         o.hasAttribute(t) && C(o);
-        const f = b(`[${t}]`, o);
-        for (let u = 0; u < f.length; u++)
-          C(f[u]);
+        const l = b(`[${t}]`, o);
+        for (let u = 0; u < l.length; u++)
+          C(l[u]);
       }
     }
     if (s.addedNodes.length > 0)

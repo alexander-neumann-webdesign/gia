@@ -11,7 +11,7 @@ typeof window < "u" && (window.gia = window.gia || {}, window.gia.components = w
     console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
     return;
   }
-  t.priority !== void 0 && (i._ = t.priority), window.gia.components[e] = i;
+  t.priority !== void 0 && (i.m = t.priority), window.gia.components[e] = i;
 });
 class F {
   constructor() {
@@ -55,7 +55,7 @@ function I(i, t = document) {
 function Y(i, t, e = null) {
   e === null ? i.classList.toggle(t) : i.classList.toggle(t, !!e);
 }
-function B(i, t, e) {
+function j(i, t, e) {
   if (!i) return i;
   if (i.length !== void 0 && i.nodeType === void 0)
     for (let n = 0; n < i.length; n++)
@@ -65,10 +65,10 @@ function B(i, t, e) {
   return i;
 }
 function K(i, t) {
-  return B(i, t, "remove");
+  return j(i, t, "remove");
 }
 function U(i, t) {
-  return B(i, t, "add");
+  return j(i, t, "add");
 }
 function J(i, t, e = null, n = {
   bubbles: !0,
@@ -132,12 +132,12 @@ function ht(i = {}, t = document.documentElement) {
   n.length > 1 && n.sort((f, u) => {
     if (!f) return 1;
     if (!u) return -1;
-    const c = f.constructor._ ?? f.constructor.priority ?? 0;
-    return (u.constructor._ ?? u.constructor.priority ?? 0) - c;
+    const c = f.constructor.m ?? f.constructor.priority ?? 0;
+    return (u.constructor.m ?? u.constructor.priority ?? 0) - c;
   });
   for (let f = 0; f < n.length; f++) {
     const u = n[f];
-    u && u.m();
+    u && u.y();
   }
 }
 function V(i) {
@@ -150,7 +150,7 @@ function V(i) {
   if (t) {
     const e = t.u || "Unknown";
     try {
-      typeof t.y == "function" ? t.y() : t.unmount();
+      typeof t.A == "function" ? t.A() : t.unmount();
     } catch (n) {
       console.error(`Gia: Error unmounting component "${e}".`, n);
     }
@@ -162,7 +162,7 @@ function dt(i = document.documentElement) {
   for (let e = 0; e < t.length; e++)
     V(t[e]);
 }
-const l = (typeof window < "u" ? window.A : null) || {
+const l = (typeof window < "u" ? window.b : null) || {
   reads: [],
   writes: [],
   scheduled: !1,
@@ -172,8 +172,8 @@ const l = (typeof window < "u" ? window.A : null) || {
 l.tempReads || (l.tempReads = []);
 l.tempWrites || (l.tempWrites = []);
 l.wrapperPool || (l.wrapperPool = []);
-typeof window < "u" && !window.A && (window.A = l);
-function j(i, t) {
+typeof window < "u" && !window.b && (window.b = l);
+function k(i, t) {
   let e = l.wrapperPool.pop();
   return e || (e = function() {
     e.fn.call(e.ctx);
@@ -214,11 +214,11 @@ function C() {
   !l.scheduled && typeof window < "u" && (l.scheduled = !0, window.requestAnimationFrame(Z));
 }
 function pt(i, t) {
-  const e = t ? j(i, t) : i;
+  const e = t ? k(i, t) : i;
   return l.reads.push(e), C(), e;
 }
 function X(i, t) {
-  const e = t ? j(i, t) : i;
+  const e = t ? k(i, t) : i;
   return l.writes.push(e), C(), e;
 }
 function gt(i) {
@@ -280,7 +280,7 @@ const x = [];
 function nt() {
   R = !1;
   for (let i = 0; i < x.length; i++)
-    x[i].g();
+    x[i].w();
   x.length = 0;
 }
 function it() {
@@ -299,7 +299,7 @@ function S(i) {
   M.width = window.innerWidth, M.height = window.innerHeight, st();
 }
 let y = null;
-const m = /* @__PURE__ */ new WeakMap(), z = /* @__PURE__ */ new Map(), rt = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), L = /* @__PURE__ */ new WeakMap(), k = /* @__PURE__ */ new Map();
+const m = /* @__PURE__ */ new WeakMap(), z = /* @__PURE__ */ new Map(), rt = /* @__PURE__ */ new Set(["constructor", "require", "mount", "unmount", "getRef", "setState", "stateChange", "loadScript", "loadStyle"]), L = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new Map();
 function ot(i) {
   const t = i.root || null, e = i.rootMargin || "0px 0px 0px 0px", n = i.threshold || 0;
   let s = z.get(t);
@@ -340,7 +340,7 @@ function ot(i) {
 }
 class lt {
   constructor(t, e) {
-    this.element = t, h.set(this.element, this), this.u = this.constructor.name, this.i = {}, this.l = e || {}, this.d = {}, this.g = this.g.bind(this), this.x();
+    this.element = t, h.set(this.element, this), this.u = this.constructor.name, this.i = {}, this.l = e || {}, this.d = {}, this.w = this.w.bind(this), this.N();
   }
   get ref() {
     return this.i;
@@ -412,10 +412,10 @@ class lt {
   set state(t) {
     console.warn("Use setState instead."), this.d = t;
   }
-  m() {
+  y() {
     this.mount();
   }
-  y() {
+  A() {
     if (this.unmount(), typeof __GIA_NANO__ < "u" && __GIA_NANO__) {
       this.i = null, this.element && (h.delete(this.element), this.element = null);
       return;
@@ -513,8 +513,8 @@ class lt {
     let f = r.get(s);
     f || (f = [], r.set(s, f)), f.indexOf(e) === -1 && f.push(e);
   }
-  N(t, e) {
-    const n = this.b, s = this.O;
+  I(t, e) {
+    const n = this.O, s = this.x;
     if (s) {
       const o = t.indexOf(s);
       if (o !== -1 && (t[o] = t[t.length - 1], t.pop(), e && e.callbacks.has(n))) {
@@ -539,7 +539,7 @@ class lt {
   unobserveIntersection(t, e = null) {
     if (typeof __GIA_NANO__ < "u" && __GIA_NANO__ || !this.s) return;
     const n = this.s.get(t);
-    n && (this.b = t, this.O = e, n.forEach(this.N, this), this.b = null, this.O = null, n.size === 0 && this.s.delete(t));
+    n && (this.O = t, this.x = e, n.forEach(this.I, this), this.O = null, this.x = null, n.size === 0 && this.s.delete(t));
   }
   /**
    * Loads a script that is already defined in the DOM with a data-src attribute.
@@ -608,16 +608,16 @@ class lt {
       for (const e in t) {
         if (!Object.prototype.hasOwnProperty.call(t, e)) continue;
         const n = t[e];
-        if (this.d[e] !== n && (this.d[e] = n, this.h || (this.h = this.w || {}, this.f = this.p || {}, x.push(this), R || (R = !0, X(nt))), this.h[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
+        if (this.d[e] !== n && (this.d[e] = n, this.h || (this.h = this._ || {}, this.f = this.p || {}, x.push(this), R || (R = !0, X(nt))), this.h[e] = n, typeof __GIA_NANO__ > "u" || !__GIA_NANO__)) {
           const s = typeof n;
           if (s === "boolean" || s === "string") {
-            let o = k.get(e);
-            o || (o = `data-${e.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, k.set(e, o)), this.f[o] = s === "boolean" ? n ? "true" : "false" : n;
+            let o = B.get(e);
+            o || (o = `data-${e.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`, B.set(e, o)), this.f[o] = s === "boolean" ? n ? "true" : "false" : n;
           }
         }
       }
   }
-  g() {
+  w() {
     if (this.element) {
       if (typeof __GIA_NANO__ > "u" || !__GIA_NANO__) {
         let t = !1;
@@ -632,9 +632,9 @@ class lt {
             this.element.getAttribute(e) !== n && this.element.setAttribute(e, n);
           }
       }
-      this.stateChange(this.h), this.w = this.h, this.p = this.f;
-      for (const t in this.w)
-        delete this.w[t];
+      this.stateChange(this.h), this._ = this.h, this.p = this.f;
+      for (const t in this._)
+        delete this._[t];
       if (this.p)
         for (const t in this.p)
           delete this.p[t];
@@ -644,7 +644,7 @@ class lt {
   stateChange(t) {
     return t;
   }
-  x() {
+  N() {
     var n;
     const t = Object.getPrototypeOf(this);
     let e = L.get(t);
@@ -666,7 +666,7 @@ class lt {
 class wt extends lt {
   async require() {
   }
-  m() {
+  y() {
     const t = this.require();
     t && typeof t.then == "function" ? t.then(() => {
       this.element && this.mount();
@@ -681,10 +681,22 @@ class ft {
     w.get("log") && console.info(`Emitting event '${t}'`);
     const n = this.listeners[t];
     if (!n || n.length === 0) return;
-    e && typeof e == "object" && (e.u = t);
-    const s = n.slice();
-    for (let o = 0; o < s.length; o++)
-      s[o](e);
+    e && typeof e == "object" && (e.u = t), n.g = (n.g || 0) + 1;
+    let s = !1;
+    const o = n.length;
+    try {
+      for (let r = 0; r < o; r++) {
+        const f = n[r];
+        f ? f(e) : s = !0;
+      }
+    } finally {
+      if (n.g--, n.g === 0 && s) {
+        let r = 0;
+        for (let f = 0; f < n.length; f++)
+          n[f] && (n[r++] = n[f]);
+        n.length = r;
+      }
+    }
   }
   on(t, e, n = !1) {
     this.listeners[t] || (this.listeners[t] = []);
@@ -704,9 +716,9 @@ class ft {
     const n = this.listeners[t];
     if (!n) return;
     let s = e;
-    e.c && e.c[t] ? (s = e.c[t], delete e.c[t]) : e.I && (s = e.I);
+    e.c && e.c[t] ? (s = e.c[t], delete e.c[t]) : e.v && (s = e.v);
     const o = n.indexOf(s);
-    o !== -1 && n.splice(o, 1);
+    o !== -1 && (n.g ? n[o] = null : n.splice(o, 1));
   }
 }
 const _t = new ft();
