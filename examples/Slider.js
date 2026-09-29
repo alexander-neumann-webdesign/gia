@@ -86,9 +86,15 @@ class Slider extends gia.Component {
 		// Setup Buttons
 		if (this.ref.prevBtn) {
 			this.ref.prevBtn.addEventListener("click", this.scrollPrev);
+			if (!this.ref.prevBtn.hasAttribute("title") && this.ref.prevBtn.hasAttribute("aria-label")) {
+				this.ref.prevBtn.setAttribute("title", this.ref.prevBtn.getAttribute("aria-label"));
+			}
 		}
 		if (this.ref.nextBtn) {
 			this.ref.nextBtn.addEventListener("click", this.scrollNext);
+			if (!this.ref.nextBtn.hasAttribute("title") && this.ref.nextBtn.hasAttribute("aria-label")) {
+				this.ref.nextBtn.setAttribute("title", this.ref.nextBtn.getAttribute("aria-label"));
+			}
 		}
 
 		// Listen to embla events to update button states
@@ -231,6 +237,7 @@ class Slider extends gia.Component {
 			const dot = document.createElement("button");
 			dot.classList.add("embla__dot");
 			dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+			dot.setAttribute("title", `Go to slide ${index + 1}`);
 			dot.setAttribute("data-index", index);
 			dot.tabIndex = 0;
 			dot.addEventListener("click", this.handleDotClick);
