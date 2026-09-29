@@ -7,6 +7,7 @@ import config from "./config.js";
 class EventBus {
 	constructor() {
 		this.listeners = Object.create(null);
+		this._iterating = Object.create(null);
 	}
 
 	emit(event, eventObject = {}) {
@@ -23,11 +24,29 @@ class EventBus {
 			eventObject._name = event;
 		}
 
-		// ⚡ OPTIMIZATION: Standard for loop over array, avoids Iterator overhead.
-		// We copy the array in case a handler calls .off() synchronously causing index shifts.
-		const callbacks = handlers.slice();
-		for (let i = 0; i < callbacks.length; i++) {
-			callbacks[i](eventObject);
+		// ⚡ OPTIMIZATION: Use logical deletion and in-place array compaction to avoid GC churn
+		// from array slicing, while maintaining safe FIFO execution order during synchronous `.off()`
+		// calls or exceptions.
+		this._iterating[event] = (this._iterating[event] || 0) + 1;
+		const len = handlers.length;
+		try {
+			for (let i = 0; i < len; i++) {
+				const callback = handlers[i];
+				if (callback) {
+					callback(eventObject);
+				}
+			}
+		} finally {
+			this._iterating[event]--;
+			if (this._iterating[event] === 0) {
+				let writeIndex = 0;
+				for (let i = 0; i < handlers.length; i++) {
+					if (handlers[i] !== null) {
+						handlers[writeIndex++] = handlers[i];
+					}
+				}
+				handlers.length = writeIndex;
+			}
 		}
 	}
 
@@ -58,8 +77,15 @@ class EventBus {
 	off(event, handler) {
 		if (!handler) {
 			// Clear all listeners for this event if no handler provided
-			if (this.listeners[event]) {
-				this.listeners[event].length = 0;
+			const handlers = this.listeners[event];
+			if (handlers) {
+				if (this._iterating && this._iterating[event] > 0) {
+					for (let i = 0; i < handlers.length; i++) {
+						handlers[i] = null;
+					}
+				} else {
+					handlers.length = 0;
+				}
 			}
 			return;
 		}
@@ -77,7 +103,11 @@ class EventBus {
 
 		const index = handlers.indexOf(targetHandler);
 		if (index !== -1) {
-			handlers.splice(index, 1);
+			if (this._iterating && this._iterating[event] > 0) {
+				handlers[index] = null;
+			} else {
+				handlers.splice(index, 1);
+			}
 		}
 	}
 }
