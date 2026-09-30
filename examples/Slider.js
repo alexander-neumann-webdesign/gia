@@ -231,6 +231,7 @@ class Slider extends gia.Component {
 			const dot = document.createElement("button");
 			dot.classList.add("embla__dot");
 			dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+			dot.setAttribute("title", `Go to slide ${index + 1}`);
 			dot.setAttribute("data-index", index);
 			dot.tabIndex = 0;
 			dot.addEventListener("click", this.handleDotClick);
