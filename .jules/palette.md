@@ -34,3 +34,7 @@
 ## 2025-12-10 - Consistent Dynamic Tooltips Across Video Components
 **Learning:** Found an accessibility issue pattern specific to this app's components - while the `VideoPlayer` component dynamically injects and updates a `title` attribute on its icon-only play/pause button, the simpler `VideoHolder` component missed this logic, leading to an inconsistent experience for sighted mouse users across video elements.
 **Action:** Always ensure that similar interactive elements across different components (like play/pause controls) maintain consistent UX features, specifically adding and updating dynamic `title` attributes for state toggles.
+
+## 2026-10-01 - Slider Pagination Dot Tooltips
+**Learning:** Generic pagination dot buttons (like those generated in the Slider component) act as icon-only controls. While an `aria-label` makes them accessible to screen readers, sighted mouse users lack context since the buttons are visually just dots.
+**Action:** Always add a native `title` attribute to generic pagination dot buttons to provide a built-in tooltip on hover, serving as a visual complement to the `aria-label`.
