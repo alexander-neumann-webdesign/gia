@@ -231,6 +231,7 @@ class Slider extends gia.Component {
 			const dot = document.createElement("button");
 			dot.classList.add("embla__dot");
 			dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+			dot.setAttribute("title", `Go to slide ${index + 1}`);
 			dot.setAttribute("data-index", index);
 			dot.tabIndex = 0;
 			dot.addEventListener("click", this.handleDotClick);
@@ -361,8 +362,8 @@ EXPECTED HTML
     </div>
   </div>
 
-  <button data-ref="prevBtn" aria-label="Previous slide">Prev</button>
-  <button data-ref="nextBtn" aria-label="Next slide">Next</button>
+  <button data-ref="prevBtn" aria-label="Previous slide" title="Previous slide">Prev</button>
+  <button data-ref="nextBtn" aria-label="Next slide" title="Next slide">Next</button>
 </div>
 
 ========================================
