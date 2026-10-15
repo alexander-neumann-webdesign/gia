@@ -133,3 +133,54 @@ export function debounce(func, wait) {
 	};
 	return executedFunction;
 }
+
+export function throttle(func, wait) {
+	let timeout = null;
+	let lastArgs = null;
+	let lastThis = null;
+	let lastCallTime = 0;
+
+	const executedFunction = function () {
+		const now = Date.now();
+		const remaining = wait - (now - lastCallTime);
+		lastArgs = arguments;
+		lastThis = this;
+
+		if (remaining <= 0 || remaining > wait) {
+			if (timeout) {
+				clearTimeout(timeout);
+				timeout = null;
+			}
+			lastCallTime = now;
+			const context = lastThis;
+			const args = lastArgs;
+			lastThis = null;
+			lastArgs = null;
+			// ⚡ BOLT OPTIMIZATION: Avoid spread/rest operator allocations
+			// and maintain the correct 'this' context by using .apply()
+			func.apply(context, args);
+		} else if (!timeout) {
+			timeout = setTimeout(() => {
+				lastCallTime = Date.now();
+				timeout = null;
+				const context = lastThis;
+				const args = lastArgs;
+				lastThis = null;
+				lastArgs = null;
+				func.apply(context, args);
+			}, remaining);
+		}
+	};
+
+	executedFunction.cancel = function () {
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = null;
+		}
+		lastArgs = null;
+		lastThis = null;
+		lastCallTime = 0;
+	};
+
+	return executedFunction;
+}

@@ -1,5 +1,5 @@
 import config from "./config.js";
-import { queryAll } from "./utils.js";
+import { queryAll, debounce, throttle } from "./utils.js";
 
 function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents, componentAttrName, actionAttrName) {
 	if (!isRoot && hasNestedComponents) {
@@ -51,6 +51,11 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 				let stop = false;
 				let once = false;
 				let self = false;
+				let outside = false;
+				let passive = false;
+				let capture = false;
+				let debounceWait = null;
+				let throttleWait = null;
 				let keyFilter = null;
 
 				if (eventStr.indexOf(".") !== -1) {
@@ -62,7 +67,28 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 						else if (mod === "stop") stop = true;
 						else if (mod === "once") once = true;
 						else if (mod === "self") self = true;
-						else if (mod === "enter") keyFilter = "Enter";
+						else if (mod === "outside") outside = true;
+						else if (mod === "passive") passive = true;
+						else if (mod === "capture") capture = true;
+						else if (mod === "debounce") {
+							debounceWait = 200;
+							if (p + 1 < parts.length && !isNaN(Number(parts[p + 1]))) {
+								debounceWait = Number(parts[p + 1]);
+								p++;
+							}
+						} else if (mod.startsWith("debounce-")) {
+							const num = Number(mod.substring(9));
+							debounceWait = isNaN(num) ? 200 : num;
+						} else if (mod === "throttle") {
+							throttleWait = 100;
+							if (p + 1 < parts.length && !isNaN(Number(parts[p + 1]))) {
+								throttleWait = Number(parts[p + 1]);
+								p++;
+							}
+						} else if (mod.startsWith("throttle-")) {
+							const num = Number(mod.substring(9));
+							throttleWait = isNaN(num) ? 100 : num;
+						} else if (mod === "enter") keyFilter = "Enter";
 						else if (mod === "esc" || mod === "escape") keyFilter = "Escape";
 						else if (mod === "space") keyFilter = "Space";
 						else if (mod === "tab") keyFilter = "Tab";
@@ -73,10 +99,15 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 					}
 				}
 
+				const targetEl = outside && typeof document !== "undefined" ? document : el;
+
 				let handler = instance[method];
-				if (prevent || stop || self || keyFilter) {
+				let opts;
+
+				if (prevent || stop || self || outside || keyFilter || (outside && once)) {
 					handler = function (e) {
 						if (self && e && e.target !== el) return;
+						if (outside && e && e.target && el.contains(e.target)) return;
 						if (keyFilter && e) {
 							const k = e.key;
 							if (keyFilter === "Space") {
@@ -87,21 +118,32 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 						}
 						if (prevent && e && typeof e.preventDefault === "function") e.preventDefault();
 						if (stop && e && typeof e.stopPropagation === "function") e.stopPropagation();
+						if (outside && once) {
+							targetEl.removeEventListener(eventName, handler, opts);
+						}
 						return instance[method](e);
 					};
 				}
 
-				let opts;
-				if (once) {
-					opts = instance.signal ? { signal: instance.signal, once: true } : { once: true };
-				} else {
-					opts = instance.signal ? { signal: instance.signal } : undefined;
+				if (debounceWait !== null) {
+					handler = debounce(handler, debounceWait);
+				} else if (throttleWait !== null) {
+					handler = throttle(handler, throttleWait);
 				}
 
-				el.addEventListener(eventName, handler, opts);
+				const hasOpts = (once && !outside) || passive || capture || instance.signal;
+				if (hasOpts) {
+					opts = {};
+					if (once && !outside) opts.once = true;
+					if (passive) opts.passive = true;
+					if (capture) opts.capture = true;
+					if (instance.signal) opts.signal = instance.signal;
+				}
+
+				targetEl.addEventListener(eventName, handler, opts);
 
 				if (!instance._boundActions) instance._boundActions = [];
-				instance._boundActions.push(el, eventName, handler);
+				instance._boundActions.push(targetEl, eventName, handler);
 			} else {
 				console.warn(`Method "${method}" not found, is restricted, or is not a function in component.`);
 			}

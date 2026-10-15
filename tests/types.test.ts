@@ -57,6 +57,25 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 		const foundEl: HTMLDivElement | null = this.find<HTMLDivElement>('.my-div');
 		const allEls: HTMLSpanElement[] = this.findAll<HTMLSpanElement>('span');
 
+		// Test class helpers
+		this.addClass('loaded');
+		this.removeClass('loaded');
+		this.toggleClass('active', true);
+		this.addClass('.box', 'visible');
+
+		// Test observeMediaQuery
+		const unobserveMedia: () => void = this.observeMediaQuery('(min-width: 768px)', (matches) => {
+			const m: boolean = matches;
+		});
+
+		// Test observeIntersection once
+		this.observeIntersection(this.element!, () => {}, { once: true, threshold: 0.5 });
+
+		// Test channel
+		const ch = this.channel('cart');
+		ch.emit('add', { id: 1 });
+		ch.on('add', (data) => {});
+
 		// Test updateRefs, emit, on
 		this.updateRefs();
 		this.emit('test-event', { value: 123 });

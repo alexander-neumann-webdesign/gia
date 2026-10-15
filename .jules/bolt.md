@@ -145,3 +145,11 @@
 ## 2026-10-15 - Scoped Event Delegation with Containment Checks
 **Learning:** Standard `closest(selector)` matching in delegated listeners can match elements outside the component if ancestors happen to match the selector, or cause multiple listener leaks if bound without AbortSignal.
 **Action:** Implement `this.delegate(selector, event, handler, options)` directly on `BaseComponent`, piping through `this.listen()` so delegated events inherit `this.signal` auto-cleanup, verify `this.element.contains(target)`, and support `once: true` without prematurely detaching on non-matching clicks.
+
+## 2026-10-16 - Safe Document-Bound Outside Actions and Manual Once Handling
+**Learning:** When binding `.outside` actions (like dropdown auto-close), listeners must attach to `document`. If `once: true` is also specified, passing `{ once: true }` to `document.addEventListener` will remove the listener on the very first internal click anywhere on the page, breaking the outside listener before it actually fires.
+**Action:** Intercept `once: true` on outside actions, attach to `document` without native `once`, and manually detach the listener via `document.removeEventListener` only when a true outside click occurs or when the component unmounts.
+
+## 2026-10-16 - Centralized Media Query and Theme Preference Observers
+**Learning:** Registering separate `matchMedia("...").addEventListener("change", ...)` listeners across multiple components duplicates query lists and listener memory, and requires manual cleanup boilerplate during `unmount()`.
+**Action:** Centralize media queries into a component observer registry with `observeMediaQuery` and `unobserveMediaQuery`, fire the callback immediately with initial match state, and automatically detach all active media query listeners upon component teardown via `cleanupComponentObservers`.

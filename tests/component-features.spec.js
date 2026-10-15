@@ -1075,5 +1075,134 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
             delete global.requestIdleCallback;
             removeComponents(document.body);
         });
+
+        test('actions: .outside modifier should trigger when clicking outside element and ignore inside clicks', () => {
+            config.set('autoBindActions', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'OutsideActionComp');
+            el.innerHTML = `
+                <div class="dropdown" data-action="click.outside->closeDropdown">
+                    <button class="inner-btn">Inside</button>
+                </div>
+                <div class="outside-area">Outside</div>
+            `;
+            document.body.appendChild(el);
+
+            let closeCount = 0;
+            class OutsideActionComp extends BaseComponent {
+                closeDropdown() {
+                    closeCount++;
+                }
+            }
+
+            loadComponents({ OutsideActionComp });
+
+            const innerBtn = el.querySelector('.inner-btn');
+            const outsideArea = el.querySelector('.outside-area');
+
+            // Click inside dropdown
+            innerBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(closeCount).toBe(0);
+
+            // Click outside
+            outsideArea.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(closeCount).toBe(1);
+
+            removeComponents(document.body);
+        });
+
+        test('actions: .debounce modifier should debounce rapid event triggers', async () => {
+            config.set('autoBindActions', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'DebounceActionComp');
+            el.innerHTML = `<input data-action="input.debounce.50->onInput" />`;
+            document.body.appendChild(el);
+
+            let inputCount = 0;
+            class DebounceActionComp extends BaseComponent {
+                onInput() {
+                    inputCount++;
+                }
+            }
+
+            loadComponents({ DebounceActionComp });
+
+            const input = el.querySelector('input');
+            input.dispatchEvent(new window.Event('input', { bubbles: true }));
+            input.dispatchEvent(new window.Event('input', { bubbles: true }));
+            input.dispatchEvent(new window.Event('input', { bubbles: true }));
+
+            expect(inputCount).toBe(0);
+
+            await new Promise((r) => setTimeout(r, 70));
+            expect(inputCount).toBe(1);
+
+            removeComponents(document.body);
+        });
+
+        test('DOM class helpers: this.toggleClass, this.addClass, this.removeClass', () => {
+            const el = document.createElement('div');
+            el.innerHTML = `<div class="box"></div>`;
+            document.body.appendChild(el);
+
+            class ClassHelperComp extends BaseComponent {
+                mount() {
+                    // Operate on root element
+                    this.addClass('root-class');
+                    expect(this.element.classList.contains('root-class')).toBe(true);
+
+                    this.removeClass('root-class');
+                    expect(this.element.classList.contains('root-class')).toBe(false);
+
+                    this.toggleClass('active-root', true);
+                    expect(this.element.classList.contains('active-root')).toBe(true);
+
+                    this.toggleClass('active-root', false);
+                    expect(this.element.classList.contains('active-root')).toBe(false);
+
+                    // Operate on child selector
+                    this.addClass('.box', 'child-active');
+                    expect(this.find('.box').classList.contains('child-active')).toBe(true);
+
+                    this.removeClass('.box', 'child-active');
+                    expect(this.find('.box').classList.contains('child-active')).toBe(false);
+
+                    this.toggleClass('.box', 'toggled', true);
+                    expect(this.find('.box').classList.contains('toggled')).toBe(true);
+                }
+            }
+
+            const instance = createInstance(el, 'ClassHelperComp', ClassHelperComp);
+            instance._load();
+
+            destroyInstance(el);
+        });
+
+        test('this.channel should provide component-scoped namespaced pub/sub with auto-cleanup', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            const received = [];
+            class ChannelComp extends BaseComponent {
+                mount() {
+                    const cart = this.channel('cart');
+                    cart.on('add', (data) => {
+                        received.push(data.item);
+                    });
+                }
+            }
+
+            const instance = createInstance(el, 'ChannelComp', ChannelComp);
+            instance._load();
+
+            instance.channel('cart').emit('add', { item: 'book' });
+            expect(received).toEqual(['book']);
+
+            // Destroy instance - cleans up listener
+            destroyInstance(el);
+
+            instance.channel('cart').emit('add', { item: 'pen' });
+            expect(received).toEqual(['book']);
+        });
     });
 });

@@ -189,6 +189,24 @@ class EventBus {
 			}
 		}
 	}
+
+	channel(namespace) {
+		const prefix = namespace.endsWith(":") ? namespace : `${namespace}:`;
+		return {
+			emit: (event, eventObject) => {
+				this.emit(`${prefix}${event}`, eventObject);
+			},
+			on: (event, handler, options) => {
+				this.on(`${prefix}${event}`, handler, options);
+			},
+			once: (event, handler, options) => {
+				this.once(`${prefix}${event}`, handler, options);
+			},
+			off: (event, handler) => {
+				this.off(`${prefix}${event}`, handler);
+			},
+		};
+	}
 }
 
 const globalObj =

@@ -204,4 +204,34 @@ test.describe('EventBus', () => {
 
         expect(count).toBe(1);
     });
+
+    test('should support namespaced channels via eventbus.channel()', async () => {
+        const cart = eventbus.channel('cart');
+        const items = [];
+        const handler = (data) => {
+            items.push(data.id);
+        };
+
+        cart.on('add', handler);
+        cart.emit('add', { id: 101 });
+        cart.emit('add', { id: 102 });
+
+        expect(items).toEqual([101, 102]);
+
+        cart.off('add', handler);
+        cart.emit('add', { id: 103 });
+        expect(items).toEqual([101, 102]);
+    });
+
+    test('channel once should trigger only once', async () => {
+        const auth = eventbus.channel('auth');
+        let loggedIn = 0;
+        auth.once('login', () => {
+            loggedIn++;
+        });
+
+        auth.emit('login', { user: 'test' });
+        auth.emit('login', { user: 'test' });
+        expect(loggedIn).toBe(1);
+    });
 });

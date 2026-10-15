@@ -450,5 +450,74 @@ test.describe('Centralized Observers Engine (observers.js)', () => {
             expect(observerResizeFired).toBe(1);
             expect(intersectionFired).toBe(1);
         });
+
+        test('observeIntersection with once: true should auto-unobserve after intersecting once', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            let fired = 0;
+            class OnceComp extends BaseComponent {
+                mount() {
+                    this.observeIntersection(el, () => {
+                        fired++;
+                    }, { threshold: 0.5, once: true });
+                }
+            }
+
+            const instance = createInstance(el, 'OnceComp', OnceComp);
+            instance._load();
+
+            const obs = mockIntersectionObservers[mockIntersectionObservers.length - 1];
+            expect(obs).toBeDefined();
+
+            // First intersection
+            obs.trigger([{ target: el, isIntersecting: true }]);
+            expect(fired).toBe(1);
+
+            // Element should have been unobserved
+            expect(obs.observedElements.includes(el)).toBe(false);
+
+            // Trigger again - should not increment
+            obs.trigger([{ target: el, isIntersecting: true }]);
+            expect(fired).toBe(1);
+
+            destroyInstance(el);
+        });
+
+        test('observeMediaQuery should fire immediately and update on change with auto-cleanup', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            let currentMatches = null;
+            let changeListener = null;
+
+            window.matchMedia = (query) => ({
+                matches: query.includes('768'),
+                addEventListener: (evt, fn) => { changeListener = fn; },
+                removeEventListener: (evt, fn) => { changeListener = null; },
+            });
+
+            class MediaComp extends BaseComponent {
+                mount() {
+                    this.observeMediaQuery('(min-width: 768px)', (matches) => {
+                        currentMatches = matches;
+                    });
+                }
+            }
+
+            const instance = createInstance(el, 'MediaComp', MediaComp);
+            instance._load();
+
+            // Initial immediate trigger
+            expect(currentMatches).toBe(true);
+
+            // Change event
+            changeListener({ matches: false });
+            expect(currentMatches).toBe(false);
+
+            // Destroy instance - cleans up
+            destroyInstance(el);
+            expect(changeListener).toBe(null);
+        });
     });
 });

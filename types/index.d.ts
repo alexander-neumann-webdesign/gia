@@ -29,6 +29,16 @@ export interface EventBusListenerOptions {
 }
 
 /**
+ * Event bus channel interface
+ */
+export interface EventBusChannel {
+	emit(event: string, eventObject?: Record<string, any>): void;
+	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
+	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): void;
+	off(event: string, handler?: Function): void;
+}
+
+/**
  * Zero-GC high-performance event bus
  */
 export interface EventBus {
@@ -37,9 +47,17 @@ export interface EventBus {
 	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): void;
 	off(event: string, handler?: Function): void;
 	emit(event: string, eventObject?: Record<string, any>): void;
+	channel(namespace: string): EventBusChannel;
 }
 
 export const eventbus: EventBus;
+
+/**
+ * Intersection observer options supporting once
+ */
+export interface GiaIntersectionObserverInit extends IntersectionObserverInit {
+	once?: boolean;
+}
 
 /**
  * DOM Scheduler functions for layout thrashing prevention
@@ -69,6 +87,10 @@ export namespace utils {
 		options?: { bubbles?: boolean; cancelable?: boolean; detail?: any }
 	): void;
 	export function debounce<T extends (...args: any[]) => any>(
+		func: T,
+		wait: number
+	): ((...args: Parameters<T>) => void) & { cancel(): void };
+	export function throttle<T extends (...args: any[]) => any>(
 		func: T,
 		wait: number
 	): ((...args: Parameters<T>) => void) & { cancel(): void };
@@ -128,12 +150,15 @@ export class BaseComponent<
 	observeIntersection(
 		element: Element,
 		callback: (entry: IntersectionObserverEntry) => void,
-		options?: IntersectionObserverInit
+		options?: GiaIntersectionObserverInit
 	): void;
 	unobserveIntersection(
 		element: Element,
 		callback?: ((entry: IntersectionObserverEntry) => void) | null
 	): void;
+
+	observeMediaQuery(query: string, callback: (matches: boolean, mql: MediaQueryList) => void): () => void;
+	unobserveMediaQuery(query: string, callback?: ((matches: boolean, mql: MediaQueryList) => void) | null): void;
 
 	loadScript(scriptId: string, globalName?: string): Promise<any>;
 	loadStyle(styleId: string): Promise<boolean>;
@@ -159,9 +184,20 @@ export class BaseComponent<
 	find<T extends Element = HTMLElement>(selector: string): T | null;
 	findAll<T extends Element = HTMLElement>(selector: string): T[];
 
+	toggleClass<T extends Element = HTMLElement>(
+		target: string | Element,
+		className: string,
+		condition?: boolean | null
+	): T | null;
+	toggleClass<T extends Element = HTMLElement>(className: string, condition?: boolean | null): T | null;
+
+	addClass<T extends Element = HTMLElement>(target: string | Element, className?: string): T | null;
+	removeClass<T extends Element = HTMLElement>(target: string | Element, className?: string): T | null;
+
 	updateRefs(): void;
 	emit(event: string, eventObject?: Record<string, any>): void;
 	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
+	channel(namespace: string): EventBusChannel;
 }
 
 /**

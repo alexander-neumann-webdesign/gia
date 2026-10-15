@@ -345,7 +345,22 @@ export function observeIntersection(instance, element, callback, options = {}) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
-	const observerData = getIntersectionObserverData(options);
+	let actualCallback = callback;
+	if (options && options.once) {
+		actualCallback = (entries) => {
+			for (let i = 0; i < entries.length; i++) {
+				if (entries[i].isIntersecting) {
+					unobserveIntersection(instance, element, actualCallback);
+					break;
+				}
+			}
+			callback(entries);
+		};
+		actualCallback._wrapped = callback;
+	}
+
+	const cleanOptions = options && options.once ? { ...options, once: undefined } : options;
+	const observerData = getIntersectionObserverData(cleanOptions);
 
 	let oDataCbs = observerData.callbacks.get(element);
 	if (!oDataCbs) {
@@ -354,8 +369,8 @@ export function observeIntersection(instance, element, callback, options = {}) {
 		observerData.observer.observe(element);
 		observerData.elementsCount++;
 	}
-	if (oDataCbs.indexOf(callback) === -1) {
-		oDataCbs.push(callback);
+	if (oDataCbs.indexOf(actualCallback) === -1) {
+		oDataCbs.push(actualCallback);
 	}
 
 	if (!instance._observedIntersectionElements) {
@@ -372,20 +387,29 @@ export function observeIntersection(instance, element, callback, options = {}) {
 		obsCbs = [];
 		componentElementMap.set(observerData, obsCbs);
 	}
-	if (obsCbs.indexOf(callback) === -1) {
-		obsCbs.push(callback);
+	if (obsCbs.indexOf(actualCallback) === -1) {
+		obsCbs.push(actualCallback);
 	}
 }
 
 function _processIntersectionData(instance, element, callback, componentCallbacks, observerData) {
 	if (callback) {
-		const idx = componentCallbacks.indexOf(callback);
+		let idx = componentCallbacks.indexOf(callback);
+		if (idx === -1) {
+			for (let i = 0; i < componentCallbacks.length; i++) {
+				if (componentCallbacks[i]._wrapped === callback) {
+					idx = i;
+					break;
+				}
+			}
+		}
 		if (idx !== -1) {
+			const targetCb = componentCallbacks[idx];
 			componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
 			componentCallbacks.pop();
 			if (observerData && observerData.callbacks.has(element)) {
 				const globalCbs = observerData.callbacks.get(element);
-				const gIdx = globalCbs.indexOf(callback);
+				const gIdx = globalCbs.indexOf(targetCb);
 				if (gIdx !== -1) {
 					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
 					globalCbs.pop();
@@ -445,6 +469,116 @@ export function unobserveIntersection(instance, element, callback = null) {
 	}
 }
 
+const mediaQueryLists = new Map(); // query -> { mql, callbacks: [], handler }
+
+export function observeMediaQuery(instance, query, callback) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return () => {};
+	if (typeof window === "undefined" || !window.matchMedia) return () => {};
+
+	let item = mediaQueryLists.get(query);
+	if (!item) {
+		const mql = window.matchMedia(query);
+		const callbacks = [];
+		const handler = (e) => {
+			const matches = e.matches;
+			for (let i = callbacks.length - 1; i >= 0; i--) {
+				callbacks[i](matches, e);
+			}
+		};
+
+		if (mql.addEventListener) {
+			mql.addEventListener("change", handler);
+		} else if (mql.addListener) {
+			mql.addListener(handler);
+		}
+
+		item = { mql, callbacks, handler };
+		mediaQueryLists.set(query, item);
+	}
+
+	if (item.callbacks.indexOf(callback) === -1) {
+		item.callbacks.push(callback);
+	}
+
+	if (!instance._observedMediaQueries) {
+		instance._observedMediaQueries = new Map();
+	}
+	let compCbs = instance._observedMediaQueries.get(query);
+	if (!compCbs) {
+		compCbs = [];
+		instance._observedMediaQueries.set(query, compCbs);
+	}
+	if (compCbs.indexOf(callback) === -1) {
+		compCbs.push(callback);
+	}
+
+	// Trigger immediately with initial match state
+	try {
+		callback(item.mql.matches, item.mql);
+	} catch (e) {
+		console.error(e);
+	}
+
+	const unobserve = () => {
+		unobserveMediaQuery(instance, query, callback);
+	};
+
+	if (instance.signal) {
+		instance.signal.addEventListener("abort", unobserve, { once: true });
+	}
+
+	return unobserve;
+}
+
+export function unobserveMediaQuery(instance, query, callback = null) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	const item = mediaQueryLists.get(query);
+	if (!item) return;
+
+	if (instance && instance._observedMediaQueries) {
+		const compCbs = instance._observedMediaQueries.get(query);
+		if (compCbs) {
+			if (callback) {
+				const idx = compCbs.indexOf(callback);
+				if (idx !== -1) {
+					compCbs.splice(idx, 1);
+				}
+			} else {
+				compCbs.length = 0;
+			}
+			if (compCbs.length === 0) {
+				instance._observedMediaQueries.delete(query);
+			}
+		}
+	}
+
+	if (callback) {
+		const idx = item.callbacks.indexOf(callback);
+		if (idx !== -1) {
+			item.callbacks.splice(idx, 1);
+		}
+	} else if (instance && instance._observedMediaQueries) {
+		const compCbs = instance._observedMediaQueries.get(query);
+		if (compCbs) {
+			for (let i = 0; i < compCbs.length; i++) {
+				const idx = item.callbacks.indexOf(compCbs[i]);
+				if (idx !== -1) {
+					item.callbacks.splice(idx, 1);
+				}
+			}
+		}
+	}
+
+	if (item.callbacks.length === 0) {
+		if (item.mql.removeEventListener) {
+			item.mql.removeEventListener("change", item.handler);
+		} else if (item.mql.removeListener) {
+			item.mql.removeListener(item.handler);
+		}
+		mediaQueryLists.delete(query);
+	}
+}
+
 /**
  * Cleans up all observers registered by a component instance during unmount.
  * @param {object} instance - Component instance
@@ -476,5 +610,14 @@ export function cleanupComponentObservers(instance) {
 		// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
 		instance._observedIntersectionElements.forEach(_unobserveIntersectionCb, instance);
 		instance._observedIntersectionElements = null;
+	}
+
+	if (instance._observedMediaQueries) {
+		instance._observedMediaQueries.forEach((callbacks, query) => {
+			for (let i = callbacks.length - 1; i >= 0; i--) {
+				unobserveMediaQuery(instance, query, callbacks[i]);
+			}
+		});
+		instance._observedMediaQueries = null;
 	}
 }

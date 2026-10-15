@@ -1,5 +1,5 @@
 import config from "./config.js";
-import { queryAll } from "./utils.js";
+import { queryAll, toggleClass, addClass, removeClass } from "./utils.js";
 import { components } from "./store.js";
 import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./state.js";
 import { loadScript, loadStyle } from "./loaders.js";
@@ -14,6 +14,8 @@ import {
 	unobserveResize,
 	observeIntersection,
 	unobserveIntersection,
+	observeMediaQuery,
+	unobserveMediaQuery,
 	cleanupComponentObservers,
 } from "./observers.js";
 
@@ -37,6 +39,8 @@ const globalExcludedMethods = new Set([
 	"unobserveResize",
 	"observeIntersection",
 	"unobserveIntersection",
+	"observeMediaQuery",
+	"unobserveMediaQuery",
 	"listen",
 	"emit",
 	"on",
@@ -44,6 +48,10 @@ const globalExcludedMethods = new Set([
 	"delegate",
 	"find",
 	"findAll",
+	"toggleClass",
+	"addClass",
+	"removeClass",
+	"channel",
 ]);
 
 const protoMethodsCache = new WeakMap();
@@ -374,6 +382,14 @@ export default class BaseComponent {
 		unobserveIntersection(this, element, callback);
 	}
 
+	observeMediaQuery(query, callback) {
+		return observeMediaQuery(this, query, callback);
+	}
+
+	unobserveMediaQuery(query, callback = null) {
+		unobserveMediaQuery(this, query, callback);
+	}
+
 	loadScript(scriptId, globalName) {
 		return loadScript(scriptId, globalName);
 	}
@@ -471,6 +487,77 @@ export default class BaseComponent {
 				? { signal: this.signal }
 				: options;
 		eventbus.on(event, handler, opts);
+	}
+
+	channel(namespace) {
+		const prefix = namespace.endsWith(":") ? namespace : `${namespace}:`;
+		return {
+			emit: (event, data) => {
+				this.emit(`${prefix}${event}`, data);
+			},
+			on: (event, handler, options = false) => {
+				this.on(`${prefix}${event}`, handler, options);
+			},
+			once: (event, handler, options = {}) => {
+				const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
+				this.on(`${prefix}${event}`, handler, opts);
+			},
+			off: (event, handler) => {
+				eventbus.off(`${prefix}${event}`, handler);
+			},
+		};
+	}
+
+	toggleClass(target, className, condition = null) {
+		let el = target;
+		let cls = className;
+		let cond = condition;
+
+		if (
+			typeof target === "string" &&
+			(typeof className === "boolean" || className === null || className === undefined)
+		) {
+			el = this.element;
+			cls = target;
+			cond = className ?? null;
+		} else if (typeof target === "string" && typeof className === "string") {
+			el = this.find(target);
+		}
+
+		if (el) {
+			toggleClass(el, cls, cond);
+		}
+		return el;
+	}
+
+	addClass(target, className) {
+		let el = target;
+		let cls = className;
+		if (cls === undefined) {
+			el = this.element;
+			cls = target;
+		} else if (typeof target === "string") {
+			el = this.find(target);
+		}
+		if (el) {
+			addClass(el, cls);
+		}
+		return el;
+	}
+
+	removeClass(target, className) {
+		let el = target;
+		let cls = className;
+		if (cls === undefined) {
+			el = this.element;
+			cls = target;
+		} else if (typeof target === "string") {
+			el = this.find(target);
+		}
+		if (el) {
+			removeClass(el, cls);
+		}
+		return el;
 	}
 
 	_autoBindFunctions() {

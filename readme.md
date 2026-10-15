@@ -344,6 +344,8 @@ Gia provides four primary observer APIs built directly into `BaseComponent`:
 Instead of each component creating its own `IntersectionObserver`, Gia groups elements by their observer options (like `threshold` and `rootMargin`) and monitors them using a shared, global observer.
 
 - **Usage**: `this.observeIntersection(element, callback, options)`
+- **Auto-Unobserve (`once: true`)**: Pass `{ once: true }` to automatically stop observing as soon as the element intersects once (perfect for reveal animations, fade-ins, and one-off asset hydration):
+  `this.observeIntersection(this.element, ([entry]) => entry.target.classList.add("revealed"), { once: true, threshold: 0.2 });`
 - **Best for**: Lazy-loading images, scroll-triggered animations (like `Reveal`), and pausing heavy tasks (like canvas physics) when out of view.
 
 #### 2. Element Resize (`observeResize`)
@@ -365,6 +367,13 @@ Attaches to a single centralized window scroll listener. Instead of forcing the 
 Attaches to a single centralized window resize listener (or `orientationchange` on mobile browsers) to prevent multiple components from binding heavy resize events simultaneously.
 
 - **Usage**: `this.observeWindowResize((payload) => console.log(payload.width, payload.height))`
+
+#### 5. Media Queries & Preferences (`observeMediaQuery`)
+
+Monitors CSS media queries (e.g. responsive breakpoints, dark mode, reduced motion) using centralized `window.matchMedia` listeners. It executes immediately with the initial match value and cleans up automatically on unmount:
+
+- **Usage**: `this.observeMediaQuery("(min-width: 768px)", (matches) => this.setState({ isDesktop: matches }))`
+- **Best for**: Responsive layout switches, syncing dark/light theme state, and respecting accessibility preferences (`(prefers-reduced-motion: reduce)`).
 
 **Example implementation:**
 
@@ -504,6 +513,34 @@ this.on("cart:*", (event) => {
 eventbus.on("*", (event) => {
 	analytics.track(event._name, event);
 });
+```
+
+#### Namespaced Channels (`this.channel` & `eventbus.channel`)
+
+For feature-driven architectures, create lightweight scoped channels to avoid writing repetitive prefix strings:
+
+```javascript
+class ProductCard extends Component {
+	mount() {
+		// Scoped to "cart:" namespace with automatic signal cleanup!
+		this.cart = this.channel("cart");
+	}
+
+	addToCart() {
+		this.cart.emit("add", { id: 101, name: "Premium Widget" }); // Emits "cart:add"
+	}
+}
+
+class CartDrawer extends Component {
+	mount() {
+		const cart = this.channel("cart");
+		cart.on("add", this.handleAdd); // Listens to "cart:add"
+	}
+
+	handleAdd(data) {
+		console.log("Added item:", data);
+	}
+}
 ```
 
 ---
@@ -705,6 +742,11 @@ By setting `config.set("autoBindActions", true)`, Gia parses `data-action` attri
 - `.stop`: Automatically invokes `e.stopPropagation()`.
 - `.once`: Automatically removes the listener after the first trigger.
 - `.self`: Only invokes handler if `e.target` is the element itself (perfect for modal backdrops).
+- `.outside`: Invokes handler when a click/event occurs **outside** the element on the document (perfect for dropdowns, popovers, drawers, and menus).
+- `.debounce` / `.debounce.300`: Automatically debounces rapid event calls (defaults to 200ms, or specify milliseconds like `.debounce.300` or `.debounce-500`).
+- `.throttle` / `.throttle.100`: Automatically throttles rapid scroll, touch, or drag events (defaults to 100ms, or specify milliseconds like `.throttle.150`).
+- `.passive`: Attaches listener with `{ passive: true }` to avoid blocking the main scrolling thread on touch devices.
+- `.capture`: Attaches listener in the capture phase.
 - **Keyboard Modifiers**: Filter keyboard events so handlers fire only when specific keys are pressed:
   - `.enter`: Triggers only on Enter.
   - `.esc` / `.escape`: Triggers only on Escape.
@@ -759,6 +801,30 @@ class Gallery extends Component {
 		// Array of elements scoped to component root (standard Array with .map, .filter, etc.)
 		const thumbnails = this.findAll(".thumbnail");
 		thumbnails.map((thumb) => thumb.classList.add("loaded"));
+	}
+}
+```
+
+---
+
+### DOM Class & State Helpers (`this.toggleClass`, `this.addClass`, `this.removeClass`)
+
+Manipulate CSS classes and states with zero boilerplate. These methods operate on `this.element` by default, or accept a scoped selector string / child element:
+
+```javascript
+class AccordionItem extends Component {
+	toggleOpen(isOpen) {
+		// Toggle class on root element with boolean condition
+		this.toggleClass("is-open", isOpen);
+
+		// Add/remove classes on child elements via scoped selectors
+		if (isOpen) {
+			this.addClass(".panel", "expanded");
+			this.removeClass(".icon", "rotate-0");
+		} else {
+			this.removeClass(".panel", "expanded");
+			this.addClass(".icon", "rotate-0");
+		}
 	}
 }
 ```
