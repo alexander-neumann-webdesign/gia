@@ -76,4 +76,48 @@ test.describe('EventBus', () => {
         eventbus.emit('clear-event');
         expect(count).toBe(2);
     });
+
+    test('should remove listener automatically when signal is aborted', async () => {
+        const controller = new AbortController();
+        let count = 0;
+
+        eventbus.on('abort-event', () => {
+            count++;
+        }, { signal: controller.signal });
+
+        eventbus.emit('abort-event');
+        expect(count).toBe(1);
+
+        controller.abort();
+
+        eventbus.emit('abort-event');
+        expect(count).toBe(1);
+    });
+
+    test('should not register listener if signal is already aborted', async () => {
+        const controller = new AbortController();
+        controller.abort();
+        let count = 0;
+
+        eventbus.on('pre-aborted-event', () => {
+            count++;
+        }, { signal: controller.signal });
+
+        eventbus.emit('pre-aborted-event');
+        expect(count).toBe(0);
+    });
+
+    test('should support both once and signal options simultaneously', async () => {
+        const controller = new AbortController();
+        let count = 0;
+
+        eventbus.once('once-signal-event', () => {
+            count++;
+        }, { signal: controller.signal });
+
+        controller.abort();
+
+        eventbus.emit('once-signal-event');
+        expect(count).toBe(0);
+    });
 });

@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["DOM", "ES2020"],
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"paths": {
+			"gia": ["./types/index.d.ts"],
+			"gia/mini": ["./types/mini.d.ts"],
+			"gia/nano": ["./types/nano.d.ts"]
+		}
+	},
+	"include": [
+		"types/**/*",
+		"tests/types.test.ts"
+	]
+}

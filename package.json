@@ -3,21 +3,35 @@
 	"version": "1.0.0",
 	"description": "",
 	"files": [
-		"dist"
+		"dist",
+		"types"
 	],
 	"main": "./dist/gia.full.umd.js",
 	"module": "./dist/gia.full.mjs",
+	"types": "./types/index.d.ts",
 	"exports": {
 		".": {
+			"types": "./types/index.d.ts",
 			"import": "./dist/gia.full.mjs",
 			"require": "./dist/gia.full.umd.js"
+		},
+		"./mini": {
+			"types": "./types/mini.d.ts",
+			"import": "./dist/gia.mini.mjs",
+			"require": "./dist/gia.mini.umd.js"
+		},
+		"./nano": {
+			"types": "./types/nano.d.ts",
+			"import": "./dist/gia.nano.mjs",
+			"require": "./dist/gia.nano.umd.js"
 		}
 	},
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build && vite build -c vite.mini.config.mjs && vite build -c vite.nano.config.mjs",
 		"preview": "vite preview",
-		"test": "playwright test"
+		"typecheck": "tsc --noEmit",
+		"test": "playwright test && tsc --noEmit"
 	},
 	"keywords": [],
 	"author": "",
@@ -27,6 +41,7 @@
 		"jsdom": "^29.1.1",
 		"sass": "^1.99.0",
 		"terser": "^5.48.0",
+		"typescript": "^7.0.2",
 		"vite": "^5.4.8"
 	}
 }

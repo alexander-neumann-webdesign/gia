@@ -34,6 +34,7 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
     - [Component Options (`data-options`)](#component-options-data-options)
     - [Event Binding (`data-action`)](#event-binding-data-action)
     - [Auto-Mounting](#auto-mounting)
+- [TypeScript Support](#typescript-support)
 - [Global Configuration](#global-configuration)
 - [API Reference](#api-reference)
 - [Performance Optimizations](#performance-optimizations)
@@ -45,16 +46,24 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
 
 ## Installation & Build Variants
 
-Gia is compiled into three highly optimized build variants depending on the features you need. Load the UMD builds directly via script tag, or import the ESM (`.mjs`) builds via a bundler.
+Gia is compiled into three highly optimized build variants depending on the features you need. Load the UMD builds directly via script tag, or import the ESM (`.mjs`) builds via clean subpath imports.
 
-| Build Variant  | Description                                                                                                                                                                                  | UMD Gzip Size | File                   |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------- |
-| **Full Build** | Includes all framework features, async `require()`, global observers, and the EventBus.                                                                                                      | ~5.1 KB       | `dist/gia.full.umd.js` |
-| **Mini Build** | Drops `autoMount` MutationObserver logic and `data-action` auto-binding parsing.                                                                                                             | ~4.6 KB       | `dist/gia.mini.umd.js` |
-| **Nano Build** | The absolute bare minimum. Drops EventBus, global observers (scroll/resize), JSON options parsing, state-to-attribute syncing, and async script loading. Just the core class and ref engine. | ~2.6 KB       | `dist/gia.nano.umd.js` |
+| Build Variant  | Subpath Import | Description | UMD Gzip | ESM Gzip |
+| -------------- | -------------- | ----------- | -------- | -------- |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.6 KB | ~6.5 KB |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.0 KB | ~5.9 KB |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.4 KB | ~3.3 KB |
+
+```javascript
+// Full build
+import { Component, loadComponents, eventbus } from "gia";
+
+// Or target the tiny Nano build (~3.3 KB gzipped)
+import { BaseComponent, loadComponents } from "gia/nano";
+```
 
 ```html
-<!-- Example: Loading the full build -->
+<!-- Example: Loading the full build via script tag -->
 <script src="./dist/gia.full.umd.js"></script>
 ```
 
@@ -420,7 +429,7 @@ class Tooltip extends Component {
 
 ### Global Eventbus
 
-Decouple your components by communicating through a global, native `EventTarget`-powered event bus.
+Decouple your components by communicating through a global, zero-GC event bus.
 
 ```javascript
 import { eventbus } from "gia";
@@ -429,9 +438,16 @@ import { eventbus } from "gia";
 eventbus.emit("productAdded", { id: 101, name: "Premium Widget" });
 
 // Component B (Receiver)
-eventbus.on("productAdded", (data) => {
-	console.log(`Updating cart with product: ${data.name}`);
-});
+// Automatically unbinds when this component unmounts via this.signal!
+class CartPreview extends Component {
+	mount() {
+		eventbus.on("productAdded", this.handleProductAdded, { signal: this.signal });
+	}
+
+	handleProductAdded(data) {
+		console.log(`Updating cart with product: ${data.name}`);
+	}
+}
 ```
 
 ---
@@ -547,6 +563,55 @@ class ImageHolder extends Component {
 ```
 
 Components with the same priority will safely fall back to maintaining their natural DOM top-to-bottom loading order.
+
+---
+
+## TypeScript Support
+
+Gia ships with full, native TypeScript type declarations (`types/index.d.ts`, `types/mini.d.ts`, and `types/nano.d.ts`) supporting generic component types for **State**, **Options**, and **Refs**:
+
+```typescript
+import { BaseComponent, Component, loadComponents } from "gia";
+
+interface CounterState {
+	count: number;
+}
+
+interface CounterOptions {
+	step: number;
+}
+
+interface CounterRefs {
+	incrementBtn: HTMLButtonElement;
+	decrementBtn: HTMLButtonElement;
+	display: HTMLOutputElement;
+}
+
+export default class Counter extends BaseComponent<CounterState, CounterOptions, CounterRefs> {
+	mount() {
+		this.setState({ count: 0 });
+
+		// Fully typed refs and options with autocompletion!
+		this.ref.incrementBtn.addEventListener("click", () => {
+			this.setState({ count: this.state.count + this.options.step });
+		}, { signal: this.signal });
+
+		// Return optional cleanup function
+		return () => {
+			console.log("Counter unmounted!");
+		};
+	}
+
+	stateChange(changes: Partial<CounterState>) {
+		if (changes.count !== undefined) {
+			this.ref.display.textContent = String(changes.count);
+		}
+	}
+}
+
+// Type-checked component registry
+loadComponents({ Counter });
+```
 
 ---
 

@@ -5,6 +5,7 @@ import Component from '../src/Component.js';
 import createInstance from '../src/createInstance.js';
 import destroyInstance from '../src/destroyInstance.js';
 import loadComponents from '../src/loadComponents.js';
+import removeComponents from '../src/removeComponents.js';
 import config from '../src/config.js';
 
 test.describe('Lifecycle Hooks & AbortSignal', () => {
@@ -217,5 +218,72 @@ test.describe('Lifecycle Hooks & AbortSignal', () => {
 
         btn.dispatchEvent(new Event('click'));
         expect(actionCount).toBe(1);
+    });
+
+    test('removeComponents should unmount the context element itself when context has data-component', () => {
+        const root = document.createElement('div');
+        root.setAttribute('data-component', 'RootComponent');
+        const child = document.createElement('div');
+        child.setAttribute('data-component', 'ChildComponent');
+        root.appendChild(child);
+        document.body.appendChild(root);
+
+        let rootUnmounted = false;
+        let childUnmounted = false;
+
+        class RootComponent extends BaseComponent {
+            unmount() {
+                rootUnmounted = true;
+            }
+        }
+
+        class ChildComponent extends BaseComponent {
+            unmount() {
+                childUnmounted = true;
+            }
+        }
+
+        loadComponents({ RootComponent, ChildComponent }, root);
+
+        // Call removeComponents directly with the root element as context
+        removeComponents(root);
+
+        expect(childUnmounted).toBe(true);
+        expect(rootUnmounted).toBe(true);
+    });
+
+    test('Component._load should handle promise rejection in require() without crashing or unhandled rejection', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+
+        let mountCalled = false;
+        const originalError = console.error;
+        let loggedError = null;
+        console.error = (msg, err) => {
+            loggedError = { msg, err };
+        };
+
+        try {
+            class FailingComponent extends Component {
+                async require() {
+                    throw new Error('Network asset failed to load');
+                }
+                mount() {
+                    mountCalled = true;
+                }
+            }
+
+            const instance = createInstance(el, 'FailingComponent', FailingComponent);
+            instance._load();
+
+            await new Promise((r) => setTimeout(r, 20));
+
+            expect(mountCalled).toBe(false);
+            expect(instance.isMounted).toBe(false);
+            expect(loggedError).not.toBeNull();
+            expect(loggedError.msg).toContain('Error loading dependencies for "FailingComponent"');
+        } finally {
+            console.error = originalError;
+        }
     });
 });

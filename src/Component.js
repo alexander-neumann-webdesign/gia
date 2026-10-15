@@ -16,19 +16,25 @@ export default class Component extends BaseComponent {
 	}
 
 	_load() {
-		const req = this.require();
-		if (req && typeof req.then === "function") {
-			req.then(() => {
+		try {
+			const req = this.require();
+			if (req && typeof req.then === "function") {
+				req.then(() => {
+					if (this.element && !this._isDestroyed) {
+						this._isMounted = true;
+						this._mountCleanup = this.mount();
+					}
+				}).catch((err) => {
+					console.error(`Gia: Error loading dependencies for "${this._name}".`, err);
+				});
+			} else {
 				if (this.element && !this._isDestroyed) {
 					this._isMounted = true;
 					this._mountCleanup = this.mount();
 				}
-			});
-		} else {
-			if (this.element && !this._isDestroyed) {
-				this._isMounted = true;
-				this._mountCleanup = this.mount();
 			}
+		} catch (err) {
+			console.error(`Gia: Error loading dependencies for "${this._name}".`, err);
 		}
 	}
 }

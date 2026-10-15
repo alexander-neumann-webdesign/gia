@@ -50,7 +50,13 @@ class EventBus {
 		}
 	}
 
-	on(event, handler, once = false) {
+	on(event, handler, options = false) {
+		const isObj = options && typeof options === "object";
+		const once = isObj ? !!options.once : !!options;
+		const signal = isObj ? options.signal : null;
+
+		if (signal && signal.aborted) return;
+
 		if (!this.listeners[event]) {
 			this.listeners[event] = [];
 		}
@@ -67,11 +73,22 @@ class EventBus {
 			handler._wrappedHandlers[event] = actualHandler;
 		}
 
+		if (signal) {
+			signal.addEventListener(
+				"abort",
+				() => {
+					this.off(event, actualHandler);
+				},
+				{ once: true },
+			);
+		}
+
 		this.listeners[event].push(actualHandler);
 	}
 
-	once(event, handler) {
-		this.on(event, handler, true);
+	once(event, handler, options = {}) {
+		const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
+		this.on(event, handler, opts);
 	}
 
 	off(event, handler) {
