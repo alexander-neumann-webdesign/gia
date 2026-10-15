@@ -25,6 +25,15 @@ const _unobserveIntersectionCb = function (val, key) {
 	unobserveIntersection(this, key);
 };
 
+function _swapAndPop(arr, item) {
+	if (!arr) return;
+	const idx = arr.indexOf(item);
+	if (idx !== -1) {
+		arr[idx] = arr[arr.length - 1];
+		arr.pop();
+	}
+}
+
 function _processScroll() {
 	for (let i = scrollCallbacks.length - 1; i >= 0; i--) {
 		scrollCallbacks[i](_scrollPayload);
@@ -178,18 +187,9 @@ export function observeScroll(instance, callback) {
 export function unobserveScroll(instance, callback) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (instance && instance._observedScrollCallbacks) {
-		const idx = instance._observedScrollCallbacks.indexOf(callback);
-		if (idx !== -1) {
-			instance._observedScrollCallbacks[idx] =
-				instance._observedScrollCallbacks[instance._observedScrollCallbacks.length - 1];
-			instance._observedScrollCallbacks.pop();
-		}
+		_swapAndPop(instance._observedScrollCallbacks, callback);
 	}
-	const globalIdx = scrollCallbacks.indexOf(callback);
-	if (globalIdx !== -1) {
-		scrollCallbacks[globalIdx] = scrollCallbacks[scrollCallbacks.length - 1];
-		scrollCallbacks.pop();
-	}
+	_swapAndPop(scrollCallbacks, callback);
 
 	if (scrollCallbacks.length === 0 && globalScrollListenerBound) {
 		globalScrollListenerBound = false;
@@ -228,18 +228,9 @@ export function observeWindowResize(instance, callback) {
 export function unobserveWindowResize(instance, callback) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (instance && instance._observedWindowResizeCallbacks) {
-		const idx = instance._observedWindowResizeCallbacks.indexOf(callback);
-		if (idx !== -1) {
-			instance._observedWindowResizeCallbacks[idx] =
-				instance._observedWindowResizeCallbacks[instance._observedWindowResizeCallbacks.length - 1];
-			instance._observedWindowResizeCallbacks.pop();
-		}
+		_swapAndPop(instance._observedWindowResizeCallbacks, callback);
 	}
-	const globalIdx = windowResizeCallbacks.indexOf(callback);
-	if (globalIdx !== -1) {
-		windowResizeCallbacks[globalIdx] = windowResizeCallbacks[windowResizeCallbacks.length - 1];
-		windowResizeCallbacks.pop();
-	}
+	_swapAndPop(windowResizeCallbacks, callback);
 
 	if (windowResizeCallbacks.length === 0 && globalResizeListenerBound) {
 		globalResizeListenerBound = false;
@@ -300,29 +291,13 @@ export function unobserveResize(instance, element, callback = null) {
 	if (!componentCallbacks) return;
 
 	if (callback) {
-		const idx = componentCallbacks.indexOf(callback);
-		if (idx !== -1) {
-			componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
-			componentCallbacks.pop();
-		}
-		const globalCbs = resizeCallbacks.get(element);
-		if (globalCbs) {
-			const gIdx = globalCbs.indexOf(callback);
-			if (gIdx !== -1) {
-				globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
-				globalCbs.pop();
-			}
-		}
+		_swapAndPop(componentCallbacks, callback);
+		_swapAndPop(resizeCallbacks.get(element), callback);
 	} else {
 		const globalCbs = resizeCallbacks.get(element);
 		if (globalCbs) {
 			for (let i = 0; i < componentCallbacks.length; i++) {
-				const cb = componentCallbacks[i];
-				const gIdx = globalCbs.indexOf(cb);
-				if (gIdx !== -1) {
-					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
-					globalCbs.pop();
-				}
+				_swapAndPop(globalCbs, componentCallbacks[i]);
 			}
 		}
 		componentCallbacks.length = 0;
@@ -408,24 +383,14 @@ function _processIntersectionData(instance, element, callback, componentCallback
 			componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
 			componentCallbacks.pop();
 			if (observerData && observerData._callbacks.has(element)) {
-				const globalCbs = observerData._callbacks.get(element);
-				const gIdx = globalCbs.indexOf(targetCb);
-				if (gIdx !== -1) {
-					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
-					globalCbs.pop();
-				}
+				_swapAndPop(observerData._callbacks.get(element), targetCb);
 			}
 		}
 	} else {
 		if (observerData && observerData._callbacks.has(element)) {
 			const globalCbs = observerData._callbacks.get(element);
 			for (let i = 0; i < componentCallbacks.length; i++) {
-				const cb = componentCallbacks[i];
-				const gIdx = globalCbs.indexOf(cb);
-				if (gIdx !== -1) {
-					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
-					globalCbs.pop();
-				}
+				_swapAndPop(globalCbs, componentCallbacks[i]);
 			}
 		}
 		componentCallbacks.length = 0;

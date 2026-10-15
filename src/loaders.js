@@ -2,6 +2,8 @@
  * Dynamic script and stylesheet loaders with DOM clobbering protection and promise caching.
  */
 
+const URL_REGEX = /^(?:https?:|\/\/|\/|\.\.?\/)|(?:\.js|\.css)$/;
+
 /**
  * Loads a script that is already defined in the DOM with a data-src attribute.
  * Prevents double-loading and handles race conditions.
@@ -27,15 +29,7 @@ export function loadScript(scriptId, globalName) {
 	// 2. DOM LOOKUP: Find the existing script tag or create from URL
 	let script = document.getElementById(scriptId);
 	if (!script) {
-		const isUrl =
-			typeof scriptId === "string" &&
-			(scriptId.startsWith("http://") ||
-				scriptId.startsWith("https://") ||
-				scriptId.startsWith("//") ||
-				scriptId.startsWith("/") ||
-				scriptId.startsWith("./") ||
-				scriptId.startsWith("../") ||
-				scriptId.endsWith(".js"));
+		const isUrl = typeof scriptId === "string" && URL_REGEX.test(scriptId);
 
 		if (isUrl && typeof document !== "undefined") {
 			script = document.querySelector(`script[src="${scriptId}"]`);
@@ -104,15 +98,7 @@ export function loadStyle(styleId) {
 	// DOM LOOKUP: Find the existing link tag or create from URL
 	let link = document.getElementById(styleId);
 	if (!link) {
-		const isUrl =
-			typeof styleId === "string" &&
-			(styleId.startsWith("http://") ||
-				styleId.startsWith("https://") ||
-				styleId.startsWith("//") ||
-				styleId.startsWith("/") ||
-				styleId.startsWith("./") ||
-				styleId.startsWith("../") ||
-				styleId.endsWith(".css"));
+		const isUrl = typeof styleId === "string" && URL_REGEX.test(styleId);
 
 		if (isUrl && typeof document !== "undefined") {
 			link = document.querySelector(`link[href="${styleId}"]`);
