@@ -129,3 +129,7 @@
 ## 2026-10-15 - Bottom-Up Inside-Out Subtree Teardown
 **Learning:** Tearing down DOM component trees from top-to-bottom can cause race conditions or errors if parent teardown logic queries or depends on child component state/nodes that haven't detached their observers or timers yet.
 **Action:** Traverse child components in reverse DOM order (`for (let i = list.length - 1; i >= 0; i--)`), destroying nested components before their parent containers.
+
+## 2026-10-15 - Fast-Path Pointer Comparison for DOM Tree Traversal
+**Learning:** During component initialization (`set ref` and `autoBindActions`), walking the DOM tree via `element.closest()` on every ref or action node creates measurable CPU overhead when nested components exist, even though the vast majority of refs are immediate children of the component container.
+**Action:** Perform an O(1) pointer comparison `element.parentElement === this.element` before invoking `element.closest()`. Direct children bypass the native tree-walking traversal entirely.

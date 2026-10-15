@@ -24,10 +24,30 @@ export function loadScript(scriptId, globalName) {
 		return Promise.resolve(window[globalName]);
 	}
 
-	// 2. DOM LOOKUP: Find the existing script tag
-	const script = document.getElementById(scriptId);
+	// 2. DOM LOOKUP: Find the existing script tag or create from URL
+	let script = document.getElementById(scriptId);
 	if (!script) {
-		return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
+		const isUrl =
+			typeof scriptId === "string" &&
+			(scriptId.startsWith("http://") ||
+				scriptId.startsWith("https://") ||
+				scriptId.startsWith("//") ||
+				scriptId.startsWith("/") ||
+				scriptId.startsWith("./") ||
+				scriptId.startsWith("../") ||
+				scriptId.endsWith(".js"));
+
+		if (isUrl && typeof document !== "undefined") {
+			script = document.querySelector(`script[src="${scriptId}"]`);
+			if (!script) {
+				script = document.createElement("script");
+				script.src = scriptId;
+				script.async = true;
+				(document.head || document.documentElement).appendChild(script);
+			}
+		} else {
+			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
+		}
 	}
 
 	// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
@@ -81,10 +101,30 @@ export function loadScript(scriptId, globalName) {
 export function loadStyle(styleId) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
 
-	// DOM LOOKUP: Find the existing link tag
-	const link = document.getElementById(styleId);
+	// DOM LOOKUP: Find the existing link tag or create from URL
+	let link = document.getElementById(styleId);
 	if (!link) {
-		return Promise.reject(new Error(`Link tag with ID '${styleId}' not found.`));
+		const isUrl =
+			typeof styleId === "string" &&
+			(styleId.startsWith("http://") ||
+				styleId.startsWith("https://") ||
+				styleId.startsWith("//") ||
+				styleId.startsWith("/") ||
+				styleId.startsWith("./") ||
+				styleId.startsWith("../") ||
+				styleId.endsWith(".css"));
+
+		if (isUrl && typeof document !== "undefined") {
+			link = document.querySelector(`link[href="${styleId}"]`);
+			if (!link) {
+				link = document.createElement("link");
+				link.rel = "stylesheet";
+				link.href = styleId;
+				(document.head || document.documentElement).appendChild(link);
+			}
+		} else {
+			return Promise.reject(new Error(`Link tag with ID '${styleId}' not found.`));
+		}
 	}
 
 	// SECURITY: Ensure the found element is actually a link tag

@@ -62,7 +62,7 @@ export function enqueueSetState(instance, changes) {
 				if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
 					// Process state changes for attributes
 					const type = typeof newValue;
-					if (type === "boolean" || type === "string") {
+					if (type === "boolean" || type === "string" || type === "number") {
 						let attrName = globalStateAttributeCache.get(key);
 						if (!attrName) {
 							// Convert camelCase to kebab-case
@@ -72,7 +72,7 @@ export function enqueueSetState(instance, changes) {
 						}
 
 						instance._pendingAttributeChanges[attrName] =
-							type === "boolean" ? (newValue ? "true" : "false") : newValue;
+							type === "boolean" ? (newValue ? "true" : "false") : String(newValue);
 					}
 				}
 			}

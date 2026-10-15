@@ -149,6 +149,10 @@ export class BaseComponent<
 		handler: EventListenerOrEventListenerObject,
 		options?: boolean | AddEventListenerOptions
 	): void;
+
+	updateRefs(): void;
+	emit(event: string, eventObject?: Record<string, any>): void;
+	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
 }
 
 /**

@@ -48,6 +48,11 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 		this.listen('click', () => {});
 		this.listen(window, 'resize', () => {});
 
+		// Test updateRefs, emit, on
+		this.updateRefs();
+		this.emit('test-event', { value: 123 });
+		this.on('test-event', (data) => {});
+
 		// Test mount cleanup return
 		return () => {
 			// Teardown

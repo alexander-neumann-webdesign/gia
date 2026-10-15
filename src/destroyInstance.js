@@ -12,9 +12,14 @@ export default function destroyInstance(element) {
 	// inside the extremely hot autoMount MutationObserver removal loop.
 	let instance = components.get(element);
 
-	// Fallback for ID string passing
-	if (!instance && typeof element === "string") {
-		const el = document.getElementById(element);
+	// Fallback for ID or CSS selector string passing
+	if (!instance && typeof element === "string" && typeof document !== "undefined") {
+		let el = document.getElementById(element);
+		if (!el && typeof document.querySelector === "function") {
+			try {
+				el = document.querySelector(element);
+			} catch (_e) {}
+		}
 		if (el) {
 			instance = components.get(el);
 			element = el; // update element reference for cleanup below

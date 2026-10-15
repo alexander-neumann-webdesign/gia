@@ -631,5 +631,138 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
             // Child must unmount before parent
             expect(unmountOrder).toEqual(['child', 'parent']);
         });
+
+        test('data-action should bind on root element and support .prevent, .stop, and .once modifiers', () => {
+            config.set('autoBindActions', true);
+
+            document.body.innerHTML = `
+                <button id="root-btn" data-component="ActionComp" data-action="click.prevent->handleRootClick">
+                    <span id="child-span" data-action="click.stop->handleChildClick">Child</span>
+                    <span id="once-span" data-action="click.once->handleOnceClick">Once</span>
+                </button>
+            `;
+
+            let rootClicked = false;
+            let rootDefaultPrevented = false;
+            let childClicked = false;
+            let onceClickCount = 0;
+
+            class ActionComp extends BaseComponent {
+                handleRootClick(e) {
+                    rootClicked = true;
+                    rootDefaultPrevented = e.defaultPrevented;
+                }
+                handleChildClick(e) {
+                    childClicked = true;
+                }
+                handleOnceClick(e) {
+                    onceClickCount++;
+                }
+            }
+
+            loadComponents({ ActionComp });
+
+            const rootBtn = document.getElementById('root-btn');
+            const childSpan = document.getElementById('child-span');
+            const onceSpan = document.getElementById('once-span');
+
+            // Test root element action with .prevent
+            const clickEvt = new window.Event('click', { cancelable: true, bubbles: true });
+            rootBtn.dispatchEvent(clickEvt);
+            expect(rootClicked).toBe(true);
+            expect(rootDefaultPrevented).toBe(true);
+
+            // Test child action with .stop (propagation stopped to root)
+            rootClicked = false;
+            const childClickEvt = new window.Event('click', { cancelable: true, bubbles: true });
+            childSpan.dispatchEvent(childClickEvt);
+            expect(childClicked).toBe(true);
+            expect(rootClicked).toBe(false); // Propagation stopped
+
+            // Test .once modifier
+            onceSpan.click();
+            onceSpan.click();
+            expect(onceClickCount).toBe(1);
+
+            destroyInstance(rootBtn);
+        });
+
+        test('this.emit and this.on should provide component-scoped eventbus with auto-cleanup', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            let receivedData = null;
+
+            class EventComp extends BaseComponent {
+                mount() {
+                    this.on('custom-channel', (data) => {
+                        receivedData = data;
+                    });
+                }
+            }
+
+            const instance = createInstance(el, 'EventComp', EventComp);
+            instance._load();
+
+            instance.emit('custom-channel', { hello: 'world' });
+            expect(receivedData).toEqual({ hello: 'world', _name: 'custom-channel' });
+
+            // Unmount component
+            destroyInstance(el);
+
+            // After unmount, listener should be detached
+            receivedData = null;
+            instance.emit('custom-channel', { hello: 'world again' });
+            expect(receivedData).toBe(null);
+        });
+
+        test('getComponentFromElement and destroyInstance should support CSS selectors', () => {
+            document.body.innerHTML = `
+                <div id="target-comp" class="card-widget" data-component="SelectorComp"></div>
+            `;
+
+            class SelectorComp extends BaseComponent {}
+
+            loadComponents({ SelectorComp });
+
+            // ID with #
+            const byIdHash = getComponentFromElement('#target-comp');
+            expect(byIdHash).toBeInstanceOf(SelectorComp);
+
+            // Class selector
+            const byClass = getComponentFromElement('.card-widget');
+            expect(byClass).toBe(byIdHash);
+
+            // destroyInstance via selector
+            destroyInstance('.card-widget');
+            expect(getComponentFromElement('.card-widget')).toBe(null);
+        });
+
+        test('this.updateRefs() should refresh refs after dynamic innerHTML updates', () => {
+            const el = document.createElement('div');
+            el.innerHTML = `<span data-ref="label">Initial</span>`;
+            document.body.appendChild(el);
+
+            class DynamicRefComp extends BaseComponent {
+                mount() {
+                    this.ref = {
+                        label: null,
+                    };
+                }
+            }
+
+            const instance = createInstance(el, 'DynamicRefComp', DynamicRefComp);
+            instance._load();
+
+            expect(instance.ref.label.textContent).toBe('Initial');
+
+            // Dynamically replace DOM contents
+            el.innerHTML = `<span data-ref="label">Updated</span>`;
+            instance.updateRefs();
+
+            expect(instance.ref.label.textContent).toBe('Updated');
+
+            destroyInstance(el);
+        });
     });
 });

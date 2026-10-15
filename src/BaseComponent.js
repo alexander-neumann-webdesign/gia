@@ -4,6 +4,7 @@ import { components } from "./store.js";
 import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./state.js";
 import { loadScript, loadStyle } from "./loaders.js";
 import { autoBindActions } from "./actions.js";
+import eventbus from "./eventbus.js";
 import {
 	observeScroll,
 	unobserveScroll,
@@ -37,6 +38,9 @@ const globalExcludedMethods = new Set([
 	"observeIntersection",
 	"unobserveIntersection",
 	"listen",
+	"emit",
+	"on",
+	"updateRefs",
 ]);
 
 const protoMethodsCache = new WeakMap();
@@ -88,6 +92,7 @@ export default class BaseComponent {
 	}
 
 	set ref(items) {
+		this._refSchema = items;
 		const attrPrefix = config.get("attrPrefix");
 		const attrName = `${attrPrefix}-ref`;
 		const componentAttrName = `${attrPrefix}-component`;
@@ -107,10 +112,13 @@ export default class BaseComponent {
 			if (!refName) continue;
 
 			if (hasNestedComponents) {
-				const closest = element.closest(`[${componentAttrName}]`);
-				// If the ref is inside a descendant component, ignore it unless explicitly prefixed for this component
-				if (closest !== this.element && !refName.startsWith(namePrefix)) {
-					continue;
+				// ⚡ BOLT OPTIMIZATION: Fast path pointer check bypasses closest() DOM traversal
+				if (element.parentElement !== this.element) {
+					const closest = element.closest(`[${componentAttrName}]`);
+					// If the ref is inside a descendant component, ignore it unless explicitly prefixed for this component
+					if (closest !== this.element && !refName.startsWith(namePrefix)) {
+						continue;
+					}
 				}
 			}
 
@@ -260,9 +268,13 @@ export default class BaseComponent {
 
 		if (this._boundActions) {
 			for (let i = 0; i < this._boundActions.length; i += 3) {
+				const handler =
+					typeof this._boundActions[i + 2] === "function"
+						? this._boundActions[i + 2]
+						: this[this._boundActions[i + 2]];
 				this._boundActions[i].removeEventListener(
 					this._boundActions[i + 1],
-					this[this._boundActions[i + 2]],
+					handler,
 				);
 			}
 			this._boundActions = null;
@@ -270,6 +282,7 @@ export default class BaseComponent {
 
 		// ⚡ BOLT OPTIMIZATION: Aggressively clear refs and element to assist GC
 		this._ref = null;
+		this._refSchema = null;
 		if (this.element) {
 			components.delete(this.element);
 			this.element = null;
@@ -372,6 +385,24 @@ export default class BaseComponent {
 			this._activeListeners = [];
 		}
 		this._activeListeners.push(el, evt, fn, finalOpts);
+	}
+
+	updateRefs() {
+		this.ref = this._refSchema || {};
+	}
+
+	emit(event, data) {
+		eventbus.emit(event, data);
+	}
+
+	on(event, handler, options = false) {
+		const opts =
+			typeof options === "object" && options !== null
+				? (options.signal ? options : { ...options, signal: this.signal })
+				: this.signal
+				? { signal: this.signal }
+				: options;
+		eventbus.on(event, handler, opts);
 	}
 
 	_autoBindFunctions() {

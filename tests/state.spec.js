@@ -112,7 +112,7 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         testInstance.setState({
             isOpen: true,
             statusMode: 'active',
-            count: 42,            // numbers should NOT be reflected to attributes
+            count: 42,            // numbers are reflected to attributes as strings
             nestedObj: { a: 1 }   // objects should NOT be reflected to attributes
         });
 
@@ -121,7 +121,7 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         // CamelCase should be translated to kebab-case
         expect(el.getAttribute('data-is-open')).toBe('true');
         expect(el.getAttribute('data-status-mode')).toBe('active');
-        expect(el.hasAttribute('data-count')).toBe(false);
+        expect(el.getAttribute('data-count')).toBe('42');
         expect(el.hasAttribute('data-nested-obj')).toBe(false);
 
         // Toggle boolean to false

@@ -7,8 +7,19 @@ import { components } from "./store.js";
  */
 
 export default function getComponentFromElement(element) {
-	if (typeof element === "string") {
-		element = document.getElementById(element);
+	if (typeof element === "string" && typeof document !== "undefined") {
+		const el = document.getElementById(element);
+		if (el) {
+			element = el;
+		} else if (typeof document.querySelector === "function") {
+			try {
+				element = document.querySelector(element);
+			} catch (_e) {
+				return null;
+			}
+		} else {
+			return null;
+		}
 
 		if (!element) {
 			return null;

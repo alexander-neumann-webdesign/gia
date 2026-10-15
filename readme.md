@@ -434,48 +434,47 @@ By forcing components to use `gia.measure()` for reading dimensions and `gia.mut
 
 Keep your initial bundle size tiny by lazy-loading heavy third-party dependencies only when a component that actually needs them is present on the page.
 
-To use `loadScript` and `loadStyle`, you must place the `<script>` and `<link>` tags in your HTML with `data-src` and `data-href` attributes instead of standard `src`/`href`. Gia locates the tag by its `id`, safely triggers the network request, and returns a Promise.
-
-Gia handles concurrency automatically: if five components request the same script simultaneously, Gia only downloads it once and resolves all component promises when it finishes.
-
-```html
-<!-- Place these in your <head> or at the bottom of the body -->
-<link id="floating-ui-css" rel="stylesheet" data-href="/path/to/floating-ui.css" />
-<script id="floating-ui-js" data-src="/path/to/floating-ui.js"></script>
-```
+You can load dependencies either **directly via URL/CDN** or by referencing existing `<script id="..." data-src="...">` tags in the HTML. Gia handles concurrency automatically: if multiple components request the same script simultaneously, Gia only downloads it once and resolves all component promises when it finishes.
 
 ```javascript
 class Tooltip extends Component {
 	async require() {
-		// loadScript(scriptId, expectedGlobalVariable)
-		// loadStyle(styleId)
-		await Promise.all([this.loadScript("floating-ui-js", "FloatingUI"), this.loadStyle("floating-ui-css")]);
+		// Direct URL / CDN loading:
+		await Promise.all([
+			this.loadScript("https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js", "confetti"),
+			this.loadStyle("/assets/css/tooltip.css")
+		]);
+
+		// Or tag-based lazy loading with data-src/data-href:
+		// await this.loadScript("floating-ui-js", "FloatingUI");
 	}
 
 	mount() {
 		// Dependencies are fully loaded and injected before mount() runs
-		console.log(window.FloatingUI);
+		console.log(window.confetti);
 	}
 }
 ```
 
 ---
 
-### Global Eventbus
+### Global Eventbus & Component Pub/Sub
 
-Decouple your components by communicating through a global, zero-GC event bus.
+Decouple your components by communicating through a global, zero-GC event bus. Components can use the built-in `this.emit()` and `this.on()` helper methods: `this.on()` automatically binds with `signal: this.signal` so subscriptions are **100% leak-proof and clean up automatically on unmount**:
 
 ```javascript
-import { eventbus } from "gia";
-
 // Component A (Emitter)
-eventbus.emit("productAdded", { id: 101, name: "Premium Widget" });
+class ProductCard extends Component {
+	addToCart() {
+		this.emit("productAdded", { id: 101, name: "Premium Widget" });
+	}
+}
 
 // Component B (Receiver)
 // Automatically unbinds when this component unmounts via this.signal!
 class CartPreview extends Component {
 	mount() {
-		eventbus.on("productAdded", this.handleProductAdded, { signal: this.signal });
+		this.on("productAdded", this.handleProductAdded);
 	}
 
 	handleProductAdded(data) {

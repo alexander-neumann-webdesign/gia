@@ -121,4 +121,33 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
             "Link tag with ID 'non-existent-style' not found."
         );
     });
+
+    test('loadScript should dynamically create script tag when given a URL and resolve', async () => {
+        const url = 'https://cdn.example.com/analytics.js';
+        const promise = loadScript(url, 'Analytics');
+
+        const script = document.querySelector(`script[src="${url}"]`);
+        expect(script).not.toBeNull();
+        expect(script.src).toBe(url);
+
+        window.Analytics = { track: () => {} };
+        script.onload();
+
+        const result = await promise;
+        expect(result).toBe(window.Analytics);
+    });
+
+    test('loadStyle should dynamically create link tag when given a URL and resolve', async () => {
+        const url = 'https://cdn.example.com/styles.css';
+        const promise = loadStyle(url);
+
+        const link = document.querySelector(`link[href="${url}"]`);
+        expect(link).not.toBeNull();
+        expect(link.rel).toBe('stylesheet');
+        expect(link.href).toBe(url);
+
+        link.onload();
+        const result = await promise;
+        expect(result).toBe(true);
+    });
 });
