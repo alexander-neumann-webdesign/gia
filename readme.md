@@ -1,9 +1,9 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.6KB to ~9.8KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](<https://img.shields.io/badge/bundle%20size-(2.6kb_to_5.1kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
+[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.6kb_to_9.8kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
 
 _Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management._
 
@@ -28,8 +28,9 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
     - [State & Reactivity (`this.setState`)](#state--reactivity-thissetstate)
     - [AbortSignal & Auto-Cleanup (`this.signal`)](#abortsignal--auto-cleanup-thissignal)
     - [Centralized Observers](#centralized-observers)
+    - [DOM Scheduling (Measure & Mutate)](#dom-scheduling-measure--mutate)
     - [On-Demand Dependencies (`require`)](#on-demand-dependencies-require)
-    - [Global Eventbus](#global-eventbus)
+    - [Global Eventbus & Component Pub/Sub](#global-eventbus--component-pubsub)
 - [Mounting Ergonomics & Registry](#mounting-ergonomics--registry)
     - [Zero-Boilerplate Auto-Discovery (`loadComponents`)](#zero-boilerplate-auto-discovery-loadcomponents)
     - [Named Component Registration (`register`)](#named-component-registration-register)
@@ -42,6 +43,7 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
     - [Event Binding (`data-action`) & Modifiers](#event-binding-data-action--modifiers)
     - [Event Delegation (`this.delegate`)](#event-delegation-thisdelegate)
     - [Scoped Query Helpers (`this.find` & `this.findAll`)](#scoped-query-helpers-thisfind--thisfindall)
+    - [DOM Class & State Helpers (`this.toggleClass`, `this.addClass`, `this.removeClass`)](#dom-class--state-helpers-thistoggleclass-thisaddclass-thisremoveclass)
     - [Auto-Mounting](#auto-mounting)
 - [TypeScript Support](#typescript-support)
 - [Global Configuration](#global-configuration)
@@ -59,15 +61,15 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.8 KB (20.4 KB) | ~6.7 KB (20.3 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.2 KB (18.6 KB) | ~6.1 KB (18.4 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.6 KB (9.9 KB) | ~3.5 KB (9.7 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, DOM scheduler, and EventBus. | ~9.8 KB (31.4 KB) | ~9.7 KB (31.2 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~8.6 KB (27.6 KB) | ~8.5 KB (27.5 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~5.7 KB (16.8 KB) | ~5.6 KB (16.7 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~3.4 KB gzipped)
+// Or target the tiny Nano build (~5.6 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
@@ -669,8 +671,6 @@ When integrating Gia into complex architectures, micro-frontends, design systems
 
 ## Quality of Life Features
 
-## Quality of Life Features
-
 ### Component Options & Natural HTML Attributes
 
 Gia provides two clean ways to configure components directly from HTML:
@@ -932,31 +932,55 @@ config.set("autoBindActions", true);
 - **`createInstance(element, componentName, ComponentClass, [options])`**: Manually attaches and mounts a component instance on a DOM element.
 - **`destroyInstance(element)`**: Dismantles a component instance, triggering its `unmount()` lifecycle, aborting `this.signal`, and cleaning memory references.
 - **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node or an element ID string.
-- **`eventbus`**: Unified `EventTarget`-based event emitter with zero allocations. Methods:
-  - `eventbus.emit(event, data)`: Emits an event with optional payload.
+- **`eventbus`**: Unified zero-allocation event emitter supporting wildcards (`*`, `prefix:*`) and channels. Methods:
+  - `eventbus.emit(event, [data])`: Emits an event with optional payload.
   - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`.
+  - `eventbus.once(event, handler, [options])`: Attaches a single-execution event listener.
+  - `eventbus.off(event, [handler])`: Removes one or all listeners for an event.
+  - `eventbus.channel(namespace)`: Returns a scoped `{ emit, on, once, off }` channel with namespaced events (`${namespace}:${event}`).
 - **`measure(callback, [context])`**: Schedules a DOM read operation for the next frame's measure phase. Returns a task reference.
 - **`mutate(callback, [context])`**: Schedules a DOM write operation for the next frame's mutate phase. Returns a task reference.
 - **`clear(task)`**: Cancels a scheduled measure or mutate task.
 - **`config`**: Global configuration manager. Methods: `config.get(key)`, `config.set(key, value)`.
+- **`utils`**: High-performance DOM and function utilities:
+  - `utils.debounce(fn, wait)`: Zero-allocation debounce with `.cancel()` and context preservation.
+  - `utils.throttle(fn, wait)`: Zero-allocation throttle with `.cancel()`, leading/trailing execution, and context preservation.
+  - `utils.toggleClass(element, className, [condition])`: Toggles single or space-separated classes on an element.
+  - `utils.addClass(element, className)`: Adds class(es) to an element or collection.
+  - `utils.removeClass(element, className)`: Removes class(es) from an element or collection.
+  - `utils.query(selector, [context])`: Scoped `querySelector`.
+  - `utils.queryAll(selector, [context])`: Scoped `querySelectorAll`.
+  - `utils.triggerEvent(element, eventName, [detail], [options])`: Dispatches a custom DOM event.
 
 ### BaseComponent API
 
 - **`element`**: The root DOM element that this component instance is attached to.
 - **`ref`**: Automatically mapped child DOM references matching `data-ref="name"` (single element) or `data-ref="name[]"` (array of elements).
 - **`getRef(refName, [all])`**: Dynamically queries refs scoped strictly to this component element (without querying into nested child components).
-- **`options`**: Parsed configuration options passed via `data-options='{...}'`, automatically merged with constructor defaults.
+- **`updateRefs()`**: Re-scans and refreshes `this.ref` targets inside `this.element` (useful after dynamic DOM / innerHTML updates).
+- **`options`**: Parsed configuration options passed via `data-options='{...}'` or individual `data-[key]` HTML attributes, automatically merged with constructor defaults.
 - **`signal`**: Lazily instantiated native `AbortSignal` that automatically aborts on component destruction. Pass to `addEventListener(..., { signal: this.signal })` or `fetch()` for zero-leak cleanup.
 - **`isMounted`**: Read-only boolean property indicating whether the component is currently mounted in the DOM.
 - **`state`**: Read-only snapshot of component state.
-- **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame. Can be called safely inside the constructor or during `mount()`.
+- **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame. Accepts an object or functional updater `(prevState) => ({ ... })`.
 - **`stateChange(stateChanges)`**: Lifecycle hook called automatically after a batched `setState()` re-render, receiving an object with the changed properties.
 - **`mount()`**: Lifecycle hook invoked after DOM refs, options, and actions are bound. Can optionally return a teardown/cleanup function.
 - **`unmount()`**: Lifecycle hook invoked when the component is destroyed.
-- **`observeIntersection(element, callback, [options])`** / **`unobserveIntersection(element, callback)`**: Subscribes/unsubscribes to a shared IntersectionObserver pool.
-- **`observeResize(element, callback)`** / **`unobserveResize(element, callback)`**: Subscribes/unsubscribes to a shared ResizeObserver pool.
+- **`listen([target], event, handler, [options])`**: Binds an event listener to `target` (defaults to `this.element`) tied to `this.signal` for automatic cleanup on unmount. Returns an unlisten function.
+- **`delegate(selector, event, handler, [options])`**: Scoped event delegation on `this.element` with automatic `this.signal` cleanup, containment checks, and `{ once: true }` support. Returns an unlisten function.
+- **`find(selector)`**: Scoped query selector on `this.element` returning a single `Element | null`.
+- **`findAll(selector)`**: Scoped query selector on `this.element` returning a standard `Element[]` array.
+- **`toggleClass([target], className, [condition])`**: Toggles class(es) on `this.element` or a child target/selector.
+- **`addClass([target], className)`**: Adds class(es) to `this.element` or a child target/selector.
+- **`removeClass([target], className)`**: Removes class(es) from `this.element` or a child target/selector.
+- **`observeIntersection(element, callback, [options])`** / **`unobserveIntersection(element, [callback])`**: Subscribes/unsubscribes to a shared IntersectionObserver pool. Supports `{ once: true }` for one-shot auto-unobserving.
+- **`observeResize(element, callback)`** / **`unobserveResize(element, [callback])`**: Subscribes/unsubscribes to a shared ResizeObserver pool.
 - **`observeScroll(callback)`** / **`unobserveScroll(callback)`**: Subscribes/unsubscribes to a centralized, frame-rate synced window scroll listener (seamlessly hooking into Lenis if present).
 - **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a centralized window resize listener.
+- **`observeMediaQuery(query, callback)`** / **`unobserveMediaQuery(query, [callback])`**: Subscribes/unsubscribes to a centralized media query listener. Fires immediately with current match state and cleans up on unmount. Returns an unobserve function.
+- **`emit(event, [data])`**: Emits an event on the global EventBus.
+- **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup.
+- **`channel(namespace)`**: Returns a scoped EventBus channel `{ emit, on, once, off }` whose listeners automatically detach on unmount.
 - **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader.
 - **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader.
 
