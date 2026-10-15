@@ -8,6 +8,8 @@ test.describe('Nested Component Ref & Action Isolation', () => {
     let dom;
     let window;
     let document;
+    let originalAbortController;
+    let originalAbortSignal;
 
     test.beforeEach(() => {
         dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -23,6 +25,8 @@ test.describe('Nested Component Ref & Action Isolation', () => {
         global.HTMLElement = window.HTMLElement;
         global.CustomEvent = window.CustomEvent;
         global.Event = window.Event;
+        originalAbortController = global.AbortController;
+        originalAbortSignal = global.AbortSignal;
         global.AbortController = window.AbortController;
         global.AbortSignal = window.AbortSignal;
         global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
@@ -39,8 +43,16 @@ test.describe('Nested Component Ref & Action Isolation', () => {
         delete global.HTMLElement;
         delete global.CustomEvent;
         delete global.Event;
-        delete global.AbortController;
-        delete global.AbortSignal;
+        if (originalAbortController !== undefined) {
+            global.AbortController = originalAbortController;
+        } else {
+            delete global.AbortController;
+        }
+        if (originalAbortSignal !== undefined) {
+            global.AbortSignal = originalAbortSignal;
+        } else {
+            delete global.AbortSignal;
+        }
         delete global.requestAnimationFrame;
         delete global.cancelAnimationFrame;
     });
