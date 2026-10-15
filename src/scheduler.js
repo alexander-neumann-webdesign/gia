@@ -96,9 +96,14 @@ function flush() {
 }
 
 function schedule() {
-    if (!state.scheduled && typeof window !== 'undefined') {
-        state.scheduled = true;
-        window.requestAnimationFrame(flush);
+    if (typeof window !== 'undefined') {
+        if (!window.__gia_scheduler__) {
+            window.__gia_scheduler__ = state;
+        }
+        if (!state.scheduled) {
+            state.scheduled = true;
+            window.requestAnimationFrame(flush);
+        }
     }
 }
 
