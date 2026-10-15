@@ -19,12 +19,16 @@ export default class Component extends BaseComponent {
 		const req = this.require();
 		if (req && typeof req.then === "function") {
 			req.then(() => {
-				if (this.element) {
-					this.mount();
+				if (this.element && !this._isDestroyed) {
+					this._isMounted = true;
+					this._mountCleanup = this.mount();
 				}
 			});
 		} else {
-			this.mount();
+			if (this.element && !this._isDestroyed) {
+				this._isMounted = true;
+				this._mountCleanup = this.mount();
+			}
 		}
 	}
 }

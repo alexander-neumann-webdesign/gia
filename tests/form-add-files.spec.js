@@ -22,7 +22,7 @@ test.describe('Form Component - Add additional files', () => {
             errors.push(error.message);
         });
 
-        await page.goto('file://' + path.join(__dirname, '../demo/index.html'));
+        await page.goto('file://' + path.join(__dirname, '../demo/pages/Form.html'));
 
         // Wait for Form component to load
         await page.waitForSelector('[data-component="Form"]');

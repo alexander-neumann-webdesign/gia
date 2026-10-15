@@ -26,6 +26,7 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
 - [Core Concepts](#core-concepts)
     - [The Ref System (`this.ref`)](#the-ref-system-thisref)
     - [State & Reactivity (`this.setState`)](#state--reactivity-thissetstate)
+    - [AbortSignal & Auto-Cleanup (`this.signal`)](#abortsignal--auto-cleanup-thissignal)
     - [Centralized Observers](#centralized-observers)
     - [On-Demand Dependencies (`require`)](#on-demand-dependencies-require)
     - [Global Eventbus](#global-eventbus)
@@ -150,10 +151,10 @@ Gia components follow a strict lifecycle designed to optimize rendering performa
 
 1. **`constructor(element)`**: Sets up defaults, defines `this.ref` targets, and sets initial state.
 2. **`require()` (Async)**: _Available on `Component` (not `BaseComponent`)_. Performs on-demand script or style loading. Mount is deferred until this resolves.
-3. **`mount()`**: Executes after constructor and dependencies are resolved. Bind custom events, construct third-party libraries, and bootstrap interactions here.
+3. **`mount()`**: Executes after constructor and dependencies are resolved. Bind custom events, construct third-party libraries, and bootstrap interactions here. **Bonus**: `mount()` can optionally return a cleanup function (e.g. `return () => clearInterval(timer)`), which executes automatically upon unmount.
 4. **`stateChange(changes)`**: Invoked inside `requestAnimationFrame` when state values change.
 5. **`unmount()`**: Runs when the component is destroyed (e.g. element removed from DOM). Clean up custom event listeners, timelines, or third-party instances here.
-6. **`_destroy()`**: Internal lifecycle step. Automatically unsubscribes all unified observers and clears elements from memory.
+6. **`_destroy()`**: Internal lifecycle step. Aborts `this.signal`, calls mount cleanup, runs `unmount()`, unsubscribes all unified observers, and disconnects elements from memory.
 
 ---
 
@@ -192,7 +193,9 @@ class Gallery extends Component {
 ```
 
 > [!TIP]
-> **Ref Namespacing**: If components overlap, you can namespace references to keep contexts separate: `<div data-ref="MyComponent:nestedItem">`.
+> **Nested Component Isolation & Namespacing**:
+> By default, Gia isolates references: an element with `data-ref="btn"` is strictly bound to its closest ancestor component. A parent component will **never** accidentally capture child component refs or actions.
+> If a parent component needs to deliberately target an element nested inside a child component, prefix the ref with the parent component's class name: `<div data-ref="ParentComponent:nestedItem">`.
 
 ---
 
@@ -220,6 +223,65 @@ This allows you to control component styling entirely through CSS, removing the 
 }
 [data-component="Sidebar"][data-is-open="true"] {
 	transform: translateX(0);
+}
+```
+
+---
+
+### AbortSignal & Auto-Cleanup (`this.signal`)
+
+Every Gia component provides a lazily instantiated `AbortSignal` via `this.signal` that is automatically aborted whenever the component unmounts. This completely eliminates manual event listener cleanup and memory leaks.
+
+#### 1. Zero-Boilerplate Event Listeners
+Modern browser DOM APIs accept `{ signal }` in `addEventListener`. When the component element is removed from the DOM, all listeners bound with `this.signal` are instantly detached by the browser engine without needing manual `removeEventListener()` calls:
+
+```javascript
+class KeyboardNav extends Component {
+	mount() {
+		// Automatically removed when this component unmounts!
+		window.addEventListener("keydown", this.handleKey, { signal: this.signal });
+		document.addEventListener("pointermove", this.handleMove, { signal: this.signal });
+	}
+}
+```
+
+#### 2. Auto-Canceling Async Operations
+Pass `this.signal` to `fetch()` or async APIs to cancel in-flight network requests if the component is unmounted before the response arrives:
+
+```javascript
+class ProductCard extends Component {
+	async mount() {
+		try {
+			const res = await fetch(`/api/products/${this.options.id}`, { signal: this.signal });
+			const data = await res.json();
+			this.setState({ data });
+		} catch (err) {
+			if (err.name === "AbortError") return; // Cleanly handled cancellation
+			console.error(err);
+		}
+	}
+}
+```
+
+#### 3. Returning a Cleanup Function from `mount()`
+Similar to React `useEffect` or Svelte, `mount()` can optionally return a cleanup function. Gia calls this cleanup function right before `unmount()`:
+
+```javascript
+class LiveClock extends Component {
+	mount() {
+		const timer = setInterval(this.tick, 1000);
+		// Automatically executed on unmount
+		return () => clearInterval(timer);
+	}
+}
+```
+
+#### 4. Checking Mount State (`this.isMounted`)
+Inspect `this.isMounted` (boolean) to safely guard asynchronous callbacks from touching state or DOM after an element has left the page:
+
+```javascript
+if (this.isMounted) {
+	this.setState({ loaded: true });
 }
 ```
 
@@ -526,6 +588,8 @@ config.set("autoBindActions", true);
 
 ### BaseComponent API
 
+- **`signal`**: Lazily instantiated native `AbortSignal` that aborts automatically on component destruction.
+- **`isMounted`**: Read-only boolean property indicating whether the component is currently mounted in the DOM.
 - **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame.
 - **`observeIntersection(element, callback, options)`** / **`unobserveIntersection(element, callback)`**: Subscribes/unsubscribes to a shared IntersectionObserver.
 - **`observeResize(element, callback)`** / **`unobserveResize(element, callback)`**: Subscribes/unsubscribes to a shared ResizeObserver.

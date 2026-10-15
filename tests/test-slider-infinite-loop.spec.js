@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const path = require('path');
 
 test('FilterableList with dual range slider does not trigger infinite loop', async ({ page }) => {
   let errors = [];
@@ -13,7 +14,7 @@ test('FilterableList with dual range slider does not trigger infinite loop', asy
     errors.push(error.message);
   });
 
-  await page.goto('http://localhost:4173/demo/index.html');
+  await page.goto('file://' + path.join(__dirname, '../demo/pages/FilterableList.html'));
   await page.waitForLoadState('networkidle');
 
   await page.evaluate(() => {

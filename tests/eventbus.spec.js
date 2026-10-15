@@ -65,18 +65,15 @@ test.describe('EventBus', () => {
         }
     });
 
-    test('should handle off() without handler by showing a warning', async () => {
-        let warnedMessage = null;
-        const originalWarn = console.warn;
-        console.warn = (msg) => {
-            warnedMessage = msg;
-        };
+    test('should clear all listeners when off() is called without handler', async () => {
+        let count = 0;
+        eventbus.on('clear-event', () => { count++; });
+        eventbus.on('clear-event', () => { count++; });
+        eventbus.emit('clear-event');
+        expect(count).toBe(2);
 
-        try {
-            eventbus.off('some-event');
-            expect(warnedMessage).toBe("EventBus.off requires a handler to remove a specific listener when using native EventTarget.");
-        } finally {
-            console.warn = originalWarn;
-        }
+        eventbus.off('clear-event');
+        eventbus.emit('clear-event');
+        expect(count).toBe(2);
     });
 });
