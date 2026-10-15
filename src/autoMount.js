@@ -72,8 +72,14 @@ export function initObserver() {
     if (typeof document === "undefined") return;
 
     if (config.get("autoMountComponents") && !observer) {
-        observer = new MutationObserver(handleMutations);
-        observer.observe(document.body, {
+        const root = document.documentElement || document.body;
+        if (!root) return;
+        const ObserverClass =
+            (typeof window !== "undefined" && window.MutationObserver) ||
+            (typeof MutationObserver !== "undefined" ? MutationObserver : null);
+        if (!ObserverClass) return;
+        observer = new ObserverClass(handleMutations);
+        observer.observe(root, {
             childList: true,
             subtree: true,
         });

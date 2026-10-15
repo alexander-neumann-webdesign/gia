@@ -30,11 +30,17 @@ export function terserPlugin(customOptions = {}) {
 							unsafe_comps: true,
 							pure_getters: true,
 							drop_debugger: true,
+							inline: 3,
+							reduce_vars: true,
+							collapse_vars: true,
+							hoist_funs: true,
+							typeofs: false,
 							...customOptions.compress,
 						},
 						format: {
 							comments: false,
 							wrap_func_args: false,
+							ascii_only: true,
 							...customOptions.format,
 						},
 						mangle: {
@@ -69,6 +75,11 @@ export const sharedEsbuildOptions = {
 export const sharedRollupOptions = {
 	output: {
 		extend: true,
+		exports: "named",
+		compact: true,
+		generatedCode: {
+			constBindings: true,
+		},
 	},
 };
 

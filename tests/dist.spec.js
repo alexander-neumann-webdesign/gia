@@ -220,6 +220,101 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
 
         expect(received).toEqual(expect.objectContaining({ payload: 42 }));
     });
+
+    test('loadComponents should defer to DOMContentLoaded when document.readyState is loading', () => {
+        let mounted = false;
+        class DeferBox extends fullDist.BaseComponent {
+            mount() {
+                mounted = true;
+            }
+        }
+
+        // Simulate document still loading (e.g. script executed in <head>)
+        Object.defineProperty(window.document, 'readyState', {
+            value: 'loading',
+            configurable: true
+        });
+
+        fullDist.register(DeferBox);
+        const container = window.document.createElement('div');
+        container.setAttribute('data-component', 'DeferBox');
+        window.document.body.appendChild(container);
+
+        fullDist.loadComponents();
+        expect(mounted).toBe(false); // Not mounted yet while loading!
+
+        // Simulate DOMContentLoaded event
+        Object.defineProperty(window.document, 'readyState', {
+            value: 'interactive',
+            configurable: true
+        });
+        window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
+
+        expect(mounted).toBe(true); // Mounted automatically when DOMContentLoaded fired!
+    });
+
+    test('loadComponents should auto-discover components from window[name] if not registered', () => {
+        let mounted = false;
+        class GlobalWindowBox extends fullDist.BaseComponent {
+            mount() {
+                mounted = true;
+            }
+        }
+
+        // Attached to window directly, as in regular <script> tags
+        window.GlobalWindowBox = GlobalWindowBox;
+
+        const container = window.document.createElement('div');
+        container.setAttribute('data-component', 'GlobalWindowBox');
+        window.document.body.appendChild(container);
+
+        // Call loadComponents with no registration or args
+        fullDist.loadComponents();
+
+        expect(mounted).toBe(true);
+        const instance = fullDist.getComponentFromElement(container);
+        expect(instance).toBeInstanceOf(GlobalWindowBox);
+    });
+
+    test('UMD script tag with data-auto-mount should automatically mount registered components', async () => {
+        const fs = await import('fs');
+        const path = await import('path');
+        const fullUmdCode = fs.readFileSync(path.resolve(process.cwd(), 'dist/gia.full.umd.js'), 'utf-8');
+
+        let mounted = false;
+        const testWindow = dom.window;
+
+        // Create script with data-auto-mount
+        const scriptEl = testWindow.document.createElement('script');
+        scriptEl.src = 'gia.full.umd.js';
+        scriptEl.setAttribute('data-auto-mount', '');
+        Object.defineProperty(testWindow.document, 'currentScript', {
+            value: scriptEl,
+            configurable: true
+        });
+
+        // Create DOM element
+        const container = testWindow.document.createElement('div');
+        container.setAttribute('data-component', 'AutoMountTestComp');
+        testWindow.document.body.appendChild(container);
+
+        // Define component globally
+        class AutoMountTestComp extends fullDist.BaseComponent {
+            mount() {
+                mounted = true;
+            }
+        }
+        testWindow.AutoMountTestComp = AutoMountTestComp;
+
+        // Evaluate UMD code
+        new Function('window', 'document', 'self', 'globalThis', `
+            const exports = undefined;
+            const module = undefined;
+            ${fullUmdCode}
+        `)(testWindow, testWindow.document, testWindow, testWindow);
+
+        expect(mounted).toBe(true);
+    });
 });
 
 

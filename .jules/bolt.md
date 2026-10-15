@@ -117,3 +117,7 @@
 ## 2026-10-15 - Universal Cross-Bundle Singletons for Micro-Frontends
 **Learning:** When micro-frontends or third-party embeddable widgets coexist on the same page, separate instances of stores, schedulers, and event buses cause missed events, duplicate mounts, and out-of-sync animation loops.
 **Action:** Attach critical singletons to `globalThis` (`__gia_store__`, `__gia_scheduler__`, `__gia_eventbus__`) with Terser property reservations (`reserveProps`) so independent bundles seamlessly share a unified component registry, frame loop, and pub/sub bus without overhead.
+
+## 2026-10-15 - Automatic DOMContentLoaded Deferral and Head-Safe MutationObserver in UMD
+**Learning:** In traditional HTML pages, UMD scripts are placed in `<head>`. Calling `loadComponents()` while `document.readyState === "loading"` yields empty querySelector results, and attempting `MutationObserver.observe(document.body)` throws a fatal TypeError because `document.body` is null before `<head>` finishes parsing.
+**Action:** Automatically defer `loadComponents()` to the `DOMContentLoaded` event when `document.readyState === "loading"`, observe `document.documentElement` instead of `document.body`, and auto-resolve un-registered global classes directly from `window[componentName]`.

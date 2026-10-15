@@ -19,6 +19,22 @@ function _comparePriority(a, b) {
 }
 
 export default function loadComponents(components = {}, context = document.documentElement) {
+	// If invoked in <head> while DOM is still loading, automatically defer to DOMContentLoaded
+	if (
+		typeof document !== "undefined" &&
+		document.readyState === "loading" &&
+		context === document.documentElement
+	) {
+		document.addEventListener(
+			"DOMContentLoaded",
+			() => {
+				loadComponents(components, context);
+			},
+			{ once: true }
+		);
+		return;
+	}
+
 	let hasComponents = false;
 
 	// Support calling loadComponents(contextElement)
@@ -44,6 +60,19 @@ export default function loadComponents(components = {}, context = document.docum
 		}
 	}
 
+	// Fallback to global window constructors if components was omitted or empty
+	if (!hasComponents && typeof window !== "undefined") {
+		const attrName = `${config.get("attrPrefix")}-component`;
+		const elements = queryAll(`[${attrName}]`, context);
+		for (let i = 0; i < elements.length; i++) {
+			const name = elements[i].getAttribute(attrName);
+			if (name && typeof window[name] === "function") {
+				hasComponents = true;
+				break;
+			}
+		}
+	}
+
 	if (!hasComponents) {
 		console.warn("App has no components");
 		return;
@@ -65,9 +94,13 @@ export default function loadComponents(components = {}, context = document.docum
 
 		if (!instance) {
 			const componentName = element.getAttribute(attrName);
+			let ctor = components[componentName];
+			if (!ctor && typeof window !== "undefined" && typeof window[componentName] === "function") {
+				ctor = window[componentName];
+			}
 
-			if (typeof components[componentName] === "function") {
-				initialisedComponents.push(createInstance(element, componentName, components[componentName]));
+			if (typeof ctor === "function") {
+				initialisedComponents.push(createInstance(element, componentName, ctor));
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);
 			}
@@ -80,9 +113,13 @@ export default function loadComponents(components = {}, context = document.docum
 
 		if (!instance) {
 			const componentName = context.getAttribute(attrName);
+			let ctor = components[componentName];
+			if (!ctor && typeof window !== "undefined" && typeof window[componentName] === "function") {
+				ctor = window[componentName];
+			}
 
-			if (typeof components[componentName] === "function") {
-				initialisedComponents.push(createInstance(context, componentName, components[componentName]));
+			if (typeof ctor === "function") {
+				initialisedComponents.push(createInstance(context, componentName, ctor));
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);
 			}

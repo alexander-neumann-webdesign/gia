@@ -71,10 +71,16 @@ import { BaseComponent, loadComponents, register } from "gia/nano";
 ```html
 <!-- Example: Loading the full build via script tag -->
 <script src="./dist/gia.full.umd.js"></script>
+
+<!-- Or enable declarative zero-JS auto-mounting directly on the script tag! -->
+<script src="./dist/gia.full.umd.js" data-auto-mount></script>
 ```
 
 > [!TIP]
-> **Non-Destructive UMD Merging**: All UMD builds are compiled with `output.extend: true`. If a page loads `gia.full.umd.js` and a third-party widget embeds `gia.nano.umd.js`, both will merge safely into `window.gia` without wiping out previously loaded components or features.
+> **UMD Superpowers & Head-Loading Safety**:
+> - **Non-Destructive UMD Merging**: All UMD builds compile with `output.extend: true`. Third-party widgets and host pages merge cleanly onto `window.gia` without wiping previously loaded components or features.
+> - **Head-Safe Execution**: `loadComponents()` can be called in `<head>`, inline, or with `<script defer>`. If the DOM is still loading (`document.readyState === "loading"`), Gia automatically defers execution to `DOMContentLoaded`.
+> - **Global Window Auto-Discovery**: Components declared as global classes (`class Counter extends gia.Component`) in plain `<script>` tags are automatically resolved from `window[componentName]` without needing manual registration.
 
 ---
 
