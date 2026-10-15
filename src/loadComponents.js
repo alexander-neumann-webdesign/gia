@@ -18,7 +18,76 @@ function _comparePriority(a, b) {
 	return pB - pA; // Descending order (highest priority first)
 }
 
+function _mountWhenVisible(element, fn) {
+	if (typeof IntersectionObserver === "undefined") {
+		const isConnected =
+			element.isConnected !== undefined
+				? element.isConnected
+				: element.ownerDocument && element.ownerDocument.contains(element);
+		if (isConnected) fn();
+		return;
+	}
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (let i = 0; i < entries.length; i++) {
+				if (entries[i].isIntersecting) {
+					observer.unobserve(element);
+					observer.disconnect();
+					const isConnected =
+						element.isConnected !== undefined
+							? element.isConnected
+							: element.ownerDocument && element.ownerDocument.contains(element);
+					if (isConnected) {
+						fn();
+					}
+					break;
+				}
+			}
+		},
+		{ rootMargin: "200px" },
+	);
+	observer.observe(element);
+}
+
+function _mountWhenIdle(element, fn) {
+	const schedule =
+		typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
+			? window.requestIdleCallback
+			: typeof requestIdleCallback === "function"
+			? requestIdleCallback
+			: (cb) => setTimeout(cb, 50);
+	schedule(() => {
+		const isConnected =
+			element.isConnected !== undefined
+				? element.isConnected
+				: element.ownerDocument && element.ownerDocument.contains(element);
+		if (isConnected) {
+			fn();
+		}
+	});
+}
+
 function _instantiateOrLoad(element, componentName, ctor, components, initialisedComponents) {
+	if (initialisedComponents) {
+		const mountAttr =
+			element.getAttribute(`${config.get("attrPrefix")}-mount`) ||
+			element.getAttribute("data-mount");
+
+		if (mountAttr === "visible") {
+			_mountWhenVisible(element, () => {
+				_instantiateOrLoad(element, componentName, ctor, components, null);
+			});
+			return;
+		}
+
+		if (mountAttr === "idle") {
+			_mountWhenIdle(element, () => {
+				_instantiateOrLoad(element, componentName, ctor, components, null);
+			});
+			return;
+		}
+	}
+
 	let isClass = false;
 	if (
 		ctor.prototype &&
@@ -33,7 +102,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	if (isClass) {
 		const instance = createInstance(element, componentName, ctor);
 		if (instance) {
-			initialisedComponents.push(instance);
+			if (initialisedComponents) {
+				initialisedComponents.push(instance);
+			} else {
+				instance._load();
+			}
 		}
 		return;
 	}
@@ -44,7 +117,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	} catch (_err) {
 		const instance = createInstance(element, componentName, ctor);
 		if (instance) {
-			initialisedComponents.push(instance);
+			if (initialisedComponents) {
+				initialisedComponents.push(instance);
+			} else {
+				instance._load();
+			}
 		}
 		return;
 	}
@@ -52,7 +129,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	if (result && typeof result.then === "function") {
 		result
 			.then((mod) => {
-				if (!element.isConnected) return;
+				const isConnected =
+					element.isConnected !== undefined
+						? element.isConnected
+						: element.ownerDocument && element.ownerDocument.contains(element);
+				if (!isConnected) return;
 				const Resolved =
 					(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
 				if (typeof Resolved === "function") {
@@ -70,7 +151,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 		components[componentName] = result;
 		const instance = createInstance(element, componentName, result);
 		if (instance) {
-			initialisedComponents.push(instance);
+			if (initialisedComponents) {
+				initialisedComponents.push(instance);
+			} else {
+				instance._load();
+			}
 		}
 	}
 }

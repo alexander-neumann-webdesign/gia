@@ -764,5 +764,316 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
 
             destroyInstance(el);
         });
+
+        test('attribute-level options: should parse individual data-* attributes with type coercion', () => {
+            const el = document.createElement('div');
+            el.setAttribute('data-delay', '2500');
+            el.setAttribute('data-autoplay', ''); // boolean empty attribute flag
+            el.setAttribute('data-enabled', 'false');
+            el.setAttribute('data-title', 'Hello World');
+            document.body.appendChild(el);
+
+            class AttrComp extends BaseComponent {
+                mount() {
+                    this.options = {
+                        delay: 1000,
+                        autoplay: false,
+                        enabled: true,
+                        title: 'Default',
+                        fallback: 42
+                    };
+                }
+            }
+
+            const instance = createInstance(el, 'AttrComp', AttrComp);
+            instance._load();
+
+            expect(instance.options).toEqual({
+                delay: 2500, // Number coerced
+                autoplay: true, // Empty boolean flag coerced to true
+                enabled: false, // "false" coerced to false
+                title: 'Hello World', // String
+                fallback: 42 // Kept from defaults
+            });
+
+            destroyInstance(el);
+        });
+
+        test('attribute-level options: data-options JSON overrides individual data-* attributes', () => {
+            const el = document.createElement('div');
+            el.setAttribute('data-delay', '1000');
+            el.setAttribute('data-options', JSON.stringify({ delay: 9999 }));
+            document.body.appendChild(el);
+
+            class PriorityOptionsComp extends BaseComponent {
+                mount() {
+                    this.options = { delay: 500 };
+                }
+            }
+
+            const instance = createInstance(el, 'PriorityOptionsComp', PriorityOptionsComp);
+            instance._load();
+
+            expect(instance.options.delay).toBe(9999);
+            destroyInstance(el);
+        });
+
+        test('this.delegate should handle event delegation, dynamic elements, and auto-cleanup', () => {
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <button class="item-btn" data-id="1"><span>Item 1</span></button>
+                <div class="other">Other</div>
+            `;
+            document.body.appendChild(el);
+
+            let clickTarget = null;
+            let clickCount = 0;
+
+            class DelegateComp extends BaseComponent {
+                mount() {
+                    this.delegate('.item-btn', 'click', (e, target) => {
+                        clickCount++;
+                        clickTarget = target;
+                    });
+                }
+            }
+
+            const instance = createInstance(el, 'DelegateComp', DelegateComp);
+            instance._load();
+
+            // Click inside span inside button
+            const span = el.querySelector('span');
+            span.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+
+            expect(clickCount).toBe(1);
+            expect(clickTarget).toBe(el.querySelector('.item-btn'));
+
+            // Click unrelated element
+            el.querySelector('.other').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(clickCount).toBe(1);
+
+            // Dynamically add button
+            const dynamicBtn = document.createElement('button');
+            dynamicBtn.className = 'item-btn';
+            dynamicBtn.setAttribute('data-id', '2');
+            el.appendChild(dynamicBtn);
+
+            dynamicBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(clickCount).toBe(2);
+            expect(clickTarget).toBe(dynamicBtn);
+
+            // Destroy component - should auto-cleanup
+            destroyInstance(el);
+            dynamicBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(clickCount).toBe(2);
+        });
+
+        test('this.delegate should support once option and manual unlisten', () => {
+            const el = document.createElement('div');
+            el.innerHTML = `<button class="clicker">Click</button>`;
+            document.body.appendChild(el);
+
+            let count = 0;
+            class OnceDelegateComp extends BaseComponent {
+                mount() {
+                    this.delegate('.clicker', 'click', () => {
+                        count++;
+                    }, { once: true });
+                }
+            }
+
+            const instance = createInstance(el, 'OnceDelegateComp', OnceDelegateComp);
+            instance._load();
+
+            const btn = el.querySelector('.clicker');
+            btn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            btn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+
+            expect(count).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('this.find and this.findAll should query elements scoped to component', () => {
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <div class="box" id="b1"></div>
+                <div class="box" id="b2"></div>
+            `;
+            document.body.appendChild(el);
+
+            class FindComp extends BaseComponent {
+                mount() {}
+            }
+
+            const instance = createInstance(el, 'FindComp', FindComp);
+            instance._load();
+
+            const single = instance.find('.box');
+            expect(single).toBe(el.querySelector('#b1'));
+
+            const all = instance.findAll('.box');
+            expect(Array.isArray(all)).toBe(true);
+            expect(all.length).toBe(2);
+            expect(all[0]).toBe(el.querySelector('#b1'));
+            expect(all[1]).toBe(el.querySelector('#b2'));
+
+            destroyInstance(el);
+        });
+
+        test('actions: .self modifier should only trigger when target is element itself', () => {
+            config.set('autoBindActions', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'SelfActionComp');
+            el.innerHTML = `
+                <div class="modal" data-action="click.self:onClose">
+                    <div class="dialog"><span>Inside dialog</span></div>
+                </div>
+            `;
+            document.body.appendChild(el);
+
+            let closeCalled = 0;
+            class SelfActionComp extends BaseComponent {
+                onClose() {
+                    closeCalled++;
+                }
+            }
+
+            loadComponents({ SelfActionComp });
+
+            const modal = el.querySelector('.modal');
+            const innerSpan = el.querySelector('span');
+
+            // Click child span -> should NOT trigger onClose
+            innerSpan.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(closeCalled).toBe(0);
+
+            // Click modal backdrop directly -> should trigger onClose
+            modal.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+            expect(closeCalled).toBe(1);
+
+            removeComponents(document.body);
+        });
+
+        test('actions: keyboard modifiers (.enter, .esc, .space, .arrow-up) should filter keys', () => {
+            config.set('autoBindActions', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'KeyActionComp');
+            el.innerHTML = `
+                <input class="field" data-action="keydown.enter:onEnter keydown.esc:onEsc keydown.arrow-up:onUp" />
+            `;
+            document.body.appendChild(el);
+
+            const calls = [];
+            class KeyActionComp extends BaseComponent {
+                onEnter() {
+                    calls.push('enter');
+                }
+                onEsc() {
+                    calls.push('esc');
+                }
+                onUp() {
+                    calls.push('up');
+                }
+            }
+
+            loadComponents({ KeyActionComp });
+
+            const input = el.querySelector('.field');
+
+            // Dispatch other key
+            input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+            expect(calls).toEqual([]);
+
+            // Dispatch Enter
+            input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            expect(calls).toEqual(['enter']);
+
+            // Dispatch Escape
+            input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            expect(calls).toEqual(['enter', 'esc']);
+
+            // Dispatch ArrowUp
+            input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+            expect(calls).toEqual(['enter', 'esc', 'up']);
+
+            removeComponents(document.body);
+        });
+
+        test('lazy hydration: data-mount="visible" should defer until IntersectionObserver fires', async () => {
+            let observerCallback = null;
+            let observedElement = null;
+
+            global.IntersectionObserver = class {
+                constructor(cb) {
+                    observerCallback = cb;
+                }
+                observe(el) {
+                    observedElement = el;
+                }
+                unobserve() {}
+                disconnect() {}
+            };
+
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'LazyVisibleComp');
+            el.setAttribute('data-mount', 'visible');
+            document.body.appendChild(el);
+
+            let mounted = false;
+            class LazyVisibleComp extends BaseComponent {
+                mount() {
+                    mounted = true;
+                }
+            }
+
+            loadComponents({ LazyVisibleComp });
+
+            // Should not be mounted immediately
+            expect(mounted).toBe(false);
+            expect(observedElement).toBe(el);
+
+            // Simulate intersection
+            observerCallback([{ isIntersecting: true, target: el }]);
+
+            // Now mounted
+            expect(mounted).toBe(true);
+
+            delete global.IntersectionObserver;
+            removeComponents(document.body);
+        });
+
+        test('lazy hydration: data-mount="idle" should defer until idle time', async () => {
+            let idleCallback = null;
+            window.requestIdleCallback = global.requestIdleCallback = (cb) => {
+                idleCallback = cb;
+                return 1;
+            };
+
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'LazyIdleComp');
+            el.setAttribute('data-mount', 'idle');
+            document.body.appendChild(el);
+
+            let mounted = false;
+            class LazyIdleComp extends BaseComponent {
+                mount() {
+                    mounted = true;
+                }
+            }
+
+            loadComponents({ LazyIdleComp });
+
+            // Should not be mounted immediately
+            expect(mounted).toBe(false);
+
+            // Trigger idle callback
+            idleCallback();
+
+            expect(mounted).toBe(true);
+
+            delete window.requestIdleCallback;
+            delete global.requestIdleCallback;
+            removeComponents(document.body);
+        });
     });
 });

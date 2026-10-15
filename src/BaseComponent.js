@@ -41,6 +41,9 @@ const globalExcludedMethods = new Set([
 	"emit",
 	"on",
 	"updateRefs",
+	"delegate",
+	"find",
+	"findAll",
 ]);
 
 const protoMethodsCache = new WeakMap();
@@ -200,9 +203,35 @@ export default class BaseComponent {
 			}
 		}
 
+		// Inspect matching data-[key] or g-[key] HTML attributes
+		const attrOptions = {};
+		if (defaults && typeof defaults === "object") {
+			const attrPrefix = config.get("attrPrefix");
+			for (const key in defaults) {
+				if (!Object.prototype.hasOwnProperty.call(defaults, key)) continue;
+				const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+				let attrVal = this.element.getAttribute(`${attrPrefix}-${kebabKey}`);
+				if (attrVal === null && attrPrefix !== "data") {
+					attrVal = this.element.getAttribute(`data-${kebabKey}`);
+				}
+				if (attrVal !== null) {
+					if (attrVal === "true" || (attrVal === "" && typeof defaults[key] === "boolean")) {
+						attrOptions[key] = true;
+					} else if (attrVal === "false") {
+						attrOptions[key] = false;
+					} else if (attrVal !== "" && !isNaN(Number(attrVal))) {
+						attrOptions[key] = Number(attrVal);
+					} else {
+						attrOptions[key] = attrVal;
+					}
+				}
+			}
+		}
+
 		this._options = {
 			...this._options,
 			...defaults,
+			...attrOptions,
 			...options,
 		};
 	}
@@ -385,6 +414,45 @@ export default class BaseComponent {
 			this._activeListeners = [];
 		}
 		this._activeListeners.push(el, evt, fn, finalOpts);
+
+		return () => {
+			el.removeEventListener(evt, fn, finalOpts);
+		};
+	}
+
+	delegate(selector, event, handler, options) {
+		if (!this.element || !selector) return () => {};
+		const method = typeof handler === "function" ? handler : this[handler];
+		if (typeof method !== "function") return () => {};
+
+		const isOnce = options && typeof options === "object" ? !!options.once : false;
+		let delegatedOpts = options;
+		if (isOnce) {
+			delegatedOpts = { ...options, once: false };
+		}
+
+		let remove = null;
+		const delegatedHandler = (e) => {
+			const target = e.target && e.target.closest ? e.target.closest(selector) : null;
+			if (target && this.element && this.element.contains(target)) {
+				if (isOnce && remove) {
+					remove();
+				}
+				e.delegateTarget = target;
+				method.call(this, e, target);
+			}
+		};
+
+		remove = this.listen(this.element, event, delegatedHandler, delegatedOpts);
+		return remove;
+	}
+
+	find(selector) {
+		return this.element ? this.element.querySelector(selector) : null;
+	}
+
+	findAll(selector) {
+		return this.element ? Array.from(this.element.querySelectorAll(selector)) : [];
 	}
 
 	updateRefs() {

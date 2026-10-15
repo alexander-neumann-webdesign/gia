@@ -34,11 +34,14 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
     - [Zero-Boilerplate Auto-Discovery (`loadComponents`)](#zero-boilerplate-auto-discovery-loadcomponents)
     - [Named Component Registration (`register`)](#named-component-registration-register)
     - [Component Mounting Priority](#component-mounting-priority)
+    - [Lazy Hydration Strategies (`data-mount`)](#lazy-hydration-strategies-data-mount)
     - [Context & Component Unmounting (`removeComponents`)](#context--component-unmounting-removecomponents)
 - [Cross-Bundle & UMD Idempotency](#cross-bundle--umd-idempotency)
 - [Quality of Life Features](#quality-of-life-features)
-    - [Component Options (`data-options`)](#component-options-data-options)
-    - [Event Binding (`data-action`)](#event-binding-data-action)
+    - [Component Options & Natural HTML Attributes](#component-options--natural-html-attributes)
+    - [Event Binding (`data-action`) & Modifiers](#event-binding-data-action--modifiers)
+    - [Event Delegation (`this.delegate`)](#event-delegation-thisdelegate)
+    - [Scoped Query Helpers (`this.find` & `this.findAll`)](#scoped-query-helpers-thisfind--thisfindall)
     - [Auto-Mounting](#auto-mounting)
 - [TypeScript Support](#typescript-support)
 - [Global Configuration](#global-configuration)
@@ -483,6 +486,26 @@ class CartPreview extends Component {
 }
 ```
 
+#### Wildcard Subscriptions (`*` and `prefix:*`)
+
+EventBus supports wildcard patterns without sacrificing zero-GC performance on standard emissions:
+
+- **Namespace / Prefix Wildcards**: `eventbus.on("cart:*", handler)` or `eventbus.on("cart.*", handler)` receives any event starting with `cart:` or `cart.`, such as `cart:add`, `cart:remove`, `cart:checkout`.
+- **Global Wildcards**: `eventbus.on("*", handler)` catches every event emitted across the entire application (useful for telemetry, analytics, and debugging).
+- **Zero-GC Optimization**: An internal counter (`_hasWildcards`) ensures that when no wildcards are active, `eventbus.emit()` completely bypasses string-splitting and prefix checks with zero overhead.
+
+```javascript
+// Listen to all cart-related events
+this.on("cart:*", (event) => {
+	console.log(`Cart action fired: ${event._name}`, event);
+});
+
+// Global audit logger
+eventbus.on("*", (event) => {
+	analytics.track(event._name, event);
+});
+```
+
 ---
 
 ## Mounting Ergonomics & Registry
@@ -551,6 +574,28 @@ class ImageHolder extends Component {
 
 Components with identical priorities safely preserve their natural DOM order.
 
+### Lazy Hydration Strategies (`data-mount`)
+
+To optimize Core Web Vitals (INP, LCP, TBT) and prevent main-thread congestion during initial page load, Gia supports declarative lazy hydration out of the box via the `data-mount` (or `g-mount`) attribute:
+
+#### 1. Visibility Hydration (`data-mount="visible"`)
+Components with `data-mount="visible"` defer instantiation and mounting until the element enters (or is within 200px of) the viewport via native `IntersectionObserver`:
+```html
+<!-- Hydrates only when scrolled near the viewport -->
+<div data-component="ComplexReviewsWidget" data-mount="visible">
+    <!-- Heavy DOM or widget markup -->
+</div>
+```
+- **Automatic Disconnect Guards**: If a deferred element is removed from the DOM before it becomes visible, Gia safely discards the pending observer without creating ghost instances.
+- **Async Dynamic Import Synergy**: Works seamlessly with dynamic import loaders (`() => import(...)`), so the JavaScript bundle for the component is neither fetched nor executed until the element is actually scrolled into view!
+
+#### 2. Idle Hydration (`data-mount="idle"`)
+Components with `data-mount="idle"` defer instantiation until the browser's main thread becomes idle using `requestIdleCallback` (with automatic fallback):
+```html
+<!-- Hydrates during browser idle time without blocking initial paint or user interactions -->
+<div data-component="AnalyticsTracker" data-mount="idle"></div>
+```
+
 ### Context & Component Unmounting (`removeComponents`)
 
 When using client-side routers (like Swup, Barba.js, Turbo) or dynamically removing DOM nodes, `removeComponents()` cleanly tears down all component instances, fires their `unmount()` lifecycle methods, aborts their `this.signal` controllers, and removes all references.
@@ -587,66 +632,136 @@ When integrating Gia into complex architectures, micro-frontends, design systems
 
 ## Quality of Life Features
 
-### Component Options (`data-options`)
+## Quality of Life Features
 
-You can pass configuration options directly from HTML into your component via the `data-options` attribute. The attribute must contain valid JSON. Gia parses this and merges it with default options defined in your constructor.
+### Component Options & Natural HTML Attributes
+
+Gia provides two clean ways to configure components directly from HTML:
+
+#### 1. Individual HTML Attributes (Zero-JSON, Natural Ergonomics)
+Instead of writing inline JSON, you can pass individual `data-[key]` (or `g-[key]`) attributes using kebab-case. Gia matches them to your defaults and automatically coerces primitive types (booleans, numbers, strings):
 
 ```html
-<div data-component="Slider" data-options='{"speed": 500, "loop": true}'>
-	<!-- Slider content -->
+<div data-component="Slider"
+     data-speed="500"
+     data-autoplay
+     data-loop="false"
+     data-theme="dark">
 </div>
 ```
 
 ```javascript
 class Slider extends Component {
-	constructor(element) {
-		super(element);
-
-		// Define defaults and merge with `data-options`
+	mount() {
+		// Define default options:
 		this.options = {
 			speed: 300,
-			loop: false,
+			autoplay: false,
+			loop: true,
+			theme: "light",
 		};
-	}
 
-	mount() {
-		console.log(this.options.speed); // 500
-		console.log(this.options.loop); // true
+		console.log(this.options.speed);    // 500 (number)
+		console.log(this.options.autoplay); // true (boolean from empty attribute flag)
+		console.log(this.options.loop);     // false (boolean from "false")
+		console.log(this.options.theme);    // "dark" (string)
 	}
 }
 ```
+
+#### 2. JSON Attributes (`data-options`)
+For complex or nested configurations, you can pass a JSON string via `data-options`:
+
+```html
+<div data-component="Slider" data-options='{"speed": 500, "pagination": {"clickable": true}}'></div>
+```
+
+> [!NOTE]
+> **Options Precedence**: Defaults < Individual `data-[key]` attributes < JSON `data-options`. This allows individual HTML attributes to set general behavior while `data-options` can provide explicit overrides.
 
 ---
 
-### Event Binding (`data-action`)
+### Event Binding (`data-action`) & Modifiers
 
-By setting `config.set("autoBindActions", true)`, Gia parses `data-action` attributes and automatically binds matching component methods as event listeners, eliminating the need to manually attach and clean up standard event listeners in `mount()`.
+By setting `config.set("autoBindActions", true)`, Gia parses `data-action` attributes and automatically binds matching component methods as event listeners, eliminating manual listener setup and teardown.
 
-**Format**: `data-action="eventName->methodName"` (separate multiple events with spaces).
+**Syntax**: `data-action="event.modifier->methodName"` or `data-action="event.modifier:methodName"` (space-separated for multiple bindings).
 
 ```html
 <div data-component="InteractiveCard">
-	<div data-action="mouseenter->handleEnter mouseleave->handleLeave">Hover Me</div>
-	<button data-action="click->handleClick">Click Me</button>
+	<!-- Event and keyboard modifiers -->
+	<input data-action="keydown.enter.prevent->submitForm keydown.esc->cancelEdit" />
+	
+	<!-- Modal backdrop: .self ensures clicks inside dialog do NOT trigger onClose -->
+	<div class="modal" data-action="click.self->onClose">
+		<div class="modal-dialog">Dialog Content</div>
+	</div>
 </div>
 ```
 
+#### Supported Action Modifiers
+
+- `.prevent`: Automatically invokes `e.preventDefault()`.
+- `.stop`: Automatically invokes `e.stopPropagation()`.
+- `.once`: Automatically removes the listener after the first trigger.
+- `.self`: Only invokes handler if `e.target` is the element itself (perfect for modal backdrops).
+- **Keyboard Modifiers**: Filter keyboard events so handlers fire only when specific keys are pressed:
+  - `.enter`: Triggers only on Enter.
+  - `.esc` / `.escape`: Triggers only on Escape.
+  - `.space`: Triggers only on Spacebar.
+  - `.tab`: Triggers only on Tab.
+  - `.arrow-up`, `.arrow-down`, `.arrow-left`, `.arrow-right` (or `.up`, `.down`, `.left`, `.right`): Triggers on arrow navigation.
+
+> [!IMPORTANT]
+> **Best Practice**: Use `event.currentTarget` in handlers when you need the element holding the `data-action` attribute, or inspect `event.target` for the exact clicked node.
+
+---
+
+### Event Delegation (`this.delegate`)
+
+For lists with dynamically added items or high-frequency element groups, `this.delegate()` provides clean, leak-proof event delegation scoped strictly to your component:
+
 ```javascript
-class InteractiveCard extends Component {
-	handleEnter(event) {
-		event.currentTarget.classList.add("hovered");
+class TodoList extends Component {
+	mount() {
+		// Listens for clicks on any .delete-btn inside this.element (now or in the future)
+		this.delegate(".delete-btn", "click", (event, target) => {
+			console.log("Deleted item ID:", target.dataset.id);
+			target.closest(".todo-item").remove();
+		});
+
+		// Supports method names, once: true, and manual unlisten handles
+		const unbind = this.delegate(".item-link", "click", "handleLinkClick", { once: true });
 	}
-	handleLeave(event) {
-		event.currentTarget.classList.remove("hovered");
-	}
-	handleClick(event) {
-		console.log("Card clicked!", event.currentTarget);
+
+	handleLinkClick(event, target) {
+		console.log("Clicked item:", target);
 	}
 }
 ```
 
-> [!IMPORTANT]
-> **Best Practice**: Always use `event.currentTarget` instead of `event.target` in event handlers. `event.currentTarget` is guaranteed to point to the element containing the `data-action` attribute, preventing issues when users click on nested elements (such as icons or text spans).
+- **Inherits Auto-Cleanup**: Automatically cleans up on `unmount()` via `this.signal`.
+- **Target Argument & delegateTarget**: Handlers receive `(event, target)`, and `event.delegateTarget` is set to the matching selector element.
+- **Containment Safety**: Confirms `this.element.contains(target)` to prevent bubbling matches outside the component root.
+
+---
+
+### Scoped Query Helpers (`this.find` & `this.findAll`)
+
+Eliminate verbose `this.element.querySelector` calls with clean, scoped helpers built into `BaseComponent`:
+
+```javascript
+class Gallery extends Component {
+	mount() {
+		// Single element scoped to component root (Element | null)
+		const mainImage = this.find(".main-image");
+
+		// Array of elements scoped to component root (standard Array with .map, .filter, etc.)
+		const thumbnails = this.findAll(".thumbnail");
+		thumbnails.map((thumb) => thumb.classList.add("loaded"));
+	}
+}
+```
 
 ---
 

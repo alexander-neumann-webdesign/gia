@@ -138,4 +138,70 @@ test.describe('EventBus', () => {
         eventbus.emit('no-payload-event');
         expect(received).toEqual({ _name: 'no-payload-event' });
     });
+
+    test('should support wildcard colon prefix subscriptions (e.g. cart:*)', async () => {
+        const events = [];
+        const handler = (detail) => {
+            events.push(detail._name);
+        };
+
+        eventbus.on('cart:*', handler);
+
+        eventbus.emit('cart:add', { item: 'apple' });
+        eventbus.emit('cart:remove', { item: 'apple' });
+        eventbus.emit('user:login', { id: 123 });
+
+        expect(events).toEqual(['cart:add', 'cart:remove']);
+
+        // Test unregistering wildcard
+        eventbus.off('cart:*', handler);
+        eventbus.emit('cart:checkout');
+        expect(events).toEqual(['cart:add', 'cart:remove']);
+    });
+
+    test('should support wildcard dot prefix subscriptions (e.g. store.*)', async () => {
+        const events = [];
+        const handler = (detail) => {
+            events.push(detail._name);
+        };
+
+        eventbus.on('store.*', handler);
+
+        eventbus.emit('store.item', { id: 1 });
+        eventbus.emit('auth.login', { user: 'alex' });
+
+        expect(events).toEqual(['store.item']);
+
+        eventbus.off('store.*', handler);
+    });
+
+    test('should support global wildcard subscriptions (*)', async () => {
+        const events = [];
+        const handler = (detail) => {
+            events.push(detail._name);
+        };
+
+        eventbus.on('*', handler);
+
+        eventbus.emit('order:created');
+        eventbus.emit('notify');
+
+        expect(events).toEqual(['order:created', 'notify']);
+
+        eventbus.off('*', handler);
+        eventbus.emit('another');
+        expect(events).toEqual(['order:created', 'notify']);
+    });
+
+    test('should support wildcard subscription with once: true', async () => {
+        let count = 0;
+        eventbus.once('metric:*', () => {
+            count++;
+        });
+
+        eventbus.emit('metric:cpu');
+        eventbus.emit('metric:memory');
+
+        expect(count).toBe(1);
+    });
 });

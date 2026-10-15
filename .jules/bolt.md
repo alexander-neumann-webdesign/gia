@@ -133,3 +133,15 @@
 ## 2026-10-15 - Fast-Path Pointer Comparison for DOM Tree Traversal
 **Learning:** During component initialization (`set ref` and `autoBindActions`), walking the DOM tree via `element.closest()` on every ref or action node creates measurable CPU overhead when nested components exist, even though the vast majority of refs are immediate children of the component container.
 **Action:** Perform an O(1) pointer comparison `element.parentElement === this.element` before invoking `element.closest()`. Direct children bypass the native tree-walking traversal entirely.
+
+## 2026-10-15 - Zero-Overhead Counter for EventBus Wildcard Subscriptions
+**Learning:** Checking for wildcard listeners (e.g. `cart:*` or `*`) on every event emission creates string parsing and map lookup overhead even in applications that only use exact event names.
+**Action:** Track active wildcard subscriptions via an integer counter (`this._hasWildcards`). When zero, `emit()` bypasses all wildcard string splitting and prefix lookups with zero performance overhead.
+
+## 2026-10-15 - Lazy Hydration with isConnected Disconnect Guards
+**Learning:** Observing off-screen or idle components (`data-mount="visible"` / `data-mount="idle"`) can trigger callbacks after elements have already been detached from the DOM during navigation or dynamic removal, causing unattached ghost instances.
+**Action:** Guard intersection and idle hydration callbacks with `element.isConnected` checks, immediately unobserving and discarding pending instances if the element is no longer attached to the document tree.
+
+## 2026-10-15 - Scoped Event Delegation with Containment Checks
+**Learning:** Standard `closest(selector)` matching in delegated listeners can match elements outside the component if ancestors happen to match the selector, or cause multiple listener leaks if bound without AbortSignal.
+**Action:** Implement `this.delegate(selector, event, handler, options)` directly on `BaseComponent`, piping through `this.listen()` so delegated events inherit `this.signal` auto-cleanup, verify `this.element.contains(target)`, and support `once: true` without prematurely detaching on non-matching clicks.

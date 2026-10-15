@@ -45,8 +45,17 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 		this.setState({ count: 1 });
 
 		// Test listen helper
-		this.listen('click', () => {});
-		this.listen(window, 'resize', () => {});
+		const unlisten1: () => void = this.listen('click', () => {});
+		const unlisten2: () => void = this.listen(window, 'resize', () => {});
+
+		// Test delegate helper
+		const undelegate: () => void = this.delegate<HTMLButtonElement>('.btn', 'click', (e, target) => {
+			const b: HTMLButtonElement = target;
+		});
+
+		// Test find and findAll
+		const foundEl: HTMLDivElement | null = this.find<HTMLDivElement>('.my-div');
+		const allEls: HTMLSpanElement[] = this.findAll<HTMLSpanElement>('span');
 
 		// Test updateRefs, emit, on
 		this.updateRefs();

@@ -26,11 +26,15 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 		if (spaceIndex > startIndex) {
 			const pair = actionString.substring(startIndex, spaceIndex);
 			const arrowIndex = pair.indexOf("->");
+			const colonIndex = arrowIndex === -1 ? pair.indexOf(":") : -1;
 
 			let eventStr, method;
 			if (arrowIndex !== -1) {
 				eventStr = pair.substring(0, arrowIndex);
 				method = pair.substring(arrowIndex + 2);
+			} else if (colonIndex !== -1) {
+				eventStr = pair.substring(0, colonIndex);
+				method = pair.substring(colonIndex + 1);
 			} else {
 				eventStr = pair;
 				method = undefined;
@@ -46,6 +50,8 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 				let prevent = false;
 				let stop = false;
 				let once = false;
+				let self = false;
+				let keyFilter = null;
 
 				if (eventStr.indexOf(".") !== -1) {
 					const parts = eventStr.split(".");
@@ -55,12 +61,30 @@ function _bindElement(el, isRoot, instance, excludedMethods, hasNestedComponents
 						if (mod === "prevent") prevent = true;
 						else if (mod === "stop") stop = true;
 						else if (mod === "once") once = true;
+						else if (mod === "self") self = true;
+						else if (mod === "enter") keyFilter = "Enter";
+						else if (mod === "esc" || mod === "escape") keyFilter = "Escape";
+						else if (mod === "space") keyFilter = "Space";
+						else if (mod === "tab") keyFilter = "Tab";
+						else if (mod === "arrow-up" || mod === "up") keyFilter = "ArrowUp";
+						else if (mod === "arrow-down" || mod === "down") keyFilter = "ArrowDown";
+						else if (mod === "arrow-left" || mod === "left") keyFilter = "ArrowLeft";
+						else if (mod === "arrow-right" || mod === "right") keyFilter = "ArrowRight";
 					}
 				}
 
 				let handler = instance[method];
-				if (prevent || stop) {
+				if (prevent || stop || self || keyFilter) {
 					handler = function (e) {
+						if (self && e && e.target !== el) return;
+						if (keyFilter && e) {
+							const k = e.key;
+							if (keyFilter === "Space") {
+								if (k !== " " && k !== "Space" && k !== "Spacebar") return;
+							} else if (k !== keyFilter) {
+								return;
+							}
+						}
 						if (prevent && e && typeof e.preventDefault === "function") e.preventDefault();
 						if (stop && e && typeof e.stopPropagation === "function") e.stopPropagation();
 						return instance[method](e);

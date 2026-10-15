@@ -143,12 +143,21 @@ export class BaseComponent<
 		event: string,
 		handler: EventListenerOrEventListenerObject,
 		options?: boolean | AddEventListenerOptions
-	): void;
+	): () => void;
 	listen(
 		event: string,
 		handler: EventListenerOrEventListenerObject,
 		options?: boolean | AddEventListenerOptions
-	): void;
+	): () => void;
+
+	delegate<T extends Element = Element>(
+		selector: string,
+		event: string,
+		handler: ((this: this, event: Event, target: T) => void) | string,
+		options?: boolean | AddEventListenerOptions
+	): () => void;
+	find<T extends Element = HTMLElement>(selector: string): T | null;
+	findAll<T extends Element = HTMLElement>(selector: string): T[];
 
 	updateRefs(): void;
 	emit(event: string, eventObject?: Record<string, any>): void;
