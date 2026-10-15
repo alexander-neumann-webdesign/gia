@@ -20,7 +20,7 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [Installation & Build Variants](#installation--build-variants)
 - [Quick Start](#quick-start)
 - [Component Lifecycle](#component-lifecycle)
 - [Core Concepts](#core-concepts)
@@ -30,6 +30,12 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
     - [Centralized Observers](#centralized-observers)
     - [On-Demand Dependencies (`require`)](#on-demand-dependencies-require)
     - [Global Eventbus](#global-eventbus)
+- [Mounting Ergonomics & Registry](#mounting-ergonomics--registry)
+    - [Zero-Boilerplate Auto-Discovery (`loadComponents`)](#zero-boilerplate-auto-discovery-loadcomponents)
+    - [Named Component Registration (`register`)](#named-component-registration-register)
+    - [Component Mounting Priority](#component-mounting-priority)
+    - [Context & Component Unmounting (`removeComponents`)](#context--component-unmounting-removecomponents)
+- [Cross-Bundle & UMD Idempotency](#cross-bundle--umd-idempotency)
 - [Quality of Life Features](#quality-of-life-features)
     - [Component Options (`data-options`)](#component-options-data-options)
     - [Event Binding (`data-action`)](#event-binding-data-action)
@@ -48,18 +54,18 @@ _Note: This is an optimized fork of the original Gia framework. It contains nume
 
 Gia is compiled into three highly optimized build variants depending on the features you need. Load the UMD builds directly via script tag, or import the ESM (`.mjs`) builds via clean subpath imports.
 
-| Build Variant  | Subpath Import | Description | UMD Gzip | ESM Gzip |
-| -------------- | -------------- | ----------- | -------- | -------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.6 KB | ~6.5 KB |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.0 KB | ~5.9 KB |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.4 KB | ~3.3 KB |
+| Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
+| -------------- | -------------- | ----------- | -------------- | -------------- |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.7 KB (20.6 KB) | ~6.6 KB (20.4 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.1 KB (18.9 KB) | ~6.0 KB (18.7 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.5 KB (10.3 KB) | ~3.4 KB (10.1 KB) |
 
 ```javascript
-// Full build
-import { Component, loadComponents, eventbus } from "gia";
+// Full build with modern ESM
+import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~3.3 KB gzipped)
-import { BaseComponent, loadComponents } from "gia/nano";
+// Or target the tiny Nano build (~3.4 KB gzipped)
+import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
 ```html
@@ -67,7 +73,8 @@ import { BaseComponent, loadComponents } from "gia/nano";
 <script src="./dist/gia.full.umd.js"></script>
 ```
 
-After loading the script, your components can be registered using `gia.register(ComponentClass)` to make them discoverable globally.
+> [!TIP]
+> **Non-Destructive UMD Merging**: All UMD builds are compiled with `output.extend: true`. If a page loads `gia.full.umd.js` and a third-party widget embeds `gia.nano.umd.js`, both will merge safely into `window.gia` without wiping out previously loaded components or features.
 
 ---
 
@@ -105,8 +112,9 @@ class Counter extends Component {
 
 	mount() {
 		// Component methods are automatically bound to `this`
-		this.ref.incrementBtn.addEventListener("click", this.increment);
-		this.ref.decrementBtn.addEventListener("click", this.decrement);
+		// Using this.signal guarantees automatic cleanup when the element unmounts!
+		this.ref.incrementBtn.addEventListener("click", this.increment, { signal: this.signal });
+		this.ref.decrementBtn.addEventListener("click", this.decrement, { signal: this.signal });
 
 		// Initial render
 		this.ref.display.textContent = this.state.count;
@@ -132,14 +140,14 @@ class Counter extends Component {
 ### 3. Load and register your components
 
 ```javascript
-import { loadComponents } from "gia";
+import { register, loadComponents } from "gia";
 
-const components = {
-	Counter,
-};
+// Approach A: Global registry with zero-argument auto-discovery
+register(Counter);
+loadComponents(); // Discovers and mounts all registered components across the page
 
-// Auto-discovers and mounts matching components inside the document
-loadComponents(components);
+// Approach B: Explicit dictionary scoping
+loadComponents({ Counter });
 ```
 
 ---
@@ -452,6 +460,103 @@ class CartPreview extends Component {
 
 ---
 
+## Mounting Ergonomics & Registry
+
+Gia offers flexible, zero-friction patterns for registering, mounting, prioritizing, and unmounting components across pages, asynchronous containers, and PJAX/Swup transitions.
+
+### Zero-Boilerplate Auto-Discovery (`loadComponents`)
+
+You can invoke `loadComponents()` without arguments. Gia will automatically discover all registered components across the entire document. You can also pass a container element as the only argument to scope auto-discovery to that container:
+
+```javascript
+import { register, loadComponents } from "gia";
+
+// 1. Register components globally
+register(Header);
+register(Modal);
+
+// 2. Mount across the entire page (zero arguments)
+loadComponents();
+
+// Or scope auto-discovery to an injected container or AJAX fragment:
+const fragment = document.querySelector("#cart-flyout");
+loadComponents(fragment);
+```
+
+### Named Component Registration (`register`)
+
+The `register()` helper makes components globally discoverable via `window.gia.components` and optionally sets their mounting priority:
+
+```javascript
+import { register } from "gia";
+import { ImageHolder } from "./ImageHolder.js";
+
+// Basic registration (uses class name ImageHolder)
+register(ImageHolder);
+
+// Register with mounting priority
+register(ImageHolder, { priority: 100 });
+```
+
+### Component Mounting Priority
+
+By default, Gia parses the DOM and mounts components in natural top-to-bottom order. However, if critical components must initialize first (e.g. layout calculators, hero sliders, or analytics), you can specify a mounting priority:
+
+**Option 1: Using `register` (Recommended)**
+```javascript
+import { register, loadComponents } from "gia";
+
+register(ImageHolder, { priority: 100 });
+register(HeroSlider, { priority: 50 });
+register(AnalyticsTracking); // defaults to priority 0
+
+loadComponents();
+```
+
+**Option 2: Using Class Statics**
+```javascript
+class ImageHolder extends Component {
+	static priority = 100;
+
+	mount() {
+		// Runs before lower-priority components!
+	}
+}
+```
+
+Components with identical priorities safely preserve their natural DOM order.
+
+### Context & Component Unmounting (`removeComponents`)
+
+When using client-side routers (like Swup, Barba.js, Turbo) or dynamically removing DOM nodes, `removeComponents()` cleanly tears down all component instances, fires their `unmount()` lifecycle methods, aborts their `this.signal` controllers, and removes all references.
+
+You can pass a container DOM element, or pass `(components, context)` interchangeably:
+
+```javascript
+import { removeComponents } from "gia";
+
+// Unmount all Gia components inside a container before replacing it
+const container = document.querySelector("#swup-container");
+removeComponents(container);
+```
+
+---
+
+## Cross-Bundle & UMD Idempotency
+
+When integrating Gia into complex architectures, micro-frontends, design systems, or third-party embeddable widgets, multiple bundles or scripts may coexist on the same page. Gia is built from the ground up to be 100% idempotent and crash-proof in multi-bundle environments:
+
+1. **Shared Universal Instance Store (`window.__gia_store__`)**:
+   Component instances are tracked in a shared `WeakMap` singleton attached to `globalThis.__gia_store__`. Even if the main page imports `gia/mini` and a third-party widget imports its own bundled `gia/nano`, an element will **never be double-mounted**, and calls to `getComponentFromElement()` retrieve the correct instance across bundle boundaries.
+
+2. **Shared Animation & Batch Scheduler (`window.__gia_scheduler__`)**:
+   FastDOM `measure()` and `mutate()` operations share a unified frame-loop queue. Multiple bundles cooperate within a single `requestAnimationFrame` tick, eliminating layout thrashing and animation stutter.
+
+3. **Non-Destructive UMD Merging (`extend: true`)**:
+   All UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) compile with Rollup/Vite's `extend: true` flag (`globalThis.gia = globalThis.gia || {}`). Loading a nano widget script tag on a page that already loaded the full Gia library will **never overwrite** `gia.Component`, `gia.eventbus`, or existing registered components.
+
+---
+
 ## Quality of Life Features
 
 ### Component Options (`data-options`)
@@ -519,50 +624,18 @@ class InteractiveCard extends Component {
 
 ### Auto-Mounting
 
-By default, components are loaded manually with `loadComponents(components)`. By enabling `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver` to automatically detect newly injected HTML and mount or unmount instances automatically.
+By default, components are loaded manually with `loadComponents()`. By enabling `config.set("autoMountComponents", true)`, Gia uses a `MutationObserver` to automatically detect newly injected HTML and mount or unmount instances automatically.
 
 ```javascript
-import { config, loadComponents } from "gia";
+import { config, register, loadComponents } from "gia";
 
 config.set("autoMountComponents", true);
-loadComponents({ MyComponent });
+register(MyComponent);
+loadComponents();
 
 // Anytime `<div data-component="MyComponent">` is added to the DOM, it mounts automatically.
 // Example: document.body.innerHTML += '<div data-component="MyComponent">Dynamically Injected</div>';
 ```
-
----
-
-### Component Mounting Priority
-
-By default, Gia parses the DOM and mounts components in a strict top-to-bottom order. However, if you need certain critical components to execute first (like calculating layouts, setting up dynamic image sizes, or initializing analytics), you can define a mount priority.
-
-There are two ways to set a priority:
-
-**Option 1: Using `gia.register` (Global approach)**
-```javascript
-import { loadComponents } from "gia";
-
-// Register with a priority (higher number mounts first)
-window.gia.register(ImageHolder, { priority: 100 });
-window.gia.register(HeroSlider, { priority: 50 });
-window.gia.register(AnalyticsTracking); // defaults to priority 0
-
-loadComponents(window.gia.components);
-```
-
-**Option 2: Using Class Statics (Component approach)**
-```javascript
-class ImageHolder extends Component {
-	static priority = 100;
-
-	mount() {
-		// Runs before almost everything else!
-	}
-}
-```
-
-Components with the same priority will safely fall back to maintaining their natural DOM top-to-bottom loading order.
 
 ---
 
@@ -641,25 +714,40 @@ config.set("autoBindActions", true);
 
 ### Global Exports
 
-- **`loadComponents(components, context)`**: Discovers and mounts components under the given context.
-- **`createInstance(element, componentName, ComponentClass, options)`**: Manually attaches a component to a DOM element.
-- **`destroyInstance(element)`**: Dismantles a component instance, triggering `unmount` and cleaning memory references.
-- **`removeComponents(context)`**: Destroys and cleans up all component instances inside the target context.
-- **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node.
-- **`eventbus`**: Unified `EventTarget`-based event emitter.
+- **`loadComponents([components], [context])`**: Discovers and mounts components. Supports zero-boilerplate calling:
+  - `loadComponents()` — mounts all registered components across `document.documentElement`.
+  - `loadComponents(container)` — scopes auto-discovery of all registered components to `container`.
+  - `loadComponents(components, [context])` — mounts an explicit dictionary of components scoped to `context` (defaults to `document.documentElement`).
+- **`register(ComponentClass, [options])`**: Registers a component class globally in `window.gia.components` with an optional `{ priority: number }`.
+- **`removeComponents([components], [context])`**: Destroys and cleans up all component instances inside the target context. Accepts `removeComponents(container)` or `removeComponents(components, context)` interchangeably.
+- **`createInstance(element, componentName, ComponentClass, [options])`**: Manually attaches and mounts a component instance on a DOM element.
+- **`destroyInstance(element)`**: Dismantles a component instance, triggering its `unmount()` lifecycle, aborting `this.signal`, and cleaning memory references.
+- **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node or an element ID string.
+- **`eventbus`**: Unified `EventTarget`-based event emitter with zero allocations. Methods:
+  - `eventbus.emit(event, data)`: Emits an event with optional payload.
+  - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`.
 - **`measure(callback, [context])`**: Schedules a DOM read operation for the next frame's measure phase. Returns a task reference.
 - **`mutate(callback, [context])`**: Schedules a DOM write operation for the next frame's mutate phase. Returns a task reference.
 - **`clear(task)`**: Cancels a scheduled measure or mutate task.
+- **`config`**: Global configuration manager. Methods: `config.get(key)`, `config.set(key, value)`.
 
 ### BaseComponent API
 
-- **`signal`**: Lazily instantiated native `AbortSignal` that aborts automatically on component destruction.
+- **`element`**: The root DOM element that this component instance is attached to.
+- **`ref`**: Automatically mapped child DOM references matching `data-ref="name"` (single element) or `data-ref="name[]"` (array of elements).
+- **`getRef(refName, [all])`**: Dynamically queries refs scoped strictly to this component element (without querying into nested child components).
+- **`options`**: Parsed configuration options passed via `data-options='{...}'`, automatically merged with constructor defaults.
+- **`signal`**: Lazily instantiated native `AbortSignal` that automatically aborts on component destruction. Pass to `addEventListener(..., { signal: this.signal })` or `fetch()` for zero-leak cleanup.
 - **`isMounted`**: Read-only boolean property indicating whether the component is currently mounted in the DOM.
-- **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame.
-- **`observeIntersection(element, callback, options)`** / **`unobserveIntersection(element, callback)`**: Subscribes/unsubscribes to a shared IntersectionObserver.
-- **`observeResize(element, callback)`** / **`unobserveResize(element, callback)`**: Subscribes/unsubscribes to a shared ResizeObserver.
-- **`observeScroll(callback)`** / **`unobserveScroll(callback)`**: Subscribes/unsubscribes to a single, optimized window scroll listener.
-- **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a single window resize listener.
+- **`state`**: Read-only snapshot of component state.
+- **`setState(changes)`**: Batches state modifications and queues a DOM re-render in the next animation frame. Can be called safely inside the constructor or during `mount()`.
+- **`stateChange(stateChanges)`**: Lifecycle hook called automatically after a batched `setState()` re-render, receiving an object with the changed properties.
+- **`mount()`**: Lifecycle hook invoked after DOM refs, options, and actions are bound. Can optionally return a teardown/cleanup function.
+- **`unmount()`**: Lifecycle hook invoked when the component is destroyed.
+- **`observeIntersection(element, callback, [options])`** / **`unobserveIntersection(element, callback)`**: Subscribes/unsubscribes to a shared IntersectionObserver pool.
+- **`observeResize(element, callback)`** / **`unobserveResize(element, callback)`**: Subscribes/unsubscribes to a shared ResizeObserver pool.
+- **`observeScroll(callback)`** / **`unobserveScroll(callback)`**: Subscribes/unsubscribes to a centralized, frame-rate synced window scroll listener (seamlessly hooking into Lenis if present).
+- **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a centralized window resize listener.
 - **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader.
 - **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader.
 
