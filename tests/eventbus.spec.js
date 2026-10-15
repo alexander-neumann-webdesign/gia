@@ -120,4 +120,9 @@ test.describe('EventBus', () => {
         eventbus.emit('once-signal-event');
         expect(count).toBe(0);
     });
+
+    test('should attach to universal globalThis.__gia_eventbus__ singleton for multi-bundle sharing', () => {
+        expect(globalThis.__gia_eventbus__).toBeDefined();
+        expect(eventbus).toBe(globalThis.__gia_eventbus__);
+    });
 });

@@ -27,7 +27,7 @@ export default function removeComponents(context = document.documentElement) {
 		destroyInstance(components[i]);
 	}
 
-	if (context instanceof Element && context.hasAttribute(attrName)) {
+	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
 		destroyInstance(context);
 	}
 }

@@ -13,7 +13,10 @@ function flushGlobalStateChanges() {
 	// ⚡ BOLT OPTIMIZATION: Process all dirty components in a single mutate block
 	// ⚡ BOLT OPTIMIZATION: Use classic for loop over Array instead of Set.forEach to prevent iterator allocation
 	for (let i = 0; i < dirtyComponents.length; i++) {
-		dirtyComponents[i]._flushStateChanges();
+		const comp = dirtyComponents[i];
+		if (comp) {
+			comp._flushStateChanges();
+		}
 	}
 	dirtyComponents.length = 0;
 }
@@ -21,10 +24,15 @@ function flushGlobalStateChanges() {
 /**
  * Batches state changes and queues a render task via the scheduler.
  * @param {object} instance - Component instance
- * @param {object} changes - Key/value state updates
+ * @param {object|Function} changes - Key/value state updates or updater function (prevState) => updates
  */
 export function enqueueSetState(instance, changes) {
 	if (!instance.element || instance._isDestroyed) return;
+
+	if (typeof changes === "function") {
+		changes = changes(instance._state);
+	}
+	if (!changes) return;
 
 	// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
 	// inside the primary validation loop to avoid allocating an intermediate `stateChanges`
@@ -126,6 +134,10 @@ export function flushStateChanges(instance) {
  * @param {object} instance - Component instance
  */
 export function cleanupComponentState(instance) {
+	const idx = dirtyComponents.indexOf(instance);
+	if (idx !== -1) {
+		dirtyComponents[idx] = null;
+	}
 	instance._pendingStateChanges = null;
 	instance._pendingAttributeChanges = null;
 }

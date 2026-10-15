@@ -114,4 +114,40 @@ test.describe('Component Priority & Global Registry (loadComponents.js & registr
             console.warn = originalWarn;
         }
     });
+
+    test('loadComponents should preserve natural DOM top-to-bottom order when no custom priority is defined', () => {
+        const mountOrder = [];
+
+        class FirstComponent extends BaseComponent {
+            mount() {
+                mountOrder.push('first');
+            }
+        }
+
+        class SecondComponent extends BaseComponent {
+            mount() {
+                mountOrder.push('second');
+            }
+        }
+
+        class ThirdComponent extends BaseComponent {
+            mount() {
+                mountOrder.push('third');
+            }
+        }
+
+        document.body.innerHTML = `
+            <div data-component="FirstComponent"></div>
+            <div data-component="SecondComponent"></div>
+            <div data-component="ThirdComponent"></div>
+        `;
+
+        loadComponents({
+            FirstComponent,
+            SecondComponent,
+            ThirdComponent
+        }, document.body);
+
+        expect(mountOrder).toEqual(['first', 'second', 'third']);
+    });
 });

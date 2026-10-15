@@ -10,11 +10,17 @@ import { queryAll } from "./utils.js";
 export function autoBindActions(instance, excludedMethods) {
 	if (typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__) return;
 
-	const componentAttrName = `${config.get("attrPrefix")}-component`;
+	const attrPrefix = config.get("attrPrefix");
+	const componentAttrName = `${attrPrefix}-component`;
+	const actionAttrName = `${attrPrefix}-action`;
 	const hasNestedComponents = instance.element.querySelector(`[${componentAttrName}]`) !== null;
 
-	const actionElements = queryAll("[data-action]", instance.element);
+	const actionSelector =
+		actionAttrName === "data-action" ? "[data-action]" : `[${actionAttrName}],[data-action]`;
+	const actionElements = queryAll(actionSelector, instance.element);
 	const length = actionElements.length;
+
+	let listenerOpts;
 
 	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
 	for (let i = 0; i < length; i++) {
@@ -27,7 +33,7 @@ export function autoBindActions(instance, excludedMethods) {
 			}
 		}
 
-		const actionString = el.getAttribute("data-action");
+		const actionString = el.getAttribute(actionAttrName) || el.getAttribute("data-action");
 
 		if (!actionString) continue;
 
@@ -60,8 +66,11 @@ export function autoBindActions(instance, excludedMethods) {
 				) {
 					// ⚡ BOLT OPTIMIZATION: Use the pre-bound method directly instead of allocating
 					// an inline closure (e => this[method](e)) for every single bound action.
-					const listenerOpts = instance.signal ? { signal: instance.signal } : undefined;
-					el.addEventListener(event, instance[method], listenerOpts);
+					// Lazily cache listenerOpts to eliminate per-action object allocations.
+					if (listenerOpts === undefined) {
+						listenerOpts = instance.signal ? { signal: instance.signal } : null;
+					}
+					el.addEventListener(event, instance[method], listenerOpts || undefined);
 
 					if (!instance._boundActions) instance._boundActions = [];
 					instance._boundActions.push(el, event, method);

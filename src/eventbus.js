@@ -129,4 +129,15 @@ class EventBus {
 	}
 }
 
-export default new EventBus();
+const globalObj =
+	typeof globalThis !== "undefined"
+		? globalThis
+		: typeof window !== "undefined"
+		? window
+		: typeof global !== "undefined"
+		? global
+		: {};
+
+const eventbusInstance = globalObj.__gia_eventbus__ || (globalObj.__gia_eventbus__ = new EventBus());
+
+export default eventbusInstance;

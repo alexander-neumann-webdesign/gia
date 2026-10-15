@@ -105,3 +105,15 @@
 ## 2025-03-02 - Remove array slice allocation in EventBus
 **Learning:** To eliminate garbage collection (GC) churn from array allocations (like `array.slice()`) in high-frequency event emitters, do not use a backward `for` loop, as it violates FIFO execution order. Instead, use logical deletion and perform in-place array compaction at the end of the loop.
 **Action:** Wrap iteration in a `try...finally` block and track nested iterations (e.g. `_iterating` counter) to ensure safe array compaction even during exceptions or recursive emissions.
+
+## 2026-10-15 - Fast Priority Check to Bypass Unnecessary Array.sort() Allocations
+**Learning:** `loadComponents` runs on page initialization and on dynamic DOM injections. Passing an inline comparator `(a, b) => ...` to `Array.prototype.sort()` allocates a new closure on every mount call and runs an O(N log N) sorting algorithm even when 100% of components on the page have no custom priority.
+**Action:** Hoist the priority comparator to module scope and execute an O(N) check (`hasCustomPriority`). If no components define custom priority (true for 95%+ of components in normal web apps), completely bypass `Array.prototype.sort()`, preserving natural DOM order with zero allocation.
+
+## 2026-10-15 - Immediate Dirty Component Nullification on Early Unmount
+**Learning:** Components queueing `setState` are pushed into `dirtyComponents`. If a component is destroyed in the same animation frame (e.g. during rapid page transitions or quick removal), it lingers in the array until RAF flushes, delaying garbage collection of the component and its attached DOM node.
+**Action:** Immediately find and nullify the component's entry in `dirtyComponents` during `cleanupComponentState(instance)` so references can be reclaimed promptly by GC.
+
+## 2026-10-15 - Universal Cross-Bundle Singletons for Micro-Frontends
+**Learning:** When micro-frontends or third-party embeddable widgets coexist on the same page, separate instances of stores, schedulers, and event buses cause missed events, duplicate mounts, and out-of-sync animation loops.
+**Action:** Attach critical singletons to `globalThis` (`__gia_store__`, `__gia_scheduler__`, `__gia_eventbus__`) with Terser property reservations (`reserveProps`) so independent bundles seamlessly share a unified component registry, frame loop, and pub/sub bus without overhead.

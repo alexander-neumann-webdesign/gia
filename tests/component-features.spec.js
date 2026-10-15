@@ -388,6 +388,36 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
             console.warn = originalWarn;
             removeComponents(document.body);
         });
+
+        test('should bind actions when using custom attrPrefix', () => {
+            config.set('attrPrefix', 'custom');
+            config.set('autoBindActions', true);
+
+            const el = document.createElement('div');
+            el.setAttribute('custom-component', 'CustomActionComponent');
+            el.innerHTML = `
+                <button custom-action="click->onCustomClick" id="custom-action-btn">Custom Action</button>
+            `;
+            document.body.appendChild(el);
+
+            let clickHandled = false;
+
+            class CustomActionComponent extends BaseComponent {
+                onCustomClick() {
+                    clickHandled = true;
+                }
+            }
+
+            loadComponents({ CustomActionComponent }, document.body);
+
+            const btn = document.getElementById('custom-action-btn');
+            btn.dispatchEvent(new window.Event('click'));
+
+            expect(clickHandled).toBe(true);
+
+            removeComponents(document.body);
+            config.set('attrPrefix', 'data');
+        });
     });
 
     test.describe('Async Component (Component.js) Dynamic Loading', () => {

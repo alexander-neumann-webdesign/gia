@@ -10,6 +10,14 @@ import { components as storeComponents } from "./store.js";
  * @param context: DOM element
  */
 
+function _comparePriority(a, b) {
+	if (!a) return 1;
+	if (!b) return -1;
+	const pA = a.constructor._gia_priority ?? a.constructor.priority ?? 0;
+	const pB = b.constructor._gia_priority ?? b.constructor.priority ?? 0;
+	return pB - pA; // Descending order (highest priority first)
+}
+
 export default function loadComponents(components = {}, context = document.documentElement) {
 	let hasComponents = false;
 
@@ -66,7 +74,7 @@ export default function loadComponents(components = {}, context = document.docum
 		}
 	}
 
-	if (context instanceof Element && context.hasAttribute(attrName)) {
+	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
 		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
 		const instance = storeComponents.get(context);
 
@@ -81,14 +89,20 @@ export default function loadComponents(components = {}, context = document.docum
 		}
 	}
 
+	// ⚡ BOLT OPTIMIZATION: Only sort if at least one component defines custom priority.
+	// This skips Array.sort() and preserves native DOM order with zero allocation in the common case.
 	if (initialisedComponents.length > 1) {
-		initialisedComponents.sort((a, b) => {
-			if (!a) return 1;
-			if (!b) return -1;
-			const pA = a.constructor._gia_priority ?? a.constructor.priority ?? 0;
-			const pB = b.constructor._gia_priority ?? b.constructor.priority ?? 0;
-			return pB - pA; // Descending order (highest priority first)
-		});
+		let hasCustomPriority = false;
+		for (let i = 0; i < initialisedComponents.length; i++) {
+			const c = initialisedComponents[i];
+			if (c && (c.constructor._gia_priority !== undefined || c.constructor.priority !== undefined)) {
+				hasCustomPriority = true;
+				break;
+			}
+		}
+		if (hasCustomPriority) {
+			initialisedComponents.sort(_comparePriority);
+		}
 	}
 
 	// call _load/require/mount

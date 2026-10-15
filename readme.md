@@ -56,9 +56,9 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.7 KB (20.6 KB) | ~6.6 KB (20.4 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.1 KB (18.9 KB) | ~6.0 KB (18.7 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.5 KB (10.3 KB) | ~3.4 KB (10.1 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, observers, and EventBus. | ~6.8 KB (20.4 KB) | ~6.7 KB (20.3 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver and `data-action` auto-binding. | ~6.2 KB (18.6 KB) | ~6.1 KB (18.4 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~3.6 KB (9.9 KB) | ~3.5 KB (9.7 KB) |
 
 ```javascript
 // Full build with modern ESM
@@ -218,10 +218,14 @@ class Gallery extends Component {
 
 ### State & Reactivity (`this.setState`)
 
-State should be mutated using `this.setState()`. When state properties change, Gia queues a callback to `stateChange()` in the next animation frame, preventing layout thrashing.
+State should be mutated using `this.setState()`. When state properties change, Gia queues a callback to `stateChange()` in the next animation frame, preventing layout thrashing. `this.setState` accepts an object or a functional updater to prevent race conditions during rapid state transitions:
 
 ```javascript
+// Object syntax
 this.setState({ activeTab: 2 });
+
+// Functional updater syntax (safe against stale closure race conditions)
+this.setState((prevState) => ({ count: prevState.count + 1 }));
 ```
 
 #### State-to-Attribute Auto-binding
@@ -552,7 +556,10 @@ When integrating Gia into complex architectures, micro-frontends, design systems
 2. **Shared Animation & Batch Scheduler (`window.__gia_scheduler__`)**:
    FastDOM `measure()` and `mutate()` operations share a unified frame-loop queue. Multiple bundles cooperate within a single `requestAnimationFrame` tick, eliminating layout thrashing and animation stutter.
 
-3. **Non-Destructive UMD Merging (`extend: true`)**:
+3. **Shared Universal Event Bus (`window.__gia_eventbus__`)**:
+   The `eventbus` emitter is shared globally across all bundles via `globalThis.__gia_eventbus__`. Micro-frontends or third-party embeddable widgets importing different Gia bundles can communicate seamlessly via `eventbus.emit()` and `eventbus.on()`.
+
+4. **Non-Destructive UMD Merging (`extend: true`)**:
    All UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) compile with Rollup/Vite's `extend: true` flag (`globalThis.gia = globalThis.gia || {}`). Loading a nano widget script tag on a page that already loaded the full Gia library will **never overwrite** `gia.Component`, `gia.eventbus`, or existing registered components.
 
 ---

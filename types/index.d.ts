@@ -111,7 +111,9 @@ export class BaseComponent<
 	unmount(): void;
 
 	getRef(ref: string, prefixed?: boolean): string;
-	setState(changes: Partial<TState>): void;
+	setState(
+		changes: Partial<TState> | ((prevState: Readonly<TState>) => Partial<TState>)
+	): void;
 	stateChange(stateChanges: Partial<TState>): void | Partial<TState>;
 
 	observeScroll(callback: (scrollData: ScrollData) => void): void;

@@ -208,6 +208,18 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(typeof testWindow.gia.BaseComponent).toBe('function');
         expect(typeof testWindow.gia.register).toBe('function');
     });
+
+    test('should share globalThis.__gia_eventbus__ across dist bundles for seamless cross-bundle communication', () => {
+        let received = null;
+
+        fullDist.eventbus.on('microfrontend-event', (data) => {
+            received = data;
+        });
+
+        miniDist.eventbus.emit('microfrontend-event', { payload: 42 });
+
+        expect(received).toEqual(expect.objectContaining({ payload: 42 }));
+    });
 });
 
 

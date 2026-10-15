@@ -216,4 +216,67 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
             console.warn = originalWarn;
         }
     });
+
+    test('should support functional setState updater (prevState) => ({ ... })', async () => {
+        let testInstance;
+        let lastReceivedChanges = null;
+
+        class FunctionalComp extends BaseComponent {
+            constructor(el) {
+                super(el);
+                this.state = { count: 0, multiplier: 2 };
+            }
+            mount() {
+                testInstance = this;
+            }
+            stateChange(changes) {
+                lastReceivedChanges = { ...changes };
+            }
+        }
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'FunctionalComp');
+        document.body.appendChild(el);
+        loadComponents({ FunctionalComp }, document.body);
+
+        // Chain functional updaters in the same tick
+        testInstance.setState((prev) => ({ count: prev.count + 1 }));
+        testInstance.setState((prev) => ({ count: prev.count + 2 }));
+
+        expect(testInstance.state.count).toBe(3);
+
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(lastReceivedChanges).toEqual({ count: 3 });
+        expect(testInstance.state.count).toBe(3);
+    });
+
+    test('should safely ignore pending state updates if component unmounts in the same frame', async () => {
+        let testInstance;
+        let stateChangeCalled = false;
+
+        class UnmountBeforeFlushComp extends BaseComponent {
+            mount() {
+                testInstance = this;
+            }
+            stateChange() {
+                stateChangeCalled = true;
+            }
+        }
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'UnmountBeforeFlushComp');
+        document.body.appendChild(el);
+        loadComponents({ UnmountBeforeFlushComp }, document.body);
+
+        // Queue a state change
+        testInstance.setState({ active: true });
+
+        // Immediately destroy instance before RAF flushes
+        testInstance._destroy();
+
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(stateChangeCalled).toBe(false);
+    });
 });
