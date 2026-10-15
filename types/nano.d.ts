@@ -5,6 +5,7 @@ import type {
 	ScrollData,
 	WindowDimensions,
 	ComponentConstructor,
+	ComponentLoader,
 } from "./index";
 
 export type {
@@ -14,6 +15,7 @@ export type {
 	ScrollData,
 	WindowDimensions,
 	ComponentConstructor,
+	ComponentLoader,
 };
 
 export {

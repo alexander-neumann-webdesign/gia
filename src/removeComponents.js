@@ -22,8 +22,8 @@ export default function removeComponents(context = document.documentElement) {
 	const components = queryAll(`[${attrName}]`, context);
 
 
-	// ⚡ BOLT OPTIMIZATION: Use standard for loop to avoid NodeList iteration overhead
-	for (let i = 0; i < components.length; i++) {
+	// ⚡ BOLT OPTIMIZATION: Reverse traversal unmounts leaf/nested components before parents (bottom-up teardown)
+	for (let i = components.length - 1; i >= 0; i--) {
 		destroyInstance(components[i]);
 	}
 

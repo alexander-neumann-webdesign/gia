@@ -18,6 +18,63 @@ function _comparePriority(a, b) {
 	return pB - pA; // Descending order (highest priority first)
 }
 
+function _instantiateOrLoad(element, componentName, ctor, components, initialisedComponents) {
+	let isClass = false;
+	if (
+		ctor.prototype &&
+		(ctor.prototype.mount !== undefined ||
+			ctor.prototype._load !== undefined ||
+			ctor.prototype.stateChange !== undefined ||
+			Function.prototype.toString.call(ctor).startsWith("class "))
+	) {
+		isClass = true;
+	}
+
+	if (isClass) {
+		const instance = createInstance(element, componentName, ctor);
+		if (instance) {
+			initialisedComponents.push(instance);
+		}
+		return;
+	}
+
+	let result;
+	try {
+		result = ctor(element);
+	} catch (_err) {
+		const instance = createInstance(element, componentName, ctor);
+		if (instance) {
+			initialisedComponents.push(instance);
+		}
+		return;
+	}
+
+	if (result && typeof result.then === "function") {
+		result
+			.then((mod) => {
+				if (!element.isConnected) return;
+				const Resolved =
+					(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
+				if (typeof Resolved === "function") {
+					components[componentName] = Resolved;
+					const inst = createInstance(element, componentName, Resolved);
+					if (inst) {
+						inst._load();
+					}
+				}
+			})
+			.catch((err) => {
+				console.error(`Gia: Failed to lazy load component "${componentName}".`, err);
+			});
+	} else if (typeof result === "function") {
+		components[componentName] = result;
+		const instance = createInstance(element, componentName, result);
+		if (instance) {
+			initialisedComponents.push(instance);
+		}
+	}
+}
+
 export default function loadComponents(components = {}, context = document.documentElement) {
 	// If invoked in <head> while DOM is still loading, automatically defer to DOMContentLoaded
 	if (
@@ -100,7 +157,7 @@ export default function loadComponents(components = {}, context = document.docum
 			}
 
 			if (typeof ctor === "function") {
-				initialisedComponents.push(createInstance(element, componentName, ctor));
+				_instantiateOrLoad(element, componentName, ctor, components, initialisedComponents);
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);
 			}
@@ -119,7 +176,7 @@ export default function loadComponents(components = {}, context = document.docum
 			}
 
 			if (typeof ctor === "function") {
-				initialisedComponents.push(createInstance(context, componentName, ctor));
+				_instantiateOrLoad(context, componentName, ctor, components, initialisedComponents);
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);
 			}

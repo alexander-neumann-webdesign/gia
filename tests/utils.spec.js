@@ -133,6 +133,27 @@ test.describe('DOM and Functional Utilities (utils.js)', () => {
         expect(removeClass(null, 'foo')).toBe(null);
     });
 
+    test('addClass, removeClass, and toggleClass should support space-separated multi-token class strings', () => {
+        const el = document.createElement('div');
+        addClass(el, 'btn btn-primary active');
+        expect(el.classList.contains('btn')).toBe(true);
+        expect(el.classList.contains('btn-primary')).toBe(true);
+        expect(el.classList.contains('active')).toBe(true);
+
+        removeClass(el, 'btn-primary active');
+        expect(el.classList.contains('btn')).toBe(true);
+        expect(el.classList.contains('btn-primary')).toBe(false);
+        expect(el.classList.contains('active')).toBe(false);
+
+        toggleClass(el, 'foo bar');
+        expect(el.classList.contains('foo')).toBe(true);
+        expect(el.classList.contains('bar')).toBe(true);
+
+        toggleClass(el, 'foo bar', false);
+        expect(el.classList.contains('foo')).toBe(false);
+        expect(el.classList.contains('bar')).toBe(false);
+    });
+
     test('addClass should treat elements with a length property (like form) as a single node', () => {
         document.body.innerHTML = `
             <form id="test-form">

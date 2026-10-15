@@ -22,7 +22,11 @@ export default class Component extends BaseComponent {
 				req.then(() => {
 					if (this.element && !this._isDestroyed) {
 						this._isMounted = true;
-						this._mountCleanup = this.mount();
+						try {
+							this._mountCleanup = this.mount();
+						} catch (err) {
+							console.error(`Gia: Error in mount for "${this._name}".`, err);
+						}
 					}
 				}).catch((err) => {
 					console.error(`Gia: Error loading dependencies for "${this._name}".`, err);
@@ -30,7 +34,11 @@ export default class Component extends BaseComponent {
 			} else {
 				if (this.element && !this._isDestroyed) {
 					this._isMounted = true;
-					this._mountCleanup = this.mount();
+					try {
+						this._mountCleanup = this.mount();
+					} catch (err) {
+						console.error(`Gia: Error in mount for "${this._name}".`, err);
+					}
 				}
 			}
 		} catch (err) {

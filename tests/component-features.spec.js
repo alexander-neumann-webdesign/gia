@@ -483,5 +483,153 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
 
             destroyInstance(el);
         });
+
+        test('this.listen should attach event listeners and auto-cleanup on unmount', () => {
+            const el = document.createElement('div');
+            const btn = document.createElement('button');
+            el.appendChild(btn);
+            document.body.appendChild(el);
+
+            let elementClicks = 0;
+            let buttonClicks = 0;
+            let windowResizes = 0;
+
+            class ListenerComponent extends BaseComponent {
+                mount() {
+                    // Test 2-arg: event on this.element
+                    this.listen('click', () => {
+                        elementClicks++;
+                    });
+
+                    // Test 3-arg: target element
+                    this.listen(btn, 'click', () => {
+                        buttonClicks++;
+                    });
+
+                    // Test 3-arg: window
+                    this.listen(window, 'resize', () => {
+                        windowResizes++;
+                    });
+                }
+            }
+
+            const instance = createInstance(el, 'ListenerComponent', ListenerComponent);
+            instance._load();
+
+            btn.click();
+            expect(buttonClicks).toBe(1);
+            expect(elementClicks).toBe(1); // bubbled to el
+
+            window.dispatchEvent(new window.Event('resize'));
+            expect(windowResizes).toBe(1);
+
+            // Unmount component
+            destroyInstance(el);
+
+            // Clicks and events after unmount should NOT trigger callbacks
+            btn.click();
+            window.dispatchEvent(new window.Event('resize'));
+            expect(buttonClicks).toBe(1);
+            expect(elementClicks).toBe(1);
+            expect(windowResizes).toBe(1);
+        });
+
+        test('config singleton should attach to globalThis.__gia_config__ for cross-bundle sharing', () => {
+            expect(globalThis.__gia_config__).toBeDefined();
+            expect(config).toBe(globalThis.__gia_config__);
+        });
+
+        test('loadComponents should be resilient if a component mount() throws an error', () => {
+            document.body.innerHTML = `
+                <div data-component="FailingComponent"></div>
+                <div data-component="SucceedingComponent"></div>
+            `;
+
+            let succeedMounted = false;
+
+            class FailingComponent extends BaseComponent {
+                mount() {
+                    throw new Error('Intentional crash in mount');
+                }
+            }
+
+            class SucceedingComponent extends BaseComponent {
+                mount() {
+                    succeedMounted = true;
+                }
+            }
+
+            // Suppress console.error during test
+            const originalError = console.error;
+            console.error = () => {};
+
+            try {
+                loadComponents({
+                    FailingComponent,
+                    SucceedingComponent,
+                });
+
+                expect(succeedMounted).toBe(true);
+            } finally {
+                console.error = originalError;
+            }
+        });
+
+        test('loadComponents should support async dynamic import loaders (() => import(...))', async () => {
+            document.body.innerHTML = `
+                <div data-component="LazyComponent"></div>
+            `;
+
+            let lazyMounted = false;
+
+            class LazyComponentClass extends BaseComponent {
+                mount() {
+                    lazyMounted = true;
+                }
+            }
+
+            loadComponents({
+                LazyComponent: () => Promise.resolve({ default: LazyComponentClass }),
+            });
+
+            expect(lazyMounted).toBe(false);
+
+            // Wait for import resolution microtask
+            await new Promise((r) => setTimeout(r, 20));
+
+            expect(lazyMounted).toBe(true);
+        });
+
+        test('removeComponents should unmount children before parents in bottom-up order', () => {
+            document.body.innerHTML = `
+                <div id="parent" data-component="ParentComp">
+                    <div id="child" data-component="ChildComp"></div>
+                </div>
+            `;
+
+            const unmountOrder = [];
+
+            class ParentComp extends BaseComponent {
+                unmount() {
+                    unmountOrder.push('parent');
+                }
+            }
+
+            class ChildComp extends BaseComponent {
+                unmount() {
+                    unmountOrder.push('child');
+                }
+            }
+
+            loadComponents({
+                ParentComp,
+                ChildComp,
+            });
+
+            removeComponents(document.getElementById('parent'));
+
+            // Child must unmount before parent
+            expect(unmountOrder).toEqual(['child', 'parent']);
+        });
     });
 });

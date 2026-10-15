@@ -10,7 +10,7 @@ class EventBus {
 		this._iterating = Object.create(null);
 	}
 
-	emit(event, eventObject = {}) {
+	emit(event, eventObject) {
 		if (config.get("log")) {
 			console.info(`Emitting event '${event}'`);
 		}
@@ -18,9 +18,11 @@ class EventBus {
 		const handlers = this.listeners[event];
 		if (!handlers || handlers.length === 0) return;
 
-		// ⚡ OPTIMIZATION: Mutate eventObject instead of using spread operator
-		// to avoid GC allocation overhead on every emit.
-		if (eventObject && typeof eventObject === 'object') {
+		// ⚡ BOLT OPTIMIZATION: Mutate or initialize eventObject lazily only when listeners exist
+		// to avoid GC allocation overhead on emissions with zero listeners.
+		if (!eventObject || typeof eventObject !== "object") {
+			eventObject = { _name: event };
+		} else {
 			eventObject._name = event;
 		}
 

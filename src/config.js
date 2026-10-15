@@ -1,6 +1,11 @@
-/**
- * Config for setting and changing global settings
- */
+const globalObj =
+	typeof globalThis !== "undefined"
+		? globalThis
+		: typeof window !== "undefined"
+		? window
+		: typeof global !== "undefined"
+		? global
+		: {};
 
 class Config {
 	_options = {
@@ -19,4 +24,6 @@ class Config {
 	}
 }
 
-export default new Config();
+const configInstance = globalObj.__gia_config__ || (globalObj.__gia_config__ = new Config());
+
+export default configInstance;

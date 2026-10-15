@@ -44,6 +44,10 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 
 		this.setState({ count: 1 });
 
+		// Test listen helper
+		this.listen('click', () => {});
+		this.listen(window, 'resize', () => {});
+
 		// Test mount cleanup return
 		return () => {
 			// Teardown
@@ -94,5 +98,9 @@ register(Counter, { priority: 10 });
 nanoRegister(MinimalComp);
 loadComponents();
 loadComponents(document.body);
+loadComponents({
+	Counter,
+	LazyCounter: () => Promise.resolve(Counter),
+});
 nanoLoadComponents(document.body);
 

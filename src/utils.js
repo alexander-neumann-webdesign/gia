@@ -15,24 +15,54 @@ export function queryAll(selector, context = document) {
 }
 
 export function toggleClass(element, className, condition = null) {
-	if (condition === null) {
-		element.classList.toggle(className);
+	if (!element || !className) return;
+	const hasSpaces = typeof className === "string" && className.indexOf(" ") !== -1;
+	if (hasSpaces) {
+		const classes = className.trim().split(/\s+/);
+		for (let i = 0; i < classes.length; i++) {
+			const cls = classes[i];
+			if (cls) {
+				if (condition === null) {
+					element.classList.toggle(cls);
+				} else {
+					element.classList.toggle(cls, !!condition);
+				}
+			}
+		}
 	} else {
-		element.classList.toggle(className, !!condition);
+		if (condition === null) {
+			element.classList.toggle(className);
+		} else {
+			element.classList.toggle(className, !!condition);
+		}
+	}
+}
+
+function _applyClassAction(node, className, action) {
+	if (!node || !node.classList) return;
+	const hasSpaces = typeof className === "string" && className.indexOf(" ") !== -1;
+	if (hasSpaces) {
+		const classes = className.trim().split(/\s+/);
+		for (let i = 0; i < classes.length; i++) {
+			const cls = classes[i];
+			if (cls) node.classList[action](cls);
+		}
+	} else {
+		node.classList[action](className);
 	}
 }
 
 function modifyClass(nodes, className, action) {
-	if (!nodes) return nodes;
+	if (!nodes || !className) return nodes;
 	// ⚡ BOLT OPTIMIZATION: Avoid wrapping single nodes in an array [nodes] to prevent
 	// unnecessary array memory allocations. We check nodeType to ensure elements
 	// with a length property (like <form> or <select>) are still treated as single nodes.
 	if (nodes.length !== undefined && nodes.nodeType === undefined) {
 		for (let i = 0; i < nodes.length; i++) {
-			nodes[i].classList[action](className);
+			_applyClassAction(nodes[i], className, action);
 		}
 	} else {
-		nodes.classList[action](className);
+		_applyClassAction(nodes, className, action);
 	}
 	return nodes;
 }
@@ -45,18 +75,32 @@ export function addClass(nodes, className) {
 	return modifyClass(nodes, className, "add");
 }
 
+const defaultTriggerOptions = {
+	bubbles: true,
+	cancelable: true,
+	detail: null,
+};
+
 export function triggerEvent(
 	element,
 	eventType,
 	params = null,
-	options = {
-		bubbles: true,
-		cancelable: true,
-		detail: null,
-	},
+	options = null,
 ) {
-	options.detail = params;
-	const event = new CustomEvent(eventType, options);
+	let eventInit;
+	if (options) {
+		options.detail = params;
+		eventInit = options;
+	} else if (params === null) {
+		eventInit = defaultTriggerOptions;
+	} else {
+		eventInit = {
+			bubbles: true,
+			cancelable: true,
+			detail: params,
+		};
+	}
+	const event = new CustomEvent(eventType, eventInit);
 	element.dispatchEvent(event);
 }
 

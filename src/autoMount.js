@@ -28,12 +28,13 @@ function handleMutations(mutations) {
         for (let i = 0; i < mutation.removedNodes.length; i++) {
             const node = mutation.removedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
+                // ⚡ BOLT OPTIMIZATION: Destroy nested child components first in reverse DOM order (bottom-up teardown)
+                const nestedComponents = queryAll(`[${attrName}]`, node);
+                for (let j = nestedComponents.length - 1; j >= 0; j--) {
+                    destroyInstance(nestedComponents[j]);
+                }
                 if (node.hasAttribute(attrName)) {
                     destroyInstance(node);
-                }
-                const nestedComponents = queryAll(`[${attrName}]`, node);
-                for (let j = 0; j < nestedComponents.length; j++) {
-                    destroyInstance(nestedComponents[j]);
                 }
             }
         }
@@ -90,7 +91,8 @@ export function initObserver() {
 }
 
 // Intercept config.set to dynamically start/stop observer when setting 'autoMountComponents'
-if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
+if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && !config._hasAutoMountHook) {
+    config._hasAutoMountHook = true;
     const originalConfigSet = config.set;
     config.set = function (name, value) {
         originalConfigSet.call(this, name, value);

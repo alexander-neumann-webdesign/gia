@@ -125,4 +125,17 @@ test.describe('EventBus', () => {
         expect(globalThis.__gia_eventbus__).toBeDefined();
         expect(eventbus).toBe(globalThis.__gia_eventbus__);
     });
+
+    test('should handle emit with no listeners and emit without eventObject safely', async () => {
+        // Zero listeners - should not throw
+        expect(() => eventbus.emit('non-existent-event')).not.toThrow();
+
+        // Listen without passing payload
+        let received = null;
+        eventbus.on('no-payload-event', (evt) => {
+            received = evt;
+        });
+        eventbus.emit('no-payload-event');
+        expect(received).toEqual({ _name: 'no-payload-event' });
+    });
 });

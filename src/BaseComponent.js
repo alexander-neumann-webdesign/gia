@@ -36,6 +36,7 @@ const globalExcludedMethods = new Set([
 	"unobserveResize",
 	"observeIntersection",
 	"unobserveIntersection",
+	"listen",
 ]);
 
 const protoMethodsCache = new WeakMap();
@@ -55,7 +56,7 @@ export default class BaseComponent {
 		this._isDestroyed = false;
 		this._abortController = null;
 		this._mountCleanup = null;
-		this._flushStateChanges = this._flushStateChanges.bind(this);
+		this._activeListeners = null;
 		this._autoBindFunctions();
 
 		if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && config.get("autoBindActions")) {
@@ -210,7 +211,11 @@ export default class BaseComponent {
 	_load() {
 		if (this.element && !this._isDestroyed) {
 			this._isMounted = true;
-			this._mountCleanup = this.mount();
+			try {
+				this._mountCleanup = this.mount();
+			} catch (err) {
+				console.error(`Gia: Error in mount for "${this._name}".`, err);
+			}
 		}
 	}
 
@@ -220,6 +225,19 @@ export default class BaseComponent {
 
 		if (this._abortController) {
 			this._abortController.abort();
+		}
+
+		if (this._activeListeners) {
+			for (let i = 0; i < this._activeListeners.length; i += 4) {
+				const target = this._activeListeners[i];
+				const event = this._activeListeners[i + 1];
+				const handler = this._activeListeners[i + 2];
+				const opts = this._activeListeners[i + 3];
+				if (target && typeof target.removeEventListener === "function") {
+					target.removeEventListener(event, handler, opts);
+				}
+			}
+			this._activeListeners = null;
 		}
 
 		if (typeof this._mountCleanup === "function") {
@@ -320,6 +338,40 @@ export default class BaseComponent {
 
 	loadStyle(styleId) {
 		return loadStyle(styleId);
+	}
+
+	listen(target, event, handler, options) {
+		let el = target;
+		let evt = event;
+		let fn = handler;
+		let opts = options;
+
+		if (typeof target === "string" && typeof event === "function") {
+			el = this.element;
+			evt = target;
+			fn = event;
+			opts = handler;
+		}
+
+		if (!el || typeof el.addEventListener !== "function" || typeof fn !== "function") {
+			return;
+		}
+
+		let finalOpts;
+		if (opts && typeof opts === "object") {
+			finalOpts = opts.signal ? opts : { ...opts, signal: this.signal };
+		} else if (typeof opts === "boolean") {
+			finalOpts = { capture: opts, signal: this.signal };
+		} else {
+			finalOpts = this.signal ? { signal: this.signal } : undefined;
+		}
+
+		el.addEventListener(evt, fn, finalOpts);
+
+		if (!this._activeListeners) {
+			this._activeListeners = [];
+		}
+		this._activeListeners.push(el, evt, fn, finalOpts);
 	}
 
 	_autoBindFunctions() {

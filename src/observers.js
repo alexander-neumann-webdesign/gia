@@ -9,7 +9,6 @@ const scrollCallbacks = [];
 const isMobileBrowser =
 	typeof navigator !== "undefined" &&
 	!!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
-const resizeEventName = isMobileBrowser ? "orientationchange" : "resize";
 const windowResizeCallbacks = [];
 let globalLenisInstance = null;
 let lastScrollY = 0;
@@ -209,7 +208,10 @@ export function observeWindowResize(instance, callback) {
 
 	if (!globalResizeListenerBound) {
 		globalResizeListenerBound = true;
-		window.addEventListener(resizeEventName, handleGlobalResize, { passive: true });
+		window.addEventListener("resize", handleGlobalResize, { passive: true });
+		if (isMobileBrowser) {
+			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });
+		}
 	}
 
 	if (!instance._observedWindowResizeCallbacks) {
@@ -241,7 +243,10 @@ export function unobserveWindowResize(instance, callback) {
 
 	if (windowResizeCallbacks.length === 0 && globalResizeListenerBound) {
 		globalResizeListenerBound = false;
-		window.removeEventListener(resizeEventName, handleGlobalResize);
+		window.removeEventListener("resize", handleGlobalResize);
+		if (isMobileBrowser) {
+			window.removeEventListener("orientationchange", handleGlobalResize);
+		}
 	}
 }
 

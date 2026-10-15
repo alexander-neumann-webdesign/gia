@@ -121,3 +121,11 @@
 ## 2026-10-15 - Automatic DOMContentLoaded Deferral and Head-Safe MutationObserver in UMD
 **Learning:** In traditional HTML pages, UMD scripts are placed in `<head>`. Calling `loadComponents()` while `document.readyState === "loading"` yields empty querySelector results, and attempting `MutationObserver.observe(document.body)` throws a fatal TypeError because `document.body` is null before `<head>` finishes parsing.
 **Action:** Automatically defer `loadComponents()` to the `DOMContentLoaded` event when `document.readyState === "loading"`, observe `document.documentElement` instead of `document.body`, and auto-resolve un-registered global classes directly from `window[componentName]`.
+
+## 2026-10-15 - Zero-Allocation Event Emitter and Method-Call Optimization
+**Learning:** Default function parameters like `emit(event, eventObject = {})` allocate an empty object on *every* call prior to checking whether any event listeners actually exist. Furthermore, calling `.bind(this)` in constructors creates redundant bound function closures when the method is already invoked on the instance (`comp._flushStateChanges()`).
+**Action:** Lazily initialize payload objects only after validating that listeners exist, eliminate redundant bound function instances in constructors, and offer `this.listen()` with automatic `signal: this.signal` abort bindings to eliminate memory leaks and manual listener tracking in `unmount()`.
+
+## 2026-10-15 - Bottom-Up Inside-Out Subtree Teardown
+**Learning:** Tearing down DOM component trees from top-to-bottom can cause race conditions or errors if parent teardown logic queries or depends on child component state/nodes that haven't detached their observers or timers yet.
+**Action:** Traverse child components in reverse DOM order (`for (let i = list.length - 1; i >= 0; i--)`), destroying nested components before their parent containers.

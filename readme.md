@@ -154,6 +154,11 @@ loadComponents(); // Discovers and mounts all registered components across the p
 
 // Approach B: Explicit dictionary scoping
 loadComponents({ Counter });
+
+// Approach C: On-demand dynamic code-splitting via native dynamic imports
+loadComponents({
+	Counter: () => import("./Counter.js"),
+});
 ```
 
 ---
@@ -259,15 +264,26 @@ This allows you to control component styling entirely through CSS, removing the 
 
 Every Gia component provides a lazily instantiated `AbortSignal` via `this.signal` that is automatically aborted whenever the component unmounts. This completely eliminates manual event listener cleanup and memory leaks.
 
-#### 1. Zero-Boilerplate Event Listeners
-Modern browser DOM APIs accept `{ signal }` in `addEventListener`. When the component element is removed from the DOM, all listeners bound with `this.signal` are instantly detached by the browser engine without needing manual `removeEventListener()` calls:
+#### 1. Zero-Boilerplate Event Listeners with `this.listen()`
+You can use the built-in `this.listen()` helper method. It automatically attaches `{ signal: this.signal }` so all listeners are instantly and safely detached when the component unmounts:
 
 ```javascript
 class KeyboardNav extends Component {
 	mount() {
-		// Automatically removed when this component unmounts!
+		// 1-line leak-proof listeners that automatically unbind on unmount!
+		this.listen(window, "keydown", this.handleKey);
+		this.listen(document, "pointermove", this.handleMove);
+		this.listen("click", this.handleClick); // Target defaults to this.element
+	}
+}
+```
+
+You can also pass `this.signal` directly into standard `addEventListener`:
+
+```javascript
+class KeyboardNav extends Component {
+	mount() {
 		window.addEventListener("keydown", this.handleKey, { signal: this.signal });
-		document.addEventListener("pointermove", this.handleMove, { signal: this.signal });
 	}
 }
 ```

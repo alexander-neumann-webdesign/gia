@@ -137,6 +137,18 @@ export class BaseComponent<
 
 	loadScript(scriptId: string, globalName?: string): Promise<any>;
 	loadStyle(styleId: string): Promise<boolean>;
+
+	listen(
+		target: EventTarget,
+		event: string,
+		handler: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions
+	): void;
+	listen(
+		event: string,
+		handler: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions
+	): void;
 }
 
 /**
@@ -160,12 +172,19 @@ export type ComponentConstructor<T extends BaseComponent = BaseComponent> = {
 };
 
 /**
+ * Component loader supporting synchronous constructors and dynamic imports (() => import(...))
+ */
+export type ComponentLoader<T extends BaseComponent = BaseComponent> =
+	| ComponentConstructor<T>
+	| ((element?: Element) => Promise<{ default: ComponentConstructor<T> } | ComponentConstructor<T>> | ComponentConstructor<T>);
+
+/**
  * Initializes and mounts components found within the DOM context.
  * Can be called with (components, context), or (context) to mount globally registered components,
  * or () to mount globally registered components across document.documentElement.
  */
 export function loadComponents(
-	components?: Record<string, ComponentConstructor> | Element | Document,
+	components?: Record<string, ComponentLoader> | Element | Document,
 	context?: Element | Document
 ): void;
 
