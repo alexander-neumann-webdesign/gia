@@ -1,7 +1,7 @@
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { defineConfig } from "vite";
-import { terserPlugin, sharedEsbuildOptions } from "./vite.shared.mjs";
+import { terserPlugin, sharedEsbuildOptions, sharedRollupOptions } from "./vite.shared.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,5 +20,7 @@ export default defineConfig({
 			name: "gia",
 			fileName: (format) => `gia.nano.${format === "es" ? "mjs" : "umd.js"}`,
 		},
+		rollupOptions: sharedRollupOptions,
 	},
 });
+

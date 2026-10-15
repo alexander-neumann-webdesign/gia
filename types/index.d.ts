@@ -158,11 +158,21 @@ export type ComponentConstructor<T extends BaseComponent = BaseComponent> = {
 };
 
 /**
- * Initializes and mounts components found within the DOM context
+ * Initializes and mounts components found within the DOM context.
+ * Can be called with (components, context), or (context) to mount globally registered components,
+ * or () to mount globally registered components across document.documentElement.
  */
 export function loadComponents(
-	components?: Record<string, ComponentConstructor>,
+	components?: Record<string, ComponentConstructor> | Element | Document,
 	context?: Element | Document
+): void;
+
+/**
+ * Registers a component class with optional mounting priority
+ */
+export function register(
+	ComponentClass: ComponentConstructor,
+	options?: { priority?: number }
 ): void;
 
 /**
@@ -208,6 +218,8 @@ declare global {
 			tempWrites?: Function[];
 			wrapperPool?: Function[];
 		};
+		__gia_store__?: WeakMap<Element, BaseComponent>;
 		lenis?: any;
 	}
 }
+

@@ -57,7 +57,18 @@ export function terserPlugin(customOptions = {}) {
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_component__|__gia_scheduler__)$/,
+	reserveProps: /^(__gia_component__|__gia_scheduler__|__gia_store__)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };
+
+/**
+ * Shared Rollup options for library builds.
+ * Sets extend: true so UMD builds merge onto globalThis.gia rather than overwriting it.
+ */
+export const sharedRollupOptions = {
+	output: {
+		extend: true,
+	},
+};
+

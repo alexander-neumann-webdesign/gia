@@ -131,6 +131,35 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         expect(el.getAttribute('data-is-open')).toBe('false');
     });
 
+    test('should support setState() called in constructor before mount', async () => {
+        let testInstance;
+        class ConstructorComp extends BaseComponent {
+            constructor(element, options) {
+                super(element, options);
+                this.setState({
+                    isExpanded: false,
+                    theme: 'dark'
+                });
+            }
+            mount() {
+                testInstance = this;
+            }
+        }
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'ConstructorComp');
+        document.body.appendChild(el);
+        loadComponents({ ConstructorComp }, document.body);
+
+        expect(testInstance.state.isExpanded).toBe(false);
+        expect(testInstance.state.theme).toBe('dark');
+
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(el.getAttribute('data-is-expanded')).toBe('false');
+        expect(el.getAttribute('data-theme')).toBe('dark');
+    });
+
     test('should not trigger stateChange if setState is called with identical values', async () => {
         let stateChangeCount = 0;
         let testInstance;

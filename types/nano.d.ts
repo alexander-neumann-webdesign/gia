@@ -28,4 +28,6 @@ export {
 	removeComponents,
 	destroyInstance,
 	getComponentFromElement,
+	register,
 } from "./index";
+

@@ -24,7 +24,7 @@ function flushGlobalStateChanges() {
  * @param {object} changes - Key/value state updates
  */
 export function enqueueSetState(instance, changes) {
-	if (!instance.element || !instance._isMounted || instance._isDestroyed) return;
+	if (!instance.element || instance._isDestroyed) return;
 
 	// ⚡ BOLT OPTIMIZATION: Process attribute changes and build _pendingStateChanges
 	// inside the primary validation loop to avoid allocating an intermediate `stateChanges`

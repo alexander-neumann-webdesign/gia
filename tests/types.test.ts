@@ -12,11 +12,13 @@ import {
 	measure,
 	mutate,
 	clear,
+	register,
 } from 'gia';
 
 import {
 	BaseComponent as NanoBaseComponent,
 	loadComponents as nanoLoadComponents,
+	register as nanoRegister,
 } from 'gia/nano';
 
 interface CounterState {
@@ -87,3 +89,10 @@ debounced.cancel();
 class MinimalComp extends NanoBaseComponent {
 	mount() {}
 }
+
+register(Counter, { priority: 10 });
+nanoRegister(MinimalComp);
+loadComponents();
+loadComponents(document.body);
+nanoLoadComponents(document.body);
+

@@ -11,17 +11,29 @@ import { components as storeComponents } from "./store.js";
  */
 
 export default function loadComponents(components = {}, context = document.documentElement) {
-	if (!components) {
-		console.warn("App has no components");
-		return;
+	let hasComponents = false;
+
+	// Support calling loadComponents(contextElement)
+	if (components && (components.nodeType === 1 || components.nodeType === 9)) {
+		context = components;
+		components = {};
 	}
 
-	// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
-	// This avoids allocating an array with Object.keys() every time loadComponents is called
-	let hasComponents = false;
-	for (const _k in components) {
-		hasComponents = true;
-		break;
+	if (components) {
+		// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
+		for (const _k in components) {
+			hasComponents = true;
+			break;
+		}
+	}
+
+	// Fallback to global registry if components was omitted or empty
+	if (!hasComponents && typeof window !== "undefined" && window.gia?.components) {
+		components = window.gia.components;
+		for (const _k in components) {
+			hasComponents = true;
+			break;
+		}
 	}
 
 	if (!hasComponents) {
