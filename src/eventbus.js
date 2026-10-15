@@ -6,7 +6,7 @@ import config from "./config.js";
 
 class EventBus {
 	constructor() {
-		this.listeners = Object.create(null);
+		this._listeners = Object.create(null);
 		this._iterating = Object.create(null);
 		this._hasWildcards = 0;
 	}
@@ -41,8 +41,8 @@ class EventBus {
 			console.info(`Emitting event '${event}'`);
 		}
 
-		const handlers = this.listeners[event];
-		const globalHandlers = this._hasWildcards > 0 ? this.listeners["*"] : null;
+		const handlers = this._listeners[event];
+		const globalHandlers = this._hasWildcards > 0 ? this._listeners["*"] : null;
 
 		let hasAny = (handlers && handlers.length > 0) || (globalHandlers && globalHandlers.length > 0);
 
@@ -58,7 +58,7 @@ class EventBus {
 		if (!hasAny && sep !== null) {
 			let idx = 0;
 			while ((idx = event.indexOf(sep, idx)) !== -1) {
-				const ph = this.listeners[event.substring(0, idx + 1) + "*"];
+				const ph = this._listeners[event.substring(0, idx + 1) + "*"];
 				if (ph && ph.length > 0) {
 					hasAny = true;
 					break;
@@ -85,7 +85,7 @@ class EventBus {
 			let idx = 0;
 			while ((idx = event.indexOf(sep, idx)) !== -1) {
 				const prefixKey = event.substring(0, idx + 1) + "*";
-				const ph = this.listeners[prefixKey];
+				const ph = this._listeners[prefixKey];
 				if (ph && ph.length > 0) {
 					this._dispatchToHandlers(prefixKey, ph, eventObject);
 				}
@@ -109,8 +109,8 @@ class EventBus {
 			this._hasWildcards++;
 		}
 
-		if (!this.listeners[event]) {
-			this.listeners[event] = [];
+		if (!this._listeners[event]) {
+			this._listeners[event] = [];
 		}
 
 		let actualHandler = handler;
@@ -135,7 +135,7 @@ class EventBus {
 			);
 		}
 
-		this.listeners[event].push(actualHandler);
+		this._listeners[event].push(actualHandler);
 	}
 
 	once(event, handler, options = {}) {
@@ -146,7 +146,7 @@ class EventBus {
 	off(event, handler) {
 		if (!handler) {
 			// Clear all listeners for this event if no handler provided
-			const handlers = this.listeners[event];
+			const handlers = this._listeners[event];
 			if (handlers) {
 				if (event.indexOf("*") !== -1) {
 					for (let i = 0; i < handlers.length; i++) {
@@ -166,7 +166,7 @@ class EventBus {
 			return;
 		}
 
-		const handlers = this.listeners[event];
+		const handlers = this._listeners[event];
 		if (!handlers) return;
 
 		let targetHandler = handler;

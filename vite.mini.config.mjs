@@ -15,7 +15,7 @@ export default defineConfig({
 	build: {
 		emptyOutDir: false, // Don't wipe the main build files
 		lib: {
-			entry: resolve(__dirname, "lib/main.js"),
+			entry: resolve(__dirname, "lib/mini.js"),
 			name: "gia",
 			fileName: (format) => `gia.mini.${format === "es" ? "mjs" : "umd.js"}`,
 		},

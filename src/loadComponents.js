@@ -18,13 +18,15 @@ function _comparePriority(a, b) {
 	return pB - pA; // Descending order (highest priority first)
 }
 
+function _isConnected(element) {
+	return element.isConnected !== undefined
+		? element.isConnected
+		: element.ownerDocument && element.ownerDocument.contains(element);
+}
+
 function _mountWhenVisible(element, fn) {
 	if (typeof IntersectionObserver === "undefined") {
-		const isConnected =
-			element.isConnected !== undefined
-				? element.isConnected
-				: element.ownerDocument && element.ownerDocument.contains(element);
-		if (isConnected) fn();
+		if (_isConnected(element)) fn();
 		return;
 	}
 	const observer = new IntersectionObserver(
@@ -33,13 +35,7 @@ function _mountWhenVisible(element, fn) {
 				if (entries[i].isIntersecting) {
 					observer.unobserve(element);
 					observer.disconnect();
-					const isConnected =
-						element.isConnected !== undefined
-							? element.isConnected
-							: element.ownerDocument && element.ownerDocument.contains(element);
-					if (isConnected) {
-						fn();
-					}
+					if (_isConnected(element)) fn();
 					break;
 				}
 			}
@@ -57,13 +53,7 @@ function _mountWhenIdle(element, fn) {
 			? requestIdleCallback
 			: (cb) => setTimeout(cb, 50);
 	schedule(() => {
-		const isConnected =
-			element.isConnected !== undefined
-				? element.isConnected
-				: element.ownerDocument && element.ownerDocument.contains(element);
-		if (isConnected) {
-			fn();
-		}
+		if (_isConnected(element)) fn();
 	});
 }
 
@@ -88,6 +78,18 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 		}
 	}
 
+	function _initInstance(cls) {
+		const instance = createInstance(element, componentName, cls);
+		if (instance) {
+			if (initialisedComponents) {
+				initialisedComponents.push(instance);
+			} else {
+				instance._load();
+			}
+		}
+		return instance;
+	}
+
 	let isClass = false;
 	if (
 		ctor.prototype &&
@@ -100,14 +102,7 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	}
 
 	if (isClass) {
-		const instance = createInstance(element, componentName, ctor);
-		if (instance) {
-			if (initialisedComponents) {
-				initialisedComponents.push(instance);
-			} else {
-				instance._load();
-			}
-		}
+		_initInstance(ctor);
 		return;
 	}
 
@@ -115,25 +110,14 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	try {
 		result = ctor(element);
 	} catch (_err) {
-		const instance = createInstance(element, componentName, ctor);
-		if (instance) {
-			if (initialisedComponents) {
-				initialisedComponents.push(instance);
-			} else {
-				instance._load();
-			}
-		}
+		_initInstance(ctor);
 		return;
 	}
 
 	if (result && typeof result.then === "function") {
 		result
 			.then((mod) => {
-				const isConnected =
-					element.isConnected !== undefined
-						? element.isConnected
-						: element.ownerDocument && element.ownerDocument.contains(element);
-				if (!isConnected) return;
+				if (!_isConnected(element)) return;
 				const Resolved =
 					(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
 				if (typeof Resolved === "function") {
@@ -149,14 +133,7 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 			});
 	} else if (typeof result === "function") {
 		components[componentName] = result;
-		const instance = createInstance(element, componentName, result);
-		if (instance) {
-			if (initialisedComponents) {
-				initialisedComponents.push(instance);
-			} else {
-				instance._load();
-			}
-		}
+		_initInstance(result);
 	}
 }
 

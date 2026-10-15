@@ -128,7 +128,7 @@ function getIntersectionObserverData(options) {
 			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
 			for (let i = 0; i < entries.length; i++) {
 				const entry = entries[i];
-				const callbacks = observerData.callbacks.get(entry.target);
+				const callbacks = observerData._callbacks.get(entry.target);
 				if (callbacks) {
 					_observerEntryArr[0] = entry;
 					for (let j = callbacks.length - 1; j >= 0; j--) {
@@ -139,10 +139,10 @@ function getIntersectionObserverData(options) {
 		}, options);
 
 		observerData = {
-			observer,
-			callbacks: new WeakMap(),
-			nodeMap: currentMap,
-			elementsCount: 0,
+			_observer: observer,
+			_callbacks: new WeakMap(),
+			_nodeMap: currentMap,
+			_elementsCount: 0,
 		};
 		currentMap.set("data", observerData);
 	}
@@ -362,12 +362,12 @@ export function observeIntersection(instance, element, callback, options = {}) {
 	const cleanOptions = options && options.once ? { ...options, once: undefined } : options;
 	const observerData = getIntersectionObserverData(cleanOptions);
 
-	let oDataCbs = observerData.callbacks.get(element);
+	let oDataCbs = observerData._callbacks.get(element);
 	if (!oDataCbs) {
 		oDataCbs = [];
-		observerData.callbacks.set(element, oDataCbs);
-		observerData.observer.observe(element);
-		observerData.elementsCount++;
+		observerData._callbacks.set(element, oDataCbs);
+		observerData._observer.observe(element);
+		observerData._elementsCount++;
 	}
 	if (oDataCbs.indexOf(actualCallback) === -1) {
 		oDataCbs.push(actualCallback);
@@ -407,8 +407,8 @@ function _processIntersectionData(instance, element, callback, componentCallback
 			const targetCb = componentCallbacks[idx];
 			componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
 			componentCallbacks.pop();
-			if (observerData && observerData.callbacks.has(element)) {
-				const globalCbs = observerData.callbacks.get(element);
+			if (observerData && observerData._callbacks.has(element)) {
+				const globalCbs = observerData._callbacks.get(element);
 				const gIdx = globalCbs.indexOf(targetCb);
 				if (gIdx !== -1) {
 					globalCbs[gIdx] = globalCbs[globalCbs.length - 1];
@@ -417,8 +417,8 @@ function _processIntersectionData(instance, element, callback, componentCallback
 			}
 		}
 	} else {
-		if (observerData && observerData.callbacks.has(element)) {
-			const globalCbs = observerData.callbacks.get(element);
+		if (observerData && observerData._callbacks.has(element)) {
+			const globalCbs = observerData._callbacks.get(element);
 			for (let i = 0; i < componentCallbacks.length; i++) {
 				const cb = componentCallbacks[i];
 				const gIdx = globalCbs.indexOf(cb);
@@ -436,17 +436,17 @@ function _processIntersectionData(instance, element, callback, componentCallback
 	}
 
 	if (observerData) {
-		const globalCbs = observerData.callbacks.get(element);
+		const globalCbs = observerData._callbacks.get(element);
 		if (globalCbs && globalCbs.length === 0) {
-			observerData.callbacks.delete(element);
-			observerData.observer.unobserve(element);
-			observerData.elementsCount--;
+			observerData._callbacks.delete(element);
+			observerData._observer.unobserve(element);
+			observerData._elementsCount--;
 		}
 
-		if (observerData.elementsCount === 0) {
-			observerData.observer.disconnect();
-			if (observerData.nodeMap) {
-				observerData.nodeMap.delete("data");
+		if (observerData._elementsCount === 0) {
+			observerData._observer.disconnect();
+			if (observerData._nodeMap) {
+				observerData._nodeMap.delete("data");
 			}
 		}
 	}
@@ -492,12 +492,12 @@ export function observeMediaQuery(instance, query, callback) {
 			mql.addListener(handler);
 		}
 
-		item = { mql, callbacks, handler };
+		item = { _mql: mql, _callbacks: callbacks, _handler: handler };
 		mediaQueryLists.set(query, item);
 	}
 
-	if (item.callbacks.indexOf(callback) === -1) {
-		item.callbacks.push(callback);
+	if (item._callbacks.indexOf(callback) === -1) {
+		item._callbacks.push(callback);
 	}
 
 	if (!instance._observedMediaQueries) {
@@ -514,7 +514,7 @@ export function observeMediaQuery(instance, query, callback) {
 
 	// Trigger immediately with initial match state
 	try {
-		callback(item.mql.matches, item.mql);
+		callback(item._mql.matches, item._mql);
 	} catch (e) {
 		console.error(e);
 	}
@@ -553,27 +553,27 @@ export function unobserveMediaQuery(instance, query, callback = null) {
 	}
 
 	if (callback) {
-		const idx = item.callbacks.indexOf(callback);
+		const idx = item._callbacks.indexOf(callback);
 		if (idx !== -1) {
-			item.callbacks.splice(idx, 1);
+			item._callbacks.splice(idx, 1);
 		}
 	} else if (instance && instance._observedMediaQueries) {
 		const compCbs = instance._observedMediaQueries.get(query);
 		if (compCbs) {
 			for (let i = 0; i < compCbs.length; i++) {
-				const idx = item.callbacks.indexOf(compCbs[i]);
+				const idx = item._callbacks.indexOf(compCbs[i]);
 				if (idx !== -1) {
-					item.callbacks.splice(idx, 1);
+					item._callbacks.splice(idx, 1);
 				}
 			}
 		}
 	}
 
-	if (item.callbacks.length === 0) {
-		if (item.mql.removeEventListener) {
-			item.mql.removeEventListener("change", item.handler);
-		} else if (item.mql.removeListener) {
-			item.mql.removeListener(item.handler);
+	if (item._callbacks.length === 0) {
+		if (item._mql.removeEventListener) {
+			item._mql.removeEventListener("change", item._handler);
+		} else if (item._mql.removeListener) {
+			item._mql.removeListener(item._handler);
 		}
 		mediaQueryLists.delete(query);
 	}

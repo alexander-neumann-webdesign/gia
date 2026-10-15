@@ -19,40 +19,11 @@ import {
 	cleanupComponentObservers,
 } from "./observers.js";
 
-const globalExcludedMethods = new Set([
-	"constructor",
-	"require",
-	"mount",
-	"unmount",
-	"getRef",
-	"setState",
-	"stateChange",
-	"loadScript",
-	"loadStyle",
-	"signal",
-	"isMounted",
-	"observeScroll",
-	"unobserveScroll",
-	"observeWindowResize",
-	"unobserveWindowResize",
-	"observeResize",
-	"unobserveResize",
-	"observeIntersection",
-	"unobserveIntersection",
-	"observeMediaQuery",
-	"unobserveMediaQuery",
-	"listen",
-	"emit",
-	"on",
-	"updateRefs",
-	"delegate",
-	"find",
-	"findAll",
-	"toggleClass",
-	"addClass",
-	"removeClass",
-	"channel",
-]);
+const globalExcludedMethods = {
+	has(name) {
+		return name in BaseComponent.prototype || name === "require";
+	},
+};
 
 const protoMethodsCache = new WeakMap();
 

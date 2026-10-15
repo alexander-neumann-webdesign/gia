@@ -153,3 +153,12 @@
 ## 2026-10-16 - Centralized Media Query and Theme Preference Observers
 **Learning:** Registering separate `matchMedia("...").addEventListener("change", ...)` listeners across multiple components duplicates query lists and listener memory, and requires manual cleanup boilerplate during `unmount()`.
 **Action:** Centralize media queries into a component observer registry with `observeMediaQuery` and `unobserveMediaQuery`, fire the callback immediately with initial match state, and automatically detach all active media query listeners upon component teardown via `cleanupComponentObservers`.
+
+## 2026-10-16 - Prototype-Based Method Exclusion over Static String Sets
+**Learning:** Maintaining a large `Set` of 30+ string literals (`"constructor"`, `"mount"`, `"observeScroll"`, etc.) for method auto-binding and action exclusion costs 400+ bytes of raw un-mangleable string tokens across all bundle tiers.
+**Action:** Replace static string arrays/Sets with a dynamic prototype membership check (`name in BaseComponent.prototype || name === "require"`). This eliminates redundant string tokens completely and automatically excludes all base lifecycle methods with O(1) prototype lookup speed.
+
+## 2026-10-16 - Dedicated Modular Entry Points and Internal Property Mangling
+**Learning:** Pointing multiple build targets (like Mini and Full) to a shared entry point forces the bundler to parse and analyze unused modules (`autoMount.js`), and leaving internal object properties un-prefixed prevents AST-level property mangling.
+**Action:** Use dedicated entry files (`lib/mini.js`), prefix internal object properties with `_` (`_callbacks`, `_observer`, `_elementsCount`, `_mql`, `_listeners`), and configure Terser with `pure_funcs: ["console.info", "console.warn"]` and `passes: 4` to strip non-critical diagnostic strings and maximize gzip compression.
+
