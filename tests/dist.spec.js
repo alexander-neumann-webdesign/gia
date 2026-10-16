@@ -88,6 +88,34 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(instance.isMounted).toBe(true);
     });
 
+    test('should successfully instantiate and mount a component using mini dist with observers intact', async () => {
+        let mounted = false;
+
+        class MiniBox extends miniDist.Component {
+            mount() {
+                mounted = true;
+            }
+        }
+
+        const container = window.document.createElement('div');
+        container.innerHTML = '<div data-component="MiniBox"></div>';
+        window.document.body.appendChild(container);
+        const el = container.firstElementChild;
+
+        miniDist.loadComponents({ MiniBox }, container);
+        await Promise.resolve();
+
+        expect(mounted).toBe(true);
+        const instance = miniDist.getComponentFromElement(el);
+        expect(instance).toBeInstanceOf(MiniBox);
+        expect(instance.isMounted).toBe(true);
+        expect(typeof instance.observeScroll).toBe('function');
+        expect(typeof instance.observeIntersection).toBe('function');
+        expect(typeof instance.observeResize).toBe('function');
+        expect(typeof instance.observeWindowResize).toBe('function');
+        expect(typeof instance.observeMediaQuery).toBe('function');
+    });
+
     test('should preserve window.__gia_scheduler__ without mangling collision', () => {
         // Scheduler should be attached to window without property mangling distortion
         fullDist.measure(() => {});
@@ -219,6 +247,72 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         miniDist.eventbus.emit('microfrontend-event', { payload: 42 });
 
         expect(received).toEqual(expect.objectContaining({ payload: 42 }));
+    });
+
+    test('miniDist UMD should provide working MiniEventBus (emit, on, once, off, channel, signal)', async () => {
+        const fs = await import('fs');
+        const path = await import('path');
+        const miniUmdCode = fs.readFileSync(path.resolve(process.cwd(), 'dist/gia.mini.umd.js'), 'utf-8');
+
+        const isolatedDom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+        const win = isolatedDom.window;
+        new Function('window', 'document', 'self', 'globalThis', `
+            const exports = undefined;
+            const module = undefined;
+            ${miniUmdCode}
+        `)(win, win.document, win, win);
+
+        const eb = win.gia.eventbus;
+        expect(eb).toBeDefined();
+
+        // 1. emit & on
+        let count = 0;
+        let lastData = null;
+        const handler = (data) => {
+            count++;
+            lastData = data;
+        };
+        eb.on('foo', handler);
+        eb.emit('foo', { val: 123 });
+        expect(count).toBe(1);
+        expect(lastData).toEqual({ val: 123, _name: 'foo' });
+
+        // 2. off
+        eb.off('foo', handler);
+        eb.emit('foo', { val: 456 });
+        expect(count).toBe(1);
+
+        // 3. once
+        let onceCount = 0;
+        eb.once('single', () => {
+            onceCount++;
+        });
+        eb.emit('single');
+        eb.emit('single');
+        expect(onceCount).toBe(1);
+
+        // 4. signal abort
+        const ac = new AbortController();
+        let abortCount = 0;
+        eb.on('abortable', () => {
+            abortCount++;
+        }, { signal: ac.signal });
+        eb.emit('abortable');
+        expect(abortCount).toBe(1);
+        ac.abort();
+        eb.emit('abortable');
+        expect(abortCount).toBe(1);
+
+        // 5. channel
+        const ch = eb.channel('user');
+        let chCount = 0;
+        const chHandler = () => { chCount++; };
+        ch.on('login', chHandler);
+        ch.emit('login');
+        expect(chCount).toBe(1);
+        ch.off('login', chHandler);
+        ch.emit('login');
+        expect(chCount).toBe(1);
     });
 
     test('loadComponents should defer to DOMContentLoaded when document.readyState is loading', () => {

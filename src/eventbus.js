@@ -1,6 +1,81 @@
 import config from "./config.js";
 
 /**
+ * Lightweight event emitter for Mini build
+ */
+class MiniEventBus {
+	constructor() {
+		this._listeners = Object.create(null);
+	}
+
+	emit(event, eventObject) {
+		const list = this._listeners[event];
+		if (list && list.length) {
+			if (!eventObject || typeof eventObject !== "object") {
+				eventObject = { _name: event };
+			} else {
+				eventObject._name = event;
+			}
+			const copy = list.slice();
+			for (let i = 0; i < copy.length; i++) {
+				copy[i](eventObject);
+			}
+		}
+	}
+
+	on(event, handler, options = false) {
+		const isObj = options && typeof options === "object";
+		const once = isObj ? !!options.once : !!options;
+		const signal = isObj ? options.signal : null;
+		if (signal && signal.aborted) return;
+
+		let actual = handler;
+		if (once) {
+			actual = (d) => {
+				this.off(event, actual);
+				handler(d);
+			};
+			if (!handler._wrappedHandlers) {
+				handler._wrappedHandlers = Object.create(null);
+			}
+			handler._wrappedHandlers[event] = actual;
+		}
+		(this._listeners[event] = this._listeners[event] || []).push(actual);
+		if (signal) {
+			signal.addEventListener("abort", () => this.off(event, actual), { once: true });
+		}
+	}
+
+	once(event, handler, options = {}) {
+		const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
+		this.on(event, handler, opts);
+	}
+
+	off(event, handler) {
+		if (!handler) {
+			delete this._listeners[event];
+			return;
+		}
+		const list = this._listeners[event];
+		if (list) {
+			const target = (handler._wrappedHandlers && handler._wrappedHandlers[event]) || handler._wrapped || handler;
+			const idx = list.indexOf(target);
+			if (idx !== -1) list.splice(idx, 1);
+		}
+	}
+
+	channel(namespace) {
+		const prefix = namespace.endsWith(":") ? namespace : `${namespace}:`;
+		return {
+			emit: (e, d) => this.emit(`${prefix}${e}`, d),
+			on: (e, fn, o) => this.on(`${prefix}${e}`, fn, o),
+			once: (e, fn, o) => this.once(`${prefix}${e}`, fn, o),
+			off: (e, fn) => this.off(`${prefix}${e}`, fn),
+		};
+	}
+}
+
+/**
  * Event bus using pure JS for Zero-GC and maximum performance
  */
 
@@ -218,6 +293,10 @@ const globalObj =
 		? global
 		: {};
 
-const eventbusInstance = globalObj.__gia_eventbus__ || (globalObj.__gia_eventbus__ = new EventBus());
+const EventBusClass =
+	typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__ ? MiniEventBus : EventBus;
+
+const eventbusInstance =
+	globalObj.__gia_eventbus__ || (globalObj.__gia_eventbus__ = new EventBusClass());
 
 export default eventbusInstance;

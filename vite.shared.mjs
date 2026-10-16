@@ -64,7 +64,7 @@ export function terserPlugin(customOptions = {}) {
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_component__|__gia_scheduler__|__gia_store__|__gia_eventbus__)$/,
+	reserveProps: /^(__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };

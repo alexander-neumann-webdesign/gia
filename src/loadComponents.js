@@ -114,7 +114,7 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 		return;
 	}
 
-	if (result && typeof result.then === "function") {
+	if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && result && typeof result.then === "function") {
 		result
 			.then((mod) => {
 				if (!_isConnected(element)) return;
