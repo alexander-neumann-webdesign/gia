@@ -205,7 +205,7 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(fullDist.getComponentFromElement(el)).toBeNull();
     });
 
-    test('UMD builds with extend: true should merge onto window.gia without destroying full APIs', async () => {
+    test('UMD builds should merge onto window.gia without downgrading full APIs', async () => {
         const fs = await import('fs');
         const path = await import('path');
 

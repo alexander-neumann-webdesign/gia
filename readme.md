@@ -83,7 +83,7 @@ import { BaseComponent, loadComponents, register } from "gia/nano";
 
 > [!TIP]
 > **UMD Superpowers & Head-Loading Safety**:
-> - **Non-Destructive UMD Merging**: All UMD builds compile with `output.extend: true`. Third-party widgets and host pages merge cleanly onto `window.gia` without wiping previously loaded components or features.
+> - **Non-Destructive UMD Merging**: Third-party widgets and host pages merge cleanly onto `window.gia` without wiping registered components, and the most capable build (Full > Mini > Nano) provides the shared exports, so a lighter widget never downgrades the host. See [Cross-Bundle & UMD Idempotency](#cross-bundle--umd-idempotency).
 > - **Head-Safe Execution**: `loadComponents()` can be called in `<head>`, inline, or with `<script defer>`. If the DOM is still loading (`document.readyState === "loading"`), Gia automatically defers execution to `DOMContentLoaded`.
 > - **Global Window Auto-Discovery**: Component classes exposed on `window` (`window.Counter = class extends gia.Component {}`) are resolved from `window[componentName]` without manual registration. Note that a top-level `class Counter …` declaration does **not** create a `window` property, so either assign it to `window` explicitly or call `gia.register(Counter)`. For security, the `window` fallback only accepts classes derived from Gia's `BaseComponent`/`Component`; other global functions are never called from markup.
 
@@ -667,8 +667,12 @@ When integrating Gia into complex architectures, micro-frontends, design systems
 4. **Cross-Bundle Lifecycle**:
    A component class built on one bundle can be mounted, updated, and destroyed by any other bundle's `loadComponents()`, `removeComponents()`, `destroyInstance()`, or auto-mount observer. The small lifecycle protocol bundles call on each other's instances (`_load`, `_destroy`) is excluded from property mangling, and Gia component classes are recognised via `Symbol.for("gia.component")`, which is identical in every bundle. Each element is mounted at most once, even when `loadComponents()` runs repeatedly or a lazy (`data-mount`, `import()`) mount is still pending.
 
-5. **UMD Merging (`extend: true`)**:
-   All UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) compile with Rollup/Vite's `extend: true` flag (`globalThis.gia = globalThis.gia || {}`), so a later script merges onto the existing `window.gia` object instead of replacing it, and registered components (`gia.components`) are kept. Exports with the same name (`gia.loadComponents`, `gia.Component`, …) are taken from the bundle loaded **last**. Widgets should therefore keep a reference to their own bundle's exports (or use ESM imports) rather than reading `window.gia` later.
+5. **UMD Merging: the Most Capable Bundle Wins**:
+   When several UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) load on the same page, they merge onto the existing `window.gia` object instead of replacing it, and registered components (`gia.components`) are always kept. Same-named exports (`gia.loadComponents`, `gia.Component`, …) are ranked by build tier, **Full > Mini > Nano**:
+   - a more capable bundle replaces the exports of a less capable one, so loading Full after a Nano widget upgrades `window.gia`;
+   - an equal or less capable bundle only fills in exports that are still missing, so a Mini or Nano widget loaded after the Full host can never downgrade it (the host's lazy `import()` loaders, auto-mounting, etc. keep working). On a tie, the first bundle wins.
+
+   This applies to plain `<script>` loading only; `require()`/AMD consumers receive their own bundle's exports as usual.
 
 ---
 

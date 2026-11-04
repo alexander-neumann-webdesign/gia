@@ -147,3 +147,82 @@ test.describe('shared event bus', () => {
         expect(hits).toBe(1);
     });
 });
+
+test.describe('UMD export merging on window.gia (most capable bundle wins)', () => {
+    const rank = { 'gia.full.umd.js': 3, 'gia.mini.umd.js': 2, 'gia.nano.umd.js': 1 };
+
+    // Loads a UMD file and returns a handle to the exports IT produced, by intercepting the
+    // staging global the factory writes to before the merge footer moves them onto window.gia.
+    async function loadCapturing(page, file, label) {
+        await page.evaluate((label) => {
+            Object.defineProperty(window, '__gia_umd__', {
+                configurable: true,
+                get() {
+                    return window['__exports_' + label];
+                },
+                set(v) {
+                    window['__exports_' + label] = v;
+                },
+            });
+        }, label);
+        await page.addScriptTag({ path: dist(file) });
+        expect(await page.evaluate(() => '__gia_umd__' in window)).toBe(false); // staging cleaned up
+    }
+
+    for (const first of builds) {
+        for (const second of builds) {
+            const winner = rank[second] > rank[first] ? 'second' : 'first';
+
+            test(`${first} then ${second}: exports come from the ${winner} bundle`, async ({ page }) => {
+                await page.setContent('<body></body>');
+                await loadCapturing(page, first, 'first');
+                await page.evaluate(() => {
+                    window.gia.register(class Registered extends window.gia.BaseComponent {});
+                });
+                await loadCapturing(page, second, 'second');
+
+                const result = await page.evaluate((winner) => {
+                    const won = window['__exports_' + winner];
+                    const keys = ['loadComponents', 'removeComponents', 'createInstance', 'BaseComponent'];
+                    return {
+                        fromWinner: keys.filter((k) => window.gia[k] !== won[k]),
+                        // Exports only one of the two provides (nano has no Component/eventbus) are filled in
+                        hasComponent: typeof window.gia.Component,
+                        registeredKept: typeof window.gia.components.Registered,
+                    };
+                }, winner);
+
+                expect(result.fromWinner).toEqual([]);
+                expect(result.registeredKept).toBe('function');
+                const providesComponent = first !== 'gia.nano.umd.js' || second !== 'gia.nano.umd.js';
+                expect(result.hasComponent).toBe(providesComponent ? 'function' : 'undefined');
+            });
+        }
+    }
+
+    test('a mini widget loaded after the full host does not break the host\'s lazy loaders', async ({ page }) => {
+        await page.setContent('<div data-component="LazyThing"></div>');
+        await page.addScriptTag({ path: dist('gia.full.umd.js') });
+        await page.addScriptTag({ path: dist('gia.mini.umd.js') });
+        const mounted = await page.evaluate(async () => {
+            class LazyThing extends window.gia.BaseComponent {
+                mount() {
+                    this.element.setAttribute('data-mounted', 'yes');
+                }
+            }
+            window.gia.loadComponents({ LazyThing: () => Promise.resolve({ default: LazyThing }) });
+            await new Promise((r) => setTimeout(r, 20));
+            return document.querySelector('[data-component="LazyThing"]').getAttribute('data-mounted');
+        });
+        expect(mounted).toBe('yes');
+    });
+
+    test('loading the full build after a nano widget upgrades window.gia', async ({ page }) => {
+        await page.setContent('<body></body>');
+        await page.addScriptTag({ path: dist('gia.nano.umd.js') });
+        expect(await page.evaluate(() => typeof window.gia.eventbus)).toBe('undefined');
+        await page.addScriptTag({ path: dist('gia.full.umd.js') });
+        expect(await page.evaluate(() => typeof window.gia.eventbus)).toBe('object');
+        expect(await page.evaluate(() => typeof window.gia.Component)).toBe('function');
+    });
+});
