@@ -296,7 +296,31 @@ const globalObj =
 const EventBusClass =
 	typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__ ? MiniEventBus : EventBus;
 
-const eventbusInstance =
-	globalObj.__gia_eventbus__ || (globalObj.__gia_eventbus__ = new EventBusClass());
+let eventbusInstance = globalObj.__gia_eventbus__;
+
+if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
+	const FULL_BUS = Symbol.for("gia.eventbus.full");
+	if (!EventBus.prototype[FULL_BUS]) {
+		Object.defineProperty(EventBus.prototype, FULL_BUS, { value: true });
+	}
+	if (eventbusInstance && !eventbusInstance[FULL_BUS] && eventbusInstance._listeners) {
+		// A mini bundle created the shared bus first. Upgrade that same object in place so
+		// wildcard listeners work page-wide: every bundle already holds a reference to it, and the
+		// listener map (event -> handler array) has the same shape in both implementations.
+		Object.setPrototypeOf(eventbusInstance, EventBus.prototype);
+		eventbusInstance._iterating = Object.create(null);
+		let wildcards = 0;
+		for (const event in eventbusInstance._listeners) {
+			if (event.indexOf("*") !== -1) {
+				wildcards += eventbusInstance._listeners[event].length;
+			}
+		}
+		eventbusInstance._hasWildcards = wildcards;
+	}
+}
+
+if (!eventbusInstance) {
+	eventbusInstance = globalObj.__gia_eventbus__ = new EventBusClass();
+}
 
 export default eventbusInstance;

@@ -579,6 +579,113 @@ test.describe('Regression tests', () => {
         });
     });
 
+    test.describe('repeated loadComponents() calls never double-mount', () => {
+        test('data-mount="idle" scheduled twice mounts once', async () => {
+            let mounts = 0;
+            class Idle extends BaseComponent {
+                mount() {
+                    mounts++;
+                }
+            }
+            const el = mk('<div data-component="Idle" data-mount="idle"></div>');
+            loadComponents({ Idle }, document.body);
+            loadComponents({ Idle }, document.body);
+            await tick(120); // setTimeout(50) fallback without requestIdleCallback
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('a deferred mount that finds the element detached can be retried later', async () => {
+            let mounts = 0;
+            class Idle extends BaseComponent {
+                mount() {
+                    mounts++;
+                }
+            }
+            const el = mk('<div data-component="Idle" data-mount="idle"></div>');
+            loadComponents({ Idle }, document.body);
+            el.remove();
+            await tick(120);
+            expect(mounts).toBe(0);
+
+            document.body.appendChild(el);
+            loadComponents({ Idle }, document.body);
+            await tick(120);
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('a pending lazy import() is not started twice and mounts once', async () => {
+            let loaderCalls = 0;
+            let mounts = 0;
+            class Lazy extends BaseComponent {
+                mount() {
+                    mounts++;
+                }
+            }
+            const registry = {
+                Lazy: () => {
+                    loaderCalls++;
+                    return new Promise((resolve) => setTimeout(() => resolve({ default: Lazy }), 10));
+                },
+            };
+            const el = mk('<div data-component="Lazy"></div>');
+            loadComponents(registry, document.body);
+            loadComponents(registry, document.body);
+            await tick(40);
+            expect(loaderCalls).toBe(1);
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('a failed lazy import() can be retried', async () => {
+            let attempt = 0;
+            class Lazy extends BaseComponent {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            const registry = {
+                Lazy: () => (++attempt === 1 ? Promise.reject(new Error('network')) : Promise.resolve({ default: Lazy })),
+            };
+            const el = mk('<div data-component="Lazy"></div>');
+            const origError = console.error;
+            console.error = () => {};
+            try {
+                loadComponents(registry, document.body);
+                await tick();
+            } finally {
+                console.error = origError;
+            }
+            // The registry entry is still the loader, so a second pass retries it
+            loadComponents(registry, document.body);
+            await tick();
+            expect(components.get(el).mounted).toBe(true);
+            destroyInstance(el);
+        });
+    });
+
+    test('a failed constructor tears down without calling unmount()', () => {
+        let unmounts = 0;
+        class Bad extends BaseComponent {
+            constructor(el) {
+                super(el);
+                throw new Error('boom');
+            }
+            unmount() {
+                unmounts++;
+            }
+        }
+        const origError = console.error;
+        console.error = () => {};
+        try {
+            createInstance(mk('<div></div>'), 'Bad', Bad);
+        } finally {
+            console.error = origError;
+        }
+        expect(unmounts).toBe(0);
+    });
+
     test('loadComponents can retry a component whose first construction failed', () => {
         let attempts = 0;
         class Retry extends BaseComponent {

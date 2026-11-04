@@ -60,11 +60,18 @@ export function terserPlugin(customOptions = {}) {
 
 /**
  * Shared esbuild options for fast AST-level property mangling.
- * Preserves critical singleton handles on window and DOM elements.
+ *
+ * Mangled names differ between build tiers and versions, so every property that one bundle
+ * reads or calls on an object created by ANOTHER bundle must be reserved:
+ * - global singleton handles (__gia_*__)
+ * - the instance lifecycle protocol used by loadComponents/destroyInstance/createInstance
+ *   (_load, _destroy) plus _name and the static _gia_priority
+ * - shared event bus state that a full bundle adopts from a mini bus (_listeners) and the
+ *   once-wrapper lookup on user handlers (_wrappedHandlers)
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name)$/,
+	reserveProps: /^(__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };

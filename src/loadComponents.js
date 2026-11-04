@@ -57,9 +57,13 @@ function _isConnected(element) {
 		: element.ownerDocument && element.ownerDocument.contains(element);
 }
 
+// Elements with a deferred mount (data-mount="visible"/"idle" or a pending lazy import()).
+// Repeated loadComponents() calls (manual, autoMount, Swup...) must not start a second one.
+const _pending = new WeakSet();
+
 function _mountWhenVisible(element, fn) {
 	if (typeof IntersectionObserver === "undefined") {
-		if (_isConnected(element)) fn();
+		fn();
 		return;
 	}
 	const observer = new IntersectionObserver(
@@ -68,7 +72,7 @@ function _mountWhenVisible(element, fn) {
 				if (entries[i].isIntersecting) {
 					observer.unobserve(element);
 					observer.disconnect();
-					if (_isConnected(element)) fn();
+					fn();
 					break;
 				}
 			}
@@ -85,33 +89,38 @@ function _mountWhenIdle(element, fn) {
 			: typeof requestIdleCallback === "function"
 			? requestIdleCallback
 			: (cb) => setTimeout(cb, 50);
-	schedule(() => {
-		if (_isConnected(element)) fn();
-	});
+	schedule(fn);
 }
 
 function _instantiateOrLoad(element, componentName, ctor, components, initialisedComponents) {
+	// Already mounted (possibly by another bundle) or a deferred mount is in flight
+	if (storeComponents.has(element) || _pending.has(element)) return;
+
 	if (initialisedComponents) {
 		const mountAttr =
 			element.getAttribute(`${config.get("attrPrefix")}-mount`) ||
 			element.getAttribute("data-mount");
 
-		if (mountAttr === "visible") {
-			_mountWhenVisible(element, () => {
-				_instantiateOrLoad(element, componentName, ctor, components, null);
-			});
-			return;
-		}
-
-		if (mountAttr === "idle") {
-			_mountWhenIdle(element, () => {
-				_instantiateOrLoad(element, componentName, ctor, components, null);
-			});
+		if (mountAttr === "visible" || mountAttr === "idle") {
+			_pending.add(element);
+			const deferred = () => {
+				_pending.delete(element);
+				if (_isConnected(element)) {
+					_instantiateOrLoad(element, componentName, ctor, components, null);
+				}
+			};
+			if (mountAttr === "visible") {
+				_mountWhenVisible(element, deferred);
+			} else {
+				_mountWhenIdle(element, deferred);
+			}
 			return;
 		}
 	}
 
 	function _initInstance(cls) {
+		// createInstance returns an existing instance for duplicates; never _load() it twice
+		if (storeComponents.has(element)) return null;
 		const instance = createInstance(element, componentName, cls);
 		if (instance) {
 			if (initialisedComponents) {
@@ -149,9 +158,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	}
 
 	if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && result && typeof result.then === "function") {
+		_pending.add(element);
 		result
 			.then((mod) => {
-				if (!_isConnected(element)) return;
+				_pending.delete(element);
+				if (!_isConnected(element) || storeComponents.has(element)) return;
 				const Resolved =
 					(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
 				if (typeof Resolved === "function") {
@@ -163,6 +174,7 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 				}
 			})
 			.catch((err) => {
+				_pending.delete(element);
 				console.error(`Gia: Failed to lazy load component "${componentName}".`, err);
 			});
 	} else if (typeof result === "function") {

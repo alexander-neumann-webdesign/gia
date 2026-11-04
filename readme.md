@@ -662,10 +662,13 @@ When integrating Gia into complex architectures, micro-frontends, design systems
    FastDOM `measure()` and `mutate()` operations share a unified frame-loop queue. Multiple bundles cooperate within a single `requestAnimationFrame` tick, eliminating layout thrashing and animation stutter.
 
 3. **Shared Universal Event Bus (`window.__gia_eventbus__`)**:
-   The `eventbus` emitter is shared globally across all bundles via `globalThis.__gia_eventbus__`. Micro-frontends or third-party embeddable widgets importing different Gia bundles can communicate seamlessly via `eventbus.emit()` and `eventbus.on()`.
+   The `eventbus` emitter is shared globally across all bundles via `globalThis.__gia_eventbus__`. Micro-frontends or third-party embeddable widgets importing different Gia bundles can communicate seamlessly via `eventbus.emit()` and `eventbus.on()`. If a Mini bundle created the bus first, a Full bundle loaded later upgrades that same bus in place (keeping every existing listener), so wildcard listeners work page-wide regardless of load order.
 
-4. **Non-Destructive UMD Merging (`extend: true`)**:
-   All UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) compile with Rollup/Vite's `extend: true` flag (`globalThis.gia = globalThis.gia || {}`). Loading a nano widget script tag on a page that already loaded the full Gia library will **never overwrite** `gia.Component`, `gia.eventbus`, or existing registered components.
+4. **Cross-Bundle Lifecycle**:
+   A component class built on one bundle can be mounted, updated, and destroyed by any other bundle's `loadComponents()`, `removeComponents()`, `destroyInstance()`, or auto-mount observer. The small lifecycle protocol bundles call on each other's instances (`_load`, `_destroy`) is excluded from property mangling, and Gia component classes are recognised via `Symbol.for("gia.component")`, which is identical in every bundle. Each element is mounted at most once, even when `loadComponents()` runs repeatedly or a lazy (`data-mount`, `import()`) mount is still pending.
+
+5. **UMD Merging (`extend: true`)**:
+   All UMD builds (`gia.full.umd.js`, `gia.mini.umd.js`, `gia.nano.umd.js`) compile with Rollup/Vite's `extend: true` flag (`globalThis.gia = globalThis.gia || {}`), so a later script merges onto the existing `window.gia` object instead of replacing it, and registered components (`gia.components`) are kept. Exports with the same name (`gia.loadComponents`, `gia.Component`, …) are taken from the bundle loaded **last**. Widgets should therefore keep a reference to their own bundle's exports (or use ESM imports) rather than reading `window.gia` later.
 
 ---
 

@@ -237,7 +237,12 @@ export default class BaseComponent {
 		}
 	}
 
-	_destroy() {
+	/**
+	 * Tears the instance down. Part of the cross-bundle lifecycle protocol (name is reserved
+	 * from mangling), so it may be called by another Gia bundle on the page.
+	 * @param {boolean} [skipUnmount] - true when the instance never finished constructing
+	 */
+	_destroy(skipUnmount) {
 		this._isMounted = false;
 		this._isDestroyed = true;
 
@@ -267,10 +272,12 @@ export default class BaseComponent {
 			this._mountCleanup = null;
 		}
 
-		try {
-			this.unmount();
-		} catch (err) {
-			console.error(`Gia: Error in unmount for "${this._name}".`, err);
+		if (!skipUnmount) {
+			try {
+				this.unmount();
+			} catch (err) {
+				console.error(`Gia: Error in unmount for "${this._name}".`, err);
+			}
 		}
 
 		cleanupComponentState(this);
