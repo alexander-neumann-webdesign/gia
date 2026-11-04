@@ -47,7 +47,7 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
 
         // Simulate script load event and mock global variable
         window.MyLib = { version: '1.0.0' };
-        script.onload();
+        script.dispatchEvent(new window.Event('load'));
 
         const result = await promise;
         expect(result).toEqual({ version: '1.0.0' });
@@ -83,7 +83,7 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
         // Both calls should return the identical cached promise
         expect(p1).toBe(p2);
 
-        script.onload();
+        script.dispatchEvent(new window.Event('load'));
         const [r1, r2] = await Promise.all([p1, p2]);
         expect(r1).toBe(true);
         expect(r2).toBe(true);
@@ -101,7 +101,7 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
         expect(link.getAttribute('href')).toBe('/assets/theme.css');
         expect(link.hasAttribute('data-href')).toBe(false);
 
-        link.onload();
+        link.dispatchEvent(new window.Event('load'));
         const result = await promise;
         expect(result).toBe(true);
     });
@@ -131,7 +131,7 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
         expect(script.src).toBe(url);
 
         window.Analytics = { track: () => {} };
-        script.onload();
+        script.dispatchEvent(new window.Event('load'));
 
         const result = await promise;
         expect(result).toBe(window.Analytics);
@@ -146,7 +146,7 @@ test.describe('Script and Style Loaders with DOM Clobbering Protection (loaders.
         expect(link.rel).toBe('stylesheet');
         expect(link.href).toBe(url);
 
-        link.onload();
+        link.dispatchEvent(new window.Event('load'));
         const result = await promise;
         expect(result).toBe(true);
     });

@@ -1,6 +1,41 @@
 import { minify } from "terser";
 
 /**
+ * UMD global the factory writes its exports to. The merge footer below moves them onto
+ * window.gia, so Rollup never assigns onto window.gia directly.
+ */
+export const UMD_STAGING_GLOBAL = "__gia_umd__";
+
+/** Capability rank per build tier: when several UMD bundles share a page, the highest wins. */
+export const UMD_RANK = { full: 3, mini: 2, nano: 1 };
+
+/**
+ * Footer appended to UMD files only. In the browser-global branch the factory has written the
+ * exports to globalThis.__gia_umd__; merge them onto globalThis.gia:
+ * - a bundle with a higher rank than the current owner replaces every export it provides,
+ * - an equal or lower rank only fills in names that are still missing (first wins on ties),
+ * so an embedded mini/nano widget can never downgrade a page that already loaded the full build.
+ * Registered components (gia.components) are never touched. In the CommonJS/AMD branches the
+ * staging global is never set and the footer does nothing.
+ */
+function umdMergeFooter(rank) {
+	return `
+;(function (g) {
+	var incoming = g.${UMD_STAGING_GLOBAL};
+	if (!incoming) return;
+	delete g.${UMD_STAGING_GLOBAL};
+	var gia = g.gia || (g.gia = {});
+	var TIER = Symbol.for("gia.tier");
+	var overwrite = ${rank} > (gia[TIER] || 0);
+	for (var key in incoming) {
+		if (overwrite || !(key in gia)) gia[key] = incoming[key];
+	}
+	if (overwrite) Object.defineProperty(gia, TIER, { value: ${rank}, configurable: true, writable: true });
+})(typeof globalThis !== "undefined" ? globalThis : self);
+`;
+}
+
+/**
  * Custom Terser plugin for Vite library mode.
  *
  * Vite skips whitespace and structural minification for ES module outputs (.mjs)
@@ -9,6 +44,8 @@ import { minify } from "terser";
  * constant folding, and full whitespace stripping.
  */
 export function terserPlugin(customOptions = {}) {
+	const { umdRank, ...terserOptions } = customOptions;
+	customOptions = terserOptions;
 	return {
 		name: "gia-terser",
 		enforce: "post",
@@ -18,6 +55,10 @@ export function terserPlugin(customOptions = {}) {
 				const chunk = bundle[fileName];
 				if (chunk.type === "chunk" && (fileName.endsWith(".mjs") || fileName.endsWith(".js"))) {
 					const isModule = fileName.endsWith(".mjs");
+					if (outputOptions.format === "umd") {
+						if (!umdRank) throw new Error("gia-terser: umdRank is required for UMD builds");
+						chunk.code += umdMergeFooter(umdRank);
+					}
 					const minified = await minify(chunk.code, {
 						ecma: 2020,
 						module: isModule,
@@ -60,22 +101,31 @@ export function terserPlugin(customOptions = {}) {
 
 /**
  * Shared esbuild options for fast AST-level property mangling.
- * Preserves critical singleton handles on window and DOM elements.
+ *
+ * Mangled names differ between build tiers and versions, so every property that one bundle
+ * reads or calls on an object created by ANOTHER bundle must be reserved:
+ * - global singleton handles (__gia_*__) and the UMD staging global (__gia_umd__)
+ * - the instance lifecycle protocol used by loadComponents/destroyInstance/createInstance
+ *   (_load, _destroy) plus _name and the static _gia_priority
+ * - shared event bus state that a full bundle adopts from a mini bus (_listeners) and the
+ *   once-wrapper lookup on user handlers (_wrappedHandlers)
+ * - the in-flight promise cached on <script>/<link> tags by loadScript/loadStyle (_loadPromise)
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name)$/,
+	reserveProps: /^(__gia_umd__|__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers|_loadPromise)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };
 
 /**
  * Shared Rollup options for library builds.
- * Sets extend: true so UMD builds merge onto globalThis.gia rather than overwriting it.
+ * UMD exports go to a fresh staging object (extend: false); umdMergeFooter merges them onto
+ * globalThis.gia by build tier.
  */
 export const sharedRollupOptions = {
 	output: {
-		extend: true,
+		extend: false,
 		exports: "named",
 		compact: true,
 		generatedCode: {

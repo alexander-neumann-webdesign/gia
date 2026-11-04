@@ -1,14 +1,5 @@
-// Singleton state attached to window/globalThis to prevent multiple instances of Gia from thrashing each other
-const globalObj =
-	typeof globalThis !== "undefined"
-		? globalThis
-		: typeof window !== "undefined"
-		? window
-		: typeof global !== "undefined"
-		? global
-		: {};
-
-const state = globalObj.__gia_scheduler__ || (globalObj.__gia_scheduler__ = {
+// Singleton state on globalThis (the window in browsers) shared by every Gia bundle on the page
+const state = globalThis.__gia_scheduler__ || (globalThis.__gia_scheduler__ = {
 	reads: [],
 	writes: [],
 	scheduled: false,
@@ -16,7 +7,6 @@ const state = globalObj.__gia_scheduler__ || (globalObj.__gia_scheduler__ = {
 	currentWrites: null,
 	tempReads: [],
 	tempWrites: [],
-	wrapperPool: [],
 });
 
 if (!state.tempReads) {
@@ -25,25 +15,15 @@ if (!state.tempReads) {
 if (!state.tempWrites) {
 	state.tempWrites = [];
 }
-if (!state.wrapperPool) {
-	state.wrapperPool = [];
-}
 
-// Store on window if we are in a browser environment and it isn't already there
-if (typeof window !== "undefined" && !window.__gia_scheduler__) {
-	window.__gia_scheduler__ = state;
-}
-
+// Each context-bound task gets its own wrapper. Wrappers are deliberately NOT pooled: the
+// wrapper is the handle returned to the caller, and recycling it would let a stale clear(handle)
+// cancel an unrelated task that later reused the same object.
 function getWrapper(fn, ctx) {
-	let wrapper = state.wrapperPool.pop();
-	if (!wrapper) {
-		wrapper = function () {
-			wrapper.fn.call(wrapper.ctx);
-		};
-		wrapper._isGiaWrapper = true;
-	}
+	const wrapper = function () {
+		fn.call(ctx);
+	};
 	wrapper.fn = fn;
-	wrapper.ctx = ctx;
 	return wrapper;
 }
 
@@ -62,11 +42,6 @@ function flush() {
 				task();
 			} catch (e) {
 				console.error(e);
-			}
-			if (task._isGiaWrapper) {
-				task.fn = null;
-				task.ctx = null;
-				state.wrapperPool.push(task);
 			}
 		}
 	}
@@ -88,11 +63,6 @@ function flush() {
 			} catch (e) {
 				console.error(e);
 			}
-			if (task._isGiaWrapper) {
-				task.fn = null;
-				task.ctx = null;
-				state.wrapperPool.push(task);
-			}
 		}
 	}
 
@@ -108,9 +78,6 @@ function flush() {
 
 function schedule() {
 	if (typeof window !== "undefined") {
-		if (!window.__gia_scheduler__) {
-			window.__gia_scheduler__ = state;
-		}
 		if (!state.scheduled) {
 			state.scheduled = true;
 			window.requestAnimationFrame(flush);
@@ -133,25 +100,17 @@ export function mutate(fn, ctx) {
 }
 
 function _clearFromList(list, task) {
-	if (!list) return false;
+	if (!list || typeof task !== "function") return false;
 	const index = list.indexOf(task);
 	if (index > -1) {
-		const t = list[index];
-		if (t && t._isGiaWrapper) {
-			t.fn = null;
-			t.ctx = null;
-			state.wrapperPool.push(t);
-		}
 		list[index] = null;
 		return true;
 	}
 
+	// Allow clear(originalFn) for tasks scheduled with a context
 	for (let i = 0; i < list.length; i++) {
 		const t = list[i];
-		if (t && t._isGiaWrapper && t.fn === task) {
-			t.fn = null;
-			t.ctx = null;
-			state.wrapperPool.push(t);
+		if (t && t.fn === task) {
 			list[i] = null;
 			return true;
 		}

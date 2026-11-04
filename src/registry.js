@@ -5,12 +5,19 @@ export function register(ComponentClass, options = {}) {
 		return;
 	}
 
-	// Extract name automatically (e.g., "ProductComparison")
-	const name = ComponentClass.name;
+	// Explicit name, or the class name (e.g., "ProductComparison"). Minifiers rename classes in
+	// production builds, so pass { name } when the build does not keep class names.
+	const name = options.name || ComponentClass.name;
 
 	if (!name) {
-		console.warn("Gia: Cannot register an anonymous class. Please use a named class.");
+		console.warn("Gia: Cannot register an anonymous class. Pass { name } or use a named class.");
 		return;
+	}
+
+	if (!options.name && name.length <= 2) {
+		// console.error (not warn): dist builds strip console.warn, and this registration will
+		// almost certainly not match any data-component="..." in the markup
+		console.error(`Gia: class name "${name}" looks minified; use register(Class, { name: "..." })`);
 	}
 
 	if (options.priority !== undefined) {

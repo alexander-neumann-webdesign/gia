@@ -3,21 +3,7 @@
  * WeakMap guarantees that if the DOM element is removed, the component instance
  * is garbage collected.
  *
- * Attaches to window.__gia_store__ to guarantee cross-bundle and cross-version
- * idempotency across multiple instances or micro-frontends.
+ * Attached to globalThis.__gia_store__ (the window in browsers) to guarantee cross-bundle and
+ * cross-version idempotency across multiple instances or micro-frontends.
  */
-const store =
-	(typeof globalThis !== "undefined" && globalThis.__gia_store__) ||
-	(typeof window !== "undefined" && window.__gia_store__) ||
-	new WeakMap();
-
-if (typeof globalThis !== "undefined" && !globalThis.__gia_store__) {
-	globalThis.__gia_store__ = store;
-}
-if (typeof window !== "undefined" && !window.__gia_store__) {
-	window.__gia_store__ = store;
-}
-
-export const components = store;
-
-
+export const components = globalThis.__gia_store__ || (globalThis.__gia_store__ = new WeakMap());

@@ -5,6 +5,7 @@ import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./sta
 import { loadScript, loadStyle } from "./loaders.js";
 import { autoBindActions } from "./actions.js";
 import eventbus from "./eventbus.js";
+import { GIA_COMPONENT } from "./brand.js";
 import {
 	observeScroll,
 	unobserveScroll,
@@ -121,20 +122,21 @@ export default class BaseComponent {
 		}
 
 		if (itemsEmpty) {
+			// Rebuild from scratch so updateRefs() picks up added/removed elements.
+			// "Name:ref" (prefixed for this component) wins over a plain "ref" of the same name,
+			// matching the precedence used when a ref schema is declared.
+			const refs = {};
 			for (const refName in refsByName) {
 				const colonIndex = refName.indexOf(":");
 				if (colonIndex !== -1) {
-					const componentName = refName.substring(0, colonIndex);
-					const actualRefName = refName.substring(colonIndex + 1);
-					if (componentName === this._name && !this._ref[actualRefName]) {
-						this._ref[actualRefName] = refsByName[refName];
+					if (refName.substring(0, colonIndex) === this._name) {
+						refs[refName.substring(colonIndex + 1)] = refsByName[refName];
 					}
-				} else {
-					if (!this._ref[refName]) {
-						this._ref[refName] = refsByName[refName];
-					}
+				} else if (!refsByName[namePrefix + refName]) {
+					refs[refName] = refsByName[refName];
 				}
 			}
+			this._ref = refs;
 		} else {
 			this._ref = {};
 			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
@@ -194,7 +196,10 @@ export default class BaseComponent {
 					attrVal = this.element.getAttribute(`data-${kebabKey}`);
 				}
 				if (attrVal !== null) {
-					if (attrVal === "true" || (attrVal === "" && typeof defaults[key] === "boolean")) {
+					if (typeof defaults[key] === "string") {
+						// A string default keeps the attribute verbatim ("007" stays "007", "true" stays "true")
+						attrOptions[key] = attrVal;
+					} else if (attrVal === "true" || (attrVal === "" && typeof defaults[key] === "boolean")) {
 						attrOptions[key] = true;
 					} else if (attrVal === "false") {
 						attrOptions[key] = false;
@@ -235,7 +240,12 @@ export default class BaseComponent {
 		}
 	}
 
-	_destroy() {
+	/**
+	 * Tears the instance down. Part of the cross-bundle lifecycle protocol (name is reserved
+	 * from mangling), so it may be called by another Gia bundle on the page.
+	 * @param {boolean} [skipUnmount] - true when the instance never finished constructing
+	 */
+	_destroy(skipUnmount) {
 		this._isMounted = false;
 		this._isDestroyed = true;
 
@@ -265,10 +275,12 @@ export default class BaseComponent {
 			this._mountCleanup = null;
 		}
 
-		try {
-			this.unmount();
-		} catch (err) {
-			console.error(`Gia: Error in unmount for "${this._name}".`, err);
+		if (!skipUnmount) {
+			try {
+				this.unmount();
+			} catch (err) {
+				console.error(`Gia: Error in unmount for "${this._name}".`, err);
+			}
 		}
 
 		cleanupComponentState(this);
@@ -284,6 +296,10 @@ export default class BaseComponent {
 					this._boundActions[i + 1],
 					handler,
 				);
+				// Drop pending .debounce/.throttle invocations so they never fire on a destroyed instance
+				if (handler && typeof handler.cancel === "function") {
+					handler.cancel();
+				}
 			}
 			this._boundActions = null;
 		}
@@ -386,24 +402,39 @@ export default class BaseComponent {
 			return;
 		}
 
+		const signal = this.signal;
 		let finalOpts;
 		if (opts && typeof opts === "object") {
-			finalOpts = opts.signal ? opts : { ...opts, signal: this.signal };
+			finalOpts = opts.signal || !signal ? opts : { ...opts, signal };
 		} else if (typeof opts === "boolean") {
-			finalOpts = { capture: opts, signal: this.signal };
+			finalOpts = signal ? { capture: opts, signal } : opts;
 		} else {
-			finalOpts = this.signal ? { signal: this.signal } : undefined;
+			finalOpts = signal ? { signal } : undefined;
 		}
 
 		el.addEventListener(evt, fn, finalOpts);
 
-		if (!this._activeListeners) {
-			this._activeListeners = [];
+		// The component signal removes the listener on destroy. Only listeners it does not cover
+		// (no AbortController, or a caller-supplied signal) need manual bookkeeping.
+		const tracked = !signal || !finalOpts || finalOpts.signal !== signal;
+		if (tracked) {
+			if (!this._activeListeners) {
+				this._activeListeners = [];
+			}
+			this._activeListeners.push(el, evt, fn, finalOpts);
 		}
-		this._activeListeners.push(el, evt, fn, finalOpts);
 
 		return () => {
 			el.removeEventListener(evt, fn, finalOpts);
+			const list = this._activeListeners;
+			if (tracked && list) {
+				for (let i = 0; i < list.length; i += 4) {
+					if (list[i] === el && list[i + 1] === evt && list[i + 2] === fn && list[i + 3] === finalOpts) {
+						list.splice(i, 4);
+						break;
+					}
+				}
+			}
 		};
 	}
 
@@ -451,12 +482,16 @@ export default class BaseComponent {
 	}
 
 	on(event, handler, options = false) {
-		const opts =
-			typeof options === "object" && options !== null
-				? (options.signal ? options : { ...options, signal: this.signal })
-				: this.signal
-				? { signal: this.signal }
-				: options;
+		const signal = this.signal;
+		let opts = options;
+		if (signal) {
+			if (typeof options === "object" && options !== null) {
+				opts = options.signal ? options : { ...options, signal };
+			} else {
+				// Boolean shorthand: on(event, handler, true) means "once"
+				opts = { once: !!options, signal };
+			}
+		}
 		eventbus.on(event, handler, opts);
 	}
 
@@ -502,21 +537,15 @@ export default class BaseComponent {
 	}
 
 	addClass(target, className) {
-		let el = target;
-		let cls = className;
-		if (cls === undefined) {
-			el = this.element;
-			cls = target;
-		} else if (typeof target === "string") {
-			el = this.find(target);
-		}
-		if (el) {
-			addClass(el, cls);
-		}
-		return el;
+		return this._classAction(target, className, addClass);
 	}
 
 	removeClass(target, className) {
+		return this._classAction(target, className, removeClass);
+	}
+
+	// (className) targets the root element; (selector, className) a descendant; (node, className) a node
+	_classAction(target, className, fn) {
 		let el = target;
 		let cls = className;
 		if (cls === undefined) {
@@ -526,7 +555,7 @@ export default class BaseComponent {
 			el = this.find(target);
 		}
 		if (el) {
-			removeClass(el, cls);
+			fn(el, cls);
 		}
 		return el;
 	}
@@ -537,17 +566,27 @@ export default class BaseComponent {
 
 		if (!methods) {
 			methods = [];
-			const allMethods = Object.getOwnPropertyNames(proto);
-			// ⚡ BOLT OPTIMIZATION: Avoid Array.filter to eliminate closure allocation on component init
-			for (let i = 0; i < allMethods.length; i++) {
-				const method = allMethods[i];
-				if (
-					!globalExcludedMethods.has(method) &&
-					!method.startsWith("_") &&
-					typeof Object.getOwnPropertyDescriptor(proto, method)?.value === "function"
-				) {
-					methods.push(method);
+			// Walk the whole prototype chain (B extends A extends Component) so inherited methods
+			// are bound too. The most-derived definition of a name decides whether it is a method,
+			// so a getter overriding an inherited method is never invoked here.
+			const seen = new Set();
+			let current = proto;
+			while (current && current !== BaseComponent.prototype && current !== Object.prototype) {
+				const names = Object.getOwnPropertyNames(current);
+				// ⚡ BOLT OPTIMIZATION: Avoid Array.filter to eliminate closure allocation on component init
+				for (let i = 0; i < names.length; i++) {
+					const method = names[i];
+					if (seen.has(method)) continue;
+					seen.add(method);
+					if (
+						!globalExcludedMethods.has(method) &&
+						!method.startsWith("_") &&
+						typeof Object.getOwnPropertyDescriptor(current, method)?.value === "function"
+					) {
+						methods.push(method);
+					}
 				}
+				current = Object.getPrototypeOf(current);
 			}
 			protoMethodsCache.set(proto, methods);
 		}
@@ -559,3 +598,7 @@ export default class BaseComponent {
 		}
 	}
 }
+
+// Non-enumerable brand used by loadComponents to tell Gia component classes apart from
+// arbitrary functions (see brand.js).
+Object.defineProperty(BaseComponent.prototype, GIA_COMPONENT, { value: true });
