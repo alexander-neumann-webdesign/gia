@@ -116,11 +116,11 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(typeof instance.observeMediaQuery).toBe('function');
     });
 
-    test('should preserve window.__gia_scheduler__ without mangling collision', () => {
-        // Scheduler should be attached to window without property mangling distortion
+    test('should preserve globalThis.__gia_scheduler__ without mangling collision', () => {
+        // Scheduler should be attached to globalThis without property mangling distortion
         fullDist.measure(() => {});
-        expect(window.__gia_scheduler__).toBeDefined();
-        expect(Array.isArray(window.__gia_scheduler__.reads)).toBe(true);
+        expect(globalThis.__gia_scheduler__).toBeDefined();
+        expect(Array.isArray(globalThis.__gia_scheduler__.reads)).toBe(true);
     });
 
     test('should share window.__gia_store__ across dist bundles to prevent double-mounting', () => {

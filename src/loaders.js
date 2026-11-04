@@ -5,9 +5,97 @@
 const URL_REGEX = /^(?:https?:|\/\/|\/|\.\.?\/)|(?:\.js|\.css)$/;
 
 /**
- * Loads a script that is already defined in the DOM with a data-src attribute.
+ * Shared implementation for loadScript / loadStyle.
+ * @param {string} id - Element ID, or a URL to load (an existing tag with that URL is reused)
+ * @param {boolean} isScript
+ * @param {string} [globalName] - Scripts only: global the script exposes (resolved value)
+ */
+function _loadAsset(id, isScript, globalName) {
+	const tag = isScript ? "script" : "link";
+	const attr = isScript ? "src" : "href";
+	const label = isScript ? "Script" : "Link";
+
+	// DOM LOOKUP: Find the existing tag by ID, or by URL, or create it from the URL
+	let el = document.getElementById(id);
+	if (!el) {
+		if (typeof id !== "string" || !URL_REGEX.test(id)) {
+			return Promise.reject(new Error(`${label} tag with ID '${id}' not found.`));
+		}
+		// Compare attributes directly: building a [src="..."] selector from the URL could throw
+		const candidates = document.getElementsByTagName(tag);
+		for (let i = 0; i < candidates.length; i++) {
+			if (candidates[i].getAttribute(attr) === id) {
+				el = candidates[i];
+				break;
+			}
+		}
+		if (!el) {
+			el = document.createElement(tag);
+			if (isScript) {
+				el.async = true;
+			} else {
+				el.rel = "stylesheet";
+			}
+			el[attr] = id;
+			(document.head || document.documentElement).appendChild(el);
+		}
+	}
+
+	// SECURITY: Ensure the found element is the expected tag to prevent DOM Clobbering
+	// and unintended execution of malicious payloads (e.g., via iframe data-src).
+	if (!(el instanceof (isScript ? HTMLScriptElement : HTMLLinkElement))) {
+		return Promise.reject(new Error(`Element with ID '${id}' is not a valid ${tag} tag.`));
+	}
+
+	// CACHE CHECK: Did we already start loading this?
+	if (el._loadPromise) {
+		return el._loadPromise;
+	}
+
+	el._loadPromise = new Promise((resolve, reject) => {
+		const cleanup = () => {
+			el.onload = null;
+			el.onerror = null;
+		};
+
+		el.onload = () => {
+			cleanup();
+			resolve(globalName ? window[globalName] : true);
+		};
+
+		el.onerror = () => {
+			cleanup();
+			delete el._loadPromise;
+			reject(new Error(`Failed to load ${isScript ? "script" : "style"}: ${id}`));
+		};
+
+		// TRIGGER: Move data-src/data-href to src/href if not already done
+		const dataAttr = `data-${attr}`;
+		if (!el[attr] && el.hasAttribute(dataAttr)) {
+			el[attr] = el.getAttribute(dataAttr);
+			el.removeAttribute(dataAttr);
+		} else if (!el[attr]) {
+			cleanup();
+			reject(new Error(`${label} tag '${id}' has no ${attr} or ${dataAttr}.`));
+		} else if (!isScript) {
+			// Stylesheet already has an href: it may have finished loading before we were called
+			for (let i = 0; i < document.styleSheets.length; i++) {
+				if (document.styleSheets[i].href === el.href) {
+					cleanup();
+					resolve(true);
+					break;
+				}
+			}
+		}
+	});
+
+	return el._loadPromise;
+}
+
+/**
+ * Loads a script that is already defined in the DOM with a data-src attribute, or a script URL.
  * Prevents double-loading and handles race conditions.
- * @param {string} scriptId - The exact ID of the script tag
+ * @param {string} scriptId - The exact ID of the script tag, or a URL
  * @param {string} [globalName] - Optional: The global variable this script exposes (e.g. "multipleSelect")
  * @return {Promise}
  */
@@ -16,153 +104,28 @@ export function loadScript(scriptId, globalName) {
 
 	// SAFETY CHECK: Is the library already active globally?
 	// Validate against DOM Clobbering false positives (Node, HTMLCollection, Window)
-	if (
-		globalName &&
-		window[globalName] &&
-		!(window[globalName] instanceof Node) &&
-		!(window[globalName] instanceof HTMLCollection) &&
-		!(window[globalName] instanceof Window)
-	) {
-		return Promise.resolve(window[globalName]);
-	}
-
-	// 2. DOM LOOKUP: Find the existing script tag or create from URL
-	let script = document.getElementById(scriptId);
-	if (!script) {
-		const isUrl = typeof scriptId === "string" && URL_REGEX.test(scriptId);
-
-		if (isUrl && typeof document !== "undefined") {
-			script = document.querySelector(`script[src="${scriptId}"]`);
-			if (!script) {
-				script = document.createElement("script");
-				script.src = scriptId;
-				script.async = true;
-				(document.head || document.documentElement).appendChild(script);
-			}
-		} else {
-			return Promise.reject(new Error(`Script tag with ID '${scriptId}' not found.`));
+	if (globalName) {
+		const existing = window[globalName];
+		if (
+			existing &&
+			!(existing instanceof Node) &&
+			!(existing instanceof HTMLCollection) &&
+			!(existing instanceof Window)
+		) {
+			return Promise.resolve(existing);
 		}
 	}
 
-	// SECURITY: Ensure the found element is actually a script tag to prevent DOM Clobbering
-	// and unintended execution of malicious payloads (e.g., via iframe data-src).
-	if (!(script instanceof HTMLScriptElement)) {
-		return Promise.reject(new Error(`Element with ID '${scriptId}' is not a valid script tag.`));
-	}
-
-	// CACHE CHECK: Did we already start loading this?
-	if (script._loadPromise) {
-		return script._loadPromise;
-	}
-
-	// START LOADING
-	script._loadPromise = new Promise((resolve, reject) => {
-		const cleanup = () => {
-			script.onload = null;
-			script.onerror = null;
-		};
-
-		script.onload = () => {
-			cleanup();
-			resolve(globalName ? window[globalName] : true);
-		};
-
-		script.onerror = () => {
-			cleanup();
-			delete script._loadPromise;
-			reject(new Error(`Failed to load script: ${scriptId}`));
-		};
-
-		// TRIGGER: Move data-src to src if not already done
-		if (!script.src && script.hasAttribute("data-src")) {
-			script.src = script.getAttribute("data-src");
-			script.removeAttribute("data-src");
-		} else if (!script.src && !script.hasAttribute("data-src")) {
-			cleanup();
-			reject(new Error(`Script tag '${scriptId}' has no src or data-src.`));
-		}
-	});
-
-	return script._loadPromise;
+	return _loadAsset(scriptId, true, globalName);
 }
 
 /**
- * Loads a stylesheet that is already defined in the DOM with a data-href attribute.
+ * Loads a stylesheet that is already defined in the DOM with a data-href attribute, or a CSS URL.
  * Prevents double-loading and handles race conditions.
- * @param {string} styleId - The exact ID of the link tag
+ * @param {string} styleId - The exact ID of the link tag, or a URL
  * @return {Promise}
  */
 export function loadStyle(styleId) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
-
-	// DOM LOOKUP: Find the existing link tag or create from URL
-	let link = document.getElementById(styleId);
-	if (!link) {
-		const isUrl = typeof styleId === "string" && URL_REGEX.test(styleId);
-
-		if (isUrl && typeof document !== "undefined") {
-			link = document.querySelector(`link[href="${styleId}"]`);
-			if (!link) {
-				link = document.createElement("link");
-				link.rel = "stylesheet";
-				link.href = styleId;
-				(document.head || document.documentElement).appendChild(link);
-			}
-		} else {
-			return Promise.reject(new Error(`Link tag with ID '${styleId}' not found.`));
-		}
-	}
-
-	// SECURITY: Ensure the found element is actually a link tag
-	if (!(link instanceof HTMLLinkElement)) {
-		return Promise.reject(new Error(`Element with ID '${styleId}' is not a valid link tag.`));
-	}
-
-	// CACHE CHECK: Did we already start loading this?
-	if (link._loadPromise) {
-		return link._loadPromise;
-	}
-
-	// START LOADING
-	link._loadPromise = new Promise((resolve, reject) => {
-		const cleanup = () => {
-			link.onload = null;
-			link.onerror = null;
-		};
-
-		link.onload = () => {
-			cleanup();
-			resolve(true);
-		};
-
-		link.onerror = () => {
-			cleanup();
-			delete link._loadPromise;
-			reject(new Error(`Failed to load style: ${styleId}`));
-		};
-
-		// TRIGGER: Move data-href to href if not already done
-		if (!link.href && link.hasAttribute("data-href")) {
-			link.href = link.getAttribute("data-href");
-			link.removeAttribute("data-href");
-		} else if (!link.href && !link.hasAttribute("data-href")) {
-			cleanup();
-			reject(new Error(`Link tag '${styleId}' has no href or data-href.`));
-		} else if (link.href && !link.hasAttribute("data-href")) {
-			// Already has href (might be pre-loaded)
-			let isLoaded = false;
-			for (let i = 0; i < document.styleSheets.length; i++) {
-				if (document.styleSheets[i].href === link.href) {
-					isLoaded = true;
-					break;
-				}
-			}
-			if (isLoaded) {
-				cleanup();
-				resolve(true);
-			}
-		}
-	});
-
-	return link._loadPromise;
+	return _loadAsset(styleId, false);
 }

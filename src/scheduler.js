@@ -1,14 +1,5 @@
-// Singleton state attached to window/globalThis to prevent multiple instances of Gia from thrashing each other
-const globalObj =
-	typeof globalThis !== "undefined"
-		? globalThis
-		: typeof window !== "undefined"
-		? window
-		: typeof global !== "undefined"
-		? global
-		: {};
-
-const state = globalObj.__gia_scheduler__ || (globalObj.__gia_scheduler__ = {
+// Singleton state on globalThis (the window in browsers) shared by every Gia bundle on the page
+const state = globalThis.__gia_scheduler__ || (globalThis.__gia_scheduler__ = {
 	reads: [],
 	writes: [],
 	scheduled: false,
@@ -23,11 +14,6 @@ if (!state.tempReads) {
 }
 if (!state.tempWrites) {
 	state.tempWrites = [];
-}
-
-// Store on window if we are in a browser environment and it isn't already there
-if (typeof window !== "undefined" && !window.__gia_scheduler__) {
-	window.__gia_scheduler__ = state;
 }
 
 // Each context-bound task gets its own wrapper. Wrappers are deliberately NOT pooled: the
@@ -92,9 +78,6 @@ function flush() {
 
 function schedule() {
 	if (typeof window !== "undefined") {
-		if (!window.__gia_scheduler__) {
-			window.__gia_scheduler__ = state;
-		}
 		if (!state.scheduled) {
 			state.scheduled = true;
 			window.requestAnimationFrame(flush);

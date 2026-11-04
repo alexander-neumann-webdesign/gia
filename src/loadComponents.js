@@ -1,6 +1,5 @@
 import config from "./config.js";
 import createInstance from "./createInstance.js";
-import getComponentFromElement from "./getComponentFromElement.js";
 import { queryAll } from "./utils.js";
 import { components as storeComponents } from "./store.js";
 import { isComponentClass } from "./brand.js";
@@ -183,6 +182,25 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	}
 }
 
+// ⚡ BOLT OPTIMIZATION: fast-failing for...in emptiness check, no Object.keys() allocation
+function _hasKeys(obj) {
+	for (const _k in obj) return true;
+	return false;
+}
+
+/** Queues one [data-component] element for mounting. Returns 1 if its component resolved. */
+function _processElement(element, attrName, components, initialisedComponents) {
+	if (storeComponents.has(element)) return 1;
+	const componentName = element.getAttribute(attrName);
+	const ctor = _resolveComponent(components, componentName);
+	if (!ctor) {
+		console.warn(`Constructor "${componentName}" not found.`);
+		return 0;
+	}
+	_instantiateOrLoad(element, componentName, ctor, components, initialisedComponents);
+	return 1;
+}
+
 export default function loadComponents(components = {}, context = document.documentElement) {
 	// If invoked in <head> while DOM is still loading, automatically defer to DOMContentLoaded
 	if (
@@ -200,88 +218,33 @@ export default function loadComponents(components = {}, context = document.docum
 		return;
 	}
 
-	let hasComponents = false;
-
 	// Support calling loadComponents(contextElement)
 	if (components && (components.nodeType === 1 || components.nodeType === 9)) {
 		context = components;
-		components = {};
+		components = null;
 	}
 
-	if (components) {
-		// ⚡ BOLT OPTIMIZATION: Check if object is empty using a fast-failing for...in loop
-		for (const _k in components) {
-			hasComponents = true;
-			break;
-		}
-	}
-
-	// Fallback to global registry if components was omitted or empty
-	if (!hasComponents && typeof window !== "undefined" && window.gia?.components) {
-		components = window.gia.components;
-		for (const _k in components) {
-			hasComponents = true;
-			break;
-		}
-	}
-
-	// Fallback to global window constructors if components was omitted or empty
-	if (!hasComponents && typeof window !== "undefined") {
-		const attrName = `${config.get("attrPrefix")}-component`;
-		const elements = queryAll(`[${attrName}]`, context);
-		for (let i = 0; i < elements.length; i++) {
-			if (_resolveComponent(null, elements[i].getAttribute(attrName))) {
-				hasComponents = true;
-				break;
-			}
-		}
-	}
-
-	if (!hasComponents) {
-		console.warn("App has no components");
-		return;
+	// Fall back to the global registry if components was omitted or empty
+	if (!_hasKeys(components)) {
+		components = (typeof window !== "undefined" && window.gia && window.gia.components) || {};
 	}
 
 	const initialisedComponents = [];
 	const attrName = `${config.get("attrPrefix")}-component`;
-
 	const elements = queryAll(`[${attrName}]`, context);
-	const elementsLength = elements.length;
+	let resolved = 0;
 
-	// ⚡ BOLT OPTIMIZATION: Inline processElement logic to avoid allocating a closure function
-	// and to prevent additional garbage collection overhead per element.
-	for (let i = 0; i < elementsLength; i++) {
-		const element = elements[i];
-		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
-		// and string-type checking since we know element is a DOM node.
-		const instance = storeComponents.get(element);
-
-		if (!instance) {
-			const componentName = element.getAttribute(attrName);
-			const ctor = _resolveComponent(components, componentName);
-
-			if (ctor) {
-				_instantiateOrLoad(element, componentName, ctor, components, initialisedComponents);
-			} else {
-				console.warn(`Constructor "${componentName}" not found.`);
-			}
-		}
+	// ⚡ BOLT OPTIMIZATION: Plain loop over the NodeList, no per-call closure allocation
+	for (let i = 0; i < elements.length; i++) {
+		resolved += _processElement(elements[i], attrName, components, initialisedComponents);
+	}
+	// The context element itself is mounted after its descendants
+	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
+		resolved += _processElement(context, attrName, components, initialisedComponents);
 	}
 
-	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
-		// ⚡ BOLT OPTIMIZATION: Inline getComponentFromElement to avoid function call overhead
-		const instance = storeComponents.get(context);
-
-		if (!instance) {
-			const componentName = context.getAttribute(attrName);
-			const ctor = _resolveComponent(components, componentName);
-
-			if (ctor) {
-				_instantiateOrLoad(context, componentName, ctor, components, initialisedComponents);
-			} else {
-				console.warn(`Constructor "${componentName}" not found.`);
-			}
-		}
+	if (!resolved && !_hasKeys(components)) {
+		console.warn("App has no components");
 	}
 
 	// ⚡ BOLT OPTIMIZATION: Only sort if at least one component defines custom priority.

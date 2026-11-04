@@ -1,7 +1,8 @@
 import config from "./config.js";
 
 /**
- * Lightweight event emitter for Mini build
+ * Lightweight event emitter used by the Mini build, and the base of the full EventBus
+ * (which adds wildcard dispatch and removal-safe iteration on top of it).
  */
 class MiniEventBus {
 	constructor() {
@@ -58,7 +59,7 @@ class MiniEventBus {
 		}
 		const list = this._listeners[event];
 		if (list) {
-			const target = (handler._wrappedHandlers && handler._wrappedHandlers[event]) || handler._wrapped || handler;
+			const target = (handler._wrappedHandlers && handler._wrappedHandlers[event]) || handler;
 			const idx = list.indexOf(target);
 			if (idx !== -1) list.splice(idx, 1);
 		}
@@ -79,9 +80,9 @@ class MiniEventBus {
  * Event bus using pure JS for Zero-GC and maximum performance
  */
 
-class EventBus {
+class EventBus extends MiniEventBus {
 	constructor() {
-		this._listeners = Object.create(null);
+		super();
 		this._iterating = Object.create(null);
 		this._hasWildcards = 0;
 	}
@@ -174,48 +175,11 @@ class EventBus {
 	}
 
 	on(event, handler, options = false) {
-		const isObj = options && typeof options === "object";
-		const once = isObj ? !!options.once : !!options;
-		const signal = isObj ? options.signal : null;
-
-		if (signal && signal.aborted) return;
-
-		if (event.indexOf("*") !== -1) {
+		const signal = options && typeof options === "object" ? options.signal : null;
+		if (event.indexOf("*") !== -1 && !(signal && signal.aborted)) {
 			this._hasWildcards++;
 		}
-
-		if (!this._listeners[event]) {
-			this._listeners[event] = [];
-		}
-
-		let actualHandler = handler;
-		if (once) {
-			actualHandler = (data) => {
-				this.off(event, actualHandler);
-				handler(data);
-			};
-			if (!handler._wrappedHandlers) {
-				handler._wrappedHandlers = Object.create(null);
-			}
-			handler._wrappedHandlers[event] = actualHandler;
-		}
-
-		if (signal) {
-			signal.addEventListener(
-				"abort",
-				() => {
-					this.off(event, actualHandler);
-				},
-				{ once: true },
-			);
-		}
-
-		this._listeners[event].push(actualHandler);
-	}
-
-	once(event, handler, options = {}) {
-		const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
-		this.on(event, handler, opts);
+		super.on(event, handler, options);
 	}
 
 	off(event, handler) {
@@ -248,8 +212,6 @@ class EventBus {
 		if (handler._wrappedHandlers && handler._wrappedHandlers[event]) {
 			targetHandler = handler._wrappedHandlers[event];
 			delete handler._wrappedHandlers[event];
-		} else if (handler._wrapped) {
-			targetHandler = handler._wrapped;
 		}
 
 		const index = handlers.indexOf(targetHandler);
@@ -264,39 +226,12 @@ class EventBus {
 			}
 		}
 	}
-
-	channel(namespace) {
-		const prefix = namespace.endsWith(":") ? namespace : `${namespace}:`;
-		return {
-			emit: (event, eventObject) => {
-				this.emit(`${prefix}${event}`, eventObject);
-			},
-			on: (event, handler, options) => {
-				this.on(`${prefix}${event}`, handler, options);
-			},
-			once: (event, handler, options) => {
-				this.once(`${prefix}${event}`, handler, options);
-			},
-			off: (event, handler) => {
-				this.off(`${prefix}${event}`, handler);
-			},
-		};
-	}
 }
-
-const globalObj =
-	typeof globalThis !== "undefined"
-		? globalThis
-		: typeof window !== "undefined"
-		? window
-		: typeof global !== "undefined"
-		? global
-		: {};
 
 const EventBusClass =
 	typeof __GIA_MINI__ !== "undefined" && __GIA_MINI__ ? MiniEventBus : EventBus;
 
-let eventbusInstance = globalObj.__gia_eventbus__;
+let eventbusInstance = globalThis.__gia_eventbus__;
 
 if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 	const FULL_BUS = Symbol.for("gia.eventbus.full");
@@ -320,7 +255,7 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 }
 
 if (!eventbusInstance) {
-	eventbusInstance = globalObj.__gia_eventbus__ = new EventBusClass();
+	eventbusInstance = globalThis.__gia_eventbus__ = new EventBusClass();
 }
 
 export default eventbusInstance;

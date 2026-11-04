@@ -1,11 +1,3 @@
-const globalObj =
-	typeof globalThis !== "undefined"
-		? globalThis
-		: typeof window !== "undefined"
-		? window
-		: typeof global !== "undefined"
-		? global
-		: {};
 
 class Config {
 	_options = {
@@ -24,6 +16,7 @@ class Config {
 	}
 }
 
-const configInstance = globalObj.__gia_config__ || (globalObj.__gia_config__ = new Config());
+// Shared by every Gia bundle on the page (globalThis is the window in browsers)
+const configInstance = globalThis.__gia_config__ || (globalThis.__gia_config__ = new Config());
 
 export default configInstance;

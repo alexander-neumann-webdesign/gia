@@ -534,21 +534,15 @@ export default class BaseComponent {
 	}
 
 	addClass(target, className) {
-		let el = target;
-		let cls = className;
-		if (cls === undefined) {
-			el = this.element;
-			cls = target;
-		} else if (typeof target === "string") {
-			el = this.find(target);
-		}
-		if (el) {
-			addClass(el, cls);
-		}
-		return el;
+		return this._classAction(target, className, addClass);
 	}
 
 	removeClass(target, className) {
+		return this._classAction(target, className, removeClass);
+	}
+
+	// (className) targets the root element; (selector, className) a descendant; (node, className) a node
+	_classAction(target, className, fn) {
 		let el = target;
 		let cls = className;
 		if (cls === undefined) {
@@ -558,7 +552,7 @@ export default class BaseComponent {
 			el = this.find(target);
 		}
 		if (el) {
-			removeClass(el, cls);
+			fn(el, cls);
 		}
 		return el;
 	}

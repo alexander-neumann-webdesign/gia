@@ -16,40 +16,26 @@ export function queryAll(selector, context = document) {
 
 export function toggleClass(element, className, condition = null) {
 	if (!element || !className) return;
-	const hasSpaces = typeof className === "string" && className.indexOf(" ") !== -1;
-	if (hasSpaces) {
+	_applyClassAction(element, className, "toggle", condition === null ? undefined : !!condition);
+}
+
+function _applyClassAction(node, className, action, force) {
+	if (!node || !node.classList) return;
+	const list = node.classList;
+	if (typeof className === "string" && className.indexOf(" ") !== -1) {
 		const classes = className.trim().split(/\s+/);
 		for (let i = 0; i < classes.length; i++) {
-			const cls = classes[i];
-			if (cls) {
-				if (condition === null) {
-					element.classList.toggle(cls);
-				} else {
-					element.classList.toggle(cls, !!condition);
-				}
-			}
+			if (classes[i]) _classListCall(list, classes[i], action, force);
 		}
 	} else {
-		if (condition === null) {
-			element.classList.toggle(className);
-		} else {
-			element.classList.toggle(className, !!condition);
-		}
+		_classListCall(list, className, action, force);
 	}
 }
 
-function _applyClassAction(node, className, action) {
-	if (!node || !node.classList) return;
-	const hasSpaces = typeof className === "string" && className.indexOf(" ") !== -1;
-	if (hasSpaces) {
-		const classes = className.trim().split(/\s+/);
-		for (let i = 0; i < classes.length; i++) {
-			const cls = classes[i];
-			if (cls) node.classList[action](cls);
-		}
-	} else {
-		node.classList[action](className);
-	}
+// Only toggle() takes a second argument: add()/remove() would add a literal "undefined" token
+function _classListCall(list, cls, action, force) {
+	if (force === undefined) list[action](cls);
+	else list.toggle(cls, force);
 }
 
 function modifyClass(nodes, className, action) {
