@@ -3,6 +3,7 @@ import createInstance from "./createInstance.js";
 import getComponentFromElement from "./getComponentFromElement.js";
 import { queryAll } from "./utils.js";
 import { components as storeComponents } from "./store.js";
+import { isComponentClass } from "./brand.js";
 
 /**
  * Creates instances of components without creating duplicates on elements within the context
@@ -16,6 +17,38 @@ function _comparePriority(a, b) {
 	const pA = a.constructor._gia_priority ?? a.constructor.priority ?? 0;
 	const pB = b.constructor._gia_priority ?? b.constructor.priority ?? 0;
 	return pB - pA; // Descending order (highest priority first)
+}
+
+/**
+ * Resolves a data-component name to a constructor or loader.
+ *
+ * The component name comes from markup, so it must never select arbitrary functions:
+ * - Entries of the developer-supplied registry may be classes, factories, or lazy loaders,
+ *   but values inherited from Object.prototype ("constructor", "toString", ...) are ignored.
+ * - The window fallback only accepts Gia component classes. Anything else on window
+ *   (setTimeout, stop, print, site or library globals) is never called.
+ */
+function _resolveComponent(components, name) {
+	if (!name) return null;
+	if (components) {
+		const ctor = components[name];
+		if (typeof ctor === "function" && ctor !== Object.prototype[name]) {
+			return ctor;
+		}
+	}
+	if (typeof window !== "undefined") {
+		let globalCtor;
+		try {
+			globalCtor = window[name];
+		} catch (_e) {
+			// Some window getters throw (e.g. storage access in sandboxed frames)
+			return null;
+		}
+		if (isComponentClass(globalCtor)) {
+			return globalCtor;
+		}
+	}
+	return null;
 }
 
 function _isConnected(element) {
@@ -90,8 +123,9 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 		return instance;
 	}
 
-	let isClass = false;
+	let isClass = isComponentClass(ctor);
 	if (
+		!isClass &&
 		ctor.prototype &&
 		(ctor.prototype.mount !== undefined ||
 			ctor.prototype._load !== undefined ||
@@ -184,8 +218,7 @@ export default function loadComponents(components = {}, context = document.docum
 		const attrName = `${config.get("attrPrefix")}-component`;
 		const elements = queryAll(`[${attrName}]`, context);
 		for (let i = 0; i < elements.length; i++) {
-			const name = elements[i].getAttribute(attrName);
-			if (name && typeof window[name] === "function") {
+			if (_resolveComponent(null, elements[i].getAttribute(attrName))) {
 				hasComponents = true;
 				break;
 			}
@@ -213,12 +246,9 @@ export default function loadComponents(components = {}, context = document.docum
 
 		if (!instance) {
 			const componentName = element.getAttribute(attrName);
-			let ctor = components[componentName];
-			if (!ctor && typeof window !== "undefined" && typeof window[componentName] === "function") {
-				ctor = window[componentName];
-			}
+			const ctor = _resolveComponent(components, componentName);
 
-			if (typeof ctor === "function") {
+			if (ctor) {
 				_instantiateOrLoad(element, componentName, ctor, components, initialisedComponents);
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);
@@ -232,12 +262,9 @@ export default function loadComponents(components = {}, context = document.docum
 
 		if (!instance) {
 			const componentName = context.getAttribute(attrName);
-			let ctor = components[componentName];
-			if (!ctor && typeof window !== "undefined" && typeof window[componentName] === "function") {
-				ctor = window[componentName];
-			}
+			const ctor = _resolveComponent(components, componentName);
 
-			if (typeof ctor === "function") {
+			if (ctor) {
 				_instantiateOrLoad(context, componentName, ctor, components, initialisedComponents);
 			} else {
 				console.warn(`Constructor "${componentName}" not found.`);

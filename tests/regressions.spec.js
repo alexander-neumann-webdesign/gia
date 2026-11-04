@@ -442,6 +442,143 @@ test.describe('Regression tests', () => {
         });
     });
 
+    test.describe('component name resolution from markup', () => {
+        const silenceWarn = (fn) => {
+            const orig = console.warn;
+            console.warn = () => {};
+            try {
+                return fn();
+            } finally {
+                console.warn = orig;
+            }
+        };
+
+        test('arbitrary window functions are never called', () => {
+            const calls = [];
+            window.siteGlobalFn = (el) => calls.push(['siteGlobalFn', el]);
+            const realSetTimeout = window.setTimeout;
+            window.setTimeout = function (arg) {
+                calls.push(['setTimeout', arg]);
+                return realSetTimeout.apply(this, arguments);
+            };
+            try {
+                mk('<div data-component="siteGlobalFn"></div>');
+                mk('<a data-component="setTimeout" href="mailto:alert(1)"></a>');
+                silenceWarn(() => loadComponents(document.body));
+                silenceWarn(() => loadComponents({ Unrelated: class {} }, document.body));
+            } finally {
+                window.setTimeout = realSetTimeout;
+                delete window.siteGlobalFn;
+            }
+            expect(calls).toEqual([]);
+        });
+
+        test('non-Gia classes on window are not instantiated, even with a mount() method', () => {
+            let constructed = 0;
+            window.Splide = class {
+                constructor() {
+                    constructed++;
+                }
+                mount() {}
+            };
+            try {
+                const el = mk('<div data-component="Splide"></div>');
+                silenceWarn(() => loadComponents(document.body));
+                expect(constructed).toBe(0);
+                expect(components.has(el)).toBe(false);
+            } finally {
+                delete window.Splide;
+            }
+        });
+
+        test('Gia component classes on window are still discovered and mounted', async () => {
+            class WindowWidget extends Component {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            class WindowBase extends BaseComponent {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            window.WindowWidget = WindowWidget;
+            window.WindowBase = WindowBase;
+            try {
+                const a = mk('<div data-component="WindowWidget"></div>');
+                const b = mk('<div data-component="WindowBase"></div>');
+                loadComponents(document.body);
+                await tick(); // Component mounts after its async require() step
+                expect(components.get(a)).toBeInstanceOf(WindowWidget);
+                expect(components.get(a).mounted).toBe(true);
+                expect(components.get(b).mounted).toBe(true);
+                destroyInstance(a);
+                destroyInstance(b);
+            } finally {
+                delete window.WindowWidget;
+                delete window.WindowBase;
+            }
+        });
+
+        test('names inherited from Object.prototype are not resolved from a registry', () => {
+            let called = 0;
+            Object.prototype.__giaProbe = () => called++;
+            try {
+                mk('<div data-component="__giaProbe"></div>');
+                mk('<div data-component="constructor"></div>');
+                silenceWarn(() => loadComponents({ Other: class extends BaseComponent {} }, document.body));
+            } finally {
+                delete Object.prototype.__giaProbe;
+            }
+            expect(called).toBe(0);
+        });
+
+        test('developer-supplied factories and lazy loaders keep working', async () => {
+            class Lazy extends BaseComponent {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            const lazyEl = mk('<div data-component="Lazy"></div>');
+            const factoryEl = mk('<div data-component="Factory"></div>');
+            loadComponents(
+                {
+                    Lazy: () => Promise.resolve({ default: Lazy }),
+                    Factory: () => Lazy,
+                },
+                document.body,
+            );
+            await tick();
+            expect(components.get(lazyEl).mounted).toBe(true);
+            expect(components.get(factoryEl).mounted).toBe(true);
+            destroyInstance(lazyEl);
+            destroyInstance(factoryEl);
+        });
+
+        test('a throwing window getter does not abort mounting of other components', () => {
+            Object.defineProperty(window, 'explodingGetter', {
+                configurable: true,
+                get() {
+                    throw new Error('SecurityError');
+                },
+            });
+            class Fine extends BaseComponent {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            try {
+                mk('<div data-component="explodingGetter"></div>');
+                const el = mk('<div data-component="Fine"></div>');
+                silenceWarn(() => loadComponents({ Fine }, document.body));
+                expect(components.get(el).mounted).toBe(true);
+                destroyInstance(el);
+            } finally {
+                delete window.explodingGetter;
+            }
+        });
+    });
+
     test('loadComponents can retry a component whose first construction failed', () => {
         let attempts = 0;
         class Retry extends BaseComponent {

@@ -85,7 +85,7 @@ import { BaseComponent, loadComponents, register } from "gia/nano";
 > **UMD Superpowers & Head-Loading Safety**:
 > - **Non-Destructive UMD Merging**: All UMD builds compile with `output.extend: true`. Third-party widgets and host pages merge cleanly onto `window.gia` without wiping previously loaded components or features.
 > - **Head-Safe Execution**: `loadComponents()` can be called in `<head>`, inline, or with `<script defer>`. If the DOM is still loading (`document.readyState === "loading"`), Gia automatically defers execution to `DOMContentLoaded`.
-> - **Global Window Auto-Discovery**: Components declared as global classes (`class Counter extends gia.Component`) in plain `<script>` tags are automatically resolved from `window[componentName]` without needing manual registration.
+> - **Global Window Auto-Discovery**: Component classes exposed on `window` (`window.Counter = class extends gia.Component {}`) are resolved from `window[componentName]` without manual registration. Note that a top-level `class Counter …` declaration does **not** create a `window` property, so either assign it to `window` explicitly or call `gia.register(Counter)`. For security, the `window` fallback only accepts classes derived from Gia's `BaseComponent`/`Component`; other global functions are never called from markup.
 
 ---
 
@@ -157,7 +157,7 @@ import { register, loadComponents } from "gia";
 register(Counter);
 loadComponents(); // Discovers and mounts all registered components across the page
 
-// Approach B: Explicit dictionary scoping
+// Approach B: Explicit dictionary scoping (the global registry is not consulted)
 loadComponents({ Counter });
 
 // Approach C: On-demand dynamic code-splitting via native dynamic imports

@@ -5,6 +5,7 @@ import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./sta
 import { loadScript, loadStyle } from "./loaders.js";
 import { autoBindActions } from "./actions.js";
 import eventbus from "./eventbus.js";
+import { GIA_COMPONENT } from "./brand.js";
 import {
 	observeScroll,
 	unobserveScroll,
@@ -593,3 +594,7 @@ export default class BaseComponent {
 		}
 	}
 }
+
+// Non-enumerable brand used by loadComponents to tell Gia component classes apart from
+// arbitrary functions (see brand.js).
+Object.defineProperty(BaseComponent.prototype, GIA_COMPONENT, { value: true });
