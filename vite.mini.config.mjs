@@ -9,6 +9,7 @@ const __dirname = dirname(__filename);
 export default defineConfig({
 	define: {
 		__GIA_MINI__: "true",
+		__GIA_NANO__: "false",
 	},
 	esbuild: sharedEsbuildOptions,
 	plugins: [terserPlugin({ umdRank: UMD_RANK.mini })],

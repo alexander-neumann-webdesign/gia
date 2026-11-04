@@ -1,6 +1,6 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.9KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~10KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
 [![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
@@ -61,8 +61,8 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.9 KB (29.5 KB) | ~9.7 KB (29.1 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.1 KB (23.6 KB) | ~7.9 KB (23.2 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.0 KB (29.2 KB) | ~9.8 KB (28.8 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.0 KB (22.9 KB) | ~7.8 KB (22.5 KB) |
 | **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.4 KB (15.6 KB) | ~5.3 KB (15.2 KB) |
 
 ```javascript
