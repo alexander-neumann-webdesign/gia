@@ -1,29 +1,23 @@
 /**
- * Centralized observers: IntersectionObserver, ResizeObserver, Scroll, and Window Resize.
- * Eliminates duplicate listener overhead and layout thrashing across components.
+ * Centralized observers: Scroll, Window Resize, ResizeObserver, IntersectionObserver and
+ * matchMedia. Eliminates duplicate listener overhead and layout thrashing across components.
+ *
+ * Every feature is a "registry": a shared map of key -> callbacks (key is window, an element,
+ * or a media query), with `start(key)` run when the first callback for a key arrives and
+ * `stop(key)` when the last one leaves. Each component instance records what it registered in
+ * instance._obs (Map registry -> Map key -> callbacks), so a single generic routine handles
+ * per-component unobserving and teardown for all features.
  */
 
-let globalScrollListenerBound = false;
-let globalResizeListenerBound = false;
-const scrollCallbacks = [];
 const isMobileBrowser =
 	typeof navigator !== "undefined" &&
 	!!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
-const windowResizeCallbacks = [];
-let globalLenisInstance = null;
-let lastScrollY = 0;
-let lastVelocity = 0;
 
+// ⚡ BOLT OPTIMIZATION: payload objects and the single-entry array are reused on every
+// dispatch, so high-frequency callbacks (scroll, resize) allocate nothing.
 const _scrollPayload = { scroll: 0, velocity: 0 };
 const _resizePayload = { width: 0, height: 0 };
-const _observerEntryArr = [null];
-
-const _unobserveResizeCb = function (val, key) {
-	unobserveResize(this, key);
-};
-const _unobserveIntersectionCb = function (val, key) {
-	unobserveIntersection(this, key);
-};
+const _entryArr = [null];
 
 function _swapAndPop(arr, item) {
 	if (!arr) return;
@@ -34,286 +28,248 @@ function _swapAndPop(arr, item) {
 	}
 }
 
-function _processScroll() {
-	for (let i = scrollCallbacks.length - 1; i >= 0; i--) {
-		scrollCallbacks[i](_scrollPayload);
+function _addOnce(arr, item) {
+	if (arr.indexOf(item) === -1) arr.push(item);
+}
+
+// Callbacks run in reverse so a callback may unobserve itself during dispatch (swap-and-pop)
+function _dispatch(cbs, arg, arg2) {
+	if (!cbs) return;
+	for (let i = cbs.length - 1; i >= 0; i--) {
+		cbs[i](arg, arg2);
 	}
 }
+
+/**
+ * @param {Function} start - (key) => void, first callback registered for key
+ * @param {Function} stop - (key) => void, last callback removed for key
+ * @param {boolean} [weak] - key callbacks by element in a WeakMap
+ */
+function _registry(start, stop, weak) {
+	return { _cbs: weak ? new WeakMap() : new Map(), _start: start, _stop: stop };
+}
+
+function _observe(instance, reg, key, cb) {
+	let cbs = reg._cbs.get(key);
+	if (!cbs) {
+		cbs = [];
+		reg._cbs.set(key, cbs);
+		reg._start(key);
+	}
+	_addOnce(cbs, cb);
+
+	const mine = instance._obs || (instance._obs = new Map());
+	let perKey = mine.get(reg);
+	if (!perKey) {
+		perKey = new Map();
+		mine.set(reg, perKey);
+	}
+	let list = perKey.get(key);
+	if (!list) {
+		list = [];
+		perKey.set(key, list);
+	}
+	_addOnce(list, cb);
+}
+
+/** Removes `cb` (or, when omitted, all of this instance's callbacks) for `key` in `reg`. */
+function _unobserve(instance, reg, key, cb) {
+	const perKey = instance && instance._obs && instance._obs.get(reg);
+	const list = perKey && perKey.get(key);
+	if (!list) return;
+	const cbs = reg._cbs.get(key);
+
+	if (cb) {
+		for (let i = 0; i < list.length; i++) {
+			// _wrapped: an internal wrapper (observeIntersection once) registered for `cb`
+			if (list[i] === cb || list[i]._wrapped === cb) {
+				_swapAndPop(cbs, list[i]);
+				list[i] = list[list.length - 1];
+				list.pop();
+				break;
+			}
+		}
+	} else {
+		for (let i = 0; i < list.length; i++) {
+			_swapAndPop(cbs, list[i]);
+		}
+		list.length = 0;
+	}
+
+	if (list.length === 0) {
+		perKey.delete(key);
+		if (perKey.size === 0) instance._obs.delete(reg);
+	}
+	if (cbs && cbs.length === 0) {
+		reg._cbs.delete(key);
+		reg._stop(key);
+	}
+}
+
+// ─── Window scroll ──────────────────────────────────────────────────────────
+
+let globalLenisInstance = null;
 
 function handleGlobalScroll(e) {
 	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
-	let scrollY, velocity;
 	if (globalLenisInstance) {
-		scrollY = globalLenisInstance.scroll;
-		velocity = globalLenisInstance.velocity;
+		_scrollPayload.scroll = globalLenisInstance.scroll;
+		_scrollPayload.velocity = globalLenisInstance.velocity;
 	} else if (e && typeof e.scroll === "number") {
-		scrollY = e.scroll;
-		velocity = e.velocity || 0;
+		_scrollPayload.scroll = e.scroll;
+		_scrollPayload.velocity = e.velocity || 0;
 	} else {
-		scrollY = window.scrollY || window.pageYOffset;
-		velocity = 0;
+		_scrollPayload.scroll = window.scrollY || window.pageYOffset;
+		_scrollPayload.velocity = 0;
 	}
-
-	lastScrollY = scrollY;
-	lastVelocity = velocity;
-
-	_scrollPayload.scroll = scrollY;
-	_scrollPayload.velocity = velocity;
-
-	_processScroll();
+	_dispatch(scrollRegistry._cbs.get(window), _scrollPayload);
 }
 
-function _processResize() {
-	for (let i = windowResizeCallbacks.length - 1; i >= 0; i--) {
-		windowResizeCallbacks[i](_resizePayload);
-	}
-}
-
-function handleGlobalResize() {
-	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
-	_resizePayload.width = window.innerWidth;
-	_resizePayload.height = window.innerHeight;
-
-	_processResize();
-}
-
-let globalResizeObserver = null;
-const resizeCallbacks = new WeakMap();
-const intersectionObservers = new Map(); // root -> marginMap
-
-function getIntersectionObserverData(options) {
-	const root = options.root || null;
-	const rootMargin = options.rootMargin || "0px 0px 0px 0px";
-	const threshold = options.threshold || 0;
-
-	let rootMap = intersectionObservers.get(root);
-	if (!rootMap) {
-		rootMap = new Map();
-		intersectionObservers.set(root, rootMap);
-	}
-
-	let marginMap = rootMap.get(rootMargin);
-	if (!marginMap) {
-		marginMap = new Map();
-		rootMap.set(rootMargin, marginMap);
-	}
-
-	let currentMap = marginMap;
-
-	if (Array.isArray(threshold)) {
-		let lenMap = currentMap.get("array");
-		if (!lenMap) {
-			lenMap = new Map();
-			currentMap.set("array", lenMap);
-		}
-		currentMap = lenMap;
-		for (let i = 0; i < threshold.length; i++) {
-			const t = threshold[i];
-			let nextMap = currentMap.get(t);
-			if (!nextMap) {
-				nextMap = new Map();
-				currentMap.set(t, nextMap);
-			}
-			currentMap = nextMap;
-		}
-	} else {
-		let numMap = currentMap.get("number");
-		if (!numMap) {
-			numMap = new Map();
-			currentMap.set("number", numMap);
-		}
-		currentMap = numMap;
-		let nextMap = currentMap.get(threshold);
-		if (!nextMap) {
-			nextMap = new Map();
-			currentMap.set(threshold, nextMap);
-		}
-		currentMap = nextMap;
-	}
-
-	let observerData = currentMap.get("data");
-	if (!observerData) {
-		const observer = new IntersectionObserver((entries) => {
-			// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
-			for (let i = 0; i < entries.length; i++) {
-				const entry = entries[i];
-				const callbacks = observerData._callbacks.get(entry.target);
-				if (callbacks) {
-					_observerEntryArr[0] = entry;
-					for (let j = callbacks.length - 1; j >= 0; j--) {
-						callbacks[j](_observerEntryArr);
-					}
-				}
-			}
-		}, options);
-
-		observerData = {
-			_observer: observer,
-			_callbacks: new WeakMap(),
-			_nodeMap: currentMap,
-			_elementsCount: 0,
-		};
-		currentMap.set("data", observerData);
-	}
-
-	return observerData;
-}
-
-export function observeScroll(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	if (typeof window === "undefined") return;
-
-	if (!globalScrollListenerBound) {
-		globalScrollListenerBound = true;
+const scrollRegistry = _registry(
+	() => {
 		if (window.lenis) {
 			globalLenisInstance = window.lenis;
 			globalLenisInstance.on("scroll", handleGlobalScroll);
 		} else {
 			window.addEventListener("scroll", handleGlobalScroll, { passive: true });
 		}
-	}
-
-	if (!instance._observedScrollCallbacks) {
-		instance._observedScrollCallbacks = [];
-	}
-	if (instance._observedScrollCallbacks.indexOf(callback) === -1) {
-		instance._observedScrollCallbacks.push(callback);
-	}
-	if (scrollCallbacks.indexOf(callback) === -1) {
-		scrollCallbacks.push(callback);
-	}
-}
-
-export function unobserveScroll(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	if (instance && instance._observedScrollCallbacks) {
-		_swapAndPop(instance._observedScrollCallbacks, callback);
-	}
-	_swapAndPop(scrollCallbacks, callback);
-
-	if (scrollCallbacks.length === 0 && globalScrollListenerBound) {
-		globalScrollListenerBound = false;
+	},
+	() => {
 		if (globalLenisInstance) {
 			globalLenisInstance.off("scroll", handleGlobalScroll);
 			globalLenisInstance = null;
 		} else {
 			window.removeEventListener("scroll", handleGlobalScroll);
 		}
-	}
-}
+	},
+);
 
-export function observeWindowResize(instance, callback) {
+export function observeScroll(instance, callback) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (typeof window === "undefined") return;
+	_observe(instance, scrollRegistry, window, callback);
+}
 
-	if (!globalResizeListenerBound) {
-		globalResizeListenerBound = true;
+export function unobserveScroll(instance, callback) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof window === "undefined") return;
+	_unobserve(instance, scrollRegistry, window, callback);
+}
+
+// ─── Window resize ──────────────────────────────────────────────────────────
+
+function handleGlobalResize() {
+	// ⚡ BOLT OPTIMIZATION: Read layout synchronously OUTSIDE requestAnimationFrame to prevent layout thrashing
+	_resizePayload.width = window.innerWidth;
+	_resizePayload.height = window.innerHeight;
+	_dispatch(windowResizeRegistry._cbs.get(window), _resizePayload);
+}
+
+const windowResizeRegistry = _registry(
+	() => {
 		window.addEventListener("resize", handleGlobalResize, { passive: true });
 		if (isMobileBrowser) {
 			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });
 		}
-	}
-
-	if (!instance._observedWindowResizeCallbacks) {
-		instance._observedWindowResizeCallbacks = [];
-	}
-	if (instance._observedWindowResizeCallbacks.indexOf(callback) === -1) {
-		instance._observedWindowResizeCallbacks.push(callback);
-	}
-	if (windowResizeCallbacks.indexOf(callback) === -1) {
-		windowResizeCallbacks.push(callback);
-	}
-}
-
-export function unobserveWindowResize(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	if (instance && instance._observedWindowResizeCallbacks) {
-		_swapAndPop(instance._observedWindowResizeCallbacks, callback);
-	}
-	_swapAndPop(windowResizeCallbacks, callback);
-
-	if (windowResizeCallbacks.length === 0 && globalResizeListenerBound) {
-		globalResizeListenerBound = false;
+	},
+	() => {
 		window.removeEventListener("resize", handleGlobalResize);
 		if (isMobileBrowser) {
 			window.removeEventListener("orientationchange", handleGlobalResize);
 		}
-	}
+	},
+);
+
+export function observeWindowResize(instance, callback) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof window === "undefined") return;
+	_observe(instance, windowResizeRegistry, window, callback);
 }
+
+export function unobserveWindowResize(instance, callback) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof window === "undefined") return;
+	_unobserve(instance, windowResizeRegistry, window, callback);
+}
+
+// ─── Element observers (ResizeObserver / IntersectionObserver) ──────────────
+
+// Routes native observer entries to the callbacks registered for each entry's target
+function _entryDispatcher(getReg) {
+	return (entries) => {
+		// ⚡ BOLT OPTIMIZATION: Avoid Array.forEach closure allocations in high-frequency callbacks
+		const reg = getReg();
+		for (let i = 0; i < entries.length; i++) {
+			const entry = entries[i];
+			const cbs = reg._cbs.get(entry.target);
+			if (cbs) {
+				_entryArr[0] = entry;
+				_dispatch(cbs, _entryArr);
+			}
+		}
+	};
+}
+
+// One ResizeObserver shared by every element and component
+let globalResizeObserver = null;
+const resizeRegistry = _registry(
+	(el) => globalResizeObserver.observe(el),
+	(el) => globalResizeObserver.unobserve(el),
+	true,
+);
 
 export function observeResize(instance, element, callback) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (typeof window === "undefined" || !window.ResizeObserver) return;
-
 	if (!globalResizeObserver) {
-		globalResizeObserver = new ResizeObserver((entries) => {
-			for (let i = 0; i < entries.length; i++) {
-				const entry = entries[i];
-				const callbacks = resizeCallbacks.get(entry.target);
-				if (callbacks) {
-					_observerEntryArr[0] = entry;
-					for (let j = callbacks.length - 1; j >= 0; j--) {
-						callbacks[j](_observerEntryArr);
-					}
-				}
-			}
-		});
+		globalResizeObserver = new ResizeObserver(_entryDispatcher(() => resizeRegistry));
 	}
-
-	let rCbs = resizeCallbacks.get(element);
-	if (!rCbs) {
-		rCbs = [];
-		resizeCallbacks.set(element, rCbs);
-		globalResizeObserver.observe(element);
-	}
-	if (rCbs.indexOf(callback) === -1) {
-		rCbs.push(callback);
-	}
-
-	if (!instance._observedResizeElements) {
-		instance._observedResizeElements = new Map();
-	}
-	let oCbs = instance._observedResizeElements.get(element);
-	if (!oCbs) {
-		oCbs = [];
-		instance._observedResizeElements.set(element, oCbs);
-	}
-	if (oCbs.indexOf(callback) === -1) {
-		oCbs.push(callback);
-	}
+	_observe(instance, resizeRegistry, element, callback);
 }
 
 export function unobserveResize(instance, element, callback = null) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	if (!instance._observedResizeElements) return;
+	_unobserve(instance, resizeRegistry, element, callback);
+}
 
-	const componentCallbacks = instance._observedResizeElements.get(element);
-	if (!componentCallbacks) return;
+// IntersectionObservers are pooled per root + rootMargin + threshold: root -> key -> registry
+const intersectionPools = new Map();
 
-	if (callback) {
-		_swapAndPop(componentCallbacks, callback);
-		_swapAndPop(resizeCallbacks.get(element), callback);
-	} else {
-		const globalCbs = resizeCallbacks.get(element);
-		if (globalCbs) {
-			for (let i = 0; i < componentCallbacks.length; i++) {
-				_swapAndPop(globalCbs, componentCallbacks[i]);
-			}
-		}
-		componentCallbacks.length = 0;
+function _intersectionRegistry(options) {
+	const root = options.root || null;
+	const threshold = options.threshold || 0;
+	// Arrays and numbers get distinct keys: [0.5] and 0.5 are different observer configurations
+	const key = `${options.rootMargin || "0px 0px 0px 0px"}|${Array.isArray(threshold) ? `[${threshold}]` : threshold}`;
+
+	let pool = intersectionPools.get(root);
+	if (!pool) {
+		pool = new Map();
+		intersectionPools.set(root, pool);
 	}
-
-	if (componentCallbacks.length === 0) {
-		instance._observedResizeElements.delete(element);
+	let reg = pool.get(key);
+	if (!reg) {
+		let count = 0;
+		const observer = new IntersectionObserver(_entryDispatcher(() => reg), options);
+		reg = _registry(
+			(el) => {
+				count++;
+				observer.observe(el);
+			},
+			(el) => {
+				observer.unobserve(el);
+				if (--count === 0) {
+					// Last element gone: release the observer and drop the pool entries
+					observer.disconnect();
+					pool.delete(key);
+					if (pool.size === 0) intersectionPools.delete(root);
+				}
+			},
+			true,
+		);
+		reg._intersection = true;
+		pool.set(key, reg);
 	}
-
-	const globalCbs = resizeCallbacks.get(element);
-	if (globalCbs && globalCbs.length === 0) {
-		resizeCallbacks.delete(element);
-		if (globalResizeObserver) {
-			globalResizeObserver.unobserve(element);
-		}
-	}
+	return reg;
 }
 
 export function observeIntersection(instance, element, callback, options = {}) {
@@ -334,152 +290,62 @@ export function observeIntersection(instance, element, callback, options = {}) {
 		actualCallback._wrapped = callback;
 	}
 
-	const cleanOptions = options && options.once ? { ...options, once: undefined } : options;
-	const observerData = getIntersectionObserverData(cleanOptions);
-
-	let oDataCbs = observerData._callbacks.get(element);
-	if (!oDataCbs) {
-		oDataCbs = [];
-		observerData._callbacks.set(element, oDataCbs);
-		observerData._observer.observe(element);
-		observerData._elementsCount++;
-	}
-	if (oDataCbs.indexOf(actualCallback) === -1) {
-		oDataCbs.push(actualCallback);
-	}
-
-	if (!instance._observedIntersectionElements) {
-		instance._observedIntersectionElements = new Map();
-	}
-	let componentElementMap = instance._observedIntersectionElements.get(element);
-	if (!componentElementMap) {
-		componentElementMap = new Map();
-		instance._observedIntersectionElements.set(element, componentElementMap);
-	}
-
-	let obsCbs = componentElementMap.get(observerData);
-	if (!obsCbs) {
-		obsCbs = [];
-		componentElementMap.set(observerData, obsCbs);
-	}
-	if (obsCbs.indexOf(actualCallback) === -1) {
-		obsCbs.push(actualCallback);
-	}
+	const cleanOptions = options && options.once ? { ...options, once: undefined } : options || {};
+	_observe(instance, _intersectionRegistry(cleanOptions), element, actualCallback);
 }
 
-function _processIntersectionData(instance, element, callback, componentCallbacks, observerData) {
-	if (callback) {
-		let idx = componentCallbacks.indexOf(callback);
-		if (idx === -1) {
-			for (let i = 0; i < componentCallbacks.length; i++) {
-				if (componentCallbacks[i]._wrapped === callback) {
-					idx = i;
-					break;
-				}
-			}
-		}
-		if (idx !== -1) {
-			const targetCb = componentCallbacks[idx];
-			componentCallbacks[idx] = componentCallbacks[componentCallbacks.length - 1];
-			componentCallbacks.pop();
-			if (observerData && observerData._callbacks.has(element)) {
-				_swapAndPop(observerData._callbacks.get(element), targetCb);
-			}
-		}
-	} else {
-		if (observerData && observerData._callbacks.has(element)) {
-			const globalCbs = observerData._callbacks.get(element);
-			for (let i = 0; i < componentCallbacks.length; i++) {
-				_swapAndPop(globalCbs, componentCallbacks[i]);
-			}
-		}
-		componentCallbacks.length = 0;
-	}
-
-	if (componentCallbacks.length === 0) {
-		instance._observedIntersectionElements.get(element).delete(observerData);
-	}
-
-	if (observerData) {
-		const globalCbs = observerData._callbacks.get(element);
-		if (globalCbs && globalCbs.length === 0) {
-			observerData._callbacks.delete(element);
-			observerData._observer.unobserve(element);
-			observerData._elementsCount--;
-		}
-
-		if (observerData._elementsCount === 0) {
-			observerData._observer.disconnect();
-			if (observerData._nodeMap) {
-				observerData._nodeMap.delete("data");
-			}
-		}
-	}
-}
+const _toRemove = [];
 
 export function unobserveIntersection(instance, element, callback = null) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	if (!instance._observedIntersectionElements) return;
-
-	const componentElementMap = instance._observedIntersectionElements.get(element);
-	if (!componentElementMap) return;
-
-	// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
-	componentElementMap.forEach((componentCallbacks, observerData) => {
-		_processIntersectionData(instance, element, callback, componentCallbacks, observerData);
+	if (!instance || !instance._obs) return;
+	// The element may be observed through several pooled observers (different options).
+	// Collect first: _unobserve deletes from instance._obs while we would be iterating it.
+	instance._obs.forEach((perKey, reg) => {
+		if (reg._intersection && perKey.has(element)) _toRemove.push(reg);
 	});
-
-	if (componentElementMap.size === 0) {
-		instance._observedIntersectionElements.delete(element);
+	for (let i = 0; i < _toRemove.length; i++) {
+		_unobserve(instance, _toRemove[i], element, callback);
 	}
+	_toRemove.length = 0;
 }
 
-const mediaQueryLists = new Map(); // query -> { mql, callbacks: [], handler }
+// ─── Media queries ──────────────────────────────────────────────────────────
 
-export function observeMediaQuery(instance, query, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return () => {};
-	if (typeof window === "undefined" || !window.matchMedia) return () => {};
+const mediaQueryLists = new Map(); // query -> { _mql, _handler }
 
-	let item = mediaQueryLists.get(query);
-	if (!item) {
+const mediaQueryRegistry = _registry(
+	(query) => {
 		const mql = window.matchMedia(query);
-		const callbacks = [];
-		const handler = (e) => {
-			const matches = e.matches;
-			for (let i = callbacks.length - 1; i >= 0; i--) {
-				callbacks[i](matches, e);
-			}
-		};
-
+		const handler = (e) => _dispatch(mediaQueryRegistry._cbs.get(query), e.matches, e);
 		if (mql.addEventListener) {
 			mql.addEventListener("change", handler);
 		} else if (mql.addListener) {
 			mql.addListener(handler);
 		}
+		mediaQueryLists.set(query, { _mql: mql, _handler: handler });
+	},
+	(query) => {
+		const item = mediaQueryLists.get(query);
+		if (item._mql.removeEventListener) {
+			item._mql.removeEventListener("change", item._handler);
+		} else if (item._mql.removeListener) {
+			item._mql.removeListener(item._handler);
+		}
+		mediaQueryLists.delete(query);
+	},
+);
 
-		item = { _mql: mql, _callbacks: callbacks, _handler: handler };
-		mediaQueryLists.set(query, item);
-	}
+export function observeMediaQuery(instance, query, callback) {
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return () => {};
+	if (typeof window === "undefined" || !window.matchMedia) return () => {};
 
-	if (item._callbacks.indexOf(callback) === -1) {
-		item._callbacks.push(callback);
-	}
-
-	if (!instance._observedMediaQueries) {
-		instance._observedMediaQueries = new Map();
-	}
-	let compCbs = instance._observedMediaQueries.get(query);
-	if (!compCbs) {
-		compCbs = [];
-		instance._observedMediaQueries.set(query, compCbs);
-	}
-	if (compCbs.indexOf(callback) === -1) {
-		compCbs.push(callback);
-	}
+	_observe(instance, mediaQueryRegistry, query, callback);
 
 	// Trigger immediately with initial match state
+	const mql = mediaQueryLists.get(query)._mql;
 	try {
-		callback(item._mql.matches, item._mql);
+		callback(mql.matches, mql);
 	} catch (e) {
 		console.error(e);
 	}
@@ -487,62 +353,18 @@ export function observeMediaQuery(instance, query, callback) {
 	const unobserve = () => {
 		unobserveMediaQuery(instance, query, callback);
 	};
-
 	if (instance.signal) {
 		instance.signal.addEventListener("abort", unobserve, { once: true });
 	}
-
 	return unobserve;
 }
 
 export function unobserveMediaQuery(instance, query, callback = null) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-	const item = mediaQueryLists.get(query);
-	if (!item) return;
-
-	if (instance && instance._observedMediaQueries) {
-		const compCbs = instance._observedMediaQueries.get(query);
-		if (compCbs) {
-			if (callback) {
-				const idx = compCbs.indexOf(callback);
-				if (idx !== -1) {
-					compCbs.splice(idx, 1);
-				}
-			} else {
-				compCbs.length = 0;
-			}
-			if (compCbs.length === 0) {
-				instance._observedMediaQueries.delete(query);
-			}
-		}
-	}
-
-	if (callback) {
-		const idx = item._callbacks.indexOf(callback);
-		if (idx !== -1) {
-			item._callbacks.splice(idx, 1);
-		}
-	} else if (instance && instance._observedMediaQueries) {
-		const compCbs = instance._observedMediaQueries.get(query);
-		if (compCbs) {
-			for (let i = 0; i < compCbs.length; i++) {
-				const idx = item._callbacks.indexOf(compCbs[i]);
-				if (idx !== -1) {
-					item._callbacks.splice(idx, 1);
-				}
-			}
-		}
-	}
-
-	if (item._callbacks.length === 0) {
-		if (item._mql.removeEventListener) {
-			item._mql.removeEventListener("change", item._handler);
-		} else if (item._mql.removeListener) {
-			item._mql.removeListener(item._handler);
-		}
-		mediaQueryLists.delete(query);
-	}
+	_unobserve(instance, mediaQueryRegistry, query, callback);
 }
+
+// ─── Teardown ───────────────────────────────────────────────────────────────
 
 /**
  * Cleans up all observers registered by a component instance during unmount.
@@ -550,39 +372,16 @@ export function unobserveMediaQuery(instance, query, callback = null) {
  */
 export function cleanupComponentObservers(instance) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
-
-	if (instance._observedScrollCallbacks) {
-		for (let i = instance._observedScrollCallbacks.length - 1; i >= 0; i--) {
-			unobserveScroll(instance, instance._observedScrollCallbacks[i]);
-		}
-		instance._observedScrollCallbacks = null;
+	const mine = instance._obs;
+	if (!mine) return;
+	// Snapshot (registry, key) pairs first, since _unobserve mutates instance._obs
+	const start = _toRemove.length;
+	mine.forEach((perKey, reg) => {
+		perKey.forEach((list, key) => _toRemove.push(reg, key));
+	});
+	for (let i = start; i < _toRemove.length; i += 2) {
+		_unobserve(instance, _toRemove[i], _toRemove[i + 1], null);
 	}
-
-	if (instance._observedWindowResizeCallbacks) {
-		for (let i = instance._observedWindowResizeCallbacks.length - 1; i >= 0; i--) {
-			unobserveWindowResize(instance, instance._observedWindowResizeCallbacks[i]);
-		}
-		instance._observedWindowResizeCallbacks = null;
-	}
-
-	if (instance._observedResizeElements) {
-		// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
-		instance._observedResizeElements.forEach(_unobserveResizeCb, instance);
-		instance._observedResizeElements = null;
-	}
-
-	if (instance._observedIntersectionElements) {
-		// ⚡ BOLT OPTIMIZATION: Use Map.forEach with hoisted callback to prevent Iterator array allocation in for...of loops.
-		instance._observedIntersectionElements.forEach(_unobserveIntersectionCb, instance);
-		instance._observedIntersectionElements = null;
-	}
-
-	if (instance._observedMediaQueries) {
-		instance._observedMediaQueries.forEach((callbacks, query) => {
-			for (let i = callbacks.length - 1; i >= 0; i--) {
-				unobserveMediaQuery(instance, query, callbacks[i]);
-			}
-		});
-		instance._observedMediaQueries = null;
-	}
+	_toRemove.length = start;
+	instance._obs = null;
 }

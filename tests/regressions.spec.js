@@ -9,6 +9,16 @@ import eventbus from '../src/eventbus.js';
 import config from '../src/config.js';
 import { components } from '../src/store.js';
 import { mutate, measure, clear } from '../src/scheduler.js';
+import {
+    observeScroll,
+    unobserveScroll,
+    observeResize,
+    unobserveResize,
+    observeIntersection,
+    unobserveIntersection,
+    observeMediaQuery,
+    cleanupComponentObservers,
+} from '../src/observers.js';
 
 const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 
@@ -684,6 +694,225 @@ test.describe('Regression tests', () => {
             console.error = origError;
         }
         expect(unmounts).toBe(0);
+    });
+
+    test.describe('observers', () => {
+        let ioInstances;
+        let roInstance;
+
+        class MockIO {
+            constructor(cb, options) {
+                this.cb = cb;
+                this.options = options;
+                this.targets = new Set();
+                this.disconnected = false;
+                ioInstances.push(this);
+            }
+            observe(el) {
+                this.targets.add(el);
+            }
+            unobserve(el) {
+                this.targets.delete(el);
+            }
+            disconnect() {
+                this.disconnected = true;
+                this.targets.clear();
+            }
+            fire(target, isIntersecting = true) {
+                this.cb([{ target, isIntersecting }]);
+            }
+        }
+        class MockRO {
+            constructor(cb) {
+                this.cb = cb;
+                this.targets = new Set();
+                roInstance = this;
+            }
+            observe(el) {
+                this.targets.add(el);
+            }
+            unobserve(el) {
+                this.targets.delete(el);
+            }
+            fire(target) {
+                this.cb([{ target }]);
+            }
+        }
+
+        test.beforeEach(() => {
+            ioInstances = [];
+            window.IntersectionObserver = MockIO;
+            global.IntersectionObserver = MockIO;
+            // The module keeps one shared ResizeObserver, created on first use (roInstance)
+            window.ResizeObserver = MockRO;
+            global.ResizeObserver = MockRO;
+        });
+
+        test.afterEach(() => {
+            delete global.IntersectionObserver;
+            delete global.ResizeObserver;
+        });
+
+        test('an emptied IntersectionObserver pool is released and recreated on reuse', () => {
+            const comp = {};
+            const el = document.createElement('div');
+            const opts = { rootMargin: '13px', threshold: 0.25 };
+
+            observeIntersection(comp, el, () => {}, opts);
+            expect(ioInstances.length).toBe(1);
+            unobserveIntersection(comp, el);
+            expect(ioInstances[0].disconnected).toBe(true);
+
+            let hits = 0;
+            observeIntersection(comp, el, () => hits++, opts);
+            expect(ioInstances.length).toBe(2); // fresh observer, not the disconnected one
+            ioInstances[1].fire(el);
+            expect(hits).toBe(1);
+            cleanupComponentObservers(comp);
+            expect(ioInstances[1].disconnected).toBe(true);
+        });
+
+        test('number and single-item array thresholds use separate observers', () => {
+            const comp = {};
+            const el = document.createElement('div');
+            observeIntersection(comp, el, () => {}, { threshold: 0.5 });
+            observeIntersection(comp, el, () => {}, { threshold: [0.5] });
+            expect(ioInstances.length).toBe(2);
+            cleanupComponentObservers(comp);
+        });
+
+        test('unobserveIntersection(instance, el) releases the element from every pooled observer', () => {
+            const comp = {};
+            const el = document.createElement('div');
+            observeIntersection(comp, el, () => {}, { threshold: 0.1 });
+            observeIntersection(comp, el, () => {}, { threshold: 0.9 });
+            unobserveIntersection(comp, el);
+            expect(ioInstances.map((o) => o.disconnected)).toEqual([true, true]);
+        });
+
+        test('a once intersection callback can be removed by its original function', () => {
+            const comp = {};
+            const el = document.createElement('div');
+            let hits = 0;
+            const cb = () => hits++;
+            observeIntersection(comp, el, cb, { once: true, threshold: 0.33 });
+            unobserveIntersection(comp, el, cb);
+            expect(ioInstances[0].disconnected).toBe(true);
+            ioInstances[0].fire(el);
+            expect(hits).toBe(0);
+        });
+
+        test('two components on one element: destroying one keeps the other observing (IntersectionObserver)', () => {
+            const a = {};
+            const b = {};
+            const el = document.createElement('div');
+            let hitsA = 0;
+            let hitsB = 0;
+            observeIntersection(a, el, () => hitsA++, { threshold: 0.42 });
+            observeIntersection(b, el, () => hitsB++, { threshold: 0.42 });
+
+            cleanupComponentObservers(a);
+            expect(ioInstances[0].disconnected).toBe(false);
+            ioInstances[0].fire(el);
+            expect([hitsA, hitsB]).toEqual([0, 1]);
+
+            cleanupComponentObservers(b);
+            expect(ioInstances[0].disconnected).toBe(true);
+        });
+
+        test('two components on one element: destroying one keeps the other observing (ResizeObserver)', () => {
+            const a = {};
+            const b = {};
+            const el = document.createElement('div');
+            let hitsA = 0;
+            let hitsB = 0;
+            observeResize(a, el, () => hitsA++);
+            // The module creates one ResizeObserver for its lifetime. If another spec file in this
+            // worker created it with a different mock, we cannot drive it from here.
+            test.skip(!roInstance || !roInstance.targets.has(el), 'shared ResizeObserver owned by another spec file');
+            observeResize(b, el, () => hitsB++);
+
+            cleanupComponentObservers(a);
+            expect(roInstance.targets.has(el)).toBe(true);
+            roInstance.fire(el);
+            expect([hitsA, hitsB]).toEqual([0, 1]);
+
+            unobserveResize(b, el);
+            expect(roInstance.targets.has(el)).toBe(false);
+            cleanupComponentObservers(b);
+        });
+
+        test('a scroll callback that unobserves itself does not skip or repeat others', () => {
+            const comp = {};
+            const calls = [];
+            const first = () => calls.push('first');
+            const self = () => {
+                calls.push('self');
+                unobserveScroll(comp, self);
+            };
+            const last = () => calls.push('last');
+            observeScroll(comp, first);
+            observeScroll(comp, self);
+            observeScroll(comp, last);
+
+            window.dispatchEvent(new window.Event('scroll'));
+            expect(calls.sort()).toEqual(['first', 'last', 'self']);
+
+            calls.length = 0;
+            window.dispatchEvent(new window.Event('scroll'));
+            expect(calls.sort()).toEqual(['first', 'last']);
+            cleanupComponentObservers(comp);
+        });
+
+        test('the window scroll listener is removed once the last callback is gone', () => {
+            const added = [];
+            const removed = [];
+            const origAdd = window.addEventListener;
+            const origRemove = window.removeEventListener;
+            window.addEventListener = function (type, ...rest) {
+                if (type === 'scroll') added.push(type);
+                return origAdd.call(this, type, ...rest);
+            };
+            window.removeEventListener = function (type, ...rest) {
+                if (type === 'scroll') removed.push(type);
+                return origRemove.call(this, type, ...rest);
+            };
+            try {
+                const a = {};
+                const b = {};
+                observeScroll(a, () => {});
+                observeScroll(b, () => {});
+                expect(added.length).toBe(1);
+                cleanupComponentObservers(a);
+                expect(removed.length).toBe(0);
+                cleanupComponentObservers(b);
+                expect(removed.length).toBe(1);
+            } finally {
+                window.addEventListener = origAdd;
+                window.removeEventListener = origRemove;
+            }
+        });
+
+        test('media query listeners are shared per query and removed with the last subscriber', () => {
+            let listeners = 0;
+            window.matchMedia = () => ({
+                matches: true,
+                addEventListener: () => listeners++,
+                removeEventListener: () => listeners--,
+            });
+            const a = {};
+            const b = {};
+            const seen = [];
+            observeMediaQuery(a, '(min-width: 1px)', (m) => seen.push(['a', m]));
+            observeMediaQuery(b, '(min-width: 1px)', (m) => seen.push(['b', m]));
+            expect(listeners).toBe(1);
+            expect(seen).toEqual([['a', true], ['b', true]]);
+
+            cleanupComponentObservers(a);
+            expect(listeners).toBe(1);
+            cleanupComponentObservers(b);
+            expect(listeners).toBe(0);
+        });
     });
 
     test('loadComponents can retry a component whose first construction failed', () => {
