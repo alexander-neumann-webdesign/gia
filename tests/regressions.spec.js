@@ -9,6 +9,7 @@ import eventbus from '../src/eventbus.js';
 import config from '../src/config.js';
 import { components } from '../src/store.js';
 import { mutate, measure, clear } from '../src/scheduler.js';
+import { register } from '../src/registry.js';
 import {
     observeScroll,
     unobserveScroll,
@@ -912,6 +913,175 @@ test.describe('Regression tests', () => {
             expect(listeners).toBe(1);
             cleanupComponentObservers(b);
             expect(listeners).toBe(0);
+        });
+    });
+
+    test.describe('state batching', () => {
+        class S extends BaseComponent {
+            constructor(el) {
+                super(el);
+                this.calls = [];
+            }
+            stateChange(changes) {
+                this.calls.push({ ...changes });
+            }
+        }
+
+        test('a key changed and changed back within one batch is not reported', async () => {
+            const el = mk('<div></div>');
+            const s = new S(el);
+            s.setState({ open: false, count: 1 });
+            await tick();
+            s.calls.length = 0;
+
+            s.setState({ open: true, count: 2 });
+            s.setState({ open: false }); // back to where the batch started
+            await tick();
+            expect(s.calls).toEqual([{ count: 2 }]);
+            expect(el.getAttribute('data-open')).toBe('false');
+            expect(el.getAttribute('data-count')).toBe('2');
+            s._destroy();
+        });
+
+        test('a batch whose every change was reverted does not call stateChange at all', async () => {
+            const el = mk('<div></div>');
+            const s = new S(el);
+            s.setState({ step: 1 });
+            await tick();
+            s.calls.length = 0;
+
+            s.setState({ step: 2 });
+            s.setState({ step: 3 });
+            s.setState({ step: 1 });
+            await tick();
+            expect(s.calls).toEqual([]);
+            expect(el.getAttribute('data-step')).toBe('1');
+            s._destroy();
+        });
+
+        test('reverting to an initially missing key is treated as no change', async () => {
+            const s = new S(mk('<div></div>'));
+            s.setState({ temp: 'x' });
+            s.setState({ temp: undefined });
+            await tick();
+            expect(s.calls).toEqual([]);
+            s._destroy();
+        });
+
+        test('a primitive replaced by an object in the same batch does not write a stale attribute', async () => {
+            const el = mk('<div></div>');
+            const s = new S(el);
+            s.setState({ value: 'text' });
+            s.setState({ value: { complex: true } });
+            await tick();
+            expect(el.hasAttribute('data-value')).toBe(false);
+            expect(s.calls).toEqual([{ value: { complex: true } }]);
+            s._destroy();
+        });
+
+        test('setState() inside stateChange() is delivered in the next batch, with attributes synced', async () => {
+            const el = mk('<div></div>');
+            const seen = [];
+            class V extends BaseComponent {
+                stateChange(changes) {
+                    seen.push(Object.keys(changes).join(','));
+                    if ('inView' in changes && this.state.inView) {
+                        this.setState({ playing: true });
+                    }
+                }
+            }
+            const v = new V(el);
+            v.setState({ inView: true });
+            await tick(40);
+            expect(seen).toEqual(['inView', 'playing']);
+            expect(el.getAttribute('data-playing')).toBe('true');
+            v._destroy();
+        });
+
+        test('a stateChange() that always sets state runs once per frame instead of looping', async () => {
+            const el = mk('<div></div>');
+            let calls = 0;
+            class Loop extends BaseComponent {
+                stateChange() {
+                    calls++;
+                    this.setState({ n: calls });
+                }
+            }
+            const l = new Loop(el);
+            l.setState({ n: 0 });
+            await tick(5); // a single frame in the test's setTimeout-based requestAnimationFrame
+            expect(calls).toBeGreaterThanOrEqual(1);
+            expect(calls).toBeLessThan(10);
+            l._destroy();
+        });
+    });
+
+    test.describe('register()', () => {
+        test('uses options.name over the class name', () => {
+            class e extends BaseComponent {} // what a minifier leaves behind
+            register(e, { name: 'Header' });
+            expect(window.gia.components.Header).toBe(e);
+            expect(window.gia.components.e).toBeUndefined();
+        });
+
+        test('logs an error for a name that looks minified, but still registers it', () => {
+            const errors = [];
+            const orig = console.error;
+            console.error = (msg) => errors.push(String(msg));
+            try {
+                class Ue extends BaseComponent {}
+                register(Ue);
+                class Header extends BaseComponent {}
+                register(Header);
+                register(Ue, { name: 'Explicit' });
+                expect(window.gia.components.Ue).toBe(Ue);
+            } finally {
+                console.error = orig;
+            }
+            expect(errors.length).toBe(1);
+            expect(errors[0]).toContain('"Ue"');
+            expect(errors[0]).toContain('{ name:');
+        });
+
+        test('a registered explicit name is found by loadComponents()', () => {
+            class t extends BaseComponent {
+                mount() {
+                    this.mounted = true;
+                }
+            }
+            register(t, { name: 'SiteHeader' });
+            const el = mk('<div data-component="SiteHeader"></div>');
+            loadComponents(document.body);
+            expect(components.get(el).mounted).toBe(true);
+            destroyInstance(el);
+        });
+    });
+
+    test.describe('options from data-* attributes', () => {
+        test('a string default keeps the attribute verbatim', () => {
+            const el = mk('<div data-zip="007" data-label="true" data-code="1e3" data-delay="250" data-flag></div>');
+            class O extends BaseComponent {
+                constructor(e) {
+                    super(e);
+                    this.options = { zip: '', label: 'none', code: 'x', delay: 100, flag: false };
+                }
+            }
+            const o = new O(el);
+            expect(o.options).toEqual({ zip: '007', label: 'true', code: '1e3', delay: 250, flag: true });
+            o._destroy();
+        });
+
+        test('non-string defaults keep the existing coercion', () => {
+            const el = mk('<div data-a="42" data-b="false" data-c="hello" data-d="7"></div>');
+            class O extends BaseComponent {
+                constructor(e) {
+                    super(e);
+                    this.options = { a: 0, b: true, c: null, d: null };
+                }
+            }
+            const o = new O(el);
+            expect(o.options).toEqual({ a: 42, b: false, c: 'hello', d: 7 });
+            o._destroy();
         });
     });
 

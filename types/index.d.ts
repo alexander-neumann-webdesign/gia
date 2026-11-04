@@ -160,7 +160,12 @@ export class BaseComponent<
 	observeMediaQuery(query: string, callback: (matches: boolean, mql: MediaQueryList) => void): () => void;
 	unobserveMediaQuery(query: string, callback?: ((matches: boolean, mql: MediaQueryList) => void) | null): void;
 
+	/**
+	 * Loads a script by tag ID (falls back to ID + "-js", as WordPress names enqueued scripts) or URL.
+	 * Resolves with `window[globalName]` when given, otherwise `true`.
+	 */
 	loadScript(scriptId: string, globalName?: string): Promise<any>;
+	/** Loads a stylesheet by tag ID (falls back to ID + "-css", as WordPress names enqueued styles) or URL. */
 	loadStyle(styleId: string): Promise<boolean>;
 
 	listen(
@@ -238,11 +243,13 @@ export function loadComponents(
 ): void;
 
 /**
- * Registers a component class with optional mounting priority
+ * Registers a component class in window.gia.components with optional mounting priority.
+ * `name` defaults to the class name; pass it explicitly when your production build minifies
+ * class names (otherwise data-component="Header" will not find the renamed class).
  */
 export function register(
 	ComponentClass: ComponentConstructor,
-	options?: { priority?: number }
+	options?: { priority?: number; name?: string }
 ): void;
 
 /**
@@ -276,7 +283,7 @@ declare global {
 	interface Window {
 		gia?: {
 			components?: Record<string, ComponentConstructor>;
-			register?: (ComponentClass: ComponentConstructor, options?: { priority?: number }) => void;
+			register?: (ComponentClass: ComponentConstructor, options?: { priority?: number; name?: string }) => void;
 		};
 		__gia_scheduler__?: {
 			reads: Function[];

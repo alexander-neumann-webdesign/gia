@@ -196,7 +196,10 @@ export default class BaseComponent {
 					attrVal = this.element.getAttribute(`data-${kebabKey}`);
 				}
 				if (attrVal !== null) {
-					if (attrVal === "true" || (attrVal === "" && typeof defaults[key] === "boolean")) {
+					if (typeof defaults[key] === "string") {
+						// A string default keeps the attribute verbatim ("007" stays "007", "true" stays "true")
+						attrOptions[key] = attrVal;
+					} else if (attrVal === "true" || (attrVal === "" && typeof defaults[key] === "boolean")) {
 						attrOptions[key] = true;
 					} else if (attrVal === "false") {
 						attrOptions[key] = false;

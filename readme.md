@@ -1,9 +1,9 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.1KB to ~9.4KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.7KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.1kb_to_9.4kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
+[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
 
 _Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management._
 
@@ -61,15 +61,15 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.4 KB (28.1 KB) | ~9.3 KB (27.7 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.6 KB (22.2 KB) | ~7.4 KB (21.8 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.3 KB (15.1 KB) | ~5.1 KB (14.7 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.7 KB (29.0 KB) | ~9.6 KB (28.6 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.9 KB (23.1 KB) | ~7.7 KB (22.7 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.4 KB (15.5 KB) | ~5.3 KB (15.1 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~5.1 KB gzipped)
+// Or target the tiny Nano build (~5.3 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
@@ -470,6 +470,19 @@ class Tooltip extends Component {
 }
 ```
 
+**How a tag is found**: by its exact ID first, then by the ID plus `-js` (scripts) or `-css` (stylesheets). This matches how **WordPress** names enqueued assets, so the handle you enqueue with is enough:
+
+```php
+wp_enqueue_script('swiper', 'https://cdn.example.com/swiper.min.js'); // <script id="swiper-js" src="...">
+wp_enqueue_style('swiper', 'https://cdn.example.com/swiper.min.css'); // <link id="swiper-css" href="...">
+```
+
+```javascript
+await Promise.all([this.loadScript("swiper", "Swiper"), this.loadStyle("swiper")]);
+```
+
+A suffixed match is only used if it is the right tag type, so an unrelated `<div id="swiper">` does not get in the way. Tags that were already loaded before `loadScript()`/`loadStyle()` is called (a regular `<script src>`, or an asset WordPress printed normally) resolve as well, instead of waiting for a `load` event that already fired.
+
 ---
 
 ### Global Eventbus & Component Pub/Sub
@@ -583,7 +596,13 @@ register(ImageHolder);
 
 // Register with mounting priority
 register(ImageHolder, { priority: 100 });
+
+// Register under an explicit name (survives minified production builds)
+register(ImageHolder, { name: "ImageHolder" });
 ```
+
+> [!IMPORTANT]
+> Without `name`, `register()` uses the class's own name (`ImageHolder.name`). Production minifiers rename classes (a Vite build turns it into something like `"Ue"`), so `data-component="ImageHolder"` would no longer match. Either pass `{ name }`, keep class names in your bundler (esbuild `keepNames: true`, Terser `keep_classnames: true`), or pass an explicit object such as `loadComponents({ ImageHolder })`, whose keys are never renamed. Gia logs an error when a registered name looks minified.
 
 ### Component Mounting Priority
 
@@ -712,6 +731,8 @@ class Slider extends Component {
 	}
 }
 ```
+
+Coercion follows the type of each default: a **string** default always keeps the attribute verbatim (`data-zip="007"` stays `"007"`, `data-label="true"` stays `"true"`). For other defaults, `"true"`/`"false"` become booleans, an empty attribute on a boolean default means `true`, and numeric strings become numbers.
 
 #### 2. JSON Attributes (`data-options`)
 For complex or nested configurations, you can pass a JSON string via `data-options`:
@@ -934,7 +955,7 @@ config.set("autoBindActions", true);
   - `loadComponents()` — mounts all registered components across `document.documentElement`.
   - `loadComponents(container)` — scopes auto-discovery of all registered components to `container`.
   - `loadComponents(components, [context])` — mounts an explicit dictionary of components scoped to `context` (defaults to `document.documentElement`).
-- **`register(ComponentClass, [options])`**: Registers a component class globally in `window.gia.components` with an optional `{ priority: number }`.
+- **`register(ComponentClass, [options])`**: Registers a component class globally in `window.gia.components`. Options: `{ priority?: number, name?: string }`; `name` defaults to the class name (pass it explicitly for minified builds).
 - **`removeComponents([components], [context])`**: Destroys and cleans up all component instances inside the target context. Accepts `removeComponents(container)` or `removeComponents(components, context)` interchangeably.
 - **`createInstance(element, componentName, ComponentClass, [options])`**: Manually attaches and mounts a component instance on a DOM element.
 - **`destroyInstance(element)`**: Dismantles a component instance, triggering its `unmount()` lifecycle, aborting `this.signal`, and cleaning memory references.
@@ -988,8 +1009,8 @@ config.set("autoBindActions", true);
 - **`emit(event, [data])`**: Emits an event on the global EventBus.
 - **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup.
 - **`channel(namespace)`**: Returns a scoped EventBus channel `{ emit, on, once, off }` whose listeners automatically detach on unmount.
-- **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader.
-- **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader.
+- **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader. Accepts a tag ID (also tried with WordPress' `-js` suffix) or a URL.
+- **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader. Accepts a tag ID (also tried with WordPress' `-css` suffix) or a URL.
 
 ---
 
