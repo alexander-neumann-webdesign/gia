@@ -27,6 +27,17 @@ export default function createInstance(element, componentName, component, option
 		return instance;
 	} catch (err) {
 		console.error(`Failed to create component "${componentName}".`, err);
+		// BaseComponent's constructor registers the instance in the store before a subclass
+		// constructor runs. If construction failed afterwards, drop that half-built instance so
+		// later mount attempts can retry instead of reusing it, and release anything it bound.
+		const partial = components.get(element);
+		if (partial) {
+			partial._isDestroyed = true;
+			if (partial._abortController) {
+				partial._abortController.abort();
+			}
+			components.delete(element);
+		}
 		return null;
 	}
 }

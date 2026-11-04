@@ -286,7 +286,6 @@ declare global {
 			currentWrites: Function[] | null;
 			tempReads?: Function[];
 			tempWrites?: Function[];
-			wrapperPool?: Function[];
 		};
 		__gia_store__?: WeakMap<Element, BaseComponent>;
 		lenis?: any;

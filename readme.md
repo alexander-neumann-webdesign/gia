@@ -1,9 +1,9 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~4.9KB to ~9.4KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.1KB to ~9.6KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](<https://img.shields.io/badge/bundle%20size-(4.9kb_to_9.4kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
+[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.1kb_to_9.6kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
 
 _Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management._
 
@@ -61,15 +61,15 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.2 KB (29.4 KB) | ~9.2 KB (29.2 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.7 KB (24.5 KB) | ~7.6 KB (24.3 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~5.0 KB (15.1 KB) | ~4.9 KB (15.0 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.6 KB (30.1 KB) | ~9.5 KB (30.0 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.9 KB (25.1 KB) | ~7.9 KB (25.0 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops EventBus, global observers, JSON options parsing, and async script loading. Just the core class and ref engine. | ~5.2 KB (15.6 KB) | ~5.1 KB (15.4 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~4.9 KB gzipped)
+// Or target the tiny Nano build (~5.1 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
@@ -957,7 +957,7 @@ config.set("autoBindActions", true);
 - **`element`**: The root DOM element that this component instance is attached to.
 - **`ref`**: Automatically mapped child DOM references matching `data-ref="name"` (single element) or `data-ref="name[]"` (array of elements).
 - **`getRef(refName, [all])`**: Dynamically queries refs scoped strictly to this component element (without querying into nested child components).
-- **`updateRefs()`**: Re-scans and refreshes `this.ref` targets inside `this.element` (useful after dynamic DOM / innerHTML updates).
+- **`updateRefs()`**: Re-scans and refreshes `this.ref` targets inside `this.element` (useful after dynamic DOM / innerHTML updates). Works with a declared ref schema and with auto-discovered refs (`this.ref = {}`); elements that were removed from the DOM are dropped.
 - **`options`**: Parsed configuration options passed via `data-options='{...}'` or individual `data-[key]` HTML attributes, automatically merged with constructor defaults.
 - **`signal`**: Lazily instantiated native `AbortSignal` that automatically aborts on component destruction. Pass to `addEventListener(..., { signal: this.signal })` or `fetch()` for zero-leak cleanup.
 - **`isMounted`**: Read-only boolean property indicating whether the component is currently mounted in the DOM.

@@ -121,20 +121,21 @@ export default class BaseComponent {
 		}
 
 		if (itemsEmpty) {
+			// Rebuild from scratch so updateRefs() picks up added/removed elements.
+			// "Name:ref" (prefixed for this component) wins over a plain "ref" of the same name,
+			// matching the precedence used when a ref schema is declared.
+			const refs = {};
 			for (const refName in refsByName) {
 				const colonIndex = refName.indexOf(":");
 				if (colonIndex !== -1) {
-					const componentName = refName.substring(0, colonIndex);
-					const actualRefName = refName.substring(colonIndex + 1);
-					if (componentName === this._name && !this._ref[actualRefName]) {
-						this._ref[actualRefName] = refsByName[refName];
+					if (refName.substring(0, colonIndex) === this._name) {
+						refs[refName.substring(colonIndex + 1)] = refsByName[refName];
 					}
-				} else {
-					if (!this._ref[refName]) {
-						this._ref[refName] = refsByName[refName];
-					}
+				} else if (!refsByName[namePrefix + refName]) {
+					refs[refName] = refsByName[refName];
 				}
 			}
+			this._ref = refs;
 		} else {
 			this._ref = {};
 			// ⚡ BOLT OPTIMIZATION: Use for...in to avoid allocating an array with Object.keys()
@@ -284,6 +285,10 @@ export default class BaseComponent {
 					this._boundActions[i + 1],
 					handler,
 				);
+				// Drop pending .debounce/.throttle invocations so they never fire on a destroyed instance
+				if (handler && typeof handler.cancel === "function") {
+					handler.cancel();
+				}
 			}
 			this._boundActions = null;
 		}
@@ -386,24 +391,39 @@ export default class BaseComponent {
 			return;
 		}
 
+		const signal = this.signal;
 		let finalOpts;
 		if (opts && typeof opts === "object") {
-			finalOpts = opts.signal ? opts : { ...opts, signal: this.signal };
+			finalOpts = opts.signal || !signal ? opts : { ...opts, signal };
 		} else if (typeof opts === "boolean") {
-			finalOpts = { capture: opts, signal: this.signal };
+			finalOpts = signal ? { capture: opts, signal } : opts;
 		} else {
-			finalOpts = this.signal ? { signal: this.signal } : undefined;
+			finalOpts = signal ? { signal } : undefined;
 		}
 
 		el.addEventListener(evt, fn, finalOpts);
 
-		if (!this._activeListeners) {
-			this._activeListeners = [];
+		// The component signal removes the listener on destroy. Only listeners it does not cover
+		// (no AbortController, or a caller-supplied signal) need manual bookkeeping.
+		const tracked = !signal || !finalOpts || finalOpts.signal !== signal;
+		if (tracked) {
+			if (!this._activeListeners) {
+				this._activeListeners = [];
+			}
+			this._activeListeners.push(el, evt, fn, finalOpts);
 		}
-		this._activeListeners.push(el, evt, fn, finalOpts);
 
 		return () => {
 			el.removeEventListener(evt, fn, finalOpts);
+			const list = this._activeListeners;
+			if (tracked && list) {
+				for (let i = 0; i < list.length; i += 4) {
+					if (list[i] === el && list[i + 1] === evt && list[i + 2] === fn && list[i + 3] === finalOpts) {
+						list.splice(i, 4);
+						break;
+					}
+				}
+			}
 		};
 	}
 
@@ -451,12 +471,16 @@ export default class BaseComponent {
 	}
 
 	on(event, handler, options = false) {
-		const opts =
-			typeof options === "object" && options !== null
-				? (options.signal ? options : { ...options, signal: this.signal })
-				: this.signal
-				? { signal: this.signal }
-				: options;
+		const signal = this.signal;
+		let opts = options;
+		if (signal) {
+			if (typeof options === "object" && options !== null) {
+				opts = options.signal ? options : { ...options, signal };
+			} else {
+				// Boolean shorthand: on(event, handler, true) means "once"
+				opts = { once: !!options, signal };
+			}
+		}
 		eventbus.on(event, handler, opts);
 	}
 
@@ -537,17 +561,27 @@ export default class BaseComponent {
 
 		if (!methods) {
 			methods = [];
-			const allMethods = Object.getOwnPropertyNames(proto);
-			// ⚡ BOLT OPTIMIZATION: Avoid Array.filter to eliminate closure allocation on component init
-			for (let i = 0; i < allMethods.length; i++) {
-				const method = allMethods[i];
-				if (
-					!globalExcludedMethods.has(method) &&
-					!method.startsWith("_") &&
-					typeof Object.getOwnPropertyDescriptor(proto, method)?.value === "function"
-				) {
-					methods.push(method);
+			// Walk the whole prototype chain (B extends A extends Component) so inherited methods
+			// are bound too. The most-derived definition of a name decides whether it is a method,
+			// so a getter overriding an inherited method is never invoked here.
+			const seen = new Set();
+			let current = proto;
+			while (current && current !== BaseComponent.prototype && current !== Object.prototype) {
+				const names = Object.getOwnPropertyNames(current);
+				// ⚡ BOLT OPTIMIZATION: Avoid Array.filter to eliminate closure allocation on component init
+				for (let i = 0; i < names.length; i++) {
+					const method = names[i];
+					if (seen.has(method)) continue;
+					seen.add(method);
+					if (
+						!globalExcludedMethods.has(method) &&
+						!method.startsWith("_") &&
+						typeof Object.getOwnPropertyDescriptor(current, method)?.value === "function"
+					) {
+						methods.push(method);
+					}
 				}
+				current = Object.getPrototypeOf(current);
 			}
 			protoMethodsCache.set(proto, methods);
 		}
