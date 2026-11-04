@@ -252,6 +252,8 @@ Gia automatically serializes primitive state properties (`boolean`, `string`, an
 - `status: "loading"` ➔ `data-status="loading"`
 - `status: null` (or `undefined`, or an object) after a primitive ➔ `data-status` is removed
 
+State keys that would map to attributes Gia reads itself (`component`, `ref`, `options`, `action`, `mount`) are never mirrored, so state can't turn the element into another component or rebind its actions. They remain normal state and are still passed to `stateChange()`.
+
 This allows you to control component styling entirely through CSS, removing the need for verbose class-toggling code:
 
 ```css
@@ -875,6 +877,13 @@ loadComponents();
 // Anytime `<div data-component="MyComponent">` is added to the DOM, it mounts automatically.
 // Example: document.body.innerHTML += '<div data-component="MyComponent">Dynamically Injected</div>';
 ```
+
+The observer also follows the `data-component` attribute of elements that are already in the page, and nothing else:
+
+- **Added** (`el.setAttribute("data-component", "Tabs")`): the component mounts.
+- **Changed** to another name: the old instance is destroyed and the new component mounts.
+- **Removed**: the instance is destroyed.
+- **Moved** (e.g. re-sorting a list with `appendChild`): the instance and its state are kept.
 
 ---
 

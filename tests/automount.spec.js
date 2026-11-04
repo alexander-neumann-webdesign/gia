@@ -201,4 +201,95 @@ test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
         expect(unmounts).toBe(1);
         expect(store.get(el)).toBeUndefined();
     });
+
+
+    test.describe('component attribute changes on elements already in the DOM', () => {
+        const tick = () => new Promise((r) => setTimeout(r, 20));
+        let log;
+
+        test.beforeEach(() => {
+            log = [];
+            class Alpha extends BaseComponent {
+                mount() { log.push('mount Alpha'); }
+                unmount() { log.push('unmount Alpha'); }
+            }
+            class Beta extends BaseComponent {
+                mount() { log.push('mount Beta'); }
+                unmount() { log.push('unmount Beta'); }
+            }
+            window.gia.components.Alpha = Alpha;
+            window.gia.components.Beta = Beta;
+        });
+
+        test.afterEach(() => {
+            config.set('attrPrefix', 'data');
+        });
+
+        test('adding data-component mounts, changing it swaps, removing it destroys', async () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+            config.set('autoMountComponents', true);
+
+            el.setAttribute('data-component', 'Alpha');
+            await tick();
+            expect(log).toEqual(['mount Alpha']);
+            const alpha = store.get(el);
+            expect(alpha.constructor.name).toBe('Alpha');
+
+            el.setAttribute('data-component', 'Beta');
+            await tick();
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha', 'mount Beta']);
+            expect(store.get(el).constructor.name).toBe('Beta');
+
+            el.removeAttribute('data-component');
+            await tick();
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha', 'mount Beta', 'unmount Beta']);
+            expect(store.has(el)).toBe(false);
+        });
+
+        test('setting the same value, or changing and restoring it in one batch, keeps the instance', async () => {
+            config.set('autoMountComponents', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Alpha');
+            document.body.appendChild(el);
+            await tick();
+            const instance = store.get(el);
+
+            el.setAttribute('data-component', 'Alpha');
+            el.setAttribute('data-component', 'Beta');
+            el.setAttribute('data-component', 'Alpha');
+            el.setAttribute('data-other', 'x'); // not observed
+            await tick();
+
+            expect(store.get(el)).toBe(instance);
+            expect(log).toEqual(['mount Alpha']);
+        });
+
+        test('an element removed right after its attribute changed is only destroyed', async () => {
+            config.set('autoMountComponents', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Alpha');
+            document.body.appendChild(el);
+            await tick();
+
+            el.removeAttribute('data-component');
+            el.remove();
+            await tick();
+
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha']);
+            expect(store.has(el)).toBe(false);
+        });
+
+        test('the attribute filter follows a changed attrPrefix', async () => {
+            config.set('autoMountComponents', true);
+            config.set('attrPrefix', 'g');
+
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+            el.setAttribute('g-component', 'Alpha');
+            await tick();
+
+            expect(log).toEqual(['mount Alpha']);
+        });
+    });
 });

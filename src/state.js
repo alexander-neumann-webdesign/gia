@@ -33,11 +33,19 @@ function flushGlobalStateChanges() {
 	}
 }
 
-// camelCase state key -> data-kebab-case attribute name (cached)
+// Attributes Gia reads itself. Mirroring state onto them would turn the element into another
+// component, rebind actions or change refs/options, so those state keys are never mirrored.
+const RESERVED_ATTR = /^data-(component|ref|options|action|mount)$/;
+
+// camelCase state key -> data-kebab-case attribute name, or null when reserved (cached)
 function _attrName(key) {
 	let attrName = globalStateAttributeCache.get(key);
-	if (!attrName) {
+	if (attrName === undefined) {
 		attrName = `data-${key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`;
+		if (RESERVED_ATTR.test(attrName)) {
+			console.warn(`Gia: state "${key}" is not mirrored to ${attrName}, which Gia reserves.`);
+			attrName = null;
+		}
 		globalStateAttributeCache.set(key, attrName);
 	}
 	return attrName;
@@ -106,14 +114,16 @@ export function enqueueSetState(instance, changes) {
 		instance._pendingStateChanges[key] = newValue;
 
 		if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
-			// Primitive state values are mirrored to data-* attributes
+			// Primitive state values are mirrored to data-* attributes (reserved names: state only)
 			const attrName = _attrName(key);
-			if (_isMirrored(newValue)) {
-				instance._pendingAttributeChanges[attrName] = String(newValue);
-			} else if (_isMirrored(prevValue)) {
-				// No longer a primitive (null, undefined, object...): the attribute mirrored the
-				// previous value, so remove it instead of leaving a stale one (null = remove)
-				instance._pendingAttributeChanges[attrName] = null;
+			if (attrName !== null) {
+				if (_isMirrored(newValue)) {
+					instance._pendingAttributeChanges[attrName] = String(newValue);
+				} else if (_isMirrored(prevValue)) {
+					// No longer a primitive (null, undefined, object...): the attribute mirrored the
+					// previous value, so remove it instead of leaving a stale one (null = remove)
+					instance._pendingAttributeChanges[attrName] = null;
+				}
 			}
 		}
 	}

@@ -340,4 +340,38 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         expect(el.getAttribute('data-count')).toBe('5');
         expect(changes).toBe(1); // the reverted batch reports nothing
     });
+
+
+    test('should never mirror state onto attributes Gia reads itself', async () => {
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Widget');
+        document.body.appendChild(el);
+        let received = null;
+        class Widget extends BaseComponent {
+            stateChange(changes) { received = { ...changes }; } // the payload object is reused
+        }
+        const widget = new Widget(el);
+        widget._load();
+
+        const originalWarn = console.warn;
+        const warnings = [];
+        console.warn = (msg) => warnings.push(msg);
+        try {
+            widget.setState({ component: 'Other', ref: 'r', options: 'o', action: 'click->x', mount: 'idle', count: 1 });
+            widget.setState({ component: 'Again' }); // same key: no second warning
+            await new Promise((r) => setTimeout(r, 20));
+        } finally {
+            console.warn = originalWarn;
+        }
+
+        expect(el.getAttribute('data-component')).toBe('Widget');
+        for (const name of ['ref', 'options', 'action', 'mount']) {
+            expect(el.hasAttribute(`data-${name}`)).toBe(false);
+        }
+        expect(el.getAttribute('data-count')).toBe('1');
+        // Still regular state, reported to stateChange()
+        expect(widget.state.component).toBe('Again');
+        expect(received).toMatchObject({ component: 'Again', mount: 'idle', count: 1 });
+        expect(warnings.filter((w) => w.includes('"component"')).length).toBeLessThanOrEqual(1);
+    });
 });
