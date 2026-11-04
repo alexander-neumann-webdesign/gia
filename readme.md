@@ -1,6 +1,6 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.8KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.9KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
 [![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
@@ -61,9 +61,9 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.8 KB (29.3 KB) | ~9.7 KB (28.9 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.0 KB (23.5 KB) | ~7.9 KB (23.0 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.5 KB (15.6 KB) | ~5.3 KB (15.1 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.9 KB (29.5 KB) | ~9.7 KB (29.1 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.1 KB (23.6 KB) | ~7.9 KB (23.2 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.4 KB (15.6 KB) | ~5.3 KB (15.2 KB) |
 
 ```javascript
 // Full build with modern ESM
@@ -638,14 +638,15 @@ Components with identical priorities safely preserve their natural DOM order.
 To optimize Core Web Vitals (INP, LCP, TBT) and prevent main-thread congestion during initial page load, Gia supports declarative lazy hydration out of the box via the `data-mount` (or `g-mount`) attribute:
 
 #### 1. Visibility Hydration (`data-mount="visible"`)
-Components with `data-mount="visible"` defer instantiation and mounting until the element enters (or is within 200px of) the viewport via native `IntersectionObserver`:
+Components with `data-mount="visible"` defer instantiation and mounting until the element enters (or is within 200px of) the viewport. All of them share a single native `IntersectionObserver`, which is released once nothing is waiting:
 ```html
 <!-- Hydrates only when scrolled near the viewport -->
 <div data-component="ComplexReviewsWidget" data-mount="visible">
     <!-- Heavy DOM or widget markup -->
 </div>
 ```
-- **Automatic Disconnect Guards**: If a deferred element is removed from the DOM before it becomes visible, Gia safely discards the pending observer without creating ghost instances.
+- **Automatic Disconnect Guards**: If a deferred element is removed from the DOM before it becomes visible, Gia never creates a ghost instance for it.
+- **Cancelled by `removeComponents()`**: Removing components (via `removeComponents()`, `destroyInstance()`, or auto-mount when the element leaves the DOM) also cancels pending `visible`/`idle` mounts and pending lazy `import()` loaders, so nothing mounts after a page transition has torn the content down.
 - **Async Dynamic Import Synergy**: Works seamlessly with dynamic import loaders (`() => import(...)`), so the JavaScript bundle for the component is neither fetched nor executed until the element is actually scrolled into view!
 
 #### 2. Idle Hydration (`data-mount="idle"`)
@@ -1024,6 +1025,7 @@ To run smooth animations at 60fps, even on low-end mobile devices, this fork imp
 - **Iterator Suppression**: Replaced `.forEach()`, `.map()`, `.filter()`, and `for...of` iterators with classic `for` loops in hot code paths, avoiding short-lived iterator objects.
 - **Empty Object Checks**: Uses fast-failing `for...in` loops instead of instantiating temporary arrays via `Object.keys()`.
 - **Reference Disconnection**: The `unmount` phase clears references on both Javascript classes and DOM elements, preventing memory leaks and allowing prompt Garbage Collection.
+- **Shared Native Observers**: Every `data-mount="visible"` element shares one `IntersectionObserver`, and component observers are pooled by options (see [Centralized Observers](#centralized-observers)).
 
 ---
 

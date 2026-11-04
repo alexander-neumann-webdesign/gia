@@ -1,6 +1,7 @@
 import config from "./config.js";
 import { components } from "./store.js";
 import { resolveElement } from "./getComponentFromElement.js";
+import { cancelDeferredMount } from "./deferredMount.js";
 
 /**
  * Destroys and removes instance from DOM element
@@ -17,6 +18,11 @@ export default function destroyInstance(element) {
 	if (!instance && typeof element === "string") {
 		element = resolveElement(element);
 		instance = element && components.get(element);
+	}
+
+	// Not mounted yet: a pending data-mount="visible"/"idle" or lazy import() must not mount later
+	if (!instance && element && typeof element === "object") {
+		cancelDeferredMount(element);
 	}
 
 	if (instance) {

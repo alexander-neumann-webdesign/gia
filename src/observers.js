@@ -9,9 +9,6 @@
  * per-component unobserving and teardown for all features.
  */
 
-const isMobileBrowser =
-	typeof navigator !== "undefined" &&
-	!!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
 
 // ⚡ BOLT OPTIMIZATION: payload objects and the single-entry array are reused on every
 // dispatch, so high-frequency callbacks (scroll, resize) allocate nothing.
@@ -187,8 +184,17 @@ function handleGlobalResize() {
 	_dispatch(windowResizeRegistry._cbs.get(window), _resizePayload);
 }
 
+// Evaluated when window resize is first observed, not at load (and not at all in builds or
+// pages that never observe it)
+let isMobileBrowser = null;
+
 const windowResizeRegistry = _registry(
 	() => {
+		if (isMobileBrowser === null) {
+			isMobileBrowser =
+				typeof navigator !== "undefined" &&
+				/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i.test(navigator.userAgent);
+		}
 		window.addEventListener("resize", handleGlobalResize, { passive: true });
 		if (isMobileBrowser) {
 			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });
