@@ -315,6 +315,30 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(chCount).toBe(1);
     });
 
+    for (const tier of ['full', 'mini']) {
+        test(`gia.${tier}.umd.js eventbus: off() after a fired once() removes the plain listener`, async () => {
+            const fs = await import('fs');
+            const path = await import('path');
+            const code = fs.readFileSync(path.resolve(process.cwd(), `dist/gia.${tier}.umd.js`), 'utf-8');
+            const win = new JSDOM('<!DOCTYPE html><html><body></body></html>').window;
+            new Function('window', 'document', 'self', 'globalThis', `
+                const exports = undefined;
+                const module = undefined;
+                ${code}
+            `)(win, win.document, win, win);
+
+            const eb = win.gia.eventbus;
+            let count = 0;
+            const handler = () => { count++; };
+            eb.once('x', handler);
+            eb.emit('x');
+            eb.on('x', handler);
+            eb.off('x', handler);
+            eb.emit('x');
+            expect(count).toBe(1);
+        });
+    }
+
     test('loadComponents should defer to DOMContentLoaded when document.readyState is loading', () => {
         let mounted = false;
         class DeferBox extends fullDist.BaseComponent {

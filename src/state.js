@@ -43,6 +43,12 @@ function _attrName(key) {
 	return attrName;
 }
 
+// Value types that setState mirrors to a data-* attribute
+function _isMirrored(value) {
+	const type = typeof value;
+	return type === "boolean" || type === "string" || type === "number";
+}
+
 // ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
 function _clear(obj) {
 	for (const k in obj) delete obj[k];
@@ -101,14 +107,13 @@ export function enqueueSetState(instance, changes) {
 
 		if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
 			// Primitive state values are mirrored to data-* attributes
-			const type = typeof newValue;
 			const attrName = _attrName(key);
-			if (type === "boolean" || type === "string" || type === "number") {
-				instance._pendingAttributeChanges[attrName] =
-					type === "boolean" ? (newValue ? "true" : "false") : String(newValue);
-			} else {
-				// No longer a primitive: drop an attribute update queued earlier in this batch
-				delete instance._pendingAttributeChanges[attrName];
+			if (_isMirrored(newValue)) {
+				instance._pendingAttributeChanges[attrName] = String(newValue);
+			} else if (_isMirrored(prevValue)) {
+				// No longer a primitive (null, undefined, object...): the attribute mirrored the
+				// previous value, so remove it instead of leaving a stale one (null = remove)
+				instance._pendingAttributeChanges[attrName] = null;
 			}
 		}
 	}
@@ -126,10 +131,13 @@ export function flushStateChanges(instance) {
 
 	if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
 		// ⚡ BOLT OPTIMIZATION: for...in, no Object.keys() allocation; nothing runs when empty
+		const el = instance.element;
 		for (const attrName in attrs) {
 			const value = attrs[attrName];
-			if (instance.element.getAttribute(attrName) !== value) {
-				instance.element.setAttribute(attrName, value);
+			if (value === null) {
+				el.removeAttribute(attrName);
+			} else if (el.getAttribute(attrName) !== value) {
+				el.setAttribute(attrName, value);
 			}
 		}
 	}

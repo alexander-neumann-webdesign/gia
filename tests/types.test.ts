@@ -71,6 +71,14 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 		// Test observeIntersection once
 		this.observeIntersection(this.element!, () => {}, { once: true, threshold: 0.5 });
 
+		// Element observer callbacks receive a one-entry array
+		this.observeIntersection(this.element!, ([entry]) => {
+			const visible: boolean = entry.isIntersecting;
+		});
+		this.observeResize(this.element!, ([entry]) => {
+			const width: number = entry.contentRect.width;
+		});
+
 		// Test channel
 		const ch = this.channel('cart');
 		ch.emit('add', { id: 1 });

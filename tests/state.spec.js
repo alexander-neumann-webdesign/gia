@@ -279,4 +279,65 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
 
         expect(stateChangeCalled).toBe(false);
     });
+
+
+    test('should remove a mirrored data-* attribute when the state value is no longer a primitive', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        class Box extends BaseComponent {}
+        const box = new Box(el);
+        box._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        box.setState({ count: 5, label: 'a', open: true });
+        await frame();
+        expect(el.getAttribute('data-count')).toBe('5');
+        expect(el.getAttribute('data-open')).toBe('true');
+
+        box.setState({ count: null, label: { text: 'a' }, open: undefined });
+        await frame();
+        expect(el.hasAttribute('data-count')).toBe(false);
+        expect(el.hasAttribute('data-label')).toBe(false);
+        expect(el.hasAttribute('data-open')).toBe(false);
+
+        // Back to a primitive: mirrored again
+        box.setState({ count: 0 });
+        await frame();
+        expect(el.getAttribute('data-count')).toBe('0');
+    });
+
+    test('should not remove markup attributes for state that was never a mirrored primitive', async () => {
+        const el = document.createElement('div');
+        el.setAttribute('data-items', 'from-markup');
+        document.body.appendChild(el);
+        class List extends BaseComponent {}
+        const list = new List(el);
+        list._load();
+
+        list.setState({ items: [1, 2, 3] });
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(el.getAttribute('data-items')).toBe('from-markup');
+    });
+
+    test('should keep the attribute when a value changes to null and back within one batch', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        let changes = 0;
+        class Box extends BaseComponent {
+            stateChange() { changes++; }
+        }
+        const box = new Box(el);
+        box._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        box.setState({ count: 5 });
+        await frame();
+        box.setState({ count: null });
+        box.setState({ count: 5 });
+        await frame();
+
+        expect(el.getAttribute('data-count')).toBe('5');
+        expect(changes).toBe(1); // the reverted batch reports nothing
+    });
 });

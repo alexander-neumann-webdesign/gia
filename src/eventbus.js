@@ -1,6 +1,20 @@
 import config from "./config.js";
 
 /**
+ * The listener entry off(event, handler) removes: the once() wrapper registered for `handler`
+ * when it is still in `list`, else `handler` itself. The wrapper lookup is consumed either way,
+ * so a wrapper that is no longer listed (e.g. a once() that fired in another bundle) can never
+ * shadow a plain listener for the same handler.
+ */
+function _target(list, event, handler) {
+	const wrapped = handler._wrappedHandlers;
+	const wrapper = wrapped && wrapped[event];
+	if (!wrapper) return handler;
+	delete wrapped[event];
+	return list.indexOf(wrapper) !== -1 ? wrapper : handler;
+}
+
+/**
  * Lightweight event emitter used by the Mini build, and the base of the full EventBus
  * (which adds wildcard dispatch and removal-safe iteration on top of it).
  */
@@ -31,19 +45,24 @@ class MiniEventBus {
 		if (signal && signal.aborted) return;
 
 		let actual = handler;
+		let remove = () => this.off(event, actual);
 		if (once) {
-			actual = (d) => {
+			const wrapped = handler._wrappedHandlers || (handler._wrappedHandlers = Object.create(null));
+			// Removes the wrapper and forgets it, so a fired or aborted once() leaves no stale
+			// wrapper behind that would make a later off(event, handler) miss a plain listener
+			remove = () => {
 				this.off(event, actual);
+				if (wrapped[event] === actual) delete wrapped[event];
+			};
+			actual = (d) => {
+				remove();
 				handler(d);
 			};
-			if (!handler._wrappedHandlers) {
-				handler._wrappedHandlers = Object.create(null);
-			}
-			handler._wrappedHandlers[event] = actual;
+			wrapped[event] = actual;
 		}
 		(this._listeners[event] = this._listeners[event] || []).push(actual);
 		if (signal) {
-			signal.addEventListener("abort", () => this.off(event, actual), { once: true });
+			signal.addEventListener("abort", remove, { once: true });
 		}
 	}
 
@@ -59,8 +78,7 @@ class MiniEventBus {
 		}
 		const list = this._listeners[event];
 		if (list) {
-			const target = (handler._wrappedHandlers && handler._wrappedHandlers[event]) || handler;
-			const idx = list.indexOf(target);
+			const idx = list.indexOf(_target(list, event, handler));
 			if (idx !== -1) list.splice(idx, 1);
 		}
 	}
@@ -208,13 +226,7 @@ class EventBus extends MiniEventBus {
 		const handlers = this._listeners[event];
 		if (!handlers) return;
 
-		let targetHandler = handler;
-		if (handler._wrappedHandlers && handler._wrappedHandlers[event]) {
-			targetHandler = handler._wrappedHandlers[event];
-			delete handler._wrappedHandlers[event];
-		}
-
-		const index = handlers.indexOf(targetHandler);
+		const index = handlers.indexOf(_target(handlers, event, handler));
 		if (index !== -1) {
 			if (event.indexOf("*") !== -1 && this._hasWildcards > 0) {
 				this._hasWildcards--;
@@ -257,5 +269,8 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 if (!eventbusInstance) {
 	eventbusInstance = globalThis.__gia_eventbus__ = new EventBusClass();
 }
+
+// Named class exports are for tests; the bundle entries only re-export the shared instance
+export { MiniEventBus, EventBus };
 
 export default eventbusInstance;

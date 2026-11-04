@@ -1,6 +1,6 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.7KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.8KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
 [![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
@@ -61,9 +61,9 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.7 KB (29.0 KB) | ~9.6 KB (28.6 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.9 KB (23.1 KB) | ~7.7 KB (22.7 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.4 KB (15.5 KB) | ~5.3 KB (15.1 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.8 KB (29.3 KB) | ~9.7 KB (28.9 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.0 KB (23.5 KB) | ~7.9 KB (23.0 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.5 KB (15.6 KB) | ~5.3 KB (15.1 KB) |
 
 ```javascript
 // Full build with modern ESM
@@ -246,10 +246,11 @@ this.setState((prevState) => ({ count: prevState.count + 1 }));
 
 #### State-to-Attribute Auto-binding
 
-Gia automatically serializes primitive state properties (`boolean` and `string` types) into `data-` attributes on the root element. CamelCase state keys are translated to kebab-case:
+Gia automatically serializes primitive state properties (`boolean`, `string`, and `number` types) into `data-` attributes on the root element. CamelCase state keys are translated to kebab-case:
 
 - `isOpen: true` ➔ `data-is-open="true"`
 - `status: "loading"` ➔ `data-status="loading"`
+- `status: null` (or `undefined`, or an object) after a primitive ➔ `data-status` is removed
 
 This allows you to control component styling entirely through CSS, removing the need for verbose class-toggling code:
 

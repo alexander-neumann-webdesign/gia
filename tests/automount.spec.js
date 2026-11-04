@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import BaseComponent from '../src/BaseComponent.js';
 import config from '../src/config.js';
 import { initObserver } from '../src/autoMount.js';
+import { components as store } from '../src/store.js';
 
 test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
     let dom;
@@ -136,5 +137,68 @@ test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
         await new Promise((r) => setTimeout(r, 20));
 
         expect(mounted).toBe(false);
+    });
+
+
+    test('should keep the instance and its state when a mounted element is moved within the DOM', async () => {
+        let mounts = 0;
+        let unmounts = 0;
+
+        class SortableItem extends BaseComponent {
+            mount() { mounts++; }
+            unmount() { unmounts++; }
+        }
+        class Inner extends BaseComponent {
+            unmount() { unmounts++; }
+        }
+
+        window.gia.components.SortableItem = SortableItem;
+        window.gia.components.Inner = Inner;
+        config.set('autoMountComponents', true);
+
+        const list = document.createElement('ul');
+        list.innerHTML =
+            '<li data-component="SortableItem" id="first"><span data-component="Inner"></span></li>' +
+            '<li data-component="SortableItem" id="second"></li>';
+        document.body.appendChild(list);
+        await new Promise((r) => setTimeout(r, 20));
+        expect(mounts).toBe(2);
+
+        const first = document.getElementById('first');
+        const instance = store.get(first);
+        const inner = store.get(first.firstChild);
+        instance.marker = 'kept';
+
+        list.appendChild(first); // move to the end: removed + added in one batch
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(unmounts).toBe(0);
+        expect(mounts).toBe(2);
+        expect(store.get(first)).toBe(instance);
+        expect(store.get(first.firstChild)).toBe(inner);
+        expect(instance.marker).toBe('kept');
+    });
+
+    test('should still destroy components moved out of the document', async () => {
+        let unmounts = 0;
+
+        class Detachable extends BaseComponent {
+            unmount() { unmounts++; }
+        }
+
+        window.gia.components.Detachable = Detachable;
+        config.set('autoMountComponents', true);
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Detachable');
+        document.body.appendChild(el);
+        await new Promise((r) => setTimeout(r, 20));
+        expect(store.get(el)).toBeDefined();
+
+        document.createElement('div').appendChild(el); // detached container
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(unmounts).toBe(1);
+        expect(store.get(el)).toBeUndefined();
     });
 });

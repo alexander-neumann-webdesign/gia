@@ -219,6 +219,118 @@ test.describe('Centralized Observers Engine (observers.js)', () => {
         });
     });
 
+    test.describe('Dispatch robustness', () => {
+        const resize = () => window.dispatchEvent(new window.Event('resize'));
+
+        test('a throwing callback does not stop the other callbacks', () => {
+            const instance = {};
+            const calls = [];
+            const ok1 = () => calls.push('ok1');
+            const bad = () => { throw new Error('boom'); };
+            const ok2 = () => calls.push('ok2');
+            const originalError = console.error;
+            const errors = [];
+            console.error = (e) => errors.push(e);
+            try {
+                observeWindowResize(instance, ok1);
+                observeWindowResize(instance, bad);
+                observeWindowResize(instance, ok2);
+                resize();
+            } finally {
+                console.error = originalError;
+                cleanupComponentObservers(instance);
+            }
+            expect(calls).toEqual(['ok1', 'ok2']);
+            expect(errors.length).toBe(1);
+            expect(errors[0].message).toBe('boom');
+        });
+
+        test('callbacks run once each, in registration order, when one unobserves another during dispatch', () => {
+            const instance = {};
+            const calls = [];
+            const a = () => calls.push('a');
+            const b = () => calls.push('b');
+            const c = () => {
+                calls.push('c');
+                unobserveWindowResize(instance, a); // already called
+                unobserveWindowResize(instance, e); // not yet called: skipped
+            };
+            const d = () => calls.push('d');
+            const e = () => calls.push('e');
+            try {
+                [a, b, c, d, e].forEach((cb) => observeWindowResize(instance, cb));
+                resize();
+                expect(calls).toEqual(['a', 'b', 'c', 'd']);
+
+                calls.length = 0;
+                resize();
+                expect(calls).toEqual(['b', 'c', 'd']);
+            } finally {
+                cleanupComponentObservers(instance);
+            }
+        });
+
+        test('a callback may unobserve itself, and callbacks added during dispatch wait for the next one', () => {
+            const instance = {};
+            const calls = [];
+            const late = () => calls.push('late');
+            const selfRemoving = () => {
+                calls.push('self');
+                unobserveWindowResize(instance, selfRemoving);
+                observeWindowResize(instance, late);
+            };
+            const after = () => calls.push('after');
+            try {
+                observeWindowResize(instance, selfRemoving);
+                observeWindowResize(instance, after);
+                resize();
+                expect(calls).toEqual(['self', 'after']);
+
+                calls.length = 0;
+                resize();
+                expect(calls).toEqual(['after', 'late']);
+            } finally {
+                cleanupComponentObservers(instance);
+            }
+        });
+
+        test('nested dispatches each call their own callbacks exactly once', () => {
+            const instance = {};
+            const calls = [];
+            let nested = false;
+            const outer = () => {
+                calls.push('outer');
+                if (!nested) {
+                    nested = true;
+                    resize(); // synchronous re-entrant dispatch over the same callbacks
+                }
+            };
+            const other = () => calls.push('other');
+            try {
+                observeWindowResize(instance, outer);
+                observeWindowResize(instance, other);
+                resize();
+            } finally {
+                cleanupComponentObservers(instance);
+            }
+            expect(calls).toEqual(['outer', 'outer', 'other', 'other']);
+        });
+
+        test('unobserving the last callback during dispatch releases the native listener', () => {
+            const instance = {};
+            let count = 0;
+            const once = () => {
+                count++;
+                unobserveWindowResize(instance, once);
+            };
+            observeWindowResize(instance, once);
+            resize();
+            resize();
+            expect(count).toBe(1);
+            expect(instance._obs.size).toBe(0);
+        });
+    });
+
     test.describe('Window Resize Observation', () => {
         test('should notify callbacks with window width and height on resize', () => {
             const instance = { _observedWindowResizeCallbacks: [] };

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import eventbus from '../src/eventbus';
+import eventbus, { EventBus } from '../src/eventbus';
 import config from '../src/config';
 
 test.describe('EventBus', () => {
@@ -56,9 +56,12 @@ test.describe('EventBus', () => {
             loggedMessage = msg;
         };
 
+        // The shared bus is a page-wide singleton: when a dist bundle (console.info stripped)
+        // created it earlier in this worker, `eventbus` is that bus. Test a source instance.
+        const srcBus = new EventBus();
         try {
             config.set('log', true);
-            eventbus.emit('log-event');
+            srcBus.emit('log-event');
             expect(loggedMessage).toBe("Emitting event 'log-event'");
         } finally {
             console.info = originalInfo;
@@ -233,5 +236,48 @@ test.describe('EventBus', () => {
         auth.emit('login', { user: 'test' });
         auth.emit('login', { user: 'test' });
         expect(loggedIn).toBe(1);
+    });
+
+
+    test('off() removes a plain listener for a handler whose earlier once() already fired', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+
+        eventbus.once('once-then-on', handler);
+        eventbus.emit('once-then-on'); // fires and removes the once() wrapper
+        expect(count).toBe(1);
+
+        eventbus.on('once-then-on', handler);
+        eventbus.off('once-then-on', handler);
+        eventbus.emit('once-then-on');
+
+        expect(count).toBe(1);
+        expect(handler._wrappedHandlers['once-then-on']).toBeUndefined();
+    });
+
+    test('off() removes a plain listener for a handler whose earlier once() was aborted', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        const ac = new AbortController();
+
+        eventbus.once('aborted-once', handler, { signal: ac.signal });
+        ac.abort();
+
+        eventbus.on('aborted-once', handler);
+        eventbus.off('aborted-once', handler);
+        eventbus.emit('aborted-once');
+
+        expect(count).toBe(0);
+    });
+
+    test('off() still removes a pending once() wrapper', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+
+        eventbus.once('pending-once', handler);
+        eventbus.off('pending-once', handler);
+        eventbus.emit('pending-once');
+
+        expect(count).toBe(0);
     });
 });

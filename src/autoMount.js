@@ -27,7 +27,10 @@ function handleMutations(mutations) {
         // Handle removed nodes
         for (let i = 0; i < mutation.removedNodes.length; i++) {
             const node = mutation.removedNodes[i];
-            if (node.nodeType === Node.ELEMENT_NODE) {
+            // A node that is connected again by the time this callback runs was moved (e.g. a
+            // list re-sorted with appendChild), not removed: keep its components and their state.
+            // Its addedNodes record finds them already mounted and leaves them alone.
+            if (node.nodeType === Node.ELEMENT_NODE && !node.isConnected) {
                 // ⚡ BOLT OPTIMIZATION: Destroy nested child components first in reverse DOM order (bottom-up teardown)
                 const nestedComponents = queryAll(`[${attrName}]`, node);
                 for (let j = nestedComponents.length - 1; j >= 0; j--) {
