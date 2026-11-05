@@ -1,9 +1,9 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.8KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.9KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.8kb_to_10.3kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
+[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.9kb_to_10.3kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
 
 _Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management._
 
@@ -63,13 +63,13 @@ Gia is compiled into three highly optimized build variants depending on the feat
 | -------------- | -------------- | ----------- | -------------- | -------------- |
 | **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.2 KB) | ~10.2 KB (29.8 KB) |
 | **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.4 KB (24.0 KB) | ~8.2 KB (23.7 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.9 KB (17.0 KB) | ~5.8 KB (16.6 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (the observer and `loadScript()`/`loadStyle()` methods do nothing and log a one-time warning; components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~6.0 KB (17.3 KB) | ~5.9 KB (16.8 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~5.8 KB gzipped)
+// Or target the tiny Nano build (~5.9 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 

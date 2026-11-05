@@ -1,3 +1,4 @@
+import { nanoUnsupported } from "./nanoUnsupported.js";
 /**
  * Centralized observers: Scroll, Window Resize, ResizeObserver, IntersectionObserver and
  * matchMedia. Eliminates duplicate listener overhead and layout thrashing across components.
@@ -164,7 +165,7 @@ const scrollRegistry = _registry(
 );
 
 export function observeScroll(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeScroll");
 	if (typeof window === "undefined") return;
 	_observe(instance, scrollRegistry, window, callback);
 }
@@ -192,7 +193,7 @@ const windowResizeRegistry = _registry(
 );
 
 export function observeWindowResize(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeWindowResize");
 	if (typeof window === "undefined") return;
 	_observe(instance, windowResizeRegistry, window, callback);
 }
@@ -230,7 +231,7 @@ const resizeRegistry = _registry(
 );
 
 export function observeResize(instance, element, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeResize");
 	if (typeof window === "undefined" || !window.ResizeObserver) return;
 	if (!globalResizeObserver) {
 		globalResizeObserver = new ResizeObserver(_entryDispatcher(() => resizeRegistry));
@@ -284,7 +285,7 @@ function _intersectionRegistry(options) {
 }
 
 export function observeIntersection(instance, element, callback, options = {}) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeIntersection");
 	if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
 	const once = options && options.once;
@@ -351,7 +352,10 @@ const mediaQueryRegistry = _registry(
 );
 
 export function observeMediaQuery(instance, query, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return () => {};
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+		nanoUnsupported("observeMediaQuery");
+		return () => {};
+	}
 	if (typeof window === "undefined" || !window.matchMedia) return () => {};
 
 	_observe(instance, mediaQueryRegistry, query, callback);
