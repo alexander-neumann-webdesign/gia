@@ -1,4 +1,5 @@
 import config from "./config.js";
+import { kebab } from "./kebab.js";
 import { queryAll, toggleClass, addClass, removeClass } from "./utils.js";
 import { components } from "./store.js";
 import { enqueueSetState, flushStateChanges, cleanupComponentState, releaseHeldStateChanges } from "./state.js";
@@ -211,7 +212,7 @@ export default class BaseComponent {
 			const attrPrefix = config.get("attrPrefix");
 			for (const key in defaults) {
 				if (!Object.prototype.hasOwnProperty.call(defaults, key)) continue;
-				const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+				const kebabKey = kebab(key);
 				let attrVal = this.element.getAttribute(`${attrPrefix}-${kebabKey}`);
 				if (attrVal === null && attrPrefix !== "data") {
 					attrVal = this.element.getAttribute(`data-${kebabKey}`);

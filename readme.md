@@ -61,7 +61,7 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.1 KB) | ~10.1 KB (29.8 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.2 KB) | ~10.2 KB (29.8 KB) |
 | **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.4 KB (24.0 KB) | ~8.2 KB (23.6 KB) |
 | **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (the observer and `loadScript()`/`loadStyle()` methods do nothing and log a one-time warning; components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~6.0 KB (17.2 KB) | ~5.8 KB (16.8 KB) |
 

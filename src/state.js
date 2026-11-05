@@ -1,4 +1,5 @@
 import { mutate } from "./scheduler.js";
+import { kebab } from "./kebab.js";
 
 /**
  * Batched state updates and attribute syncing.
@@ -41,7 +42,7 @@ const RESERVED_ATTR = /^data-(component|ref|options|action|mount)$/;
 function _attrName(key) {
 	let attrName = globalStateAttributeCache.get(key);
 	if (attrName === undefined) {
-		attrName = `data-${key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`;
+		attrName = `data-${kebab(key)}`;
 		if (RESERVED_ATTR.test(attrName)) {
 			console.warn(`Gia: state "${key}" is not mirrored to ${attrName}, which Gia reserves.`);
 			attrName = null;
