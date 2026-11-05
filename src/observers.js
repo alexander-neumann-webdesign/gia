@@ -138,7 +138,7 @@ function handleGlobalScroll(e) {
 		_scrollPayload.scroll = e.scroll;
 		_scrollPayload.velocity = e.velocity || 0;
 	} else {
-		_scrollPayload.scroll = window.scrollY || window.pageYOffset;
+		_scrollPayload.scroll = window.scrollY;
 		_scrollPayload.velocity = 0;
 	}
 	_dispatch(scrollRegistry._cbs.get(window), _scrollPayload);
@@ -184,28 +184,11 @@ function handleGlobalResize() {
 	_dispatch(windowResizeRegistry._cbs.get(window), _resizePayload);
 }
 
-// Evaluated when window resize is first observed, not at load (and not at all in builds or
-// pages that never observe it)
-let isMobileBrowser = null;
-
+// Every supported browser fires resize when the device rotates (with the new dimensions, unlike
+// the deprecated orientationchange event), so one listener covers both.
 const windowResizeRegistry = _registry(
-	() => {
-		if (isMobileBrowser === null) {
-			isMobileBrowser =
-				typeof navigator !== "undefined" &&
-				/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i.test(navigator.userAgent);
-		}
-		window.addEventListener("resize", handleGlobalResize, { passive: true });
-		if (isMobileBrowser) {
-			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });
-		}
-	},
-	() => {
-		window.removeEventListener("resize", handleGlobalResize);
-		if (isMobileBrowser) {
-			window.removeEventListener("orientationchange", handleGlobalResize);
-		}
-	},
+	() => window.addEventListener("resize", handleGlobalResize, { passive: true }),
+	() => window.removeEventListener("resize", handleGlobalResize),
 );
 
 export function observeWindowResize(instance, callback) {
@@ -357,20 +340,12 @@ const mediaQueryRegistry = _registry(
 	(query) => {
 		const mql = window.matchMedia(query);
 		const handler = (e) => _dispatch(mediaQueryRegistry._cbs.get(query), e.matches, e);
-		if (mql.addEventListener) {
-			mql.addEventListener("change", handler);
-		} else if (mql.addListener) {
-			mql.addListener(handler);
-		}
+		mql.addEventListener("change", handler);
 		mediaQueryLists.set(query, { _mql: mql, _handler: handler });
 	},
 	(query) => {
 		const item = mediaQueryLists.get(query);
-		if (item._mql.removeEventListener) {
-			item._mql.removeEventListener("change", item._handler);
-		} else if (item._mql.removeListener) {
-			item._mql.removeListener(item._handler);
-		}
+		item._mql.removeEventListener("change", item._handler);
 		mediaQueryLists.delete(query);
 	},
 );
