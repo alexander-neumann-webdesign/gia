@@ -66,10 +66,17 @@ function _markDirty(instance) {
 	}
 }
 
-// ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
-function _clear(obj) {
-	for (const k in obj) delete obj[k];
-	return obj;
+/**
+ * Starts a batch for `instance`, reporting `payload` to stateChange() when it is flushed.
+ * ⚡ Fresh objects per batch: emptying and reusing them with `delete` costs far more than the
+ * allocation it saves (deleting properties switches V8 objects to slow dictionary mode).
+ */
+function _startBatch(instance, payload) {
+	instance._pendingStateChanges = payload;
+	instance._pendingAttributeChanges = {}; // "data-*" keys: no clash with Object.prototype
+	// Value each key had when this batch started (null prototype: any key name is safe)
+	instance._stateOrigins = Object.create(null);
+	_markDirty(instance);
 }
 
 /**
@@ -96,11 +103,7 @@ export function enqueueSetState(instance, changes) {
 
 		if (!instance._pendingStateChanges) {
 			// A fresh payload per batch: stateChange() receives it and may keep it
-			instance._pendingStateChanges = {};
-			instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
-			// Value each key had when this batch started (null prototype: any key name is safe)
-			instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
-			_markDirty(instance);
+			_startBatch(instance, {});
 		}
 
 		const origins = instance._stateOrigins;
@@ -157,10 +160,7 @@ export function flushStateChanges(instance) {
 		}
 	}
 
-	// Release the batch before calling user code, so setState() inside stateChange() starts a new one.
-	// Only the internal attribute and origin objects are reused; the payload belongs to the caller.
-	instance._reusableAttributeChanges = _clear(attrs);
-	instance._reusableStateOrigins = _clear(instance._stateOrigins);
+	// Release the batch before calling user code, so setState() inside stateChange() starts a new one
 	instance._pendingStateChanges = null;
 	instance._pendingAttributeChanges = null;
 	instance._stateOrigins = null;
@@ -196,10 +196,7 @@ export function releaseHeldStateChanges(instance) {
 	if (instance._pendingStateChanges) {
 		instance._pendingStateChanges = Object.assign(held, instance._pendingStateChanges);
 	} else {
-		instance._pendingStateChanges = held;
-		instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
-		instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
-		_markDirty(instance);
+		_startBatch(instance, held);
 	}
 }
 
