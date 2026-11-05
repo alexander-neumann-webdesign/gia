@@ -1,7 +1,7 @@
 {
 	"name": "gia",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Performance-first, ultra-lightweight framework for islands of interactivity on server-rendered and static websites",
 	"files": [
 		"dist",
 		"types"
@@ -33,9 +33,21 @@
 		"typecheck": "tsc --noEmit",
 		"test": "playwright test && tsc --noEmit"
 	},
-	"keywords": [],
+	"keywords": [
+		"components",
+		"islands",
+		"dom",
+		"progressive-enhancement",
+		"server-rendered",
+		"wordpress"
+	],
 	"author": "",
-	"license": "ISC",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/alexander-neumann-webdesign/gia.git"
+	},
+	"homepage": "https://alexander-neumann-webdesign.github.io/gia/",
 	"devDependencies": {
 		"@playwright/test": "^1.60.0",
 		"jsdom": "^29.1.1",
