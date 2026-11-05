@@ -292,4 +292,62 @@ test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
             expect(log).toEqual(['mount Alpha']);
         });
     });
+
+    test.describe('batched mounting', () => {
+        const tick = () => new Promise((r) => setTimeout(r, 20));
+
+        test('priority applies across sibling components inserted in one batch', async () => {
+            const order = [];
+            class Item extends BaseComponent { mount() { order.push('Item'); } }
+            class Header extends BaseComponent {
+                static priority = 10;
+                mount() { order.push('Header'); }
+            }
+            window.gia.components.Item = Item;
+            window.gia.components.Header = Header;
+            config.set('autoMountComponents', true);
+
+            const box = document.createElement('div');
+            box.innerHTML =
+                '<p data-component="Item"></p><p data-component="Item"></p><header data-component="Header"></header>';
+            document.body.append(...box.childNodes); // three added nodes, one mutation batch
+            await tick();
+
+            expect(order).toEqual(['Header', 'Item', 'Item']);
+        });
+
+        test('nested roots added in the same batch mount each component once', async () => {
+            let mounts = 0;
+            class Leaf extends BaseComponent { mount() { mounts++; } }
+            window.gia.components.Leaf = Leaf;
+            config.set('autoMountComponents', true);
+
+            const outer = document.createElement('section');
+            outer.setAttribute('data-component', 'Leaf');
+            document.body.appendChild(outer);
+            const inner = document.createElement('div');
+            inner.setAttribute('data-component', 'Leaf');
+            outer.appendChild(inner); // second record, root nested inside the first
+            await tick();
+
+            expect(mounts).toBe(2);
+            expect(store.has(outer)).toBe(true);
+            expect(store.has(inner)).toBe(true);
+        });
+
+        test('an element added and removed again within one batch is not mounted', async () => {
+            let mounts = 0;
+            class Flash extends BaseComponent { mount() { mounts++; } }
+            window.gia.components.Flash = Flash;
+            config.set('autoMountComponents', true);
+
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Flash');
+            document.body.appendChild(el);
+            el.remove();
+            await tick();
+
+            expect(mounts).toBe(0);
+        });
+    });
 });

@@ -1,6 +1,6 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.4KB to ~10.2KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.4KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
 [![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
@@ -61,9 +61,9 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.2 KB (29.7 KB) | ~10.0 KB (29.4 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.1 KB) | ~10.1 KB (29.7 KB) |
 | **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.2 KB (23.4 KB) | ~8.0 KB (23.0 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.6 KB (16.0 KB) | ~5.4 KB (15.5 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.6 KB (16.0 KB) | ~5.4 KB (15.6 KB) |
 
 ```javascript
 // Full build with modern ESM
@@ -699,6 +699,9 @@ When integrating Gia into complex architectures, micro-frontends, design systems
 
    This applies to plain `<script>` loading only; `require()`/AMD consumers receive their own bundle's exports as usual.
 
+6. **One Auto-Mount Observer per Page (`window.__gia_automount__`)**:
+   With auto-mounting enabled, every Full bundle shares a single `MutationObserver` and a single `config.set` hook, so a second bundle never doubles the work, and `config.set("autoMountComponents", false)` stops auto-mounting page-wide.
+
 ---
 
 ## Quality of Life Features
@@ -886,6 +889,8 @@ The observer also follows the `data-component` attribute of elements that are al
 - **Changed** to another name: the old instance is destroyed and the new component mounts.
 - **Removed**: the instance is destroyed.
 - **Moved** (e.g. re-sorting a list with `appendChild`): the instance and its state are kept.
+
+Everything one DOM change adds is mounted as one batch, so [mounting priority](#component-mounting-priority) applies across all of it, not just within each inserted node.
 
 ---
 

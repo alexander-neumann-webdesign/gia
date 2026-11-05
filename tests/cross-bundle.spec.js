@@ -226,3 +226,53 @@ test.describe('UMD export merging on window.gia (most capable bundle wins)', () 
         expect(await page.evaluate(() => typeof window.gia.Component)).toBe('function');
     });
 });
+
+test('two full bundles on one page share a single auto-mount observer', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.setContent('<body></body>');
+    await page.evaluate(() => {
+        const live = new Set();
+        window.__liveObservers = live;
+        const Native = window.MutationObserver;
+        window.MutationObserver = class extends Native {
+            observe(target, options) {
+                // Count Gia's auto-mount observers only (Playwright injects observers of its own)
+                if (options && options.attributeFilter && options.attributeFilter.includes('data-component')) {
+                    live.add(this);
+                }
+                return super.observe(target, options);
+            }
+            disconnect() { live.delete(this); return super.disconnect(); }
+        };
+    });
+    await page.addScriptTag({ path: dist('gia.full.umd.js') });
+    await page.evaluate(async () => {
+        window.gia.config.set('autoMountComponents', true);
+        await new Promise((r) => setTimeout(r, 20));
+    });
+    // A second bundle (e.g. an embedded widget) arrives while auto-mount is already on
+    await page.addScriptTag({ path: dist('gia.full.umd.js') });
+
+    const result = await page.evaluate(async () => {
+        const wait = () => new Promise((r) => setTimeout(r, 20));
+        await wait(); // the second bundle starts its observer check on a timeout
+        let mounts = 0;
+        window.gia.register(class Widget extends window.gia.BaseComponent {
+            mount() { mounts++; }
+        });
+        const whileOn = window.__liveObservers.size;
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Widget');
+        document.body.appendChild(el);
+        await wait();
+
+        window.gia.config.set('autoMountComponents', false);
+        await wait();
+        return { whileOn, mounts, afterOff: window.__liveObservers.size };
+    });
+
+    expect(errors).toEqual([]);
+    expect(result).toEqual({ whileOn: 1, mounts: 1, afterOff: 0 });
+});

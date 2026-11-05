@@ -113,7 +113,7 @@ export function terserPlugin(customOptions = {}) {
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_umd__|__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers|_onceHandler|_loadPromise)$/,
+	reserveProps: /^(__gia_umd__|__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|__gia_automount__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers|_onceHandler|_loadPromise)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };

@@ -193,18 +193,38 @@ export default function loadComponents(components = {}, context = document.docum
 		components = (typeof window !== "undefined" && window.gia && window.gia.components) || {};
 	}
 
+	_loadRoots(components, [context]);
+}
+
+/**
+ * Mounts the components inside several roots (and the roots themselves) as one batch, so
+ * priority ordering applies across all of them. Used by autoMount for a whole mutation batch.
+ * @param {object} components - component registry (empty: the global registry)
+ * @param {Element[]} roots - connected elements; nested or repeated roots are fine
+ */
+export function loadComponentsIn(components, roots) {
+	if (!_hasKeys(components)) {
+		components = (typeof window !== "undefined" && window.gia && window.gia.components) || {};
+	}
+	_loadRoots(components, roots);
+}
+
+function _loadRoots(components, roots) {
 	const initialisedComponents = [];
 	const attrName = `${config.get("attrPrefix")}-component`;
-	const elements = queryAll(`[${attrName}]`, context);
 	let resolved = 0;
 
-	// ⚡ BOLT OPTIMIZATION: Plain loop over the NodeList, no per-call closure allocation
-	for (let i = 0; i < elements.length; i++) {
-		resolved += _processElement(elements[i], attrName, components, initialisedComponents);
-	}
-	// The context element itself is mounted after its descendants
-	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
-		resolved += _processElement(context, attrName, components, initialisedComponents);
+	for (let r = 0; r < roots.length; r++) {
+		const context = roots[r];
+		const elements = queryAll(`[${attrName}]`, context);
+		// ⚡ BOLT OPTIMIZATION: Plain loop over the NodeList, no per-call closure allocation
+		for (let i = 0; i < elements.length; i++) {
+			resolved += _processElement(elements[i], attrName, components, initialisedComponents);
+		}
+		// The context element itself is mounted after its descendants
+		if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
+			resolved += _processElement(context, attrName, components, initialisedComponents);
+		}
 	}
 
 	if (!resolved && !_hasKeys(components)) {
