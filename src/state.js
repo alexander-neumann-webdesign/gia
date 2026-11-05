@@ -33,14 +33,28 @@ function flushGlobalStateChanges() {
 	}
 }
 
-// camelCase state key -> data-kebab-case attribute name (cached)
+// Attributes Gia reads itself. Mirroring state onto them would turn the element into another
+// component, rebind actions or change refs/options, so those state keys are never mirrored.
+const RESERVED_ATTR = /^data-(component|ref|options|action|mount)$/;
+
+// camelCase state key -> data-kebab-case attribute name, or null when reserved (cached)
 function _attrName(key) {
 	let attrName = globalStateAttributeCache.get(key);
-	if (!attrName) {
+	if (attrName === undefined) {
 		attrName = `data-${key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`;
+		if (RESERVED_ATTR.test(attrName)) {
+			console.warn(`Gia: state "${key}" is not mirrored to ${attrName}, which Gia reserves.`);
+			attrName = null;
+		}
 		globalStateAttributeCache.set(key, attrName);
 	}
 	return attrName;
+}
+
+// Value types that setState mirrors to a data-* attribute
+function _isMirrored(value) {
+	const type = typeof value;
+	return type === "boolean" || type === "string" || type === "number";
 }
 
 // ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
@@ -72,7 +86,8 @@ export function enqueueSetState(instance, changes) {
 		instance._state[key] = newValue;
 
 		if (!instance._pendingStateChanges) {
-			instance._pendingStateChanges = instance._reusableStateChanges || {};
+			// A fresh payload per batch: stateChange() receives it and may keep it
+			instance._pendingStateChanges = {};
 			instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
 			// Value each key had when this batch started (null prototype: any key name is safe)
 			instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
@@ -100,15 +115,16 @@ export function enqueueSetState(instance, changes) {
 		instance._pendingStateChanges[key] = newValue;
 
 		if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
-			// Primitive state values are mirrored to data-* attributes
-			const type = typeof newValue;
+			// Primitive state values are mirrored to data-* attributes (reserved names: state only)
 			const attrName = _attrName(key);
-			if (type === "boolean" || type === "string" || type === "number") {
-				instance._pendingAttributeChanges[attrName] =
-					type === "boolean" ? (newValue ? "true" : "false") : String(newValue);
-			} else {
-				// No longer a primitive: drop an attribute update queued earlier in this batch
-				delete instance._pendingAttributeChanges[attrName];
+			if (attrName !== null) {
+				if (_isMirrored(newValue)) {
+					instance._pendingAttributeChanges[attrName] = String(newValue);
+				} else if (_isMirrored(prevValue)) {
+					// No longer a primitive (null, undefined, object...): the attribute mirrored the
+					// previous value, so remove it instead of leaving a stale one (null = remove)
+					instance._pendingAttributeChanges[attrName] = null;
+				}
 			}
 		}
 	}
@@ -126,16 +142,19 @@ export function flushStateChanges(instance) {
 
 	if (typeof __GIA_NANO__ === "undefined" || !__GIA_NANO__) {
 		// ⚡ BOLT OPTIMIZATION: for...in, no Object.keys() allocation; nothing runs when empty
+		const el = instance.element;
 		for (const attrName in attrs) {
 			const value = attrs[attrName];
-			if (instance.element.getAttribute(attrName) !== value) {
-				instance.element.setAttribute(attrName, value);
+			if (value === null) {
+				el.removeAttribute(attrName);
+			} else if (el.getAttribute(attrName) !== value) {
+				el.setAttribute(attrName, value);
 			}
 		}
 	}
 
-	// Release the batch before calling user code, so setState() inside stateChange() starts a new one
-	instance._reusableStateChanges = null;
+	// Release the batch before calling user code, so setState() inside stateChange() starts a new one.
+	// Only the internal attribute and origin objects are reused; the payload belongs to the caller.
 	instance._reusableAttributeChanges = _clear(attrs);
 	instance._reusableStateOrigins = _clear(instance._stateOrigins);
 	instance._pendingStateChanges = null;
@@ -151,9 +170,6 @@ export function flushStateChanges(instance) {
 	if (hasChanges) {
 		instance.stateChange(pending);
 	}
-
-	// Reuse the payload object for the next batch unless a new batch already started
-	instance._reusableStateChanges = _clear(pending);
 }
 
 /**

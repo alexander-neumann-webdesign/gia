@@ -315,6 +315,59 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         expect(chCount).toBe(1);
     });
 
+    for (const tier of ['full', 'mini']) {
+        test(`gia.${tier}.umd.js eventbus: off() and once() bookkeeping, frozen payloads`, async () => {
+            const fs = await import('fs');
+            const path = await import('path');
+            const code = fs.readFileSync(path.resolve(process.cwd(), `dist/gia.${tier}.umd.js`), 'utf-8');
+            const win = new JSDOM('<!DOCTYPE html><html><body></body></html>').window;
+            new Function('window', 'document', 'self', 'globalThis', `
+                const exports = undefined;
+                const module = undefined;
+                ${code}
+            `)(win, win.document, win, win);
+
+            const eb = win.gia.eventbus;
+            let count = 0;
+            const handler = () => { count++; };
+            eb.once('x', handler);
+            eb.emit('x');
+            eb.on('x', handler);
+            eb.off('x', handler);
+            eb.emit('x');
+            expect(count).toBe(1);
+
+            // Repeated once() registrations are each removable (needs the unmangled _onceHandler)
+            eb.once('y', handler);
+            eb.once('y', handler);
+            eb.off('y', handler);
+            eb.off('y', handler);
+            eb.emit('y');
+            expect(count).toBe(1);
+
+            // Frozen payloads do not throw
+            expect(() => eb.emit('x', Object.freeze({}))).not.toThrow();
+        });
+    }
+
+    for (const [tier, dist] of [['full', fullDist], ['mini', miniDist], ['nano', nanoDist]]) {
+        test(`gia.${tier}.mjs keeps console.warn for markup mistakes`, () => {
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'NoSuchComponent');
+            document.body.appendChild(el);
+            const originalWarn = console.warn;
+            const warnings = [];
+            console.warn = (msg) => warnings.push(String(msg));
+            try {
+                dist.loadComponents({ SomethingElse: class extends dist.BaseComponent {} }, el);
+            } finally {
+                console.warn = originalWarn;
+                el.remove();
+            }
+            expect(warnings).toContain('Constructor "NoSuchComponent" not found.');
+        });
+    }
+
     test('loadComponents should defer to DOMContentLoaded when document.readyState is loading', () => {
         let mounted = false;
         class DeferBox extends fullDist.BaseComponent {

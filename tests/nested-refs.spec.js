@@ -35,7 +35,6 @@ test.describe('Nested Component Ref & Action Isolation', () => {
 
     test.afterEach(() => {
         config.set('autoBindActions', false);
-        config.set('log', false);
         delete global.window;
         delete global.document;
         delete global.Node;
@@ -248,5 +247,30 @@ test.describe('Nested Component Ref & Action Isolation', () => {
 
         expect(parentInstance.ref.header.map(el => el.id)).toEqual(['p-header']);
         expect(childInstance.ref.header.map(el => el.id)).toEqual(['c-header']);
+    });
+
+    test('a markup ref named __proto__ cannot replace the prototype of this.ref', () => {
+        document.body.innerHTML = `
+            <div data-component="Guarded" id="guarded">
+                <span data-ref="__proto__"></span>
+                <span data-ref="Guarded:__proto__"></span>
+                <span data-ref="title" id="title"></span>
+            </div>
+        `;
+
+        let instance;
+        class Guarded extends BaseComponent {
+            constructor(el) {
+                super(el);
+                instance = this;
+                this.ref = {};
+            }
+        }
+
+        loadComponents({ Guarded }, document.body);
+
+        expect(Object.getPrototypeOf(instance.ref)).toBe(Object.prototype);
+        expect(Object.prototype.hasOwnProperty.call(instance.ref, '__proto__')).toBe(false);
+        expect(instance.ref.title.map((el) => el.id)).toEqual(['title']);
     });
 });

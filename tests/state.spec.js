@@ -279,4 +279,120 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
 
         expect(stateChangeCalled).toBe(false);
     });
+
+
+    test('should remove a mirrored data-* attribute when the state value is no longer a primitive', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        class Box extends BaseComponent {}
+        const box = new Box(el);
+        box._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        box.setState({ count: 5, label: 'a', open: true });
+        await frame();
+        expect(el.getAttribute('data-count')).toBe('5');
+        expect(el.getAttribute('data-open')).toBe('true');
+
+        box.setState({ count: null, label: { text: 'a' }, open: undefined });
+        await frame();
+        expect(el.hasAttribute('data-count')).toBe(false);
+        expect(el.hasAttribute('data-label')).toBe(false);
+        expect(el.hasAttribute('data-open')).toBe(false);
+
+        // Back to a primitive: mirrored again
+        box.setState({ count: 0 });
+        await frame();
+        expect(el.getAttribute('data-count')).toBe('0');
+    });
+
+    test('should not remove markup attributes for state that was never a mirrored primitive', async () => {
+        const el = document.createElement('div');
+        el.setAttribute('data-items', 'from-markup');
+        document.body.appendChild(el);
+        class List extends BaseComponent {}
+        const list = new List(el);
+        list._load();
+
+        list.setState({ items: [1, 2, 3] });
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(el.getAttribute('data-items')).toBe('from-markup');
+    });
+
+    test('should keep the attribute when a value changes to null and back within one batch', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        let changes = 0;
+        class Box extends BaseComponent {
+            stateChange() { changes++; }
+        }
+        const box = new Box(el);
+        box._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        box.setState({ count: 5 });
+        await frame();
+        box.setState({ count: null });
+        box.setState({ count: 5 });
+        await frame();
+
+        expect(el.getAttribute('data-count')).toBe('5');
+        expect(changes).toBe(1); // the reverted batch reports nothing
+    });
+
+
+    test('should never mirror state onto attributes Gia reads itself', async () => {
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Widget');
+        document.body.appendChild(el);
+        let received = null;
+        class Widget extends BaseComponent {
+            stateChange(changes) { received = changes; }
+        }
+        const widget = new Widget(el);
+        widget._load();
+
+        const originalWarn = console.warn;
+        const warnings = [];
+        console.warn = (msg) => warnings.push(msg);
+        try {
+            widget.setState({ component: 'Other', ref: 'r', options: 'o', action: 'click->x', mount: 'idle', count: 1 });
+            widget.setState({ component: 'Again' }); // same key: no second warning
+            await new Promise((r) => setTimeout(r, 20));
+        } finally {
+            console.warn = originalWarn;
+        }
+
+        expect(el.getAttribute('data-component')).toBe('Widget');
+        for (const name of ['ref', 'options', 'action', 'mount']) {
+            expect(el.hasAttribute(`data-${name}`)).toBe(false);
+        }
+        expect(el.getAttribute('data-count')).toBe('1');
+        // Still regular state, reported to stateChange()
+        expect(widget.state.component).toBe('Again');
+        expect(received).toMatchObject({ component: 'Again', mount: 'idle', count: 1 });
+        expect(warnings.filter((w) => w.includes('"component"')).length).toBeLessThanOrEqual(1);
+    });
+
+
+    test('should hand stateChange() a payload object the component may keep', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        const payloads = [];
+        class Keeper extends BaseComponent {
+            stateChange(changes) { payloads.push(changes); }
+        }
+        const keeper = new Keeper(el);
+        keeper._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        keeper.setState({ step: 1 });
+        await frame();
+        keeper.setState({ step: 2, done: true });
+        await frame();
+
+        expect(payloads).toEqual([{ step: 1 }, { step: 2, done: true }]);
+        expect(payloads[0]).not.toBe(payloads[1]);
+    });
 });

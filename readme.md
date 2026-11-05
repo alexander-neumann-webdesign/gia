@@ -1,6 +1,6 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.3KB to ~9.7KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~5.4KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
 [![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
@@ -61,15 +61,15 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~9.7 KB (29.0 KB) | ~9.6 KB (28.6 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~7.9 KB (23.1 KB) | ~7.7 KB (22.7 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.4 KB (15.5 KB) | ~5.3 KB (15.1 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.1 KB) | ~10.1 KB (29.7 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.2 KB (23.4 KB) | ~8.0 KB (23.0 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.6 KB (16.0 KB) | ~5.4 KB (15.6 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~5.3 KB gzipped)
+// Or target the tiny Nano build (~5.4 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
@@ -246,10 +246,13 @@ this.setState((prevState) => ({ count: prevState.count + 1 }));
 
 #### State-to-Attribute Auto-binding
 
-Gia automatically serializes primitive state properties (`boolean` and `string` types) into `data-` attributes on the root element. CamelCase state keys are translated to kebab-case:
+Gia automatically serializes primitive state properties (`boolean`, `string`, and `number` types) into `data-` attributes on the root element. CamelCase state keys are translated to kebab-case:
 
 - `isOpen: true` ➔ `data-is-open="true"`
 - `status: "loading"` ➔ `data-status="loading"`
+- `status: null` (or `undefined`, or an object) after a primitive ➔ `data-status` is removed
+
+State keys that would map to attributes Gia reads itself (`component`, `ref`, `options`, `action`, `mount`) are never mirrored, so state can't turn the element into another component or rebind its actions. They remain normal state and are still passed to `stateChange()`.
 
 This allows you to control component styling entirely through CSS, removing the need for verbose class-toggling code:
 
@@ -530,6 +533,8 @@ eventbus.on("*", (event) => {
 });
 ```
 
+Handlers receive the object you emit, tagged with the event name as `_name` (a missing or primitive payload becomes `{ _name }`). A frozen or sealed payload can't be tagged, so it is delivered unchanged without `_name`.
+
 #### Namespaced Channels (`this.channel` & `eventbus.channel`)
 
 For feature-driven architectures, create lightweight scoped channels to avoid writing repetitive prefix strings:
@@ -637,14 +642,15 @@ Components with identical priorities safely preserve their natural DOM order.
 To optimize Core Web Vitals (INP, LCP, TBT) and prevent main-thread congestion during initial page load, Gia supports declarative lazy hydration out of the box via the `data-mount` (or `g-mount`) attribute:
 
 #### 1. Visibility Hydration (`data-mount="visible"`)
-Components with `data-mount="visible"` defer instantiation and mounting until the element enters (or is within 200px of) the viewport via native `IntersectionObserver`:
+Components with `data-mount="visible"` defer instantiation and mounting until the element enters (or is within 200px of) the viewport. All of them share a single native `IntersectionObserver`, which is released once nothing is waiting:
 ```html
 <!-- Hydrates only when scrolled near the viewport -->
 <div data-component="ComplexReviewsWidget" data-mount="visible">
     <!-- Heavy DOM or widget markup -->
 </div>
 ```
-- **Automatic Disconnect Guards**: If a deferred element is removed from the DOM before it becomes visible, Gia safely discards the pending observer without creating ghost instances.
+- **Automatic Disconnect Guards**: If a deferred element is removed from the DOM before it becomes visible, Gia never creates a ghost instance for it.
+- **Cancelled by `removeComponents()`**: Removing components (via `removeComponents()`, `destroyInstance()`, or auto-mount when the element leaves the DOM) also cancels pending `visible`/`idle` mounts and pending lazy `import()` loaders, so nothing mounts after a page transition has torn the content down.
 - **Async Dynamic Import Synergy**: Works seamlessly with dynamic import loaders (`() => import(...)`), so the JavaScript bundle for the component is neither fetched nor executed until the element is actually scrolled into view!
 
 #### 2. Idle Hydration (`data-mount="idle"`)
@@ -692,6 +698,9 @@ When integrating Gia into complex architectures, micro-frontends, design systems
    - an equal or less capable bundle only fills in exports that are still missing, so a Mini or Nano widget loaded after the Full host can never downgrade it (the host's lazy `import()` loaders, auto-mounting, etc. keep working). On a tie, the first bundle wins.
 
    This applies to plain `<script>` loading only; `require()`/AMD consumers receive their own bundle's exports as usual.
+
+6. **One Auto-Mount Observer per Page (`window.__gia_automount__`)**:
+   With auto-mounting enabled, every Full bundle shares a single `MutationObserver` and a single `config.set` hook, so a second bundle never doubles the work, and `config.set("autoMountComponents", false)` stops auto-mounting page-wide.
 
 ---
 
@@ -874,6 +883,15 @@ loadComponents();
 // Example: document.body.innerHTML += '<div data-component="MyComponent">Dynamically Injected</div>';
 ```
 
+The observer also follows the `data-component` attribute of elements that are already in the page, and nothing else:
+
+- **Added** (`el.setAttribute("data-component", "Tabs")`): the component mounts.
+- **Changed** to another name: the old instance is destroyed and the new component mounts.
+- **Removed**: the instance is destroyed.
+- **Moved** (e.g. re-sorting a list with `appendChild`): the instance and its state are kept.
+
+Everything one DOM change adds is mounted as one batch, so [mounting priority](#component-mounting-priority) applies across all of it, not just within each inserted node.
+
 ---
 
 ## TypeScript Support
@@ -931,9 +949,6 @@ Customize the framework's behavior using the global `config` object:
 
 ```javascript
 import { config } from "gia";
-
-// Toggle console logging and warning messages
-config.set("log", true);
 
 // Customize data attribute prefix (e.g. 'g' searches for 'g-component' instead of 'data-component')
 config.set("attrPrefix", "data");
@@ -1023,6 +1038,7 @@ To run smooth animations at 60fps, even on low-end mobile devices, this fork imp
 - **Iterator Suppression**: Replaced `.forEach()`, `.map()`, `.filter()`, and `for...of` iterators with classic `for` loops in hot code paths, avoiding short-lived iterator objects.
 - **Empty Object Checks**: Uses fast-failing `for...in` loops instead of instantiating temporary arrays via `Object.keys()`.
 - **Reference Disconnection**: The `unmount` phase clears references on both Javascript classes and DOM elements, preventing memory leaks and allowing prompt Garbage Collection.
+- **Shared Native Observers**: Every `data-mount="visible"` element shares one `IntersectionObserver`, and component observers are pooled by options (see [Centralized Observers](#centralized-observers)).
 
 ---
 

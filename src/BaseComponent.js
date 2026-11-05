@@ -128,12 +128,17 @@ export default class BaseComponent {
 			const refs = {};
 			for (const refName in refsByName) {
 				const colonIndex = refName.indexOf(":");
+				let name = null;
 				if (colonIndex !== -1) {
 					if (refName.substring(0, colonIndex) === this._name) {
-						refs[refName.substring(colonIndex + 1)] = refsByName[refName];
+						name = refName.substring(colonIndex + 1);
 					}
 				} else if (!refsByName[namePrefix + refName]) {
-					refs[refName] = refsByName[refName];
+					name = refName;
+				}
+				// 🛡️ SECURITY: a markup ref named "__proto__" would replace the prototype of this.ref
+				if (name !== null && name !== "__proto__") {
+					refs[name] = refsByName[refName];
 				}
 			}
 			this._ref = refs;

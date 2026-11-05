@@ -2,7 +2,6 @@
  * Global configuration options for Gia
  */
 export interface GiaConfig {
-	log: boolean;
 	attrPrefix: string;
 	autoMountComponents: boolean;
 	autoBindActions: boolean;
@@ -144,17 +143,25 @@ export class BaseComponent<
 	observeWindowResize(callback: (dimensions: WindowDimensions) => void): void;
 	unobserveWindowResize(callback: (dimensions: WindowDimensions) => void): void;
 
-	observeResize(element: Element, callback: (entry: ResizeObserverEntry) => void): void;
-	unobserveResize(element: Element, callback?: ((entry: ResizeObserverEntry) => void) | null): void;
+	/**
+	 * Calls `callback` with a one-entry array (`([entry]) => ...`). The array is reused between
+	 * calls: read it synchronously and do not keep a reference to it.
+	 */
+	observeResize(element: Element, callback: (entries: ResizeObserverEntry[]) => void): void;
+	unobserveResize(element: Element, callback?: ((entries: ResizeObserverEntry[]) => void) | null): void;
 
+	/**
+	 * Calls `callback` with a one-entry array (`([entry]) => ...`). The array is reused between
+	 * calls: read it synchronously and do not keep a reference to it.
+	 */
 	observeIntersection(
 		element: Element,
-		callback: (entry: IntersectionObserverEntry) => void,
+		callback: (entries: IntersectionObserverEntry[]) => void,
 		options?: GiaIntersectionObserverInit
 	): void;
 	unobserveIntersection(
 		element: Element,
-		callback?: ((entry: IntersectionObserverEntry) => void) | null
+		callback?: ((entries: IntersectionObserverEntry[]) => void) | null
 	): void;
 
 	observeMediaQuery(query: string, callback: (matches: boolean, mql: MediaQueryList) => void): () => void;

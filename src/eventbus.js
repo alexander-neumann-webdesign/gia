@@ -1,4 +1,40 @@
-import config from "./config.js";
+/**
+ * The listener entry off(event, handler) removes: a once() wrapper registered for `handler`
+ * while one is still in `list`, else `handler` itself.
+ * - handler._wrappedHandlers[event] names the latest wrapper (also read by older Gia bundles).
+ *   The lookup is consumed either way, so a wrapper that is no longer listed (e.g. a once() that
+ *   fired in another bundle) can never shadow a plain listener for the same handler.
+ * - Every wrapper also points back at its handler (_onceHandler), so when the same handler was
+ *   registered with once() more than once, each off() finds the next remaining wrapper.
+ * Both property names are reserved from mangling: wrappers are shared by every bundle.
+ */
+function _target(list, event, handler) {
+	const wrapped = handler._wrappedHandlers;
+	const wrapper = wrapped && wrapped[event];
+	if (wrapper) {
+		delete wrapped[event];
+		if (list.indexOf(wrapper) !== -1) return wrapper;
+	}
+	for (let i = 0; i < list.length; i++) {
+		if (list[i] && list[i]._onceHandler === handler) return list[i];
+	}
+	return handler;
+}
+
+/**
+ * The object handlers receive: the caller's object tagged with the event name (documented as
+ * `event._name`), or a new { _name } object for a missing or primitive payload. A frozen or
+ * sealed payload cannot be tagged and is passed through as is instead of throwing.
+ */
+function _payload(eventObject, event) {
+	if (!eventObject || typeof eventObject !== "object") return { _name: event };
+	try {
+		eventObject._name = event;
+	} catch (_e) {
+		// not extensible / read-only _name
+	}
+	return eventObject;
+}
 
 /**
  * Lightweight event emitter used by the Mini build, and the base of the full EventBus
@@ -12,11 +48,7 @@ class MiniEventBus {
 	emit(event, eventObject) {
 		const list = this._listeners[event];
 		if (list && list.length) {
-			if (!eventObject || typeof eventObject !== "object") {
-				eventObject = { _name: event };
-			} else {
-				eventObject._name = event;
-			}
+			eventObject = _payload(eventObject, event);
 			const copy = list.slice();
 			for (let i = 0; i < copy.length; i++) {
 				copy[i](eventObject);
@@ -31,19 +63,25 @@ class MiniEventBus {
 		if (signal && signal.aborted) return;
 
 		let actual = handler;
+		let remove = () => this.off(event, actual);
 		if (once) {
-			actual = (d) => {
+			const wrapped = handler._wrappedHandlers || (handler._wrappedHandlers = Object.create(null));
+			// Removes the wrapper and forgets it, so a fired or aborted once() leaves no stale
+			// wrapper behind that would make a later off(event, handler) miss a plain listener
+			remove = () => {
 				this.off(event, actual);
+				if (wrapped[event] === actual) delete wrapped[event];
+			};
+			actual = (d) => {
+				remove();
 				handler(d);
 			};
-			if (!handler._wrappedHandlers) {
-				handler._wrappedHandlers = Object.create(null);
-			}
-			handler._wrappedHandlers[event] = actual;
+			actual._onceHandler = handler;
+			wrapped[event] = actual;
 		}
 		(this._listeners[event] = this._listeners[event] || []).push(actual);
 		if (signal) {
-			signal.addEventListener("abort", () => this.off(event, actual), { once: true });
+			signal.addEventListener("abort", remove, { once: true });
 		}
 	}
 
@@ -59,8 +97,7 @@ class MiniEventBus {
 		}
 		const list = this._listeners[event];
 		if (list) {
-			const target = (handler._wrappedHandlers && handler._wrappedHandlers[event]) || handler;
-			const idx = list.indexOf(target);
+			const idx = list.indexOf(_target(list, event, handler));
 			if (idx !== -1) list.splice(idx, 1);
 		}
 	}
@@ -113,10 +150,6 @@ class EventBus extends MiniEventBus {
 	}
 
 	emit(event, eventObject) {
-		if (config.get("log")) {
-			console.info(`Emitting event '${event}'`);
-		}
-
 		const handlers = this._listeners[event];
 		const globalHandlers = this._hasWildcards > 0 ? this._listeners["*"] : null;
 
@@ -145,13 +178,9 @@ class EventBus extends MiniEventBus {
 
 		if (!hasAny) return;
 
-		// ⚡ BOLT OPTIMIZATION: Mutate or initialize eventObject lazily only when listeners exist
+		// ⚡ BOLT OPTIMIZATION: Tag or create the payload lazily, only when listeners exist,
 		// to avoid GC allocation overhead on emissions with zero listeners.
-		if (!eventObject || typeof eventObject !== "object") {
-			eventObject = { _name: event };
-		} else {
-			eventObject._name = event;
-		}
+		eventObject = _payload(eventObject, event);
 
 		if (handlers && handlers.length > 0) {
 			this._dispatchToHandlers(event, handlers, eventObject);
@@ -208,13 +237,7 @@ class EventBus extends MiniEventBus {
 		const handlers = this._listeners[event];
 		if (!handlers) return;
 
-		let targetHandler = handler;
-		if (handler._wrappedHandlers && handler._wrappedHandlers[event]) {
-			targetHandler = handler._wrappedHandlers[event];
-			delete handler._wrappedHandlers[event];
-		}
-
-		const index = handlers.indexOf(targetHandler);
+		const index = handlers.indexOf(_target(handlers, event, handler));
 		if (index !== -1) {
 			if (event.indexOf("*") !== -1 && this._hasWildcards > 0) {
 				this._hasWildcards--;

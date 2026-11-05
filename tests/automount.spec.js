@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import BaseComponent from '../src/BaseComponent.js';
 import config from '../src/config.js';
 import { initObserver } from '../src/autoMount.js';
+import { components as store } from '../src/store.js';
 
 test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
     let dom;
@@ -136,5 +137,217 @@ test.describe('Auto-Mounting via MutationObserver (autoMount.js)', () => {
         await new Promise((r) => setTimeout(r, 20));
 
         expect(mounted).toBe(false);
+    });
+
+
+    test('should keep the instance and its state when a mounted element is moved within the DOM', async () => {
+        let mounts = 0;
+        let unmounts = 0;
+
+        class SortableItem extends BaseComponent {
+            mount() { mounts++; }
+            unmount() { unmounts++; }
+        }
+        class Inner extends BaseComponent {
+            unmount() { unmounts++; }
+        }
+
+        window.gia.components.SortableItem = SortableItem;
+        window.gia.components.Inner = Inner;
+        config.set('autoMountComponents', true);
+
+        const list = document.createElement('ul');
+        list.innerHTML =
+            '<li data-component="SortableItem" id="first"><span data-component="Inner"></span></li>' +
+            '<li data-component="SortableItem" id="second"></li>';
+        document.body.appendChild(list);
+        await new Promise((r) => setTimeout(r, 20));
+        expect(mounts).toBe(2);
+
+        const first = document.getElementById('first');
+        const instance = store.get(first);
+        const inner = store.get(first.firstChild);
+        instance.marker = 'kept';
+
+        list.appendChild(first); // move to the end: removed + added in one batch
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(unmounts).toBe(0);
+        expect(mounts).toBe(2);
+        expect(store.get(first)).toBe(instance);
+        expect(store.get(first.firstChild)).toBe(inner);
+        expect(instance.marker).toBe('kept');
+    });
+
+    test('should still destroy components moved out of the document', async () => {
+        let unmounts = 0;
+
+        class Detachable extends BaseComponent {
+            unmount() { unmounts++; }
+        }
+
+        window.gia.components.Detachable = Detachable;
+        config.set('autoMountComponents', true);
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Detachable');
+        document.body.appendChild(el);
+        await new Promise((r) => setTimeout(r, 20));
+        expect(store.get(el)).toBeDefined();
+
+        document.createElement('div').appendChild(el); // detached container
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(unmounts).toBe(1);
+        expect(store.get(el)).toBeUndefined();
+    });
+
+
+    test.describe('component attribute changes on elements already in the DOM', () => {
+        const tick = () => new Promise((r) => setTimeout(r, 20));
+        let log;
+
+        test.beforeEach(() => {
+            log = [];
+            class Alpha extends BaseComponent {
+                mount() { log.push('mount Alpha'); }
+                unmount() { log.push('unmount Alpha'); }
+            }
+            class Beta extends BaseComponent {
+                mount() { log.push('mount Beta'); }
+                unmount() { log.push('unmount Beta'); }
+            }
+            window.gia.components.Alpha = Alpha;
+            window.gia.components.Beta = Beta;
+        });
+
+        test.afterEach(() => {
+            config.set('attrPrefix', 'data');
+        });
+
+        test('adding data-component mounts, changing it swaps, removing it destroys', async () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+            config.set('autoMountComponents', true);
+
+            el.setAttribute('data-component', 'Alpha');
+            await tick();
+            expect(log).toEqual(['mount Alpha']);
+            const alpha = store.get(el);
+            expect(alpha.constructor.name).toBe('Alpha');
+
+            el.setAttribute('data-component', 'Beta');
+            await tick();
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha', 'mount Beta']);
+            expect(store.get(el).constructor.name).toBe('Beta');
+
+            el.removeAttribute('data-component');
+            await tick();
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha', 'mount Beta', 'unmount Beta']);
+            expect(store.has(el)).toBe(false);
+        });
+
+        test('setting the same value, or changing and restoring it in one batch, keeps the instance', async () => {
+            config.set('autoMountComponents', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Alpha');
+            document.body.appendChild(el);
+            await tick();
+            const instance = store.get(el);
+
+            el.setAttribute('data-component', 'Alpha');
+            el.setAttribute('data-component', 'Beta');
+            el.setAttribute('data-component', 'Alpha');
+            el.setAttribute('data-other', 'x'); // not observed
+            await tick();
+
+            expect(store.get(el)).toBe(instance);
+            expect(log).toEqual(['mount Alpha']);
+        });
+
+        test('an element removed right after its attribute changed is only destroyed', async () => {
+            config.set('autoMountComponents', true);
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Alpha');
+            document.body.appendChild(el);
+            await tick();
+
+            el.removeAttribute('data-component');
+            el.remove();
+            await tick();
+
+            expect(log).toEqual(['mount Alpha', 'unmount Alpha']);
+            expect(store.has(el)).toBe(false);
+        });
+
+        test('the attribute filter follows a changed attrPrefix', async () => {
+            config.set('autoMountComponents', true);
+            config.set('attrPrefix', 'g');
+
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+            el.setAttribute('g-component', 'Alpha');
+            await tick();
+
+            expect(log).toEqual(['mount Alpha']);
+        });
+    });
+
+    test.describe('batched mounting', () => {
+        const tick = () => new Promise((r) => setTimeout(r, 20));
+
+        test('priority applies across sibling components inserted in one batch', async () => {
+            const order = [];
+            class Item extends BaseComponent { mount() { order.push('Item'); } }
+            class Header extends BaseComponent {
+                static priority = 10;
+                mount() { order.push('Header'); }
+            }
+            window.gia.components.Item = Item;
+            window.gia.components.Header = Header;
+            config.set('autoMountComponents', true);
+
+            const box = document.createElement('div');
+            box.innerHTML =
+                '<p data-component="Item"></p><p data-component="Item"></p><header data-component="Header"></header>';
+            document.body.append(...box.childNodes); // three added nodes, one mutation batch
+            await tick();
+
+            expect(order).toEqual(['Header', 'Item', 'Item']);
+        });
+
+        test('nested roots added in the same batch mount each component once', async () => {
+            let mounts = 0;
+            class Leaf extends BaseComponent { mount() { mounts++; } }
+            window.gia.components.Leaf = Leaf;
+            config.set('autoMountComponents', true);
+
+            const outer = document.createElement('section');
+            outer.setAttribute('data-component', 'Leaf');
+            document.body.appendChild(outer);
+            const inner = document.createElement('div');
+            inner.setAttribute('data-component', 'Leaf');
+            outer.appendChild(inner); // second record, root nested inside the first
+            await tick();
+
+            expect(mounts).toBe(2);
+            expect(store.has(outer)).toBe(true);
+            expect(store.has(inner)).toBe(true);
+        });
+
+        test('an element added and removed again within one batch is not mounted', async () => {
+            let mounts = 0;
+            class Flash extends BaseComponent { mount() { mounts++; } }
+            window.gia.components.Flash = Flash;
+            config.set('autoMountComponents', true);
+
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'Flash');
+            document.body.appendChild(el);
+            el.remove();
+            await tick();
+
+            expect(mounts).toBe(0);
+        });
     });
 });

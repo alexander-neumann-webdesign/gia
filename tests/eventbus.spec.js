@@ -1,13 +1,7 @@
 import { test, expect } from '@playwright/test';
 import eventbus from '../src/eventbus';
-import config from '../src/config';
 
 test.describe('EventBus', () => {
-    test.afterEach(() => {
-        // Reset config and other global-like states if needed
-        config.set('log', false);
-    });
-
     test('should emit and receive events', async () => {
         let received = null;
         const data = { foo: 'bar' };
@@ -47,22 +41,6 @@ test.describe('EventBus', () => {
         eventbus.off('off-event', handler);
         eventbus.emit('off-event');
         expect(count).toBe(1);
-    });
-
-    test('should log when config log is enabled', async () => {
-        let loggedMessage = null;
-        const originalInfo = console.info;
-        console.info = (msg) => {
-            loggedMessage = msg;
-        };
-
-        try {
-            config.set('log', true);
-            eventbus.emit('log-event');
-            expect(loggedMessage).toBe("Emitting event 'log-event'");
-        } finally {
-            console.info = originalInfo;
-        }
     });
 
     test('should clear all listeners when off() is called without handler', async () => {
@@ -233,5 +211,106 @@ test.describe('EventBus', () => {
         auth.emit('login', { user: 'test' });
         auth.emit('login', { user: 'test' });
         expect(loggedIn).toBe(1);
+    });
+
+
+    test('off() removes a plain listener for a handler whose earlier once() already fired', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+
+        eventbus.once('once-then-on', handler);
+        eventbus.emit('once-then-on'); // fires and removes the once() wrapper
+        expect(count).toBe(1);
+
+        eventbus.on('once-then-on', handler);
+        eventbus.off('once-then-on', handler);
+        eventbus.emit('once-then-on');
+
+        expect(count).toBe(1);
+        expect(handler._wrappedHandlers['once-then-on']).toBeUndefined();
+    });
+
+    test('off() removes a plain listener for a handler whose earlier once() was aborted', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        const ac = new AbortController();
+
+        eventbus.once('aborted-once', handler, { signal: ac.signal });
+        ac.abort();
+
+        eventbus.on('aborted-once', handler);
+        eventbus.off('aborted-once', handler);
+        eventbus.emit('aborted-once');
+
+        expect(count).toBe(0);
+    });
+
+    test('off() still removes a pending once() wrapper', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+
+        eventbus.once('pending-once', handler);
+        eventbus.off('pending-once', handler);
+        eventbus.emit('pending-once');
+
+        expect(count).toBe(0);
+    });
+
+
+    test('a frozen payload is delivered as is instead of throwing', async () => {
+        const payload = Object.freeze({ id: 7 });
+        let received = null;
+        let wildcard = null;
+        eventbus.on('frozen:event', (d) => { received = d; });
+        eventbus.on('frozen:*', (d) => { wildcard = d; });
+
+        expect(() => eventbus.emit('frozen:event', payload)).not.toThrow();
+        expect(received).toBe(payload);
+        expect(wildcard).toBe(payload);
+
+        eventbus.off('frozen:event');
+        eventbus.off('frozen:*');
+    });
+
+    test('extensible payloads are still tagged with _name', async () => {
+        const payload = { id: 1 };
+        let received = null;
+        const handler = (d) => { received = d; };
+        eventbus.on('tagged', handler);
+        eventbus.emit('tagged', payload);
+        expect(received).toBe(payload);
+        expect(payload._name).toBe('tagged');
+        eventbus.off('tagged', handler);
+    });
+
+    test('off() removes each once() registration of the same handler in turn', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        eventbus.once('twice-once', handler);
+        eventbus.once('twice-once', handler);
+
+        eventbus.off('twice-once', handler);
+        eventbus.emit('twice-once');
+        expect(count).toBe(1); // one registration left, like on() twice + off() once
+
+        eventbus.once('twice-once', handler);
+        eventbus.once('twice-once', handler);
+        eventbus.off('twice-once', handler);
+        eventbus.off('twice-once', handler);
+        eventbus.emit('twice-once');
+        expect(count).toBe(1);
+    });
+
+    test('off() prefers a once() wrapper over a plain registration of the same handler', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        eventbus.on('mixed', handler);
+        eventbus.once('mixed', handler);
+        eventbus.off('mixed', handler); // removes the once() wrapper
+
+        eventbus.emit('mixed');
+        eventbus.emit('mixed');
+        expect(count).toBe(2); // the plain listener keeps firing
+        eventbus.off('mixed', handler);
     });
 });

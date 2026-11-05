@@ -9,9 +9,6 @@
  * per-component unobserving and teardown for all features.
  */
 
-const isMobileBrowser =
-	typeof navigator !== "undefined" &&
-	!!navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i);
 
 // ⚡ BOLT OPTIMIZATION: payload objects and the single-entry array are reused on every
 // dispatch, so high-frequency callbacks (scroll, resize) allocate nothing.
@@ -19,24 +16,46 @@ const _scrollPayload = { scroll: 0, velocity: 0 };
 const _resizePayload = { width: 0, height: 0 };
 const _entryArr = [null];
 
-function _swapAndPop(arr, item) {
-	if (!arr) return;
-	const idx = arr.indexOf(item);
-	if (idx !== -1) {
-		arr[idx] = arr[arr.length - 1];
-		arr.pop();
-	}
-}
-
 function _addOnce(arr, item) {
 	if (arr.indexOf(item) === -1) arr.push(item);
 }
 
-// Callbacks run in reverse so a callback may unobserve itself during dispatch (swap-and-pop)
+// Dispatches in progress, flattened as [callbacks, nextIndex, end, ...]. Dispatches nest when a
+// callback synchronously triggers another one (e.g. dispatches a resize event).
+// ⚡ BOLT OPTIMIZATION: reused for every dispatch, so dispatching allocates nothing.
+const _active = [];
+
+/**
+ * Calls every callback in `cbs` in registration order. Matches DOM event semantics when
+ * callbacks change the list during dispatch: a callback removed before its turn is skipped, one
+ * added during dispatch first runs on the next one, and every other callback runs exactly once.
+ * A throwing callback is reported and does not stop the others.
+ */
 function _dispatch(cbs, arg, arg2) {
+	if (!cbs || cbs.length === 0) return;
+	const slot = _active.length;
+	_active.push(cbs, 0, cbs.length);
+	while (_active[slot + 1] < _active[slot + 2]) {
+		const cb = cbs[_active[slot + 1]++];
+		try {
+			cb(arg, arg2);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+	_active.length = slot;
+}
+
+/** Removes `cb` from a registry's callbacks, keeping any dispatch running over them in step. */
+function _removeCallback(cbs, cb) {
 	if (!cbs) return;
-	for (let i = cbs.length - 1; i >= 0; i--) {
-		cbs[i](arg, arg2);
+	const idx = cbs.indexOf(cb);
+	if (idx === -1) return;
+	cbs.splice(idx, 1);
+	for (let i = 0; i < _active.length; i += 3) {
+		if (_active[i] !== cbs) continue;
+		if (idx < _active[i + 1]) _active[i + 1]--; // already called: later callbacks shift down
+		if (idx < _active[i + 2]) _active[i + 2]--; // was due in this dispatch
 	}
 }
 
@@ -83,7 +102,7 @@ function _unobserve(instance, reg, key, cb) {
 		for (let i = 0; i < list.length; i++) {
 			// _wrapped: an internal wrapper (observeIntersection once) registered for `cb`
 			if (list[i] === cb || list[i]._wrapped === cb) {
-				_swapAndPop(cbs, list[i]);
+				_removeCallback(cbs, list[i]);
 				list[i] = list[list.length - 1];
 				list.pop();
 				break;
@@ -91,7 +110,7 @@ function _unobserve(instance, reg, key, cb) {
 		}
 	} else {
 		for (let i = 0; i < list.length; i++) {
-			_swapAndPop(cbs, list[i]);
+			_removeCallback(cbs, list[i]);
 		}
 		list.length = 0;
 	}
@@ -165,8 +184,17 @@ function handleGlobalResize() {
 	_dispatch(windowResizeRegistry._cbs.get(window), _resizePayload);
 }
 
+// Evaluated when window resize is first observed, not at load (and not at all in builds or
+// pages that never observe it)
+let isMobileBrowser = null;
+
 const windowResizeRegistry = _registry(
 	() => {
+		if (isMobileBrowser === null) {
+			isMobileBrowser =
+				typeof navigator !== "undefined" &&
+				/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i.test(navigator.userAgent);
+		}
 		window.addEventListener("resize", handleGlobalResize, { passive: true });
 		if (isMobileBrowser) {
 			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });

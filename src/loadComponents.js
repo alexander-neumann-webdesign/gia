@@ -3,6 +3,7 @@ import createInstance from "./createInstance.js";
 import { queryAll } from "./utils.js";
 import { components as storeComponents } from "./store.js";
 import { isComponentClass } from "./brand.js";
+import { deferMount, hasDeferredMount, cancelDeferredMount } from "./deferredMount.js";
 
 /**
  * Creates instances of components without creating duplicates on elements within the context
@@ -56,44 +57,10 @@ function _isConnected(element) {
 		: element.ownerDocument && element.ownerDocument.contains(element);
 }
 
-// Elements with a deferred mount (data-mount="visible"/"idle" or a pending lazy import()).
-// Repeated loadComponents() calls (manual, autoMount, Swup...) must not start a second one.
-const _pending = new WeakSet();
-
-function _mountWhenVisible(element, fn) {
-	if (typeof IntersectionObserver === "undefined") {
-		fn();
-		return;
-	}
-	const observer = new IntersectionObserver(
-		(entries) => {
-			for (let i = 0; i < entries.length; i++) {
-				if (entries[i].isIntersecting) {
-					observer.unobserve(element);
-					observer.disconnect();
-					fn();
-					break;
-				}
-			}
-		},
-		{ rootMargin: "200px" },
-	);
-	observer.observe(element);
-}
-
-function _mountWhenIdle(element, fn) {
-	const schedule =
-		typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
-			? window.requestIdleCallback
-			: typeof requestIdleCallback === "function"
-			? requestIdleCallback
-			: (cb) => setTimeout(cb, 50);
-	schedule(fn);
-}
-
 function _instantiateOrLoad(element, componentName, ctor, components, initialisedComponents) {
-	// Already mounted (possibly by another bundle) or a deferred mount is in flight
-	if (storeComponents.has(element) || _pending.has(element)) return;
+	// Already mounted (possibly by another bundle) or a deferred mount is in flight.
+	// Repeated loadComponents() calls (manual, autoMount, Swup...) must not start a second one.
+	if (storeComponents.has(element) || hasDeferredMount(element)) return;
 
 	if (initialisedComponents) {
 		const mountAttr =
@@ -101,18 +68,11 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 			element.getAttribute("data-mount");
 
 		if (mountAttr === "visible" || mountAttr === "idle") {
-			_pending.add(element);
-			const deferred = () => {
-				_pending.delete(element);
+			deferMount(element, mountAttr, () => {
 				if (_isConnected(element)) {
 					_instantiateOrLoad(element, componentName, ctor, components, null);
 				}
-			};
-			if (mountAttr === "visible") {
-				_mountWhenVisible(element, deferred);
-			} else {
-				_mountWhenIdle(element, deferred);
-			}
+			});
 			return;
 		}
 	}
@@ -157,25 +117,29 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	}
 
 	if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && result && typeof result.then === "function") {
-		_pending.add(element);
-		result
-			.then((mod) => {
-				_pending.delete(element);
-				if (!_isConnected(element) || storeComponents.has(element)) return;
-				const Resolved =
-					(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
-				if (typeof Resolved === "function") {
-					components[componentName] = Resolved;
-					const inst = createInstance(element, componentName, Resolved);
-					if (inst) {
-						inst._load();
-					}
+		let mod;
+		const mountLoaded = deferMount(element, null, () => {
+			if (!_isConnected(element) || storeComponents.has(element)) return;
+			const Resolved =
+				(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
+			if (typeof Resolved === "function") {
+				components[componentName] = Resolved;
+				const inst = createInstance(element, componentName, Resolved);
+				if (inst) {
+					inst._load();
 				}
-			})
-			.catch((err) => {
-				_pending.delete(element);
+			}
+		});
+		result.then(
+			(loaded) => {
+				mod = loaded;
+				mountLoaded(); // no-op when the element's components were removed meanwhile
+			},
+			(err) => {
+				cancelDeferredMount(element, mountLoaded);
 				console.error(`Gia: Failed to lazy load component "${componentName}".`, err);
-			});
+			},
+		);
 	} else if (typeof result === "function") {
 		components[componentName] = result;
 		_initInstance(result);
@@ -229,18 +193,38 @@ export default function loadComponents(components = {}, context = document.docum
 		components = (typeof window !== "undefined" && window.gia && window.gia.components) || {};
 	}
 
+	_loadRoots(components, [context]);
+}
+
+/**
+ * Mounts the components inside several roots (and the roots themselves) as one batch, so
+ * priority ordering applies across all of them. Used by autoMount for a whole mutation batch.
+ * @param {object} components - component registry (empty: the global registry)
+ * @param {Element[]} roots - connected elements; nested or repeated roots are fine
+ */
+export function loadComponentsIn(components, roots) {
+	if (!_hasKeys(components)) {
+		components = (typeof window !== "undefined" && window.gia && window.gia.components) || {};
+	}
+	_loadRoots(components, roots);
+}
+
+function _loadRoots(components, roots) {
 	const initialisedComponents = [];
 	const attrName = `${config.get("attrPrefix")}-component`;
-	const elements = queryAll(`[${attrName}]`, context);
 	let resolved = 0;
 
-	// ⚡ BOLT OPTIMIZATION: Plain loop over the NodeList, no per-call closure allocation
-	for (let i = 0; i < elements.length; i++) {
-		resolved += _processElement(elements[i], attrName, components, initialisedComponents);
-	}
-	// The context element itself is mounted after its descendants
-	if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
-		resolved += _processElement(context, attrName, components, initialisedComponents);
+	for (let r = 0; r < roots.length; r++) {
+		const context = roots[r];
+		const elements = queryAll(`[${attrName}]`, context);
+		// ⚡ BOLT OPTIMIZATION: Plain loop over the NodeList, no per-call closure allocation
+		for (let i = 0; i < elements.length; i++) {
+			resolved += _processElement(elements[i], attrName, components, initialisedComponents);
+		}
+		// The context element itself is mounted after its descendants
+		if (context && context.nodeType === 1 && context.hasAttribute(attrName)) {
+			resolved += _processElement(context, attrName, components, initialisedComponents);
+		}
 	}
 
 	if (!resolved && !_hasKeys(components)) {
