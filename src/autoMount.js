@@ -60,10 +60,13 @@ function handleMutations(mutations) {
             // list re-sorted with appendChild), not removed: keep its components and their state.
             // Its addedNodes record finds them already mounted and leaves them alone.
             if (node.nodeType === Node.ELEMENT_NODE && !node.isConnected) {
-                // ⚡ BOLT OPTIMIZATION: Destroy nested child components first in reverse DOM order (bottom-up teardown)
-                const nestedComponents = queryAll(`[${attrName}]`, node);
-                for (let j = nestedComponents.length - 1; j >= 0; j--) {
-                    destroyInstance(nestedComponents[j]);
+                // ⚡ BOLT OPTIMIZATION: Destroy nested child components first in reverse DOM order
+                // (bottom-up teardown). Leaf elements, the bulk of most removals, skip the query.
+                if (node.firstElementChild !== null) {
+                    const nestedComponents = queryAll(`[${attrName}]`, node);
+                    for (let j = nestedComponents.length - 1; j >= 0; j--) {
+                        destroyInstance(nestedComponents[j]);
+                    }
                 }
                 // Unconditional: the attribute may have been removed in the same batch
                 destroyInstance(node);
