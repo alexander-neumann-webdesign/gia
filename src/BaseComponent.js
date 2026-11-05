@@ -421,8 +421,9 @@ export default class BaseComponent {
 			opts = handler;
 		}
 
+		// Like delegate(): always return a cleanup function, so callers can call it unconditionally
 		if (!el || typeof el.addEventListener !== "function" || typeof fn !== "function") {
-			return;
+			return () => {};
 		}
 
 		const signal = this.signal;

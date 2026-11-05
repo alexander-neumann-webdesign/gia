@@ -483,6 +483,25 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
             destroyInstance(el);
         });
 
+        test('this.listen always returns a cleanup function, even for a missing target', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+            let results;
+            class Guarded extends BaseComponent {
+                mount() {
+                    results = [
+                        this.listen(null, 'click', () => {}),
+                        this.listen(this.find('.missing'), 'click', () => {}),
+                        this.listen('click', 'notAFunction'),
+                    ];
+                }
+            }
+            createInstance(el, 'Guarded', Guarded);
+            expect(results.map((r) => typeof r)).toEqual(['function', 'function', 'function']);
+            expect(() => results.forEach((off) => off())).not.toThrow();
+            destroyInstance(el);
+        });
+
         test('this.listen should attach event listeners and auto-cleanup on unmount', () => {
             const el = document.createElement('div');
             const btn = document.createElement('button');
