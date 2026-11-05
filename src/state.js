@@ -57,6 +57,15 @@ function _isMirrored(value) {
 	return type === "boolean" || type === "string" || type === "number";
 }
 
+// ⚡ BOLT OPTIMIZATION: Add to global dirty array instead of queuing separate rAF per component
+function _markDirty(instance) {
+	dirtyComponents.push(instance);
+	if (!isRafQueued) {
+		isRafQueued = true;
+		mutate(flushGlobalStateChanges);
+	}
+}
+
 // ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
 function _clear(obj) {
 	for (const k in obj) delete obj[k];
@@ -91,12 +100,7 @@ export function enqueueSetState(instance, changes) {
 			instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
 			// Value each key had when this batch started (null prototype: any key name is safe)
 			instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
-			// ⚡ BOLT OPTIMIZATION: Add to global dirty array instead of queuing separate rAF per component
-			dirtyComponents.push(instance);
-			if (!isRafQueued) {
-				isRafQueued = true;
-				mutate(flushGlobalStateChanges);
-			}
+			_markDirty(instance);
 		}
 
 		const origins = instance._stateOrigins;
@@ -167,8 +171,35 @@ export function flushStateChanges(instance) {
 		break;
 	}
 	// Every change in the batch was reverted: do not call stateChange() with an empty payload
-	if (hasChanges) {
-		instance.stateChange(pending);
+	if (!hasChanges) return;
+
+	if (!instance._isMounted) {
+		// mount() has not run yet (setState() in the constructor while require() is pending):
+		// the attributes are synced, but stateChange() waits for mount (see releaseHeldStateChanges)
+		instance._heldStateChanges = instance._heldStateChanges
+			? Object.assign(instance._heldStateChanges, pending)
+			: pending;
+		return;
+	}
+	instance.stateChange(pending);
+}
+
+/**
+ * Called right after mount(): changes flushed while the instance was not mounted yet are reported
+ * to stateChange() in the next frame, together with (and overridden by) any batch pending by then.
+ * @param {object} instance - Component instance
+ */
+export function releaseHeldStateChanges(instance) {
+	const held = instance._heldStateChanges;
+	if (!held) return;
+	instance._heldStateChanges = null;
+	if (instance._pendingStateChanges) {
+		instance._pendingStateChanges = Object.assign(held, instance._pendingStateChanges);
+	} else {
+		instance._pendingStateChanges = held;
+		instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
+		instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
+		_markDirty(instance);
 	}
 }
 
@@ -184,4 +215,5 @@ export function cleanupComponentState(instance) {
 	instance._pendingStateChanges = null;
 	instance._pendingAttributeChanges = null;
 	instance._stateOrigins = null;
+	instance._heldStateChanges = null;
 }

@@ -1,7 +1,7 @@
 import config from "./config.js";
 import { queryAll, toggleClass, addClass, removeClass } from "./utils.js";
 import { components } from "./store.js";
-import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./state.js";
+import { enqueueSetState, flushStateChanges, cleanupComponentState, releaseHeldStateChanges } from "./state.js";
 import { loadScript, loadStyle } from "./loaders.js";
 import { autoBindActions } from "./actions.js";
 import eventbus from "./eventbus.js";
@@ -254,6 +254,8 @@ export default class BaseComponent {
 			} catch (err) {
 				console.error(`Gia: Error in mount for "${this._name}".`, err);
 			}
+			// stateChange() never runs before mount(): report changes that were held back
+			releaseHeldStateChanges(this);
 		}
 	}
 
