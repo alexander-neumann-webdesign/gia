@@ -61,9 +61,9 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.2 KB) | ~10.2 KB (29.8 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.4 KB (24.0 KB) | ~8.2 KB (23.6 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, and async script loading (the observer and `loadScript()`/`loadStyle()` methods do nothing and log a one-time warning; components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~6.3 KB (18.0 KB) | ~6.1 KB (17.6 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.3 KB) | ~10.2 KB (29.9 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.4 KB (24.1 KB) | ~8.2 KB (23.7 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, and async script loading (the observer and `loadScript()`/`loadStyle()` methods do nothing and log a one-time warning; components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~6.3 KB (18.1 KB) | ~6.1 KB (17.6 KB) |
 
 ```javascript
 // Full build with modern ESM
@@ -982,8 +982,8 @@ config.set("autoBindActions", true);
 - **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node or an element ID string.
 - **`eventbus`**: Unified zero-allocation event emitter supporting wildcards (`*`, `prefix:*`) and channels. Methods:
   - `eventbus.emit(event, [data])`: Emits an event with optional payload.
-  - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`.
-  - `eventbus.once(event, handler, [options])`: Attaches a single-execution event listener.
+  - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`. Returns a function that removes it.
+  - `eventbus.once(event, handler, [options])`: Attaches a single-execution event listener. Returns a function that removes it.
   - `eventbus.off(event, [handler])`: Removes one or all listeners for an event.
   - `eventbus.channel(namespace)`: Returns a scoped `{ emit, on, once, off }` channel with namespaced events (`${namespace}:${event}`).
 - **`measure(callback, [context])`**: Schedules a DOM read operation for the next frame's measure phase. Returns a task reference.
@@ -1027,7 +1027,7 @@ config.set("autoBindActions", true);
 - **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a centralized window resize listener.
 - **`observeMediaQuery(query, callback)`** / **`unobserveMediaQuery(query, [callback])`**: Subscribes/unsubscribes to a centralized media query listener. Fires immediately with current match state and cleans up on unmount. Returns an unobserve function.
 - **`emit(event, [data])`**: Emits an event on the global EventBus.
-- **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup.
+- **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup. Returns a function that unsubscribes earlier, like `listen()` and `delegate()`.
 - **`channel(namespace)`**: Returns a scoped EventBus channel `{ emit, on, once, off }` whose listeners automatically detach on unmount.
 - **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader. Accepts a tag ID (also tried with WordPress' `-js` suffix) or a URL.
 - **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader. Accepts a tag ID (also tried with WordPress' `-css` suffix) or a URL.

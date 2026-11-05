@@ -99,11 +99,12 @@ class MiniEventBus {
 		}
 	}
 
+	/** Adds a listener and returns a function that removes it. */
 	on(event, handler, options = false) {
 		const isObj = options && typeof options === "object";
 		const once = isObj ? !!options.once : !!options;
 		const signal = isObj ? options.signal : null;
-		if (signal && signal.aborted) return;
+		if (signal && signal.aborted) return () => {};
 
 		let actual = handler;
 		let remove = () => this.off(event, actual);
@@ -126,11 +127,13 @@ class MiniEventBus {
 		if (signal) {
 			signal.addEventListener("abort", remove, { once: true });
 		}
+		// Calls the public off(), so it keeps working after a full bundle upgrades this bus
+		return remove;
 	}
 
 	once(event, handler, options = {}) {
 		const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
-		this.on(event, handler, opts);
+		return this.on(event, handler, opts);
 	}
 
 	/** Removes one listener, or every listener of `event` when `handler` is omitted. Returns how many. */
@@ -221,7 +224,7 @@ class EventBus extends MiniEventBus {
 		if (event.indexOf("*") !== -1 && !(signal && signal.aborted)) {
 			this._hasWildcards++;
 		}
-		super.on(event, handler, options);
+		return super.on(event, handler, options);
 	}
 
 	off(event, handler) {

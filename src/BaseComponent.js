@@ -517,7 +517,9 @@ export default class BaseComponent {
 				opts = { once: !!options, signal };
 			}
 		}
-		eventbus.on(event, handler, opts);
+		const off = eventbus.on(event, handler, opts);
+		// A bus created by an older Gia bundle returns nothing
+		return typeof off === "function" ? off : () => eventbus.off(event, handler);
 	}
 
 	channel(namespace) {
@@ -526,12 +528,10 @@ export default class BaseComponent {
 			emit: (event, data) => {
 				this.emit(`${prefix}${event}`, data);
 			},
-			on: (event, handler, options = false) => {
-				this.on(`${prefix}${event}`, handler, options);
-			},
+			on: (event, handler, options = false) => this.on(`${prefix}${event}`, handler, options),
 			once: (event, handler, options = {}) => {
 				const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
-				this.on(`${prefix}${event}`, handler, opts);
+				return this.on(`${prefix}${event}`, handler, opts);
 			},
 			off: (event, handler) => {
 				eventbus.off(`${prefix}${event}`, handler);

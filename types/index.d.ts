@@ -32,8 +32,10 @@ export interface EventBusListenerOptions {
  */
 export interface EventBusChannel {
 	emit(event: string, eventObject?: Record<string, any>): void;
-	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
-	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): void;
+	/** Returns a function that removes the listener. */
+	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): () => void;
+	/** Returns a function that removes the listener. */
+	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): () => void;
 	off(event: string, handler?: Function): void;
 }
 
@@ -41,8 +43,10 @@ export interface EventBusChannel {
  * Zero-GC high-performance event bus
  */
 export interface EventBus {
-	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
-	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): void;
+	/** Returns a function that removes the listener. */
+	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): () => void;
+	/** Returns a function that removes the listener. */
+	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): () => void;
 	off(event: string, handler?: Function): void;
 	emit(event: string, eventObject?: Record<string, any>): void;
 	channel(namespace: string): EventBusChannel;
@@ -208,7 +212,8 @@ export class BaseComponent<
 
 	updateRefs(): void;
 	emit(event: string, eventObject?: Record<string, any>): void;
-	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
+	/** Subscribes on the global event bus until unmount. Returns a function that unsubscribes earlier. */
+	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): () => void;
 	channel(namespace: string): EventBusChannel;
 }
 

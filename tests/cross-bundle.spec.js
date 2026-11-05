@@ -121,6 +121,24 @@ test.describe('shared event bus', () => {
         expect(result.upgraded).toEqual(result.fresh);
     });
 
+    test('an unsubscribe function returned by the mini bus still works after the upgrade', async ({ page }) => {
+        await page.setContent('<body></body>');
+        await page.addScriptTag({ path: dist('gia.mini.umd.js') });
+        await page.evaluate(() => {
+            window.__calls = [];
+            window.__offPlain = window.gia.eventbus.on('evt', () => window.__calls.push('plain'));
+            window.__offOnce = window.gia.eventbus.once('evt', () => window.__calls.push('once'));
+        });
+        await page.addScriptTag({ path: dist('gia.full.umd.js') });
+        const calls = await page.evaluate(() => {
+            window.__offPlain();
+            window.__offOnce();
+            window.gia.eventbus.emit('evt');
+            return window.__calls;
+        });
+        expect(calls).toEqual([]);
+    });
+
     test('listeners registered on the mini bus before the upgrade survive it', async ({ page }) => {
         await page.setContent('<body></body>');
         await page.addScriptTag({ path: dist('gia.mini.umd.js') });
