@@ -90,6 +90,9 @@ export default class BaseComponent {
 
 		// Fast-check if there are any nested components inside this element
 		const hasNestedComponents = this.element.querySelector(`[${componentAttrName}]`) !== null;
+		// ⚡ Most markup has no "Name:ref" prefixes: then no prefixed lookups (and their string
+		// building) are needed per ref key below
+		let hasPrefixed = false;
 
 		// ⚡ BOLT OPTIMIZATION: Avoid double lookup by caching the array reference
 		for (let i = 0; i < allRefs.length; i++) {
@@ -113,6 +116,7 @@ export default class BaseComponent {
 			if (list === undefined) {
 				list = [];
 				refsByName[refName] = list;
+				if (!hasPrefixed && refName.indexOf(":") !== -1) hasPrefixed = true;
 			}
 			list.push(element);
 		}
@@ -137,7 +141,7 @@ export default class BaseComponent {
 					if (this._isOwnName(refName.substring(0, colonIndex))) {
 						name = refName.substring(colonIndex + 1);
 					}
-				} else if (!this._prefixedRefs(refsByName, refName)) {
+				} else if (!(hasPrefixed && this._prefixedRefs(refsByName, refName))) {
 					name = refName;
 				}
 				// 🛡️ SECURITY: a markup ref named "__proto__" would replace the prototype of this.ref
@@ -158,7 +162,7 @@ export default class BaseComponent {
 					continue;
 				}
 
-				const refs = this._prefixedRefs(refsByName, key) || refsByName[key] || [];
+				const refs = (hasPrefixed && this._prefixedRefs(refsByName, key)) || refsByName[key] || [];
 
 				this._ref[key] = isArray ? refs : (refs[0] ?? null);
 			}
