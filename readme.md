@@ -228,7 +228,7 @@ class Gallery extends Component {
 > [!TIP]
 > **Nested Component Isolation & Namespacing**:
 > By default, Gia isolates references: an element with `data-ref="btn"` is strictly bound to its closest ancestor component. A parent component will **never** accidentally capture child component refs or actions.
-> If a parent component needs to deliberately target an element nested inside a child component, prefix the ref with the parent component's class name: `<div data-ref="ParentComponent:nestedItem">`.
+> If a parent component needs to deliberately target an element nested inside a child component, prefix the ref with the parent component's name as written in its `data-component` attribute: `<div data-ref="ParentComponent:nestedItem">`. Because the prefix comes from the markup, it keeps working when a minifier renames your classes. The class name is accepted as a prefix too, so markup written against it keeps working when a component is registered under a different name.
 
 ---
 

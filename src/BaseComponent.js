@@ -35,7 +35,11 @@ export default class BaseComponent {
 	constructor(element, options) {
 		this.element = element;
 		components.set(this.element, this);
-		this._name = this.constructor.name;
+		// The name this instance is mounted as (its data-component value), so "Name:ref" prefixes and
+		// error messages match the markup even when a minifier renamed the class
+		this._name =
+			(element && element.getAttribute && element.getAttribute(`${config.get("attrPrefix")}-component`)) ||
+			this.constructor.name;
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
@@ -86,7 +90,6 @@ export default class BaseComponent {
 
 		// Fast-check if there are any nested components inside this element
 		const hasNestedComponents = this.element.querySelector(`[${componentAttrName}]`) !== null;
-		const namePrefix = `${this._name}:`;
 
 		// ⚡ BOLT OPTIMIZATION: Avoid double lookup by caching the array reference
 		for (let i = 0; i < allRefs.length; i++) {
@@ -99,8 +102,9 @@ export default class BaseComponent {
 				if (element.parentElement !== this.element) {
 					const closest = element.closest(`[${componentAttrName}]`);
 					// If the ref is inside a descendant component, ignore it unless explicitly prefixed for this component
-					if (closest !== this.element && !refName.startsWith(namePrefix)) {
-						continue;
+					if (closest !== this.element) {
+						const colon = refName.indexOf(":");
+						if (colon === -1 || !this._isOwnName(refName.substring(0, colon))) continue;
 					}
 				}
 			}
@@ -130,10 +134,10 @@ export default class BaseComponent {
 				const colonIndex = refName.indexOf(":");
 				let name = null;
 				if (colonIndex !== -1) {
-					if (refName.substring(0, colonIndex) === this._name) {
+					if (this._isOwnName(refName.substring(0, colonIndex))) {
 						name = refName.substring(colonIndex + 1);
 					}
-				} else if (!refsByName[namePrefix + refName]) {
+				} else if (!this._prefixedRefs(refsByName, refName)) {
 					name = refName;
 				}
 				// 🛡️ SECURITY: a markup ref named "__proto__" would replace the prototype of this.ref
@@ -154,16 +158,24 @@ export default class BaseComponent {
 					continue;
 				}
 
-				const prefixedName = `${this._name}:${key}`;
-				let refs = refsByName[prefixedName] || [];
-
-				if (refs.length === 0) {
-					refs = refsByName[key] || [];
-				}
+				const refs = this._prefixedRefs(refsByName, key) || refsByName[key] || [];
 
 				this._ref[key] = isArray ? refs : (refs[0] ?? null);
 			}
 		}
+	}
+
+	/**
+	 * True when a "Name:" ref prefix addresses this instance: its mounted name, or its class name
+	 * (accepted as well, so markup written against the class name keeps working)
+	 */
+	_isOwnName(name) {
+		return name === this._name || name === this.constructor.name;
+	}
+
+	/** Elements of "Name:key" refs prefixed for this instance (mounted name first), or undefined */
+	_prefixedRefs(refsByName, key) {
+		return refsByName[`${this._name}:${key}`] || refsByName[`${this.constructor.name}:${key}`];
 	}
 
 	get options() {
