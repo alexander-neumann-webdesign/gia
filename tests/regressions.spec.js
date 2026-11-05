@@ -917,6 +917,13 @@ test.describe('Regression tests', () => {
     });
 
     test.describe('state batching', () => {
+        // stateChange() is only called on mounted instances
+        const mounted = (Ctor, el) => {
+            const instance = new Ctor(el);
+            instance._load();
+            return instance;
+        };
+
         class S extends BaseComponent {
             constructor(el) {
                 super(el);
@@ -929,7 +936,7 @@ test.describe('Regression tests', () => {
 
         test('a key changed and changed back within one batch is not reported', async () => {
             const el = mk('<div></div>');
-            const s = new S(el);
+            const s = mounted(S, el);
             s.setState({ open: false, count: 1 });
             await tick();
             s.calls.length = 0;
@@ -945,7 +952,7 @@ test.describe('Regression tests', () => {
 
         test('a batch whose every change was reverted does not call stateChange at all', async () => {
             const el = mk('<div></div>');
-            const s = new S(el);
+            const s = mounted(S, el);
             s.setState({ step: 1 });
             await tick();
             s.calls.length = 0;
@@ -960,7 +967,7 @@ test.describe('Regression tests', () => {
         });
 
         test('reverting to an initially missing key is treated as no change', async () => {
-            const s = new S(mk('<div></div>'));
+            const s = mounted(S, mk('<div></div>'));
             s.setState({ temp: 'x' });
             s.setState({ temp: undefined });
             await tick();
@@ -970,7 +977,7 @@ test.describe('Regression tests', () => {
 
         test('a primitive replaced by an object in the same batch does not write a stale attribute', async () => {
             const el = mk('<div></div>');
-            const s = new S(el);
+            const s = mounted(S, el);
             s.setState({ value: 'text' });
             s.setState({ value: { complex: true } });
             await tick();
@@ -990,7 +997,7 @@ test.describe('Regression tests', () => {
                     }
                 }
             }
-            const v = new V(el);
+            const v = mounted(V, el);
             v.setState({ inView: true });
             await tick(40);
             expect(seen).toEqual(['inView', 'playing']);
@@ -1007,7 +1014,7 @@ test.describe('Regression tests', () => {
                     this.setState({ n: calls });
                 }
             }
-            const l = new Loop(el);
+            const l = mounted(Loop, el);
             l.setState({ n: 0 });
             await tick(5); // a single frame in the test's setTimeout-based requestAnimationFrame
             expect(calls).toBeGreaterThanOrEqual(1);
@@ -1110,5 +1117,36 @@ test.describe('Regression tests', () => {
         loadComponents({ Retry }, document.body);
         expect(components.get(el).mounted).toBe(true);
         destroyInstance(el);
+    });
+
+    test.describe('createInstance() mounts, as documented', () => {
+        test('mount() runs once, even when _load() is called afterwards', () => {
+            const el = mk('<div></div>');
+            let mounts = 0;
+            class Once extends BaseComponent {
+                mount() { mounts++; }
+            }
+            const instance = createInstance(el, 'Once', Once);
+            expect(instance.isMounted).toBe(true);
+            instance._load();
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('a Component runs require() once and mounts after it resolves', async () => {
+            const el = mk('<div></div>');
+            let requires = 0;
+            let mounts = 0;
+            class Lazy extends Component {
+                require() { requires++; return Promise.resolve(); }
+                mount() { mounts++; }
+            }
+            const instance = createInstance(el, 'Lazy', Lazy);
+            instance._load();
+            await new Promise((r) => setTimeout(r, 0));
+            expect(requires).toBe(1);
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
     });
 });

@@ -1,3 +1,4 @@
+import { nanoUnsupported } from "./nanoUnsupported.js";
 /**
  * Centralized observers: Scroll, Window Resize, ResizeObserver, IntersectionObserver and
  * matchMedia. Eliminates duplicate listener overhead and layout thrashing across components.
@@ -138,7 +139,7 @@ function handleGlobalScroll(e) {
 		_scrollPayload.scroll = e.scroll;
 		_scrollPayload.velocity = e.velocity || 0;
 	} else {
-		_scrollPayload.scroll = window.scrollY || window.pageYOffset;
+		_scrollPayload.scroll = window.scrollY;
 		_scrollPayload.velocity = 0;
 	}
 	_dispatch(scrollRegistry._cbs.get(window), _scrollPayload);
@@ -164,7 +165,7 @@ const scrollRegistry = _registry(
 );
 
 export function observeScroll(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeScroll");
 	if (typeof window === "undefined") return;
 	_observe(instance, scrollRegistry, window, callback);
 }
@@ -184,32 +185,15 @@ function handleGlobalResize() {
 	_dispatch(windowResizeRegistry._cbs.get(window), _resizePayload);
 }
 
-// Evaluated when window resize is first observed, not at load (and not at all in builds or
-// pages that never observe it)
-let isMobileBrowser = null;
-
+// Every supported browser fires resize when the device rotates (with the new dimensions, unlike
+// the deprecated orientationchange event), so one listener covers both.
 const windowResizeRegistry = _registry(
-	() => {
-		if (isMobileBrowser === null) {
-			isMobileBrowser =
-				typeof navigator !== "undefined" &&
-				/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/i.test(navigator.userAgent);
-		}
-		window.addEventListener("resize", handleGlobalResize, { passive: true });
-		if (isMobileBrowser) {
-			window.addEventListener("orientationchange", handleGlobalResize, { passive: true });
-		}
-	},
-	() => {
-		window.removeEventListener("resize", handleGlobalResize);
-		if (isMobileBrowser) {
-			window.removeEventListener("orientationchange", handleGlobalResize);
-		}
-	},
+	() => window.addEventListener("resize", handleGlobalResize, { passive: true }),
+	() => window.removeEventListener("resize", handleGlobalResize),
 );
 
 export function observeWindowResize(instance, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeWindowResize");
 	if (typeof window === "undefined") return;
 	_observe(instance, windowResizeRegistry, window, callback);
 }
@@ -247,7 +231,7 @@ const resizeRegistry = _registry(
 );
 
 export function observeResize(instance, element, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeResize");
 	if (typeof window === "undefined" || !window.ResizeObserver) return;
 	if (!globalResizeObserver) {
 		globalResizeObserver = new ResizeObserver(_entryDispatcher(() => resizeRegistry));
@@ -301,11 +285,23 @@ function _intersectionRegistry(options) {
 }
 
 export function observeIntersection(instance, element, callback, options = {}) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return nanoUnsupported("observeIntersection");
 	if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
+	const once = options && options.once;
+	const reg = _intersectionRegistry(once ? { ...options, once: undefined } : options || {});
+
 	let actualCallback = callback;
-	if (options && options.once) {
+	if (once) {
+		// Observing the same callback again must not add a second wrapper (plain callbacks are
+		// deduplicated by identity; each once wrapper is a new function)
+		const perKey = instance._obs && instance._obs.get(reg);
+		const list = perKey && perKey.get(element);
+		if (list) {
+			for (let i = 0; i < list.length; i++) {
+				if (list[i]._wrapped === callback) return;
+			}
+		}
 		actualCallback = (entries) => {
 			for (let i = 0; i < entries.length; i++) {
 				if (entries[i].isIntersecting) {
@@ -318,8 +314,7 @@ export function observeIntersection(instance, element, callback, options = {}) {
 		actualCallback._wrapped = callback;
 	}
 
-	const cleanOptions = options && options.once ? { ...options, once: undefined } : options || {};
-	_observe(instance, _intersectionRegistry(cleanOptions), element, actualCallback);
+	_observe(instance, reg, element, actualCallback);
 }
 
 const _toRemove = [];
@@ -346,26 +341,21 @@ const mediaQueryRegistry = _registry(
 	(query) => {
 		const mql = window.matchMedia(query);
 		const handler = (e) => _dispatch(mediaQueryRegistry._cbs.get(query), e.matches, e);
-		if (mql.addEventListener) {
-			mql.addEventListener("change", handler);
-		} else if (mql.addListener) {
-			mql.addListener(handler);
-		}
+		mql.addEventListener("change", handler);
 		mediaQueryLists.set(query, { _mql: mql, _handler: handler });
 	},
 	(query) => {
 		const item = mediaQueryLists.get(query);
-		if (item._mql.removeEventListener) {
-			item._mql.removeEventListener("change", item._handler);
-		} else if (item._mql.removeListener) {
-			item._mql.removeListener(item._handler);
-		}
+		item._mql.removeEventListener("change", item._handler);
 		mediaQueryLists.delete(query);
 	},
 );
 
 export function observeMediaQuery(instance, query, callback) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return () => {};
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+		nanoUnsupported("observeMediaQuery");
+		return () => {};
+	}
 	if (typeof window === "undefined" || !window.matchMedia) return () => {};
 
 	_observe(instance, mediaQueryRegistry, query, callback);
@@ -378,13 +368,10 @@ export function observeMediaQuery(instance, query, callback) {
 		console.error(e);
 	}
 
-	const unobserve = () => {
+	// No abort listener needed: _destroy() removes every observer the instance registered
+	return () => {
 		unobserveMediaQuery(instance, query, callback);
 	};
-	if (instance.signal) {
-		instance.signal.addEventListener("abort", unobserve, { once: true });
-	}
-	return unobserve;
 }
 
 export function unobserveMediaQuery(instance, query, callback = null) {

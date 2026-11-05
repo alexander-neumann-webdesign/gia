@@ -596,6 +596,70 @@ test.describe('Centralized Observers Engine (observers.js)', () => {
             destroyInstance(el);
         });
 
+        test('observeIntersection once: true with the same callback twice registers it once', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            let fired = 0;
+            const onVisible = () => { fired++; };
+            class TwiceComp extends BaseComponent {
+                mount() {
+                    this.observeIntersection(el, onVisible, { threshold: 0.25, once: true });
+                    this.observeIntersection(el, onVisible, { threshold: 0.25, once: true });
+                }
+            }
+
+            createInstance(el, 'TwiceComp', TwiceComp)._load();
+            const obs = mockIntersectionObservers[mockIntersectionObservers.length - 1];
+            obs.trigger([{ target: el, isIntersecting: true }]);
+            expect(fired).toBe(1);
+            expect(obs.observedElements.includes(el)).toBe(false);
+
+            destroyInstance(el);
+        });
+
+        test('observeMediaQuery does not leave an abort listener behind per call', () => {
+            const el = document.createElement('div');
+            document.body.appendChild(el);
+
+            const listeners = new Set();
+            window.matchMedia = () => ({
+                matches: false,
+                addEventListener: (evt, fn) => listeners.add(fn),
+                removeEventListener: (evt, fn) => listeners.delete(fn),
+            });
+
+            let abortListeners = 0;
+            const originalAdd = window.AbortSignal.prototype.addEventListener;
+            window.AbortSignal.prototype.addEventListener = function (type, ...rest) {
+                if (type === 'abort') abortListeners++;
+                return originalAdd.call(this, type, ...rest);
+            };
+
+            let instance;
+            class MediaLoopComp extends BaseComponent {
+                mount() {
+                    instance = this;
+                    for (let i = 0; i < 50; i++) {
+                        const stop = this.observeMediaQuery('(min-width: 600px)', () => {});
+                        stop();
+                    }
+                    this.observeMediaQuery('(min-width: 600px)', () => {});
+                }
+            }
+
+            try {
+                createInstance(el, 'MediaLoopComp', MediaLoopComp)._load();
+                expect(abortListeners).toBe(0);
+                expect(listeners.size).toBe(1);
+
+                destroyInstance(el);
+                expect(listeners.size).toBe(0);
+            } finally {
+                window.AbortSignal.prototype.addEventListener = originalAdd;
+            }
+        });
+
         test('observeMediaQuery should fire immediately and update on change with auto-cleanup', () => {
             const el = document.createElement('div');
             document.body.appendChild(el);

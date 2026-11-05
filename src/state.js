@@ -1,4 +1,5 @@
 import { mutate } from "./scheduler.js";
+import { kebab } from "./kebab.js";
 
 /**
  * Batched state updates and attribute syncing.
@@ -41,7 +42,7 @@ const RESERVED_ATTR = /^data-(component|ref|options|action|mount)$/;
 function _attrName(key) {
 	let attrName = globalStateAttributeCache.get(key);
 	if (attrName === undefined) {
-		attrName = `data-${key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}`;
+		attrName = `data-${kebab(key)}`;
 		if (RESERVED_ATTR.test(attrName)) {
 			console.warn(`Gia: state "${key}" is not mirrored to ${attrName}, which Gia reserves.`);
 			attrName = null;
@@ -57,10 +58,26 @@ function _isMirrored(value) {
 	return type === "boolean" || type === "string" || type === "number";
 }
 
-// ⚡ BOLT OPTIMIZATION: Clear and reuse objects to prevent GC allocation spikes
-function _clear(obj) {
-	for (const k in obj) delete obj[k];
-	return obj;
+// ⚡ BOLT OPTIMIZATION: Add to global dirty array instead of queuing separate rAF per component
+function _markDirty(instance) {
+	dirtyComponents.push(instance);
+	if (!isRafQueued) {
+		isRafQueued = true;
+		mutate(flushGlobalStateChanges);
+	}
+}
+
+/**
+ * Starts a batch for `instance`, reporting `payload` to stateChange() when it is flushed.
+ * ⚡ Fresh objects per batch: emptying and reusing them with `delete` costs far more than the
+ * allocation it saves (deleting properties switches V8 objects to slow dictionary mode).
+ */
+function _startBatch(instance, payload) {
+	instance._pendingStateChanges = payload;
+	instance._pendingAttributeChanges = {}; // "data-*" keys: no clash with Object.prototype
+	// Value each key had when this batch started (null prototype: any key name is safe)
+	instance._stateOrigins = Object.create(null);
+	_markDirty(instance);
 }
 
 /**
@@ -87,16 +104,7 @@ export function enqueueSetState(instance, changes) {
 
 		if (!instance._pendingStateChanges) {
 			// A fresh payload per batch: stateChange() receives it and may keep it
-			instance._pendingStateChanges = {};
-			instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
-			// Value each key had when this batch started (null prototype: any key name is safe)
-			instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
-			// ⚡ BOLT OPTIMIZATION: Add to global dirty array instead of queuing separate rAF per component
-			dirtyComponents.push(instance);
-			if (!isRafQueued) {
-				isRafQueued = true;
-				mutate(flushGlobalStateChanges);
-			}
+			_startBatch(instance, {});
 		}
 
 		const origins = instance._stateOrigins;
@@ -153,10 +161,7 @@ export function flushStateChanges(instance) {
 		}
 	}
 
-	// Release the batch before calling user code, so setState() inside stateChange() starts a new one.
-	// Only the internal attribute and origin objects are reused; the payload belongs to the caller.
-	instance._reusableAttributeChanges = _clear(attrs);
-	instance._reusableStateOrigins = _clear(instance._stateOrigins);
+	// Release the batch before calling user code, so setState() inside stateChange() starts a new one
 	instance._pendingStateChanges = null;
 	instance._pendingAttributeChanges = null;
 	instance._stateOrigins = null;
@@ -167,8 +172,32 @@ export function flushStateChanges(instance) {
 		break;
 	}
 	// Every change in the batch was reverted: do not call stateChange() with an empty payload
-	if (hasChanges) {
-		instance.stateChange(pending);
+	if (!hasChanges) return;
+
+	if (!instance._isMounted) {
+		// mount() has not run yet (setState() in the constructor while require() is pending):
+		// the attributes are synced, but stateChange() waits for mount (see releaseHeldStateChanges)
+		instance._heldStateChanges = instance._heldStateChanges
+			? Object.assign(instance._heldStateChanges, pending)
+			: pending;
+		return;
+	}
+	instance.stateChange(pending);
+}
+
+/**
+ * Called right after mount(): changes flushed while the instance was not mounted yet are reported
+ * to stateChange() in the next frame, together with (and overridden by) any batch pending by then.
+ * @param {object} instance - Component instance
+ */
+export function releaseHeldStateChanges(instance) {
+	const held = instance._heldStateChanges;
+	if (!held) return;
+	instance._heldStateChanges = null;
+	if (instance._pendingStateChanges) {
+		instance._pendingStateChanges = Object.assign(held, instance._pendingStateChanges);
+	} else {
+		_startBatch(instance, held);
 	}
 }
 
@@ -184,4 +213,5 @@ export function cleanupComponentState(instance) {
 	instance._pendingStateChanges = null;
 	instance._pendingAttributeChanges = null;
 	instance._stateOrigins = null;
+	instance._heldStateChanges = null;
 }

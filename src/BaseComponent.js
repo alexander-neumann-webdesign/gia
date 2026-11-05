@@ -1,7 +1,8 @@
 import config from "./config.js";
+import { kebab } from "./kebab.js";
 import { queryAll, toggleClass, addClass, removeClass } from "./utils.js";
 import { components } from "./store.js";
-import { enqueueSetState, flushStateChanges, cleanupComponentState } from "./state.js";
+import { enqueueSetState, flushStateChanges, cleanupComponentState, releaseHeldStateChanges } from "./state.js";
 import { loadScript, loadStyle } from "./loaders.js";
 import { autoBindActions } from "./actions.js";
 import eventbus from "./eventbus.js";
@@ -35,7 +36,11 @@ export default class BaseComponent {
 	constructor(element, options) {
 		this.element = element;
 		components.set(this.element, this);
-		this._name = this.constructor.name;
+		// The name this instance is mounted as (its data-component value), so "Name:ref" prefixes and
+		// error messages match the markup even when a minifier renamed the class
+		this._name =
+			(element && element.getAttribute && element.getAttribute(`${config.get("attrPrefix")}-component`)) ||
+			this.constructor.name;
 		this._ref = {};
 		this._options = options || {};
 		this._state = {};
@@ -86,7 +91,9 @@ export default class BaseComponent {
 
 		// Fast-check if there are any nested components inside this element
 		const hasNestedComponents = this.element.querySelector(`[${componentAttrName}]`) !== null;
-		const namePrefix = `${this._name}:`;
+		// ⚡ Most markup has no "Name:ref" prefixes: then no prefixed lookups (and their string
+		// building) are needed per ref key below
+		let hasPrefixed = false;
 
 		// ⚡ BOLT OPTIMIZATION: Avoid double lookup by caching the array reference
 		for (let i = 0; i < allRefs.length; i++) {
@@ -99,8 +106,9 @@ export default class BaseComponent {
 				if (element.parentElement !== this.element) {
 					const closest = element.closest(`[${componentAttrName}]`);
 					// If the ref is inside a descendant component, ignore it unless explicitly prefixed for this component
-					if (closest !== this.element && !refName.startsWith(namePrefix)) {
-						continue;
+					if (closest !== this.element) {
+						const colon = refName.indexOf(":");
+						if (colon === -1 || !this._isOwnName(refName.substring(0, colon))) continue;
 					}
 				}
 			}
@@ -109,6 +117,7 @@ export default class BaseComponent {
 			if (list === undefined) {
 				list = [];
 				refsByName[refName] = list;
+				if (!hasPrefixed && refName.indexOf(":") !== -1) hasPrefixed = true;
 			}
 			list.push(element);
 		}
@@ -130,10 +139,10 @@ export default class BaseComponent {
 				const colonIndex = refName.indexOf(":");
 				let name = null;
 				if (colonIndex !== -1) {
-					if (refName.substring(0, colonIndex) === this._name) {
+					if (this._isOwnName(refName.substring(0, colonIndex))) {
 						name = refName.substring(colonIndex + 1);
 					}
-				} else if (!refsByName[namePrefix + refName]) {
+				} else if (!(hasPrefixed && this._prefixedRefs(refsByName, refName))) {
 					name = refName;
 				}
 				// 🛡️ SECURITY: a markup ref named "__proto__" would replace the prototype of this.ref
@@ -154,16 +163,24 @@ export default class BaseComponent {
 					continue;
 				}
 
-				const prefixedName = `${this._name}:${key}`;
-				let refs = refsByName[prefixedName] || [];
-
-				if (refs.length === 0) {
-					refs = refsByName[key] || [];
-				}
+				const refs = (hasPrefixed && this._prefixedRefs(refsByName, key)) || refsByName[key] || [];
 
 				this._ref[key] = isArray ? refs : (refs[0] ?? null);
 			}
 		}
+	}
+
+	/**
+	 * True when a "Name:" ref prefix addresses this instance: its mounted name, or its class name
+	 * (accepted as well, so markup written against the class name keeps working)
+	 */
+	_isOwnName(name) {
+		return name === this._name || name === this.constructor.name;
+	}
+
+	/** Elements of "Name:key" refs prefixed for this instance (mounted name first), or undefined */
+	_prefixedRefs(refsByName, key) {
+		return refsByName[`${this._name}:${key}`] || refsByName[`${this.constructor.name}:${key}`];
 	}
 
 	get options() {
@@ -171,10 +188,6 @@ export default class BaseComponent {
 	}
 
 	set options(defaults) {
-		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
-			this._options = { ...this._options, ...defaults };
-			return;
-		}
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
 		let options = {};
 		if (optionsFromAttribute) {
@@ -195,7 +208,7 @@ export default class BaseComponent {
 			const attrPrefix = config.get("attrPrefix");
 			for (const key in defaults) {
 				if (!Object.prototype.hasOwnProperty.call(defaults, key)) continue;
-				const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+				const kebabKey = kebab(key);
 				let attrVal = this.element.getAttribute(`${attrPrefix}-${kebabKey}`);
 				if (attrVal === null && attrPrefix !== "data") {
 					attrVal = this.element.getAttribute(`data-${kebabKey}`);
@@ -235,13 +248,16 @@ export default class BaseComponent {
 	}
 
 	_load() {
-		if (this.element && !this._isDestroyed) {
+		// Idempotent: createInstance() mounts, and code written before it did calls _load() again
+		if (this.element && !this._isDestroyed && !this._isMounted) {
 			this._isMounted = true;
 			try {
 				this._mountCleanup = this.mount();
 			} catch (err) {
 				console.error(`Gia: Error in mount for "${this._name}".`, err);
 			}
+			// stateChange() never runs before mount(): report changes that were held back
+			releaseHeldStateChanges(this);
 		}
 	}
 
@@ -251,6 +267,9 @@ export default class BaseComponent {
 	 * @param {boolean} [skipUnmount] - true when the instance never finished constructing
 	 */
 	_destroy(skipUnmount) {
+		// unmount() mirrors mount(): skipped when mount() never ran (e.g. destroyed while require()
+		// was pending, or the constructor failed)
+		const wasMounted = this._isMounted;
 		this._isMounted = false;
 		this._isDestroyed = true;
 
@@ -280,7 +299,7 @@ export default class BaseComponent {
 			this._mountCleanup = null;
 		}
 
-		if (!skipUnmount) {
+		if (wasMounted && !skipUnmount) {
 			try {
 				this.unmount();
 			} catch (err) {
@@ -403,8 +422,9 @@ export default class BaseComponent {
 			opts = handler;
 		}
 
+		// Like delegate(): always return a cleanup function, so callers can call it unconditionally
 		if (!el || typeof el.addEventListener !== "function" || typeof fn !== "function") {
-			return;
+			return () => {};
 		}
 
 		const signal = this.signal;
@@ -497,7 +517,9 @@ export default class BaseComponent {
 				opts = { once: !!options, signal };
 			}
 		}
-		eventbus.on(event, handler, opts);
+		const off = eventbus.on(event, handler, opts);
+		// A bus created by an older Gia bundle returns nothing
+		return typeof off === "function" ? off : () => eventbus.off(event, handler);
 	}
 
 	channel(namespace) {
@@ -506,12 +528,10 @@ export default class BaseComponent {
 			emit: (event, data) => {
 				this.emit(`${prefix}${event}`, data);
 			},
-			on: (event, handler, options = false) => {
-				this.on(`${prefix}${event}`, handler, options);
-			},
+			on: (event, handler, options = false) => this.on(`${prefix}${event}`, handler, options),
 			once: (event, handler, options = {}) => {
 				const opts = typeof options === "object" && options !== null ? { ...options, once: true } : { once: true };
-				this.on(`${prefix}${event}`, handler, opts);
+				return this.on(`${prefix}${event}`, handler, opts);
 			},
 			off: (event, handler) => {
 				eventbus.off(`${prefix}${event}`, handler);

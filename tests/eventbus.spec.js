@@ -313,4 +313,24 @@ test.describe('EventBus', () => {
         expect(count).toBe(2); // the plain listener keeps firing
         eventbus.off('mixed', handler);
     });
+
+    test('on() and once() return a function that removes exactly that listener', async () => {
+        const calls = [];
+        const offA = eventbus.on('unsub', () => calls.push('a'));
+        const offB = eventbus.once('unsub', () => calls.push('b'));
+        const offWild = eventbus.on('unsub:*', () => calls.push('wild'));
+        eventbus.on('unsub', () => calls.push('c'));
+        offA();
+        offB();
+        offWild();
+        eventbus.emit('unsub');
+        eventbus.emit('unsub:x');
+        expect(calls).toEqual(['c']);
+        expect(() => offA()).not.toThrow(); // calling it again is harmless
+        eventbus.off('unsub');
+
+        const controller = new AbortController();
+        controller.abort();
+        expect(typeof eventbus.on('unsub', () => {}, { signal: controller.signal })).toBe('function');
+    });
 });

@@ -13,6 +13,9 @@ export default class Component extends BaseComponent {
 	}
 
 	_load() {
+		// Idempotent, like BaseComponent._load(): require() runs once per instance
+		if (this._requireStarted) return;
+		this._requireStarted = true;
 		const fail = (err) => {
 			console.error(`Gia: Error loading dependencies for "${this._name}".`, err);
 		};

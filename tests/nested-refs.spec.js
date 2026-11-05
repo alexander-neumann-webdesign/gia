@@ -273,4 +273,78 @@ test.describe('Nested Component Ref & Action Isolation', () => {
         expect(Object.prototype.hasOwnProperty.call(instance.ref, '__proto__')).toBe(false);
         expect(instance.ref.title.map((el) => el.id)).toEqual(['title']);
     });
+
+    test('the instance is named after its data-component value, not its (minified) class name', () => {
+        document.body.innerHTML = `
+            <div data-component="Parent" id="parent">
+                <div data-component="Child">
+                    <input data-ref="Parent:field" id="field" />
+                    <span data-ref="Parent:label" id="label"></span>
+                </div>
+            </div>
+        `;
+
+        let parent;
+        // A minifier would rename these classes, e.g. to "a" and "b"
+        const a = class extends BaseComponent {
+            constructor(el) {
+                super(el);
+                parent = this;
+                this.ref = { field: null };
+            }
+        };
+        const b = class extends BaseComponent {};
+        Object.defineProperty(a, 'name', { value: 'a' });
+        Object.defineProperty(b, 'name', { value: 'b' });
+
+        loadComponents({ Parent: a, Child: b }, document.body);
+
+        expect(parent._name).toBe('Parent');
+        expect(parent.ref.field.id).toBe('field');
+        expect(parent.getRef('field', true)).toBe('[data-ref="Parent:field"]');
+        parent.ref = {};
+        expect(parent.ref.label.map((el) => el.id)).toEqual(['label']);
+    });
+
+    test('a ref prefixed with the class name still works when the component is registered under another name', () => {
+        document.body.innerHTML = `
+            <div data-component="cart-drawer" id="drawer">
+                <div data-component="Child">
+                    <button data-ref="CartDrawer:close" id="close"></button>
+                    <span data-ref="cart-drawer:count" id="count"></span>
+                </div>
+                <span data-ref="count" id="plain-count"></span>
+            </div>
+        `;
+
+        let drawer;
+        class CartDrawer extends BaseComponent {
+            constructor(el) {
+                super(el);
+                drawer = this;
+                this.ref = { close: null, count: null };
+            }
+        }
+        class Child extends BaseComponent {}
+
+        loadComponents({ 'cart-drawer': CartDrawer, Child }, document.body);
+
+        expect(drawer._name).toBe('cart-drawer');
+        expect(drawer.ref.close.id).toBe('close');
+        // The mounted-name prefix wins over a plain ref of the same name
+        expect(drawer.ref.count.id).toBe('count');
+    });
+
+    test('a component created without a data-component attribute falls back to its class name', () => {
+        document.body.innerHTML = `<div id="host"><span data-ref="Manual:item" id="item"></span></div>`;
+        class Manual extends BaseComponent {
+            constructor(el) {
+                super(el);
+                this.ref = { item: null };
+            }
+        }
+        const instance = new Manual(document.getElementById('host'));
+        expect(instance._name).toBe('Manual');
+        expect(instance.ref.item.id).toBe('item');
+    });
 });

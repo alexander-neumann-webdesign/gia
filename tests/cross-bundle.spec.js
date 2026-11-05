@@ -111,6 +111,34 @@ test.describe('shared event bus', () => {
         expect(result.hits).toEqual(['mini:cart:add', 'full:cart:add', 'mini:cart:remove', 'full:cart:remove']);
     });
 
+    test('the upgraded bus keeps none of the mini bus fields (they could shadow full methods)', async ({ page }) => {
+        await loadPair(page, 'gia.mini.umd.js', 'gia.full.umd.js');
+        const result = await page.evaluate(() => {
+            const bus = window.gia.eventbus;
+            const fresh = new (Object.getPrototypeOf(bus).constructor)();
+            return { upgraded: Object.keys(bus).sort(), fresh: Object.keys(fresh).sort() };
+        });
+        expect(result.upgraded).toEqual(result.fresh);
+    });
+
+    test('an unsubscribe function returned by the mini bus still works after the upgrade', async ({ page }) => {
+        await page.setContent('<body></body>');
+        await page.addScriptTag({ path: dist('gia.mini.umd.js') });
+        await page.evaluate(() => {
+            window.__calls = [];
+            window.__offPlain = window.gia.eventbus.on('evt', () => window.__calls.push('plain'));
+            window.__offOnce = window.gia.eventbus.once('evt', () => window.__calls.push('once'));
+        });
+        await page.addScriptTag({ path: dist('gia.full.umd.js') });
+        const calls = await page.evaluate(() => {
+            window.__offPlain();
+            window.__offOnce();
+            window.gia.eventbus.emit('evt');
+            return window.__calls;
+        });
+        expect(calls).toEqual([]);
+    });
+
     test('listeners registered on the mini bus before the upgrade survive it', async ({ page }) => {
         await page.setContent('<body></body>');
         await page.addScriptTag({ path: dist('gia.mini.umd.js') });

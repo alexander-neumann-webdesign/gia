@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { JSDOM } from 'jsdom';
 import BaseComponent from '../src/BaseComponent.js';
+import Component from '../src/Component.js';
+import destroyInstance from '../src/destroyInstance.js';
 import loadComponents from '../src/loadComponents.js';
 
 test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
@@ -394,5 +396,70 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
 
         expect(payloads).toEqual([{ step: 1 }, { step: 2, done: true }]);
         expect(payloads[0]).not.toBe(payloads[1]);
+    });
+
+    test('stateChange() waits for mount() while require() is pending; attributes do not', async () => {
+        const log = [];
+        let release;
+        let instance;
+        class Slow extends Component {
+            constructor(el) {
+                super(el);
+                instance = this;
+                this.setState({ zoom: 1, label: 'a' });
+            }
+            require() {
+                return new Promise((r) => { release = r; });
+            }
+            mount() {
+                log.push('mount');
+            }
+            stateChange(changes) {
+                log.push(JSON.stringify(changes));
+            }
+        }
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'Slow');
+        document.body.appendChild(el);
+        loadComponents({ Slow }, document.body);
+
+        await new Promise((r) => setTimeout(r, 30)); // several frames while require() is pending
+        expect(el.getAttribute('data-zoom')).toBe('1');
+        instance.setState({ label: 'b' });
+        await new Promise((r) => setTimeout(r, 30));
+        expect(el.getAttribute('data-label')).toBe('b');
+        expect(log).toEqual([]);
+
+        release();
+        await Promise.resolve();
+        instance.setState({ zoom: 2 }); // after mount, merged into the held changes
+        await new Promise((r) => setTimeout(r, 30));
+        expect(log).toEqual(['mount', JSON.stringify({ zoom: 2, label: 'b' })]);
+    });
+
+    test('changes held for an instance destroyed before mount() are never reported', async () => {
+        let stateChanges = 0;
+        class NeverMounted extends Component {
+            constructor(el) {
+                super(el);
+                this.setState({ open: true });
+            }
+            require() {
+                return new Promise(() => {});
+            }
+            stateChange() {
+                stateChanges++;
+            }
+        }
+
+        const el = document.createElement('div');
+        el.setAttribute('data-component', 'NeverMounted');
+        document.body.appendChild(el);
+        loadComponents({ NeverMounted }, document.body);
+        await new Promise((r) => setTimeout(r, 30));
+        destroyInstance(el);
+        await new Promise((r) => setTimeout(r, 30));
+        expect(stateChanges).toBe(0);
     });
 });

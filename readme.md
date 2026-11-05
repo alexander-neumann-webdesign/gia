@@ -1,9 +1,9 @@
 # Gia
 
-A performance-first, ultra-lightweight JavaScript framework (~5.4KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
+A performance-first, ultra-lightweight JavaScript framework (~6.1KB to ~10.3KB gzipped) for creating **Islands of Interactivity** on server-rendered (WordPress, Django, Rails, Laravel, Astro) or static websites. It provides the clean lifecycle, state management, and declarative event binding of modern SPA frameworks without the heavy bundle size or Virtual DOM overhead.
 
 [![license](https://img.shields.io/github/license/alexander-neumann-webdesign/gia.svg?style=flat-square)](LICENSE)
-[![bundle size](<https://img.shields.io/badge/bundle%20size-(5.3kb_to_9.7kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
+[![bundle size](<https://img.shields.io/badge/bundle%20size-(6.1kb_to_10.3kb_gzipped)-blue?style=flat-square>)](dist/gia.full.umd.js)
 
 _Note: This is an optimized fork of the original Gia framework. It contains numerous performance enhancements, custom examples, and robust memory management._
 
@@ -61,15 +61,15 @@ Gia is compiled into three highly optimized build variants depending on the feat
 
 | Build Variant  | Subpath Import | Description | UMD Gzip (Raw) | ESM Gzip (Raw) |
 | -------------- | -------------- | ----------- | -------------- | -------------- |
-| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.1 KB) | ~10.1 KB (29.7 KB) |
-| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.2 KB (23.4 KB) | ~8.0 KB (23.0 KB) |
-| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, JSON options parsing, and async script loading (components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~5.6 KB (16.0 KB) | ~5.4 KB (15.6 KB) |
+| **Full Build** | `import { Component } from "gia"` | All framework features: async `require()`, auto-mounting, dynamic import loaders, observers, DOM scheduler, and full wildcard EventBus. | ~10.3 KB (30.3 KB) | ~10.2 KB (29.9 KB) |
+| **Mini Build** | `import { BaseComponent } from "gia/mini"` | Drops `autoMount` MutationObserver, `data-action` auto-binding, and `() => import(...)` loaders. Includes lightweight emitter and retains full observers & scroll physics. | ~8.4 KB (24.1 KB) | ~8.2 KB (23.7 KB) |
+| **Nano Build** | `import { BaseComponent } from "gia/nano"` | Bare minimum: drops the `eventbus` export, global observers, and async script loading (the observer and `loadScript()`/`loadStyle()` methods do nothing and log a one-time warning; components keep `this.emit()`/`this.on()` via the lightweight emitter). Just the core class and ref engine. | ~6.3 KB (18.1 KB) | ~6.1 KB (17.6 KB) |
 
 ```javascript
 // Full build with modern ESM
 import { Component, loadComponents, register, eventbus } from "gia";
 
-// Or target the tiny Nano build (~5.4 KB gzipped)
+// Or target the tiny Nano build (~6.1 KB gzipped)
 import { BaseComponent, loadComponents, register } from "gia/nano";
 ```
 
@@ -79,7 +79,12 @@ import { BaseComponent, loadComponents, register } from "gia/nano";
 
 <!-- Or enable declarative zero-JS auto-mounting directly on the script tag! -->
 <script src="./dist/gia.full.umd.js" data-auto-mount></script>
+
+<!-- The same works for a module tag that loads a Gia ESM file itself -->
+<script type="module" src="./dist/gia.full.mjs" data-auto-mount></script>
 ```
+
+`data-auto-mount` only counts on the tag that loads that Gia bundle. When Gia is bundled into your own code (`import { … } from "gia"`), call `loadComponents()` (and `config.set("autoMountComponents", true)`) yourself; a `data-auto-mount` attribute on any other script is ignored.
 
 > [!TIP]
 > **UMD Superpowers & Head-Loading Safety**:
@@ -185,8 +190,8 @@ Gia components follow a strict lifecycle designed to optimize rendering performa
 1. **`constructor(element)`**: Sets up defaults, defines `this.ref` targets, and sets initial state.
 2. **`require()` (Async)**: _Available on `Component` (not `BaseComponent`)_. Performs on-demand script or style loading. Mount is deferred until this resolves.
 3. **`mount()`**: Executes after constructor and dependencies are resolved. Bind custom events, construct third-party libraries, and bootstrap interactions here. **Bonus**: `mount()` can optionally return a cleanup function (e.g. `return () => clearInterval(timer)`), which executes automatically upon unmount.
-4. **`stateChange(changes)`**: Invoked inside `requestAnimationFrame` when state values change.
-5. **`unmount()`**: Runs when the component is destroyed (e.g. element removed from DOM). Clean up custom event listeners, timelines, or third-party instances here.
+4. **`stateChange(changes)`**: Invoked inside `requestAnimationFrame` when state values change. Never called before `mount()`: changes made earlier (e.g. `setState()` in the constructor while `require()` is pending) update the `data-*` attributes right away and reach `stateChange()` in the first frame after `mount()`.
+5. **`unmount()`**: Runs when the component is destroyed (e.g. element removed from DOM). Clean up custom event listeners, timelines, or third-party instances here. Only runs if `mount()` ran, so it is skipped for a component destroyed while its `require()` was still pending.
 6. **`_destroy()`**: Internal lifecycle step. Aborts `this.signal`, calls mount cleanup, runs `unmount()`, unsubscribes all unified observers, and disconnects elements from memory.
 
 ---
@@ -228,7 +233,7 @@ class Gallery extends Component {
 > [!TIP]
 > **Nested Component Isolation & Namespacing**:
 > By default, Gia isolates references: an element with `data-ref="btn"` is strictly bound to its closest ancestor component. A parent component will **never** accidentally capture child component refs or actions.
-> If a parent component needs to deliberately target an element nested inside a child component, prefix the ref with the parent component's class name: `<div data-ref="ParentComponent:nestedItem">`.
+> If a parent component needs to deliberately target an element nested inside a child component, prefix the ref with the parent component's name as written in its `data-component` attribute: `<div data-ref="ParentComponent:nestedItem">`. Because the prefix comes from the markup, it keeps working when a minifier renames your classes. The class name is accepted as a prefix too, so markup written against it keeps working when a component is registered under a different name.
 
 ---
 
@@ -369,7 +374,7 @@ Attaches to a single centralized window scroll listener. Instead of forcing the 
 
 #### 4. Window Resize (`observeWindowResize`)
 
-Attaches to a single centralized window resize listener (or `orientationchange` on mobile browsers) to prevent multiple components from binding heavy resize events simultaneously.
+Attaches to a single centralized window resize listener (which also fires when a device rotates) to prevent multiple components from binding heavy resize events simultaneously.
 
 - **Usage**: `this.observeWindowResize((payload) => console.log(payload.width, payload.height))`
 
@@ -972,13 +977,13 @@ config.set("autoBindActions", true);
   - `loadComponents(components, [context])` — mounts an explicit dictionary of components scoped to `context` (defaults to `document.documentElement`).
 - **`register(ComponentClass, [options])`**: Registers a component class globally in `window.gia.components`. Options: `{ priority?: number, name?: string }`; `name` defaults to the class name (pass it explicitly for minified builds).
 - **`removeComponents([components], [context])`**: Destroys and cleans up all component instances inside the target context. Accepts `removeComponents(container)` or `removeComponents(components, context)` interchangeably.
-- **`createInstance(element, componentName, ComponentClass, [options])`**: Manually attaches and mounts a component instance on a DOM element.
+- **`createInstance(element, componentName, ComponentClass, [options])`**: Manually attaches and mounts a component instance on a DOM element (for a `Component`, `mount()` runs once `require()` resolves). Returns the instance, or the existing one if the element already has a component.
 - **`destroyInstance(element)`**: Dismantles a component instance, triggering its `unmount()` lifecycle, aborting `this.signal`, and cleaning memory references.
 - **`getComponentFromElement(element)`**: Retrieves the active component instance associated with a DOM node or an element ID string.
 - **`eventbus`**: Unified zero-allocation event emitter supporting wildcards (`*`, `prefix:*`) and channels. Methods:
   - `eventbus.emit(event, [data])`: Emits an event with optional payload.
-  - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`.
-  - `eventbus.once(event, handler, [options])`: Attaches a single-execution event listener.
+  - `eventbus.on(event, handler, [options])`: Attaches an event listener. Supports `{ signal, once }`. Returns a function that removes it.
+  - `eventbus.once(event, handler, [options])`: Attaches a single-execution event listener. Returns a function that removes it.
   - `eventbus.off(event, [handler])`: Removes one or all listeners for an event.
   - `eventbus.channel(namespace)`: Returns a scoped `{ emit, on, once, off }` channel with namespaced events (`${namespace}:${event}`).
 - **`measure(callback, [context])`**: Schedules a DOM read operation for the next frame's measure phase. Returns a task reference.
@@ -1022,7 +1027,7 @@ config.set("autoBindActions", true);
 - **`observeWindowResize(callback)`** / **`unobserveWindowResize(callback)`**: Subscribes/unsubscribes to a centralized window resize listener.
 - **`observeMediaQuery(query, callback)`** / **`unobserveMediaQuery(query, [callback])`**: Subscribes/unsubscribes to a centralized media query listener. Fires immediately with current match state and cleans up on unmount. Returns an unobserve function.
 - **`emit(event, [data])`**: Emits an event on the global EventBus.
-- **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup.
+- **`on(event, handler, [options])`**: Subscribes to the global EventBus with automatic `this.signal` unmount cleanup. Returns a function that unsubscribes earlier, like `listen()` and `delegate()`.
 - **`channel(namespace)`**: Returns a scoped EventBus channel `{ emit, on, once, off }` whose listeners automatically detach on unmount.
 - **`loadScript(scriptId, globalVarName)`**: Concurrent-safe, cached dynamic script loader. Accepts a tag ID (also tried with WordPress' `-js` suffix) or a URL.
 - **`loadStyle(styleId)`**: Concurrent-safe, cached dynamic stylesheet loader. Accepts a tag ID (also tried with WordPress' `-css` suffix) or a URL.

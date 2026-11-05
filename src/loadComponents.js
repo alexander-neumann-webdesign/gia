@@ -1,5 +1,5 @@
 import config from "./config.js";
-import createInstance from "./createInstance.js";
+import { constructInstance } from "./createInstance.js";
 import { queryAll } from "./utils.js";
 import { components as storeComponents } from "./store.js";
 import { isComponentClass } from "./brand.js";
@@ -51,12 +51,6 @@ function _resolveComponent(components, name) {
 	return null;
 }
 
-function _isConnected(element) {
-	return element.isConnected !== undefined
-		? element.isConnected
-		: element.ownerDocument && element.ownerDocument.contains(element);
-}
-
 function _instantiateOrLoad(element, componentName, ctor, components, initialisedComponents) {
 	// Already mounted (possibly by another bundle) or a deferred mount is in flight.
 	// Repeated loadComponents() calls (manual, autoMount, Swup...) must not start a second one.
@@ -69,7 +63,7 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 
 		if (mountAttr === "visible" || mountAttr === "idle") {
 			deferMount(element, mountAttr, () => {
-				if (_isConnected(element)) {
+				if (element.isConnected) {
 					_instantiateOrLoad(element, componentName, ctor, components, null);
 				}
 			});
@@ -78,9 +72,9 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	}
 
 	function _initInstance(cls) {
-		// createInstance returns an existing instance for duplicates; never _load() it twice
+		// constructInstance returns an existing instance for duplicates; never _load() it twice
 		if (storeComponents.has(element)) return null;
-		const instance = createInstance(element, componentName, cls);
+		const instance = constructInstance(element, componentName, cls);
 		if (instance) {
 			if (initialisedComponents) {
 				initialisedComponents.push(instance);
@@ -119,12 +113,12 @@ function _instantiateOrLoad(element, componentName, ctor, components, initialise
 	if ((typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) && result && typeof result.then === "function") {
 		let mod;
 		const mountLoaded = deferMount(element, null, () => {
-			if (!_isConnected(element) || storeComponents.has(element)) return;
+			if (!element.isConnected || storeComponents.has(element)) return;
 			const Resolved =
 				(mod && mod.__esModule && mod.default) || mod?.default || mod?.[componentName] || mod;
 			if (typeof Resolved === "function") {
 				components[componentName] = Resolved;
-				const inst = createInstance(element, componentName, Resolved);
+				const inst = constructInstance(element, componentName, Resolved);
 				if (inst) {
 					inst._load();
 				}

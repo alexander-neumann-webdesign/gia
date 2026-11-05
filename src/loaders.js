@@ -1,3 +1,5 @@
+import { nanoUnsupported } from "./nanoUnsupported.js";
+
 /**
  * Dynamic script and stylesheet loaders with DOM clobbering protection and promise caching.
  */
@@ -149,7 +151,10 @@ function _loadAsset(id, isScript, globalName) {
  * @return {Promise}
  */
 export function loadScript(scriptId, globalName) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+		nanoUnsupported("loadScript");
+		return Promise.resolve();
+	}
 
 	// SAFETY CHECK: Is the library already active globally?
 	// Validate against DOM Clobbering false positives (Node, HTMLCollection, Window)
@@ -175,6 +180,9 @@ export function loadScript(scriptId, globalName) {
  * @return {Promise}
  */
 export function loadStyle(styleId) {
-	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return Promise.resolve();
+	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
+		nanoUnsupported("loadStyle");
+		return Promise.resolve();
+	}
 	return _loadAsset(styleId, false);
 }
