@@ -350,6 +350,24 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
         });
     }
 
+    for (const [tier, dist] of [['full', fullDist], ['mini', miniDist], ['nano', nanoDist]]) {
+        test(`gia.${tier}.mjs keeps console.warn for markup mistakes`, () => {
+            const el = document.createElement('div');
+            el.setAttribute('data-component', 'NoSuchComponent');
+            document.body.appendChild(el);
+            const originalWarn = console.warn;
+            const warnings = [];
+            console.warn = (msg) => warnings.push(String(msg));
+            try {
+                dist.loadComponents({ SomethingElse: class extends dist.BaseComponent {} }, el);
+            } finally {
+                console.warn = originalWarn;
+                el.remove();
+            }
+            expect(warnings).toContain('Constructor "NoSuchComponent" not found.');
+        });
+    }
+
     test('loadComponents should defer to DOMContentLoaded when document.readyState is loading', () => {
         let mounted = false;
         class DeferBox extends fullDist.BaseComponent {

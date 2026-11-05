@@ -15,8 +15,8 @@ export function register(ComponentClass, options = {}) {
 	}
 
 	if (!options.name && name.length <= 2) {
-		// console.error (not warn): dist builds strip console.warn, and this registration will
-		// almost certainly not match any data-component="..." in the markup
+		// console.error (not warn): this registration will almost certainly not match any
+		// data-component="..." in the markup
 		console.error(`Gia: class name "${name}" looks minified; use register(Class, { name: "..." })`);
 	}
 

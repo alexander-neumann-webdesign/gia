@@ -71,7 +71,9 @@ export function terserPlugin(customOptions = {}) {
 							unsafe_comps: true,
 							pure_getters: true,
 							drop_debugger: true,
-							pure_funcs: ["console.info", "console.warn"],
+							// console.info is only the opt-in `log` tracing. console.warn is kept: it
+							// reports markup and API mistakes (e.g. a data-component with no class).
+							pure_funcs: ["console.info"],
 							inline: 3,
 							reduce_vars: true,
 							collapse_vars: true,
