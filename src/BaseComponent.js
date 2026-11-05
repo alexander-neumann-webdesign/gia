@@ -266,6 +266,9 @@ export default class BaseComponent {
 	 * @param {boolean} [skipUnmount] - true when the instance never finished constructing
 	 */
 	_destroy(skipUnmount) {
+		// unmount() mirrors mount(): skipped when mount() never ran (e.g. destroyed while require()
+		// was pending, or the constructor failed)
+		const wasMounted = this._isMounted;
 		this._isMounted = false;
 		this._isDestroyed = true;
 
@@ -295,7 +298,7 @@ export default class BaseComponent {
 			this._mountCleanup = null;
 		}
 
-		if (!skipUnmount) {
+		if (wasMounted && !skipUnmount) {
 			try {
 				this.unmount();
 			} catch (err) {

@@ -143,6 +143,7 @@ test.describe('Lifecycle Hooks & AbortSignal', () => {
         const el = document.createElement('div');
         document.body.appendChild(el);
 
+        let unmountCalled = false;
         let mountCalled = false;
         let resolveRequire;
         const requirePromise = new Promise((resolve) => {
@@ -156,6 +157,9 @@ test.describe('Lifecycle Hooks & AbortSignal', () => {
             mount() {
                 mountCalled = true;
             }
+            unmount() {
+                unmountCalled = true;
+            }
         }
 
         const instance = createInstance(el, 'AsyncComponent', AsyncComponent);
@@ -167,6 +171,8 @@ test.describe('Lifecycle Hooks & AbortSignal', () => {
         // Destroy component while require is still in-flight
         destroyInstance(el);
         expect(instance.signal.aborted).toBe(true);
+        // unmount() mirrors mount(): it must not run for a component that never mounted
+        expect(unmountCalled).toBe(false);
 
         // Now resolve require
         resolveRequire();
