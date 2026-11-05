@@ -53,3 +53,25 @@ test('mini does not warn about nano-only limitations', async ({ page }) => {
     });
     expect(warnings.filter((w) => w.includes('nano build'))).toEqual([]);
 });
+
+test('nano reads options from HTML attributes and data-options JSON', async ({ page }) => {
+    await page.setContent(`<body>
+        <div id="a" data-component="Opts" data-size="3" data-auto-play data-label="007"></div>
+        <div id="b" data-component="Opts" data-options='{"size": 9, "label": "json"}'></div>
+    </body>`);
+    await page.addScriptTag({ path: dist('gia.nano.umd.js') });
+    const result = await page.evaluate(() => {
+        class Opts extends gia.BaseComponent {
+            constructor(el) {
+                super(el);
+                this.options = { size: 1, autoPlay: false, label: '' };
+            }
+        }
+        gia.loadComponents({ Opts });
+        return ['a', 'b'].map((id) => gia.getComponentFromElement(id).options);
+    });
+    expect(result).toEqual([
+        { size: 3, autoPlay: true, label: '007' },
+        { size: 9, autoPlay: false, label: 'json' },
+    ]);
+});

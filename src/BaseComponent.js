@@ -188,10 +188,6 @@ export default class BaseComponent {
 	}
 
 	set options(defaults) {
-		if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) {
-			this._options = { ...this._options, ...defaults };
-			return;
-		}
 		const optionsFromAttribute = this.element.getAttribute(`${config.get("attrPrefix")}-options`);
 		let options = {};
 		if (optionsFromAttribute) {
