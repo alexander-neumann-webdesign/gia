@@ -111,6 +111,16 @@ test.describe('shared event bus', () => {
         expect(result.hits).toEqual(['mini:cart:add', 'full:cart:add', 'mini:cart:remove', 'full:cart:remove']);
     });
 
+    test('the upgraded bus keeps none of the mini bus fields (they could shadow full methods)', async ({ page }) => {
+        await loadPair(page, 'gia.mini.umd.js', 'gia.full.umd.js');
+        const result = await page.evaluate(() => {
+            const bus = window.gia.eventbus;
+            const fresh = new (Object.getPrototypeOf(bus).constructor)();
+            return { upgraded: Object.keys(bus).sort(), fresh: Object.keys(fresh).sort() };
+        });
+        expect(result.upgraded).toEqual(result.fresh);
+    });
+
     test('listeners registered on the mini bus before the upgrade survive it', async ({ page }) => {
         await page.setContent('<body></body>');
         await page.addScriptTag({ path: dist('gia.mini.umd.js') });

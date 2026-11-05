@@ -247,6 +247,11 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 		// A mini bundle created the shared bus first. Upgrade that same object in place so
 		// wildcard listeners work page-wide: every bundle already holds a reference to it, and the
 		// listener map (event -> handler array) has the same shape in both implementations.
+		// The mini bundle's own fields carry its own mangled names, which may equal names of the
+		// full bundle's methods and would shadow them: keep only the shared listener map
+		for (const key of Object.keys(eventbusInstance)) {
+			if (key !== "_listeners") delete eventbusInstance[key];
+		}
 		Object.setPrototypeOf(eventbusInstance, EventBus.prototype);
 		eventbusInstance._depth = 0;
 		eventbusInstance._dirty = [];
