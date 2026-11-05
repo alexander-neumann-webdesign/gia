@@ -280,4 +280,62 @@ test.describe('EventBus', () => {
 
         expect(count).toBe(0);
     });
+
+
+    test('a frozen payload is delivered as is instead of throwing', async () => {
+        const payload = Object.freeze({ id: 7 });
+        let received = null;
+        let wildcard = null;
+        eventbus.on('frozen:event', (d) => { received = d; });
+        eventbus.on('frozen:*', (d) => { wildcard = d; });
+
+        expect(() => eventbus.emit('frozen:event', payload)).not.toThrow();
+        expect(received).toBe(payload);
+        expect(wildcard).toBe(payload);
+
+        eventbus.off('frozen:event');
+        eventbus.off('frozen:*');
+    });
+
+    test('extensible payloads are still tagged with _name', async () => {
+        const payload = { id: 1 };
+        let received = null;
+        const handler = (d) => { received = d; };
+        eventbus.on('tagged', handler);
+        eventbus.emit('tagged', payload);
+        expect(received).toBe(payload);
+        expect(payload._name).toBe('tagged');
+        eventbus.off('tagged', handler);
+    });
+
+    test('off() removes each once() registration of the same handler in turn', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        eventbus.once('twice-once', handler);
+        eventbus.once('twice-once', handler);
+
+        eventbus.off('twice-once', handler);
+        eventbus.emit('twice-once');
+        expect(count).toBe(1); // one registration left, like on() twice + off() once
+
+        eventbus.once('twice-once', handler);
+        eventbus.once('twice-once', handler);
+        eventbus.off('twice-once', handler);
+        eventbus.off('twice-once', handler);
+        eventbus.emit('twice-once');
+        expect(count).toBe(1);
+    });
+
+    test('off() prefers a once() wrapper over a plain registration of the same handler', async () => {
+        let count = 0;
+        const handler = () => { count++; };
+        eventbus.on('mixed', handler);
+        eventbus.once('mixed', handler);
+        eventbus.off('mixed', handler); // removes the once() wrapper
+
+        eventbus.emit('mixed');
+        eventbus.emit('mixed');
+        expect(count).toBe(2); // the plain listener keeps firing
+        eventbus.off('mixed', handler);
+    });
 });

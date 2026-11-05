@@ -107,13 +107,14 @@ export function terserPlugin(customOptions = {}) {
  * - global singleton handles (__gia_*__) and the UMD staging global (__gia_umd__)
  * - the instance lifecycle protocol used by loadComponents/destroyInstance/createInstance
  *   (_load, _destroy) plus _name and the static _gia_priority
- * - shared event bus state that a full bundle adopts from a mini bus (_listeners) and the
- *   once-wrapper lookup on user handlers (_wrappedHandlers)
+ * - shared event bus state that a full bundle adopts from a mini bus (_listeners), the
+ *   once-wrapper lookup on user handlers (_wrappedHandlers) and the wrapper's back-reference to
+ *   its handler (_onceHandler)
  * - the in-flight promise cached on <script>/<link> tags by loadScript/loadStyle (_loadPromise)
  */
 export const sharedEsbuildOptions = {
 	mangleProps: /^_/,
-	reserveProps: /^(__gia_umd__|__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers|_loadPromise)$/,
+	reserveProps: /^(__gia_umd__|__gia_component__|_gia_component|__gia_scheduler__|__gia_store__|__gia_eventbus__|__gia_config__|_gia_priority|_name|_load|_destroy|_listeners|_wrappedHandlers|_onceHandler|_loadPromise)$/,
 	mangleQuoted: false,
 	legalComments: "none",
 };

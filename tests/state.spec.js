@@ -348,7 +348,7 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         document.body.appendChild(el);
         let received = null;
         class Widget extends BaseComponent {
-            stateChange(changes) { received = { ...changes }; } // the payload object is reused
+            stateChange(changes) { received = changes; }
         }
         const widget = new Widget(el);
         widget._load();
@@ -373,5 +373,26 @@ test.describe('Batched State & DOM Attribute Reflection (state.js)', () => {
         expect(widget.state.component).toBe('Again');
         expect(received).toMatchObject({ component: 'Again', mount: 'idle', count: 1 });
         expect(warnings.filter((w) => w.includes('"component"')).length).toBeLessThanOrEqual(1);
+    });
+
+
+    test('should hand stateChange() a payload object the component may keep', async () => {
+        const el = document.createElement('div');
+        document.body.appendChild(el);
+        const payloads = [];
+        class Keeper extends BaseComponent {
+            stateChange(changes) { payloads.push(changes); }
+        }
+        const keeper = new Keeper(el);
+        keeper._load();
+        const frame = () => new Promise((r) => setTimeout(r, 20));
+
+        keeper.setState({ step: 1 });
+        await frame();
+        keeper.setState({ step: 2, done: true });
+        await frame();
+
+        expect(payloads).toEqual([{ step: 1 }, { step: 2, done: true }]);
+        expect(payloads[0]).not.toBe(payloads[1]);
     });
 });

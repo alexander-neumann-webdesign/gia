@@ -533,6 +533,8 @@ eventbus.on("*", (event) => {
 });
 ```
 
+Handlers receive the object you emit, tagged with the event name as `_name` (a missing or primitive payload becomes `{ _name }`). A frozen or sealed payload can't be tagged, so it is delivered unchanged without `_name`.
+
 #### Namespaced Channels (`this.channel` & `eventbus.channel`)
 
 For feature-driven architectures, create lightweight scoped channels to avoid writing repetitive prefix strings:

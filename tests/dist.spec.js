@@ -316,7 +316,7 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
     });
 
     for (const tier of ['full', 'mini']) {
-        test(`gia.${tier}.umd.js eventbus: off() after a fired once() removes the plain listener`, async () => {
+        test(`gia.${tier}.umd.js eventbus: off() and once() bookkeeping, frozen payloads`, async () => {
             const fs = await import('fs');
             const path = await import('path');
             const code = fs.readFileSync(path.resolve(process.cwd(), `dist/gia.${tier}.umd.js`), 'utf-8');
@@ -336,6 +336,17 @@ test.describe('Distribution Bundle Exports & Runtime Verification', () => {
             eb.off('x', handler);
             eb.emit('x');
             expect(count).toBe(1);
+
+            // Repeated once() registrations are each removable (needs the unmangled _onceHandler)
+            eb.once('y', handler);
+            eb.once('y', handler);
+            eb.off('y', handler);
+            eb.off('y', handler);
+            eb.emit('y');
+            expect(count).toBe(1);
+
+            // Frozen payloads do not throw
+            expect(() => eb.emit('x', Object.freeze({}))).not.toThrow();
         });
     }
 

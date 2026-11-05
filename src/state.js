@@ -86,7 +86,8 @@ export function enqueueSetState(instance, changes) {
 		instance._state[key] = newValue;
 
 		if (!instance._pendingStateChanges) {
-			instance._pendingStateChanges = instance._reusableStateChanges || {};
+			// A fresh payload per batch: stateChange() receives it and may keep it
+			instance._pendingStateChanges = {};
 			instance._pendingAttributeChanges = instance._reusableAttributeChanges || {};
 			// Value each key had when this batch started (null prototype: any key name is safe)
 			instance._stateOrigins = instance._reusableStateOrigins || Object.create(null);
@@ -152,8 +153,8 @@ export function flushStateChanges(instance) {
 		}
 	}
 
-	// Release the batch before calling user code, so setState() inside stateChange() starts a new one
-	instance._reusableStateChanges = null;
+	// Release the batch before calling user code, so setState() inside stateChange() starts a new one.
+	// Only the internal attribute and origin objects are reused; the payload belongs to the caller.
 	instance._reusableAttributeChanges = _clear(attrs);
 	instance._reusableStateOrigins = _clear(instance._stateOrigins);
 	instance._pendingStateChanges = null;
@@ -169,9 +170,6 @@ export function flushStateChanges(instance) {
 	if (hasChanges) {
 		instance.stateChange(pending);
 	}
-
-	// Reuse the payload object for the next batch unless a new batch already started
-	instance._reusableStateChanges = _clear(pending);
 }
 
 /**

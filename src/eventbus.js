@@ -1,17 +1,41 @@
 import config from "./config.js";
 
 /**
- * The listener entry off(event, handler) removes: the once() wrapper registered for `handler`
- * when it is still in `list`, else `handler` itself. The wrapper lookup is consumed either way,
- * so a wrapper that is no longer listed (e.g. a once() that fired in another bundle) can never
- * shadow a plain listener for the same handler.
+ * The listener entry off(event, handler) removes: a once() wrapper registered for `handler`
+ * while one is still in `list`, else `handler` itself.
+ * - handler._wrappedHandlers[event] names the latest wrapper (also read by older Gia bundles).
+ *   The lookup is consumed either way, so a wrapper that is no longer listed (e.g. a once() that
+ *   fired in another bundle) can never shadow a plain listener for the same handler.
+ * - Every wrapper also points back at its handler (_onceHandler), so when the same handler was
+ *   registered with once() more than once, each off() finds the next remaining wrapper.
+ * Both property names are reserved from mangling: wrappers are shared by every bundle.
  */
 function _target(list, event, handler) {
 	const wrapped = handler._wrappedHandlers;
 	const wrapper = wrapped && wrapped[event];
-	if (!wrapper) return handler;
-	delete wrapped[event];
-	return list.indexOf(wrapper) !== -1 ? wrapper : handler;
+	if (wrapper) {
+		delete wrapped[event];
+		if (list.indexOf(wrapper) !== -1) return wrapper;
+	}
+	for (let i = 0; i < list.length; i++) {
+		if (list[i] && list[i]._onceHandler === handler) return list[i];
+	}
+	return handler;
+}
+
+/**
+ * The object handlers receive: the caller's object tagged with the event name (documented as
+ * `event._name`), or a new { _name } object for a missing or primitive payload. A frozen or
+ * sealed payload cannot be tagged and is passed through as is instead of throwing.
+ */
+function _payload(eventObject, event) {
+	if (!eventObject || typeof eventObject !== "object") return { _name: event };
+	try {
+		eventObject._name = event;
+	} catch (_e) {
+		// not extensible / read-only _name
+	}
+	return eventObject;
 }
 
 /**
@@ -26,11 +50,7 @@ class MiniEventBus {
 	emit(event, eventObject) {
 		const list = this._listeners[event];
 		if (list && list.length) {
-			if (!eventObject || typeof eventObject !== "object") {
-				eventObject = { _name: event };
-			} else {
-				eventObject._name = event;
-			}
+			eventObject = _payload(eventObject, event);
 			const copy = list.slice();
 			for (let i = 0; i < copy.length; i++) {
 				copy[i](eventObject);
@@ -58,6 +78,7 @@ class MiniEventBus {
 				remove();
 				handler(d);
 			};
+			actual._onceHandler = handler;
 			wrapped[event] = actual;
 		}
 		(this._listeners[event] = this._listeners[event] || []).push(actual);
@@ -163,13 +184,9 @@ class EventBus extends MiniEventBus {
 
 		if (!hasAny) return;
 
-		// ⚡ BOLT OPTIMIZATION: Mutate or initialize eventObject lazily only when listeners exist
+		// ⚡ BOLT OPTIMIZATION: Tag or create the payload lazily, only when listeners exist,
 		// to avoid GC allocation overhead on emissions with zero listeners.
-		if (!eventObject || typeof eventObject !== "object") {
-			eventObject = { _name: event };
-		} else {
-			eventObject._name = event;
-		}
+		eventObject = _payload(eventObject, event);
 
 		if (handlers && handlers.length > 0) {
 			this._dispatchToHandlers(event, handlers, eventObject);
