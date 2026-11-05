@@ -43,6 +43,8 @@ class Counter extends BaseComponent<CounterState, CounterOptions, CounterRef> {
 		const state: CounterState = this.state;
 
 		this.setState({ count: 1 });
+		// @ts-expect-error state is changed through setState(), never assigned
+		this.state = { count: 2 };
 
 		// Test listen helper
 		const unlisten1: () => void = this.listen('click', () => {});
@@ -117,6 +119,8 @@ const controller = new AbortController();
 eventbus.on('test', (data) => {}, { signal: controller.signal, once: true });
 eventbus.once('once-test', (data) => {}, { signal: controller.signal });
 eventbus.off('test');
+// @ts-expect-error the listener map is internal, not part of the public EventBus API
+eventbus.listeners;
 
 // Scheduler tests
 const task = measure(() => {});

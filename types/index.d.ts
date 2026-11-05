@@ -41,7 +41,6 @@ export interface EventBusChannel {
  * Zero-GC high-performance event bus
  */
 export interface EventBus {
-	listeners: Record<string, Function[]>;
 	on(event: string, handler: (detail?: any) => void, options?: boolean | EventBusListenerOptions): void;
 	once(event: string, handler: (detail?: any) => void, options?: EventBusListenerOptions): void;
 	off(event: string, handler?: Function): void;
@@ -126,7 +125,8 @@ export class BaseComponent<
 	readonly signal: AbortSignal | null;
 	ref: TRef;
 	options: TOptions;
-	state: TState;
+	/** Current state. Read-only: change it with setState(), which batches updates and calls stateChange(). */
+	readonly state: TState;
 
 	mount(): void | (() => void);
 	unmount(): void;
