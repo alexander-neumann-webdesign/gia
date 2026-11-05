@@ -1118,4 +1118,35 @@ test.describe('Regression tests', () => {
         expect(components.get(el).mounted).toBe(true);
         destroyInstance(el);
     });
+
+    test.describe('createInstance() mounts, as documented', () => {
+        test('mount() runs once, even when _load() is called afterwards', () => {
+            const el = mk('<div></div>');
+            let mounts = 0;
+            class Once extends BaseComponent {
+                mount() { mounts++; }
+            }
+            const instance = createInstance(el, 'Once', Once);
+            expect(instance.isMounted).toBe(true);
+            instance._load();
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+
+        test('a Component runs require() once and mounts after it resolves', async () => {
+            const el = mk('<div></div>');
+            let requires = 0;
+            let mounts = 0;
+            class Lazy extends Component {
+                require() { requires++; return Promise.resolve(); }
+                mount() { mounts++; }
+            }
+            const instance = createInstance(el, 'Lazy', Lazy);
+            instance._load();
+            await new Promise((r) => setTimeout(r, 0));
+            expect(requires).toBe(1);
+            expect(mounts).toBe(1);
+            destroyInstance(el);
+        });
+    });
 });

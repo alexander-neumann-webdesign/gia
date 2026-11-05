@@ -247,7 +247,8 @@ export default class BaseComponent {
 	}
 
 	_load() {
-		if (this.element && !this._isDestroyed) {
+		// Idempotent: createInstance() mounts, and code written before it did calls _load() again
+		if (this.element && !this._isDestroyed && !this._isMounted) {
 			this._isMounted = true;
 			try {
 				this._mountCleanup = this.mount();

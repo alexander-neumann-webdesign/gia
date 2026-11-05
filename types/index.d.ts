@@ -260,7 +260,8 @@ export function register(
 ): void;
 
 /**
- * Instantiates a component on a DOM element
+ * Instantiates and mounts a component on a DOM element (a Component mounts once require() resolves).
+ * Returns the existing instance if the element already has one, or null if construction failed.
  */
 export function createInstance<T extends BaseComponent = BaseComponent>(
 	element: Element,
