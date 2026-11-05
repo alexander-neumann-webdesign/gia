@@ -43,7 +43,6 @@ test.describe('Component Features & Configuration (BaseComponent, config, action
     test.afterEach(() => {
         config.set('attrPrefix', 'data');
         config.set('autoBindActions', false);
-        config.set('log', false);
 
         delete global.window;
         delete global.document;

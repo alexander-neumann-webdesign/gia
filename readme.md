@@ -945,9 +945,6 @@ Customize the framework's behavior using the global `config` object:
 ```javascript
 import { config } from "gia";
 
-// Toggle console logging and warning messages
-config.set("log", true);
-
 // Customize data attribute prefix (e.g. 'g' searches for 'g-component' instead of 'data-component')
 config.set("attrPrefix", "data");
 

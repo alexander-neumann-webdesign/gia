@@ -39,7 +39,6 @@ test.describe('Lifecycle Hooks & AbortSignal', () => {
 
     test.afterEach(() => {
         config.set('autoBindActions', false);
-        config.set('log', false);
         delete global.window;
         delete global.document;
         delete global.Node;

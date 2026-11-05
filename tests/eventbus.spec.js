@@ -1,13 +1,7 @@
 import { test, expect } from '@playwright/test';
-import eventbus, { EventBus } from '../src/eventbus';
-import config from '../src/config';
+import eventbus from '../src/eventbus';
 
 test.describe('EventBus', () => {
-    test.afterEach(() => {
-        // Reset config and other global-like states if needed
-        config.set('log', false);
-    });
-
     test('should emit and receive events', async () => {
         let received = null;
         const data = { foo: 'bar' };
@@ -47,25 +41,6 @@ test.describe('EventBus', () => {
         eventbus.off('off-event', handler);
         eventbus.emit('off-event');
         expect(count).toBe(1);
-    });
-
-    test('should log when config log is enabled', async () => {
-        let loggedMessage = null;
-        const originalInfo = console.info;
-        console.info = (msg) => {
-            loggedMessage = msg;
-        };
-
-        // The shared bus is a page-wide singleton: when a dist bundle (console.info stripped)
-        // created it earlier in this worker, `eventbus` is that bus. Test a source instance.
-        const srcBus = new EventBus();
-        try {
-            config.set('log', true);
-            srcBus.emit('log-event');
-            expect(loggedMessage).toBe("Emitting event 'log-event'");
-        } finally {
-            console.info = originalInfo;
-        }
     });
 
     test('should clear all listeners when off() is called without handler', async () => {

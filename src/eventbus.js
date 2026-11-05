@@ -1,5 +1,3 @@
-import config from "./config.js";
-
 /**
  * The listener entry off(event, handler) removes: a once() wrapper registered for `handler`
  * while one is still in `list`, else `handler` itself.
@@ -152,10 +150,6 @@ class EventBus extends MiniEventBus {
 	}
 
 	emit(event, eventObject) {
-		if (config.get("log")) {
-			console.info(`Emitting event '${event}'`);
-		}
-
 		const handlers = this._listeners[event];
 		const globalHandlers = this._hasWildcards > 0 ? this._listeners["*"] : null;
 
@@ -286,8 +280,5 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 if (!eventbusInstance) {
 	eventbusInstance = globalThis.__gia_eventbus__ = new EventBusClass();
 }
-
-// Named class exports are for tests; the bundle entries only re-export the shared instance
-export { MiniEventBus, EventBus };
 
 export default eventbusInstance;

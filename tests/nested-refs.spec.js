@@ -35,7 +35,6 @@ test.describe('Nested Component Ref & Action Isolation', () => {
 
     test.afterEach(() => {
         config.set('autoBindActions', false);
-        config.set('log', false);
         delete global.window;
         delete global.document;
         delete global.Node;

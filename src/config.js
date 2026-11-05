@@ -4,7 +4,6 @@ class Config {
 	// to a defineProperty helper that every bundle would otherwise carry
 	constructor() {
 		this._options = {
-			log: false,
 			attrPrefix: "data", // data-component="HelloWorld"
 			autoMountComponents: false, // Use MutationObserver to automatically mount/unmount components
 			autoBindActions: false, // Automatically bind actions using data-action attributes

@@ -1,4 +1,3 @@
-import config from "./config.js";
 import { components } from "./store.js";
 import { resolveElement } from "./getComponentFromElement.js";
 import { cancelDeferredMount } from "./deferredMount.js";
@@ -48,10 +47,6 @@ export default function destroyInstance(element) {
 		// We must break this link so the Garbage Collector can free both objects.
 		if (instance.element) {
 			instance.element = null;
-		}
-
-		if (config.get("log")) {
-			console.info(`Removed component "${name}".`);
 		}
 	}
 }

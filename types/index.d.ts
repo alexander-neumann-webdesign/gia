@@ -2,7 +2,6 @@
  * Global configuration options for Gia
  */
 export interface GiaConfig {
-	log: boolean;
 	attrPrefix: string;
 	autoMountComponents: boolean;
 	autoBindActions: boolean;

@@ -1,4 +1,3 @@
-import config from "./config.js";
 import { components } from "./store.js";
 
 /**
@@ -18,13 +17,7 @@ export default function createInstance(element, componentName, component, option
 
 	try {
 		// create instance of component
-		const instance = new component(element, options);
-
-		if (config.get("log")) {
-			console.info(`Created instance of component "${componentName}".`);
-		}
-
-		return instance;
+		return new component(element, options);
 	} catch (err) {
 		console.error(`Failed to create component "${componentName}".`, err);
 		// BaseComponent's constructor registers the instance in the store before a subclass
