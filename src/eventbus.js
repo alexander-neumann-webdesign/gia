@@ -37,22 +37,65 @@ function _payload(eventObject, event) {
 }
 
 /**
- * Lightweight event emitter used by the Mini build, and the base of the full EventBus
- * (which adds wildcard dispatch and removal-safe iteration on top of it).
+ * Lightweight event emitter used by the Mini build, and the base of the full EventBus (which adds
+ * wildcard dispatch on top of it).
+ *
+ * Dispatch follows DOM event semantics without allocating: a listener removed during an emit is
+ * skipped if its turn has not come yet, and one added during an emit first runs on the next one.
+ * While any emit is in progress (_depth > 0), off() sets entries to null instead of splicing, and
+ * the arrays that got holes are compacted once the outermost emit has finished.
  */
 class MiniEventBus {
 	constructor() {
 		this._listeners = Object.create(null);
+		this._depth = 0;
+		this._dirty = [];
+	}
+
+	/** Calls the listeners of `list` that were registered when the dispatch started. */
+	_dispatch(list, eventObject) {
+		const len = list.length;
+		for (let i = 0; i < len; i++) {
+			const cb = list[i];
+			if (cb) cb(eventObject);
+		}
+	}
+
+	/** Runs `fn` as one emit, compacting the arrays that off() left holes in once it is the outermost. */
+	_emitting(fn, a, b, c) {
+		this._depth++;
+		try {
+			fn.call(this, a, b, c);
+		} finally {
+			if (--this._depth === 0 && this._dirty.length) {
+				const dirty = this._dirty;
+				for (let d = 0; d < dirty.length; d++) {
+					const list = dirty[d];
+					let w = 0;
+					for (let i = 0; i < list.length; i++) {
+						if (list[i]) list[w++] = list[i];
+					}
+					list.length = w;
+				}
+				dirty.length = 0;
+			}
+		}
+	}
+
+	/** Removes entry `idx` of `list`: in place now, or as a hole while an emit may be iterating it. */
+	_removeAt(list, idx) {
+		if (this._depth > 0) {
+			list[idx] = null;
+			this._dirty.push(list);
+		} else {
+			list.splice(idx, 1);
+		}
 	}
 
 	emit(event, eventObject) {
 		const list = this._listeners[event];
 		if (list && list.length) {
-			eventObject = _payload(eventObject, event);
-			const copy = list.slice();
-			for (let i = 0; i < copy.length; i++) {
-				copy[i](eventObject);
-			}
+			this._emitting(this._dispatch, list, _payload(eventObject, event));
 		}
 	}
 
@@ -90,16 +133,24 @@ class MiniEventBus {
 		this.on(event, handler, opts);
 	}
 
+	/** Removes one listener, or every listener of `event` when `handler` is omitted. Returns how many. */
 	off(event, handler) {
-		if (!handler) {
-			delete this._listeners[event];
-			return;
-		}
 		const list = this._listeners[event];
-		if (list) {
-			const idx = list.indexOf(_target(list, event, handler));
-			if (idx !== -1) list.splice(idx, 1);
+		if (!list) return 0;
+		if (!handler) {
+			let removed = 0;
+			for (let i = list.length - 1; i >= 0; i--) {
+				if (list[i]) {
+					this._removeAt(list, i);
+					removed++;
+				}
+			}
+			return removed;
 		}
+		const idx = list.indexOf(_target(list, event, handler));
+		if (idx === -1) return 0;
+		this._removeAt(list, idx);
+		return 1;
 	}
 
 	channel(namespace) {
@@ -114,56 +165,22 @@ class MiniEventBus {
 }
 
 /**
- * Event bus using pure JS for Zero-GC and maximum performance
+ * Full event bus: adds wildcard listeners ("*" for every event, "prefix:*" / "prefix.*" for a
+ * namespace) to MiniEventBus.
  */
-
 class EventBus extends MiniEventBus {
 	constructor() {
 		super();
-		this._iterating = Object.create(null);
 		this._hasWildcards = 0;
-	}
-
-	_dispatchToHandlers(eventName, handlers, eventObject) {
-		if (!handlers || handlers.length === 0) return;
-		this._iterating[eventName] = (this._iterating[eventName] || 0) + 1;
-		const len = handlers.length;
-		try {
-			for (let i = 0; i < len; i++) {
-				const callback = handlers[i];
-				if (callback) {
-					callback(eventObject);
-				}
-			}
-		} finally {
-			this._iterating[eventName]--;
-			if (this._iterating[eventName] === 0) {
-				let writeIndex = 0;
-				for (let i = 0; i < handlers.length; i++) {
-					if (handlers[i] !== null) {
-						handlers[writeIndex++] = handlers[i];
-					}
-				}
-				handlers.length = writeIndex;
-			}
-		}
 	}
 
 	emit(event, eventObject) {
 		const handlers = this._listeners[event];
-		const globalHandlers = this._hasWildcards > 0 ? this._listeners["*"] : null;
+		const wild = this._hasWildcards > 0;
+		const globalHandlers = wild ? this._listeners["*"] : null;
+		const sep = wild ? (event.indexOf(":") !== -1 ? ":" : event.indexOf(".") !== -1 ? "." : null) : null;
 
 		let hasAny = (handlers && handlers.length > 0) || (globalHandlers && globalHandlers.length > 0);
-
-		const sep =
-			this._hasWildcards > 0
-				? event.indexOf(":") !== -1
-					? ":"
-					: event.indexOf(".") !== -1
-					? "."
-					: null
-				: null;
-
 		if (!hasAny && sep !== null) {
 			let idx = 0;
 			while ((idx = event.indexOf(sep, idx)) !== -1) {
@@ -175,32 +192,28 @@ class EventBus extends MiniEventBus {
 				idx++;
 			}
 		}
-
 		if (!hasAny) return;
 
 		// ⚡ BOLT OPTIMIZATION: Tag or create the payload lazily, only when listeners exist,
 		// to avoid GC allocation overhead on emissions with zero listeners.
-		eventObject = _payload(eventObject, event);
+		this._emitting(this._emitAll, event, _payload(eventObject, event), sep);
+	}
 
-		if (handlers && handlers.length > 0) {
-			this._dispatchToHandlers(event, handlers, eventObject);
-		}
+	_emitAll(event, eventObject, sep) {
+		const handlers = this._listeners[event];
+		if (handlers) this._dispatch(handlers, eventObject);
 
 		if (sep !== null) {
 			let idx = 0;
 			while ((idx = event.indexOf(sep, idx)) !== -1) {
-				const prefixKey = event.substring(0, idx + 1) + "*";
-				const ph = this._listeners[prefixKey];
-				if (ph && ph.length > 0) {
-					this._dispatchToHandlers(prefixKey, ph, eventObject);
-				}
+				const ph = this._listeners[event.substring(0, idx + 1) + "*"];
+				if (ph) this._dispatch(ph, eventObject);
 				idx++;
 			}
 		}
 
-		if (globalHandlers && globalHandlers.length > 0) {
-			this._dispatchToHandlers("*", globalHandlers, eventObject);
-		}
+		const globalHandlers = this._hasWildcards > 0 ? this._listeners["*"] : null;
+		if (globalHandlers) this._dispatch(globalHandlers, eventObject);
 	}
 
 	on(event, handler, options = false) {
@@ -212,42 +225,11 @@ class EventBus extends MiniEventBus {
 	}
 
 	off(event, handler) {
-		if (!handler) {
-			// Clear all listeners for this event if no handler provided
-			const handlers = this._listeners[event];
-			if (handlers) {
-				if (event.indexOf("*") !== -1) {
-					for (let i = 0; i < handlers.length; i++) {
-						if (handlers[i] !== null && this._hasWildcards > 0) {
-							this._hasWildcards--;
-						}
-					}
-				}
-				if (this._iterating && this._iterating[event] > 0) {
-					for (let i = 0; i < handlers.length; i++) {
-						handlers[i] = null;
-					}
-				} else {
-					handlers.length = 0;
-				}
-			}
-			return;
+		const removed = super.off(event, handler);
+		if (removed && event.indexOf("*") !== -1) {
+			this._hasWildcards = Math.max(0, this._hasWildcards - removed);
 		}
-
-		const handlers = this._listeners[event];
-		if (!handlers) return;
-
-		const index = handlers.indexOf(_target(handlers, event, handler));
-		if (index !== -1) {
-			if (event.indexOf("*") !== -1 && this._hasWildcards > 0) {
-				this._hasWildcards--;
-			}
-			if (this._iterating && this._iterating[event] > 0) {
-				handlers[index] = null;
-			} else {
-				handlers.splice(index, 1);
-			}
-		}
+		return removed;
 	}
 }
 
@@ -266,7 +248,8 @@ if (typeof __GIA_MINI__ === "undefined" || !__GIA_MINI__) {
 		// wildcard listeners work page-wide: every bundle already holds a reference to it, and the
 		// listener map (event -> handler array) has the same shape in both implementations.
 		Object.setPrototypeOf(eventbusInstance, EventBus.prototype);
-		eventbusInstance._iterating = Object.create(null);
+		eventbusInstance._depth = 0;
+		eventbusInstance._dirty = [];
 		let wildcards = 0;
 		for (const event in eventbusInstance._listeners) {
 			if (event.indexOf("*") !== -1) {
