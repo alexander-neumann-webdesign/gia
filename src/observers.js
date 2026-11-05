@@ -304,8 +304,20 @@ export function observeIntersection(instance, element, callback, options = {}) {
 	if (typeof __GIA_NANO__ !== "undefined" && __GIA_NANO__) return;
 	if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
+	const once = options && options.once;
+	const reg = _intersectionRegistry(once ? { ...options, once: undefined } : options || {});
+
 	let actualCallback = callback;
-	if (options && options.once) {
+	if (once) {
+		// Observing the same callback again must not add a second wrapper (plain callbacks are
+		// deduplicated by identity; each once wrapper is a new function)
+		const perKey = instance._obs && instance._obs.get(reg);
+		const list = perKey && perKey.get(element);
+		if (list) {
+			for (let i = 0; i < list.length; i++) {
+				if (list[i]._wrapped === callback) return;
+			}
+		}
 		actualCallback = (entries) => {
 			for (let i = 0; i < entries.length; i++) {
 				if (entries[i].isIntersecting) {
@@ -318,8 +330,7 @@ export function observeIntersection(instance, element, callback, options = {}) {
 		actualCallback._wrapped = callback;
 	}
 
-	const cleanOptions = options && options.once ? { ...options, once: undefined } : options || {};
-	_observe(instance, _intersectionRegistry(cleanOptions), element, actualCallback);
+	_observe(instance, reg, element, actualCallback);
 }
 
 const _toRemove = [];
@@ -378,13 +389,10 @@ export function observeMediaQuery(instance, query, callback) {
 		console.error(e);
 	}
 
-	const unobserve = () => {
+	// No abort listener needed: _destroy() removes every observer the instance registered
+	return () => {
 		unobserveMediaQuery(instance, query, callback);
 	};
-	if (instance.signal) {
-		instance.signal.addEventListener("abort", unobserve, { once: true });
-	}
-	return unobserve;
 }
 
 export function unobserveMediaQuery(instance, query, callback = null) {
